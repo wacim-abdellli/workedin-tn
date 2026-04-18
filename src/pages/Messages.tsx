@@ -408,8 +408,16 @@ const isMissingSchemaColumnError = (error: unknown, tableName: string, columnNam
     if (!error || typeof error !== 'object') return false;
     const candidate = error as { message?: unknown };
     const message = typeof candidate.message === 'string' ? candidate.message.toLowerCase() : '';
-    return message.includes('could not find')
+    if (
+        message.includes('could not find')
         && message.includes('schema cache')
+        && message.includes(tableName.toLowerCase())
+        && message.includes(columnName.toLowerCase())
+    ) {
+        return true;
+    }
+
+    return message.includes('does not exist')
         && message.includes(tableName.toLowerCase())
         && message.includes(columnName.toLowerCase());
 };
@@ -438,6 +446,13 @@ const extractRpcConversationId = (payload: unknown): string | null => {
         if (typeof candidate.conversation_id === 'string' && candidate.conversation_id.trim().length > 0) return candidate.conversation_id;
     }
     return null;
+};
+
+const UUID_LIKE_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const isUuidLike = (value: string | null | undefined): value is string => {
+    if (!value) return false;
+    return UUID_LIKE_REGEX.test(String(value).trim());
 };
 
 const hydrateConversationRow = async (
@@ -579,6 +594,118 @@ const fetchConversationByContractId = async (
     return hydrateConversationRow(userId, row);
 };
 
+const fetchConversationByParticipants = async (
+    userId: string,
+    otherUserId: string,
+): Promise<Conversation | null> => {
+    const [participant1, participant2] = userId < otherUserId
+        ? [userId, otherUserId]
+        : [otherUserId, userId];
+
+    const buildLookup = (includeScopeColumns: boolean) => {
+        const selectColumns = includeScopeColumns
+            ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2'
+            : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at';
+
+        return supabase
+            .from('conversations')
+            .select(selectColumns)
+            .eq('participant_1', participant1)
+            .eq('participant_2', participant2)
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+    };
+
+    let lookupResult = await buildLookup(true);
+
+    const needsLegacySelect = (
+        isMissingSchemaColumnError(lookupResult.error, 'conversations', 'conversation_scope')
+        || isMissingSchemaColumnError(lookupResult.error, 'conversations', 'inbox_participant_1')
+        || isMissingSchemaColumnError(lookupResult.error, 'conversations', 'inbox_participant_2')
+    );
+
+    if (needsLegacySelect) {
+        lookupResult = await buildLookup(false);
+    }
+
+    const row = lookupResult.data as ContractConversationLookupRow | null;
+    if (!row) return null;
+
+    return hydrateConversationRow(userId, row);
+};
+
+const createContractConversationFallback = async (
+    userId: string,
+    otherUserId: string,
+    contractId: string,
+): Promise<Conversation | null> => {
+    const [participant1, participant2] = userId < otherUserId
+        ? [userId, otherUserId]
+        : [otherUserId, userId];
+
+    const insertModern = () => supabase
+        .from('conversations')
+        .insert({
+            participant_1: participant1,
+            participant_2: participant2,
+            contract_id: contractId,
+            conversation_scope: 'contract',
+            inbox_participant_1: 'contract',
+            inbox_participant_2: 'contract',
+        })
+        .select('id')
+        .maybeSingle();
+
+    const insertLegacy = () => supabase
+        .from('conversations')
+        .insert({
+            participant_1: participant1,
+            participant_2: participant2,
+            contract_id: contractId,
+        })
+        .select('id')
+        .maybeSingle();
+
+    let insertResult = await insertModern();
+
+    const shouldRetryLegacyInsert = (
+        isMissingSchemaColumnError(insertResult.error, 'conversations', 'conversation_scope')
+        || isMissingSchemaColumnError(insertResult.error, 'conversations', 'inbox_participant_1')
+        || isMissingSchemaColumnError(insertResult.error, 'conversations', 'inbox_participant_2')
+    );
+
+    if (shouldRetryLegacyInsert) {
+        insertResult = await insertLegacy();
+    }
+
+    const insertedConversationId = (
+        insertResult.data
+        && typeof insertResult.data === 'object'
+        && 'id' in insertResult.data
+        && typeof (insertResult.data as { id?: unknown }).id === 'string'
+    )
+        ? (insertResult.data as { id: string }).id
+        : null;
+
+    if (insertedConversationId) {
+        return fetchConversationById(userId, insertedConversationId);
+    }
+
+    // Unique conflicts can happen on legacy schemas (single row per participant pair).
+    // In that case recover by reading existing rows directly.
+    const duplicateKey = (insertResult.error as { code?: string } | null)?.code === '23505';
+    if (!insertResult.error || duplicateKey) {
+        const contractConversation = await fetchConversationByContractId(userId, contractId);
+        if (contractConversation) return contractConversation;
+
+        const pairConversation = await fetchConversationByParticipants(userId, otherUserId);
+        if (pairConversation) return pairConversation;
+    }
+
+    return null;
+};
+
 /**
  * Derive the counterparty role label for a conversation.
  *
@@ -665,6 +792,7 @@ function MessagesComponent() {
     const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
     const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [showUnknownContractBanner, setShowUnknownContractBanner] = useState(false);
     const [deliveryNote, setDeliveryNote] = useState('');
     const [disputeReason, setDisputeReason] = useState('');
     const [isDeliveringContractWork, setIsDeliveringContractWork] = useState(false);
@@ -782,6 +910,22 @@ function MessagesComponent() {
     const selectedContractHasReview = selectedContractId
         ? (hasReviewedContractById[selectedContractId] ?? false)
         : true;
+
+    useEffect(() => {
+        if (!selectedContractId || selectedConversationPolicy?.contractStatus !== 'unknown') {
+            setShowUnknownContractBanner(false);
+            return;
+        }
+
+        setShowUnknownContractBanner(false);
+        const timeoutId = window.setTimeout(() => {
+            setShowUnknownContractBanner(true);
+        }, 1500);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [selectedContractId, selectedConversationPolicy?.contractStatus]);
 
     const accentClasses = useMemo(() => ({
         selectedConversationBorder: isFreelancerWorkspace ? 'border-violet-500' : 'border-amber-500',
@@ -972,15 +1116,39 @@ function MessagesComponent() {
         user?.id,
     ]);
 
+    const getContractReferenceLabel = useCallback((contractId: string | null | undefined) => {
+        const normalizedId = String(contractId || '').trim();
+        if (!normalizedId) {
+            return tx('pages.messages.contractReferenceFallback', undefined, 'Contract');
+        }
+
+        const shortId = normalizedId.slice(0, 8);
+        return tx('pages.messages.contractReferenceWithId', { id: shortId }, `Contract #${shortId}`);
+    }, [tx]);
+
+    const getContractFallbackTitle = useCallback((conversation: Conversation) => {
+        const personName = conversation.otherUser.full_name?.trim();
+        if (personName) {
+            return tx('pages.messages.contractWithName', { name: personName }, `Contract with ${personName}`);
+        }
+
+        return getContractReferenceLabel(conversation.contract_id);
+    }, [getContractReferenceLabel, tx]);
+
+    const getResolvedContractTitle = useCallback((conversation: Conversation) => {
+        if (!conversation.contract_id) return '';
+
+        const jobTitle = (contractSessionMetaById[conversation.contract_id]?.title || '').trim();
+        if (jobTitle) return jobTitle;
+
+        return getContractFallbackTitle(conversation);
+    }, [contractSessionMetaById, getContractFallbackTitle]);
+
     const contractSidebarData = useMemo(() => {
         if (!isContractSession || !selectedConversation) return null;
 
-        const fallbackTitle = tx(
-            'pages.messages.contractSessionFallbackTitle',
-            undefined,
-            'Contract project',
-        );
-        const title = selectedContractMeta?.title?.trim() || fallbackTitle;
+        const title = getResolvedContractTitle(selectedConversation)
+            || tx('pages.messages.contractSessionFallbackTitle', undefined, 'Contract');
         const amountValue = selectedContractMeta?.total_amount
             ?? selectedContractMeta?.amount
             ?? 0;
@@ -1050,6 +1218,7 @@ function MessagesComponent() {
         selectedContractMeta?.total_amount,
         selectedContractUserRole,
         selectedConversation,
+        getResolvedContractTitle,
         tx,
     ]);
 
@@ -1110,16 +1279,14 @@ function MessagesComponent() {
             return tx('pages.messages.directMessage', undefined, 'Direct message');
         }
 
-        const contractMeta = contractSessionMetaById[conversation.contract_id];
-        const jobTitle = (contractMeta?.title || '').trim();
-        const unknownProjectLabel = tx('contracts.unknownProject', undefined, 'Unknown project');
+        const jobTitle = (contractSessionMetaById[conversation.contract_id]?.title || '').trim();
 
         if (jobTitle) {
             return tx('pages.messages.contractProjectWithTitle', { title: jobTitle }, `Contract project • ${jobTitle}`);
         }
 
-        return tx('pages.messages.contractProjectWithTitle', { title: unknownProjectLabel }, `Contract project • ${unknownProjectLabel}`);
-    }, [contractSessionMetaById, tx]);
+        return getContractFallbackTitle(conversation);
+    }, [contractSessionMetaById, getContractFallbackTitle, tx]);
 
     const getConversationContextLabel = useCallback((conversation: Conversation) => {
         const lifecyclePolicy = getConversationLifecyclePolicy(conversation);
@@ -1468,7 +1635,7 @@ function MessagesComponent() {
         return () => window.cancelAnimationFrame(frame);
     }, [selectedConversation?.id, isSending]);
 
-    const handleSelectConversation = async (conversation: Conversation) => {
+    const handleSelectConversation = useCallback(async (conversation: Conversation) => {
         if (selectedConversation?.id === conversation.id) return;
 
         setSelectedConversation(conversation);
@@ -1496,7 +1663,8 @@ function MessagesComponent() {
                 )
             );
         }
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedConversation?.id, user?.id]);
 
     const updateConversationPreview = (
         conversationId: string,
@@ -1607,6 +1775,8 @@ function MessagesComponent() {
         setPage(0);
         setHasMoreConversations(true);
         setIsLoadingConversations(true);
+        // Clear bootstrap attempts so the contract bootstrap re-runs after a mode switch.
+        contractBootstrapAttemptsRef.current.clear();
     }, [user?.id, conversationsModeCacheKey, activeMode, profile?.active_mode]);
 
 
@@ -1641,12 +1811,54 @@ function MessagesComponent() {
                 proposal_id?: string | null;
                 created_at?: string | null;
             };
+            type ProposalTitleFallbackRow = {
+                id: string;
+                job_id: string | null;
+                freelancer_id: string | null;
+                status: string | null;
+                created_at?: string | null;
+            };
+            type JobTitleLookupRow = {
+                id: string;
+                title: string | null;
+                client_id?: string | null;
+            };
+            const contractSelectColumns =
+                'id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at';
+            const legacyContractSelectColumns =
+                'id, proposal_id, status, title, amount, client_id, freelancer_id, job_id, created_at';
+            const fetchContractRows = async (
+                field: 'id' | 'proposal_id' | 'job_id' | 'client_id' | 'freelancer_id',
+                ids: string[],
+                extraEq?: { column: 'client_id' | 'freelancer_id'; value: string } | null,
+            ) => {
+                if (ids.length === 0) {
+                    return { data: [] as ContractSessionRow[], error: null };
+                }
+
+                const runLookup = (selectColumns: string) => {
+                    let query = supabase
+                        .from('contracts')
+                        .select(selectColumns);
+
+                    if (extraEq) {
+                        query = query.eq(extraEq.column, extraEq.value);
+                    }
+
+                    return query.in(field, ids);
+                };
+
+                let result = await runLookup(contractSelectColumns);
+
+                if (isMissingSchemaColumnError(result.error, 'contracts', 'total_amount')) {
+                    result = await runLookup(legacyContractSelectColumns);
+                }
+
+                return result as { data: ContractSessionRow[] | null; error: unknown };
+            };
 
             try {
-                const { data, error } = await supabase
-                    .from('contracts')
-                    .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
-                    .in('id', contractConversationIds);
+                const { data, error } = await fetchContractRows('id', contractConversationIds);
 
                 if (cancelled) return;
 
@@ -1681,15 +1893,21 @@ function MessagesComponent() {
                 hydrateRow(row.id, row);
             }
 
+            const conversationByContractId = new Map<string, Conversation>();
+            for (const conversation of conversations) {
+                if (!conversation.contract_id) continue;
+                conversationByContractId.set(conversation.contract_id, conversation);
+            }
+
             let unresolvedConversationContractIds = contractConversationIds.filter(
                 (contractId) => !rowByConversationContractId.has(contractId)
             );
 
             if (unresolvedConversationContractIds.length > 0) {
-                const { data: proposalLinkedRows, error: proposalLinkedError } = await supabase
-                    .from('contracts')
-                    .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
-                    .in('proposal_id', unresolvedConversationContractIds);
+                const { data: proposalLinkedRows, error: proposalLinkedError } = await fetchContractRows(
+                    'proposal_id',
+                    unresolvedConversationContractIds
+                );
 
                 if (cancelled) return;
 
@@ -1709,10 +1927,10 @@ function MessagesComponent() {
             }
 
             if (unresolvedConversationContractIds.length > 0) {
-                const { data: jobLinkedRows, error: jobLinkedError } = await supabase
-                    .from('contracts')
-                    .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
-                    .in('job_id', unresolvedConversationContractIds);
+                const { data: jobLinkedRows, error: jobLinkedError } = await fetchContractRows(
+                    'job_id',
+                    unresolvedConversationContractIds
+                );
 
                 if (cancelled) return;
 
@@ -1728,12 +1946,6 @@ function MessagesComponent() {
             }
 
             if (unresolvedConversationContractIds.length > 0 && user?.id) {
-                const conversationByContractId = new Map<string, Conversation>();
-                for (const conversation of conversations) {
-                    if (!conversation.contract_id) continue;
-                    conversationByContractId.set(conversation.contract_id, conversation);
-                }
-
                 const partnerIdByConversationContractId: Record<string, string> = {};
                 for (const unresolvedId of unresolvedConversationContractIds) {
                     const partnerId = conversationByContractId.get(unresolvedId)?.otherUser.id;
@@ -1745,16 +1957,8 @@ function MessagesComponent() {
 
                 if (partnerIds.length > 0) {
                     const [asClientResult, asFreelancerResult] = await Promise.all([
-                        supabase
-                            .from('contracts')
-                            .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
-                            .eq('client_id', user.id)
-                            .in('freelancer_id', partnerIds),
-                        supabase
-                            .from('contracts')
-                            .select('id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at')
-                            .eq('freelancer_id', user.id)
-                            .in('client_id', partnerIds),
+                        fetchContractRows('freelancer_id', partnerIds, { column: 'client_id', value: user.id }),
+                        fetchContractRows('client_id', partnerIds, { column: 'freelancer_id', value: user.id }),
                     ]);
 
                     if (cancelled) return;
@@ -1809,12 +2013,28 @@ function MessagesComponent() {
                 (contractId) => !rowByConversationContractId.has(contractId)
             );
 
+            const resolvedRows = Array.from(rowByConversationContractId.entries());
+
+            const proposalIdsNeedingJobLookup = Array.from(new Set([
+                ...unresolvedConversationContractIds,
+                ...resolvedRows
+                    .filter(([, row]) => {
+                        const proposalId = typeof row?.proposal_id === 'string' ? row.proposal_id : '';
+                        if (!proposalId) return false;
+
+                        const existingTitle = typeof row.title === 'string' ? row.title.trim() : '';
+                        const hasJobId = typeof row.job_id === 'string' && row.job_id.trim().length > 0;
+                        return !hasJobId || existingTitle.length === 0;
+                    })
+                    .map(([, row]) => row.proposal_id as string),
+            ]));
+
             const proposalJobIdByProposalId: Record<string, string> = {};
-            if (unresolvedConversationContractIds.length > 0) {
+            if (proposalIdsNeedingJobLookup.length > 0) {
                 const { data: proposalRows, error: proposalRowsError } = await supabase
                     .from('proposals')
                     .select('id, job_id')
-                    .in('id', unresolvedConversationContractIds);
+                    .in('id', proposalIdsNeedingJobLookup);
 
                 if (cancelled) return;
 
@@ -1830,15 +2050,19 @@ function MessagesComponent() {
                 }
             }
 
-            const resolvedRows = Array.from(rowByConversationContractId.entries());
             const jobIdsNeedingTitle = Array.from(new Set(
                 resolvedRows
-                    .filter(([, row]) => {
-                        if (!row?.job_id) return false;
+                    .map(([, row]) => {
                         const existingTitle = typeof row.title === 'string' ? row.title.trim() : '';
-                        return existingTitle.length === 0;
+                        if (existingTitle.length > 0) return null;
+
+                        const directJobId = typeof row.job_id === 'string' ? row.job_id.trim() : '';
+                        if (directJobId) return directJobId;
+
+                        const proposalId = typeof row.proposal_id === 'string' ? row.proposal_id : '';
+                        return proposalId ? proposalJobIdByProposalId[proposalId] || null : null;
                     })
-                    .map(([, row]) => row.job_id as string)
+                    .filter((jobId): jobId is string => Boolean(jobId))
             ));
 
             const fallbackJobIds = Array.from(new Set([
@@ -1890,6 +2114,189 @@ function MessagesComponent() {
                 }
             }
 
+            const conversationIdsNeedingPartnerProposalFallback = Array.from(new Set([
+                ...unresolvedConversationContractIds,
+                ...resolvedRows
+                    .filter(([conversationContractId, row]) => {
+                        const existingTitle = typeof row?.title === 'string' ? row.title.trim() : '';
+                        if (existingTitle.length > 0) return false;
+
+                        const directJobId = typeof row?.job_id === 'string' ? row.job_id.trim() : '';
+                        if (directJobId && jobTitleById[directJobId]) return false;
+
+                        const proposalId = typeof row?.proposal_id === 'string' ? row.proposal_id : '';
+                        const proposalJobId = proposalId ? proposalJobIdByProposalId[proposalId] || '' : '';
+                        if (proposalJobId && jobTitleById[proposalJobId]) return false;
+
+                        return Boolean(conversationContractId);
+                    })
+                    .map(([conversationContractId]) => conversationContractId),
+            ]));
+
+            const partnerProposalFallbackByConversationContractId: Record<string, {
+                jobId: string | null;
+                title: string | null;
+                proposalId: string | null;
+            }> = {};
+
+            if (conversationIdsNeedingPartnerProposalFallback.length > 0 && user?.id) {
+                const partnerIdByConversationContractId: Record<string, string> = {};
+                for (const conversationContractId of conversationIdsNeedingPartnerProposalFallback) {
+                    const partnerId = conversationByContractId.get(conversationContractId)?.otherUser.id;
+                    if (!partnerId) continue;
+                    partnerIdByConversationContractId[conversationContractId] = partnerId;
+                }
+
+                const partnerIds = Array.from(new Set(Object.values(partnerIdByConversationContractId)));
+
+                if (partnerIds.length > 0) {
+                    const [proposalsAsClientResult, proposalsAsFreelancerResult] = await Promise.all([
+                        supabase
+                            .from('proposals')
+                            .select('id, job_id, freelancer_id, status, created_at')
+                            .in('freelancer_id', partnerIds),
+                        supabase
+                            .from('proposals')
+                            .select('id, job_id, freelancer_id, status, created_at')
+                            .in('freelancer_id', [user.id]),
+                    ]);
+
+                    if (cancelled) return;
+
+                    if (proposalsAsClientResult.error) {
+                        console.warn('[Messages] Failed partner proposal lookup (as client)', proposalsAsClientResult.error);
+                    }
+                    if (proposalsAsFreelancerResult.error) {
+                        console.warn('[Messages] Failed partner proposal lookup (as freelancer)', proposalsAsFreelancerResult.error);
+                    }
+
+                    const proposalRows = [
+                        ...((proposalsAsClientResult.data ?? []) as Array<ProposalTitleFallbackRow>),
+                        ...((proposalsAsFreelancerResult.data ?? []) as Array<ProposalTitleFallbackRow>),
+                    ];
+
+                    const proposalJobIds = Array.from(new Set(
+                        proposalRows
+                            .map((proposal) => (typeof proposal.job_id === 'string' ? proposal.job_id.trim() : ''))
+                            .filter(Boolean)
+                    ));
+
+                    const jobsById: Record<string, JobTitleLookupRow> = {};
+                    if (proposalJobIds.length > 0) {
+                        const { data: proposalJobsData, error: proposalJobsError } = await supabase
+                            .from('jobs')
+                            .select('id, title, client_id')
+                            .in('id', proposalJobIds);
+
+                        if (cancelled) return;
+
+                        if (proposalJobsError) {
+                            console.warn('[Messages] Failed proposal job lookup for conversation title fallback', proposalJobsError);
+                        } else {
+                            for (const job of (proposalJobsData ?? []) as Array<JobTitleLookupRow>) {
+                                if (!job?.id) continue;
+                                jobsById[job.id] = job;
+
+                                const normalizedTitle = typeof job.title === 'string' ? job.title.trim() : '';
+                                if (normalizedTitle && !jobTitleById[job.id]) {
+                                    jobTitleById[job.id] = normalizedTitle;
+                                }
+                            }
+                        }
+                    }
+
+                    const getProposalPriority = (status: string | null | undefined) => {
+                        switch (String(status || '').trim().toLowerCase()) {
+                            case 'accepted':
+                                return 5;
+                            case 'shortlisted':
+                                return 4;
+                            case 'pending':
+                            case 'new':
+                                return 3;
+                            case 'submitted':
+                                return 2;
+                            case 'rejected':
+                            case 'withdrawn':
+                            case 'archived':
+                                return 1;
+                            default:
+                                return 0;
+                        }
+                    };
+
+                    const pickPreferredProposal = (
+                        current: { jobId: string | null; title: string | null; proposalId: string | null; priority: number; createdAt: number } | undefined,
+                        candidate: { jobId: string | null; title: string | null; proposalId: string | null; priority: number; createdAt: number },
+                    ) => {
+                        if (!current) return candidate;
+                        if (candidate.priority !== current.priority) {
+                            return candidate.priority > current.priority ? candidate : current;
+                        }
+                        return candidate.createdAt > current.createdAt ? candidate : current;
+                    };
+
+                    const bestProposalByPartnerId: Record<string, {
+                        jobId: string | null;
+                        title: string | null;
+                        proposalId: string | null;
+                        priority: number;
+                        createdAt: number;
+                    }> = {};
+
+                    for (const proposal of proposalRows) {
+                        const proposalId = typeof proposal.id === 'string' ? proposal.id : '';
+                        const jobId = typeof proposal.job_id === 'string' ? proposal.job_id.trim() : '';
+                        if (!proposalId || !jobId) continue;
+
+                        const job = jobsById[jobId];
+                        if (!job) continue;
+
+                        const title = typeof job.title === 'string' ? job.title.trim() : '';
+                        if (!title) continue;
+
+                        let partnerId: string | null = null;
+                        if (proposal.freelancer_id === user.id) {
+                            const jobClientId = typeof job.client_id === 'string' ? job.client_id : '';
+                            if (jobClientId && partnerIds.includes(jobClientId)) {
+                                partnerId = jobClientId;
+                            }
+                        } else {
+                            const freelancerId = typeof proposal.freelancer_id === 'string' ? proposal.freelancer_id : '';
+                            const jobClientId = typeof job.client_id === 'string' ? job.client_id : '';
+                            if (freelancerId && partnerIds.includes(freelancerId) && jobClientId === user.id) {
+                                partnerId = freelancerId;
+                            }
+                        }
+
+                        if (!partnerId) continue;
+
+                        const createdAt = Date.parse(String(proposal.created_at || ''));
+                        bestProposalByPartnerId[partnerId] = pickPreferredProposal(bestProposalByPartnerId[partnerId], {
+                            jobId,
+                            title,
+                            proposalId,
+                            priority: getProposalPriority(proposal.status),
+                            createdAt: Number.isFinite(createdAt) ? createdAt : 0,
+                        });
+                    }
+
+                    for (const conversationContractId of conversationIdsNeedingPartnerProposalFallback) {
+                        const partnerId = partnerIdByConversationContractId[conversationContractId];
+                        if (!partnerId) continue;
+
+                        const fallback = bestProposalByPartnerId[partnerId];
+                        if (!fallback) continue;
+
+                        partnerProposalFallbackByConversationContractId[conversationContractId] = {
+                            jobId: fallback.jobId,
+                            title: fallback.title,
+                            proposalId: fallback.proposalId,
+                        };
+                    }
+                }
+            }
+
             const nextStatuses: Record<string, ContractMessagingStatus> = {};
             const nextMeta: Record<string, ContractSessionMeta> = {};
             for (const contractId of contractConversationIds) {
@@ -1900,7 +2307,14 @@ function MessagesComponent() {
                 if (!row) continue;
 
                 const existingTitle = typeof row.title === 'string' ? row.title.trim() : '';
-                const resolvedTitle = existingTitle || (row.job_id ? jobTitleById[row.job_id] : '') || null;
+                const partnerFallback = partnerProposalFallbackByConversationContractId[conversationContractId];
+                const resolvedJobId = (typeof row.job_id === 'string' ? row.job_id.trim() : '')
+                    || (typeof row.proposal_id === 'string' ? proposalJobIdByProposalId[row.proposal_id] || '' : '')
+                    || (partnerFallback?.jobId || '');
+                const resolvedTitle = existingTitle
+                    || (resolvedJobId ? jobTitleById[resolvedJobId] : '')
+                    || partnerFallback?.title
+                    || null;
 
                 nextStatuses[conversationContractId] = normalizeContractStatus(row.status);
                 nextMeta[conversationContractId] = {
@@ -1911,8 +2325,8 @@ function MessagesComponent() {
                     total_amount: row.total_amount ?? null,
                     client_id: row.client_id ?? null,
                     freelancer_id: row.freelancer_id ?? null,
-                    job_id: row.job_id ?? null,
-                    proposal_id: row.proposal_id ?? null,
+                    job_id: resolvedJobId || null,
+                    proposal_id: row.proposal_id ?? partnerFallback?.proposalId ?? null,
                     linked_contract_id: row.id ?? null,
                 };
             }
@@ -1921,8 +2335,9 @@ function MessagesComponent() {
                 if (nextMeta[unresolvedId]) continue;
 
                 const jobIdFromProposal = proposalJobIdByProposalId[unresolvedId] || null;
-                const resolvedJobId = jobIdFromProposal || unresolvedId;
-                const resolvedTitle = jobTitleById[resolvedJobId] || null;
+                const partnerFallback = partnerProposalFallbackByConversationContractId[unresolvedId];
+                const resolvedJobId = jobIdFromProposal || partnerFallback?.jobId || unresolvedId;
+                const resolvedTitle = jobTitleById[resolvedJobId] || partnerFallback?.title || null;
 
                 if (!resolvedTitle) continue;
 
@@ -1935,7 +2350,7 @@ function MessagesComponent() {
                     client_id: null,
                     freelancer_id: null,
                     job_id: resolvedJobId,
-                    proposal_id: jobIdFromProposal ? unresolvedId : null,
+                    proposal_id: jobIdFromProposal ? unresolvedId : partnerFallback?.proposalId ?? null,
                     linked_contract_id: null,
                 };
             }
@@ -1977,10 +2392,21 @@ function MessagesComponent() {
     useEffect(() => {
         if (!user?.id || !routeContractId || isLoadingConversations) return;
 
-        const hasExistingContractConversation = conversations.some(
+        if (!isUuidLike(routeContractId)) {
+            console.warn('[Messages] Ignoring invalid contract route id', routeContractId);
+            navigate('/messages', { replace: true, state: null });
+            return;
+        }
+
+        // If the conversation is already in state, auto-select it and clean up the URL.
+        const existingContractConversation = conversations.find(
             (conversation) => conversation.contract_id === routeContractId
         );
-        if (hasExistingContractConversation) return;
+        if (existingContractConversation) {
+            void handleSelectConversation(existingContractConversation);
+            navigate('/messages', { replace: true, state: null });
+            return;
+        }
 
         const attemptKey = `${user.id}:${routeContractId}`;
         if (contractBootstrapAttemptsRef.current.has(attemptKey)) return;
@@ -2047,7 +2473,7 @@ function MessagesComponent() {
                 }
             }
 
-            let otherUserId: string | null = routeOtherUserId || null;
+            let otherUserId: string | null = isUuidLike(routeOtherUserId) ? routeOtherUserId : null;
 
             if (!otherUserId) {
                 const { data: contractRow, error: contractError } = await supabase
@@ -2137,6 +2563,24 @@ function MessagesComponent() {
                 return;
             }
 
+            const insertedContractConversation = await createContractConversationFallback(
+                user.id,
+                otherUserId,
+                routeContractId,
+            );
+
+            if (cancelled) return;
+
+            if (insertedContractConversation) {
+                setConversations((prev) => {
+                    const withoutExisting = prev.filter((conversation) => conversation.id !== insertedContractConversation.id);
+                    return sortConversationsByActivity([...withoutExisting, insertedContractConversation]);
+                });
+                await handleSelectConversation(insertedContractConversation);
+                navigate('/messages', { replace: true, state: null });
+                return;
+            }
+
             // Final fallback: if contract-linked thread cannot be resolved on this DB revision,
             // open/create a direct thread with the same partner instead of leaving an empty screen.
             let fallbackDirectRpc = await supabase.rpc('get_or_create_conversation', {
@@ -2178,6 +2622,29 @@ function MessagesComponent() {
                 }
             }
 
+            const fallbackPairConversation = await fetchConversationByParticipants(user.id, otherUserId);
+            if (cancelled) return;
+
+            if (fallbackPairConversation) {
+                setConversations((prev) => {
+                    const withoutExisting = prev.filter((conversation) => conversation.id !== fallbackPairConversation.id);
+                    return sortConversationsByActivity([...withoutExisting, fallbackPairConversation]);
+                });
+                await handleSelectConversation(fallbackPairConversation);
+                navigate('/messages', { replace: true, state: null });
+                return;
+            }
+
+            showToast(
+                tx(
+                    'pages.messages.contractOpenFailed',
+                    undefined,
+                    'Could not open this contract thread yet. Please refresh and try again.',
+                ),
+                'warning',
+            );
+            navigate('/messages', { replace: true, state: null });
+
             contractBootstrapAttemptsRef.current.delete(attemptKey);
         };
 
@@ -2194,8 +2661,11 @@ function MessagesComponent() {
         conversations,
         activeMode,
         profile?.active_mode,
+        // handleSelectConversation is memoized via useCallback — safe to include.
         handleSelectConversation,
         navigate,
+        showToast,
+        tx,
     ]);
 
     // Auto-select conversation from URL params or navigation state.
@@ -3079,9 +3549,7 @@ function MessagesComponent() {
         if (searchQuery) {
             const normalizedQuery = searchQuery.toLowerCase();
             const byName = c.otherUser.full_name.toLowerCase().includes(normalizedQuery);
-            const contractTitle = c.contract_id
-                ? (contractSessionMetaById[c.contract_id]?.title || '').toLowerCase()
-                : '';
+            const contractTitle = getResolvedContractTitle(c).toLowerCase();
             if (!byName && !contractTitle.includes(normalizedQuery)) return false;
         }
         return true;
@@ -3535,7 +4003,10 @@ function MessagesComponent() {
                         ) : null}
                     </div>
 
-                    {selectedConversationPolicy && selectedConversationPolicy.bannerTone !== 'none' && selectedConversationPolicy.bannerFallback ? (
+                    {selectedConversationPolicy
+                        && selectedConversationPolicy.bannerTone !== 'none'
+                        && selectedConversationPolicy.bannerFallback
+                        && (selectedConversationPolicy.contractStatus !== 'unknown' || showUnknownContractBanner) ? (
                         <div className={`mx-4 md:mx-6 mt-4 rounded-xl border px-3 py-2 text-xs flex items-start gap-2 ${getLifecycleBannerClassName(selectedConversationPolicy.bannerTone)}`}>
                             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                             <p>
@@ -4269,5 +4740,3 @@ export default function Messages() {
         </ErrorBoundary>
     );
 }
-
-

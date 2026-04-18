@@ -23,6 +23,8 @@ type ProposalRow = {
     id: string;
     title: string | null;
     status: string | null;
+    client_id?: string | null;
+    freelancer_id?: string | null;
   } | null;
 };
 
@@ -32,6 +34,8 @@ type ContractLinkRow = {
   job_id: string | null;
   title: string | null;
   status: string | null;
+  client_id: string | null;
+  freelancer_id: string | null;
 };
 
 const TAB_STATUS_MAP: Record<ProposalTab, string[]> = {
@@ -49,6 +53,12 @@ const normalizeToTab = (status: string): ProposalTab => {
 };
 
 type Tx = (key: string, params?: Record<string, string | number>, fallback?: string) => string;
+
+const buildContractThreadPath = (contractId: string, otherUserId?: string | null) => {
+  const encodedContractId = encodeURIComponent(contractId);
+  const encodedOtherUserId = otherUserId ? encodeURIComponent(otherUserId) : null;
+  return `/messages?contract=${encodedContractId}${encodedOtherUserId ? `&with=${encodedOtherUserId}` : ''}`;
+};
 
 const getStatusLabel = (status: string, tx: Tx) => {
   if (normalizeToTab(status) === "accepted") return tx("pages.myProposals.accepted", undefined, "Accepted");
@@ -124,11 +134,34 @@ export default function MyProposals() {
 
       const { data: contractsData } = await supabase
         .from("contracts")
-        .select("id, proposal_id, job_id, title, status")
+        .select("*")
         .eq("freelancer_id", user.id);
 
       (contractsData ?? []).forEach((contract) => {
-        const row = contract as ContractLinkRow;
+        const row = {
+          id: String((contract as Record<string, unknown>).id ?? ''),
+          proposal_id: typeof (contract as Record<string, unknown>).proposal_id === 'string'
+            ? ((contract as Record<string, unknown>).proposal_id as string)
+            : null,
+          job_id: typeof (contract as Record<string, unknown>).job_id === 'string'
+            ? ((contract as Record<string, unknown>).job_id as string)
+            : null,
+          title: typeof (contract as Record<string, unknown>).title === 'string'
+            ? ((contract as Record<string, unknown>).title as string)
+            : null,
+          status: typeof (contract as Record<string, unknown>).status === 'string'
+            ? ((contract as Record<string, unknown>).status as string)
+            : null,
+          client_id: typeof (contract as Record<string, unknown>).client_id === 'string'
+            ? ((contract as Record<string, unknown>).client_id as string)
+            : null,
+          freelancer_id: typeof (contract as Record<string, unknown>).freelancer_id === 'string'
+            ? ((contract as Record<string, unknown>).freelancer_id as string)
+            : null,
+        } as ContractLinkRow;
+
+        if (!row.id) return;
+
         if (row.proposal_id) {
           contractsByProposalId.set(row.proposal_id, row);
         }
@@ -179,6 +212,45 @@ export default function MyProposals() {
     const days = Math.floor(hours / 24);
     if (days === 1) return tx("pages.myProposals.oneDayAgo", undefined, "1 day ago");
     return tx("pages.myProposals.daysAgo", { days }, `${days} days ago`);
+  };
+
+  const openAcceptedProposalContract = async (proposal: ProposalRow) => {
+    const linkedContractId = proposal.linked_contract?.id ?? null;
+    const linkedOtherUserId = proposal.linked_contract?.client_id ?? null;
+
+    if (linkedContractId) {
+      navigate(buildContractThreadPath(linkedContractId, linkedOtherUserId));
+      return;
+    }
+
+    if (!user?.id) {
+      navigate('/contracts');
+      return;
+    }
+
+    let contractQuery = supabase
+      .from('contracts')
+      .select('id, client_id, proposal_id, job_id, created_at')
+      .eq('freelancer_id', user.id);
+
+    if (proposal.job_id) {
+      contractQuery = contractQuery.or(`proposal_id.eq.${proposal.id},job_id.eq.${proposal.job_id}`);
+    } else {
+      contractQuery = contractQuery.eq('proposal_id', proposal.id);
+    }
+
+    const { data: resolvedContracts } = await contractQuery
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    const resolvedContract = Array.isArray(resolvedContracts) ? resolvedContracts[0] : null;
+
+    if (resolvedContract?.id) {
+      navigate(buildContractThreadPath(resolvedContract.id, resolvedContract.client_id ?? null));
+      return;
+    }
+
+    navigate('/contracts');
   };
 
   const tabLabel = (tab: ProposalTab) => {
@@ -310,10 +382,11 @@ export default function MyProposals() {
             {proposals.map(proposal => {
               const isAccepted = normalizeToTab(proposal.status) === "accepted";
               const contractId = proposal.linked_contract?.id ?? null;
+              const contractOtherUserId = proposal.linked_contract?.client_id || null;
               const hasLiveJob = Boolean(proposal.jobs?.id);
               const targetPath = contractId
-                ? `/contracts/${contractId}`
-                : hasLiveJob
+                ? buildContractThreadPath(contractId, contractOtherUserId)
+                : !isAccepted && hasLiveJob
                   ? `/jobs/${proposal.jobs?.id}`
                   : null;
 
@@ -334,9 +407,25 @@ export default function MyProposals() {
                       ? "color-mix(in srgb, var(--color-status-success) 35%, transparent)"
                       : "color-mix(in srgb, var(--border) 70%, transparent)",
                   }}
-                  onClick={() => { if (targetPath) navigate(targetPath); }}
+                  onClick={() => {
+                    if (isAccepted && !contractId) {
+                      void openAcceptedProposalContract(proposal);
+                      return;
+                    }
+
+                    if (targetPath) navigate(targetPath);
+                  }}
                   role="button" tabIndex={0}
-                  onKeyDown={e => { if (e.key === "Enter" && targetPath) navigate(targetPath); }}>
+                  onKeyDown={e => {
+                    if (e.key !== 'Enter') return;
+
+                    if (isAccepted && !contractId) {
+                      void openAcceptedProposalContract(proposal);
+                      return;
+                    }
+
+                    if (targetPath) navigate(targetPath);
+                  }}>
 
                   {/* Accent bar */}
                   <div className="h-1 w-full" style={{
@@ -388,7 +477,12 @@ export default function MyProposals() {
                         <button type="button"
                           onClick={e => {
                             e.stopPropagation();
-                            navigate(contractId ? `/contracts/${contractId}` : "/contracts");
+                            if (contractId) {
+                              navigate(buildContractThreadPath(contractId, contractOtherUserId));
+                              return;
+                            }
+
+                            void openAcceptedProposalContract(proposal);
                           }}
                           className="flex items-center gap-1 text-sm font-bold hover:opacity-80"
                           style={{ color: "var(--color-status-success)" }}>

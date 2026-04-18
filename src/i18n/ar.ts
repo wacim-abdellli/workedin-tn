@@ -979,7 +979,9 @@ export const ar = {
         "revisionSent": "تم إرسال طلب التعديلات",
         "error": "حدث خطأ",
         "disputeError": "حدث خطأ في فتح النزاع",
-        "reviewSent": "تم إرسال تقييمك بنجاح"
+        "reviewSent": "تم إرسال تقييمك بنجاح",
+        "statusUnavailable": "الحالة غير متاحة",
+        "statusUnavailableHint": "بيانات الحالة غير متاحة مؤقتاً. تظل هذه المحادثة متاحة."
     },
     "jobMatches": {
         "searchError": "حدث خطأ في البحث عن تطابقات",
@@ -1678,7 +1680,12 @@ export const ar = {
             "edited": "تم التعديل",
             "readOnlyThread": "{{message}}",
             "readOnlyPlaceholder": "{{message}}",
-            "lifecycleBanner": "{{message}}"
+            "lifecycleBanner": "{{message}}",
+            "contractSessionFallbackTitle": "العقد",
+            "contractReferenceFallback": "العقد",
+            "contractReferenceWithId": "العقد #{{id}}",
+            "contractWithName": "عقد مع {{name}}",
+            "contractProjectWithTitle": "مشروع العقد • {{title}}"
         },
         "freelancerProfile": {
             "actions": {

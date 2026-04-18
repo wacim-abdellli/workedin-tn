@@ -981,7 +981,9 @@ export const en: Translations = {
         "revisionSent": "Revision request sent",
         "error": "An error occurred",
         "disputeError": "Error opening dispute",
-        "reviewSent": "Review submitted successfully"
+        "reviewSent": "Review submitted successfully",
+        "statusUnavailable": "Status unavailable",
+        "statusUnavailableHint": "Status is temporarily unavailable. This chat is still available."
     },
     "jobMatches": {
         "searchError": "Error searching for matches",
@@ -1680,7 +1682,12 @@ export const en: Translations = {
             "edited": "Edited",
             "readOnlyThread": "{{message}}",
             "readOnlyPlaceholder": "{{message}}",
-            "lifecycleBanner": "{{message}}"
+            "lifecycleBanner": "{{message}}",
+            "contractSessionFallbackTitle": "Contract",
+            "contractReferenceFallback": "Contract",
+            "contractReferenceWithId": "Contract #{{id}}",
+            "contractWithName": "Contract with {{name}}",
+            "contractProjectWithTitle": "Contract project • {{title}}"
         },
         "freelancerProfile": {
             "actions": {

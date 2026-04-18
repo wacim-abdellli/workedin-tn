@@ -24,10 +24,33 @@ const messageServiceMocks = vi.hoisted(() => ({
 }));
 
 const supabaseState = vi.hoisted(() => ({
-    contractRows: [] as Array<{ id: string; status: string | null }>,
+    contractRows: [] as Array<{
+        id: string;
+        status: string | null;
+        title?: string | null;
+        amount?: number | null;
+        total_amount?: number | null;
+        client_id?: string | null;
+        freelancer_id?: string | null;
+        job_id?: string | null;
+        proposal_id?: string | null;
+        created_at?: string | null;
+    }>,
+    proposalRows: [] as Array<{
+        id: string;
+        job_id: string | null;
+        freelancer_id?: string | null;
+        status?: string | null;
+        created_at?: string | null;
+    }>,
+    jobRows: [] as Array<{ id: string; title: string | null; client_id?: string | null }>,
     contractError: null as { message: string } | null,
+    contractMissingTotalAmountError: false,
     fromCalls: [] as string[],
     requestedContractIds: [] as string[][],
+    requestedProposalIds: [] as string[][],
+    requestedJobIds: [] as string[][],
+    contractSelectColumns: [] as string[],
     channelNames: [] as string[],
 }));
 
@@ -128,25 +151,73 @@ vi.mock('@/lib/supabase', () => ({
     supabase: {
         from: vi.fn((table: string) => {
             supabaseState.fromCalls.push(table);
-
-            if (table !== 'contracts') {
-                throw new Error(`Unexpected supabase table access in Messages lifecycle test: ${table}`);
-            }
+            let selectedColumns = '';
 
             const builder = {
-                select: vi.fn(() => builder),
-                in: vi.fn(async (_column: string, ids: string[]) => {
-                    supabaseState.requestedContractIds.push([...ids]);
+                select: vi.fn((columns?: string) => {
+                    selectedColumns = typeof columns === 'string' ? columns : '';
+                    if (table === 'contracts' && selectedColumns) {
+                        supabaseState.contractSelectColumns.push(selectedColumns);
+                    }
+                    return builder;
+                }),
+                in: vi.fn(async (column: string, ids: string[]) => {
+                    if (table === 'contracts') {
+                        supabaseState.requestedContractIds.push([...ids]);
 
-                    if (supabaseState.contractError) {
-                        return { data: null, error: supabaseState.contractError };
+                        if (
+                            supabaseState.contractMissingTotalAmountError
+                            && selectedColumns.includes('total_amount')
+                        ) {
+                            return {
+                                data: null,
+                                error: { message: 'column contracts.total_amount does not exist' },
+                            };
+                        }
+
+                        if (supabaseState.contractError) {
+                            return { data: null, error: supabaseState.contractError };
+                        }
+
+                        return {
+                            data: supabaseState.contractRows.filter((row) => {
+                                if (column === 'id') return ids.includes(row.id);
+                                if (column === 'proposal_id') return ids.includes(row.proposal_id || '');
+                                if (column === 'job_id') return ids.includes(row.job_id || '');
+                                if (column === 'client_id') return ids.includes(row.client_id || '');
+                                if (column === 'freelancer_id') return ids.includes(row.freelancer_id || '');
+                                return false;
+                            }),
+                            error: null,
+                        };
                     }
 
-                    return {
-                        data: supabaseState.contractRows.filter((row) => ids.includes(row.id)),
-                        error: null,
-                    };
+                    if (table === 'proposals') {
+                        supabaseState.requestedProposalIds.push([...ids]);
+                        return {
+                            data: supabaseState.proposalRows.filter((row) => {
+                                if (column === 'id') return ids.includes(row.id);
+                                if (column === 'freelancer_id') return ids.includes(row.freelancer_id || '');
+                                return false;
+                            }),
+                            error: null,
+                        };
+                    }
+
+                    if (table === 'jobs') {
+                        supabaseState.requestedJobIds.push([...ids]);
+                        return {
+                            data: supabaseState.jobRows.filter((row) => {
+                                if (column === 'id') return ids.includes(row.id);
+                                return false;
+                            }),
+                            error: null,
+                        };
+                    }
+
+                    throw new Error(`Unexpected supabase table access in Messages lifecycle test: ${table}`);
                 }),
+                eq: vi.fn(() => builder),
             };
 
             return builder;
@@ -296,12 +367,35 @@ function setScenario({
     conversation,
     threadMessages,
     contractRows = [],
+    proposalRows = [],
+    jobRows = [],
 }: {
     conversation: ReturnType<typeof createConversation>;
     threadMessages: Array<ReturnType<typeof createMessage>>;
-    contractRows?: Array<{ id: string; status: string | null }>;
+    contractRows?: Array<{
+        id: string;
+        status: string | null;
+        title?: string | null;
+        amount?: number | null;
+        total_amount?: number | null;
+        client_id?: string | null;
+        freelancer_id?: string | null;
+        job_id?: string | null;
+        proposal_id?: string | null;
+        created_at?: string | null;
+    }>;
+    proposalRows?: Array<{
+        id: string;
+        job_id: string | null;
+        freelancer_id?: string | null;
+        status?: string | null;
+        created_at?: string | null;
+    }>;
+    jobRows?: Array<{ id: string; title: string | null; client_id?: string | null }>;
 }) {
     supabaseState.contractRows = contractRows;
+    supabaseState.proposalRows = proposalRows;
+    supabaseState.jobRows = jobRows;
 
     messageServiceMocks.getConversations.mockResolvedValue({
         data: [conversation],
@@ -331,12 +425,33 @@ async function renderSelectedScenario({
     conversation,
     threadMessages,
     contractRows = [],
+    proposalRows = [],
+    jobRows = [],
 }: {
     conversation: ReturnType<typeof createConversation>;
     threadMessages: Array<ReturnType<typeof createMessage>>;
-    contractRows?: Array<{ id: string; status: string | null }>;
+    contractRows?: Array<{
+        id: string;
+        status: string | null;
+        title?: string | null;
+        amount?: number | null;
+        total_amount?: number | null;
+        client_id?: string | null;
+        freelancer_id?: string | null;
+        job_id?: string | null;
+        proposal_id?: string | null;
+        created_at?: string | null;
+    }>;
+    proposalRows?: Array<{
+        id: string;
+        job_id: string | null;
+        freelancer_id?: string | null;
+        status?: string | null;
+        created_at?: string | null;
+    }>;
+    jobRows?: Array<{ id: string; title: string | null; client_id?: string | null }>;
 }) {
-    setScenario({ conversation, threadMessages, contractRows });
+    setScenario({ conversation, threadMessages, contractRows, proposalRows, jobRows });
     const view = renderMessages(`/messages?conversation=${conversation.id}`);
 
     await waitFor(() => {
@@ -369,9 +484,15 @@ describe('Messages lifecycle', () => {
         }
 
         supabaseState.contractRows = [];
+        supabaseState.proposalRows = [];
+        supabaseState.jobRows = [];
         supabaseState.contractError = null;
+        supabaseState.contractMissingTotalAmountError = false;
         supabaseState.fromCalls = [];
         supabaseState.requestedContractIds = [];
+        supabaseState.requestedProposalIds = [];
+        supabaseState.requestedJobIds = [];
+        supabaseState.contractSelectColumns = [];
         supabaseState.channelNames = [];
 
         audioRecorderMocks.state.isRecording = false;
@@ -505,6 +626,187 @@ describe('Messages lifecycle', () => {
         expect(audioRecorderMocks.startRecording).toHaveBeenCalledTimes(1);
     });
 
+    it('resolves the contract title from the proposal job when the contract row has no job_id', async () => {
+        const conversation = createConversation({
+            id: 'conv-proposal-fallback',
+            name: 'Proposal Linked User',
+            contractId: 'contract-proposal-fallback',
+            otherUserId: 'freelancer-2',
+        });
+        const threadMessages = [
+            createMessage({
+                id: 'msg-proposal-fallback',
+                conversationId: conversation.id,
+                content: 'Proposal linked contract thread message',
+                senderId: 'freelancer-2',
+                receiverId: 'user-1',
+                contractId: 'contract-proposal-fallback',
+            }),
+        ];
+
+        await renderSelectedScenario({
+            conversation,
+            threadMessages,
+            contractRows: [{
+                id: 'contract-proposal-fallback',
+                status: 'active',
+                title: null,
+                job_id: null,
+                proposal_id: 'proposal-42',
+                created_at: '2026-04-15T09:00:00.000Z',
+            }],
+            proposalRows: [{
+                id: 'proposal-42',
+                job_id: 'job-42',
+            }],
+            jobRows: [{
+                id: 'job-42',
+                title: 'Landing Page Refresh',
+            }],
+        });
+
+        await waitFor(() => {
+            expect(supabaseState.requestedProposalIds).toEqual(expect.arrayContaining([['proposal-42']]));
+            expect(supabaseState.requestedJobIds).toEqual(expect.arrayContaining([['job-42']]));
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByText(/Unknown Project/i)).not.toBeInTheDocument();
+        });
+
+        expect(screen.getAllByText(/Landing Page Refresh/i).length).toBeGreaterThan(0);
+    });
+
+    it('falls back to the legacy contract select when total_amount is missing from the schema', async () => {
+        const conversation = createConversation({
+            id: 'conv-legacy-contract-schema',
+            name: 'ija lenna',
+            contractId: 'contract-legacy-schema',
+            otherUserId: 'freelancer-4',
+        });
+        const threadMessages = [
+            createMessage({
+                id: 'msg-legacy-contract-schema',
+                conversationId: conversation.id,
+                content: 'Legacy schema contract thread message',
+                senderId: 'freelancer-4',
+                receiverId: 'user-1',
+                contractId: 'contract-legacy-schema',
+            }),
+        ];
+
+        supabaseState.contractMissingTotalAmountError = true;
+
+        await renderSelectedScenario({
+            conversation,
+            threadMessages,
+            contractRows: [{
+                id: 'contract-legacy-schema',
+                status: 'active',
+                title: 'Legacy Schema Contract',
+                amount: 1200,
+            }],
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByText(/Unknown Project/i)).not.toBeInTheDocument();
+        });
+
+        expect(screen.getAllByText(/Legacy Schema Contract/i).length).toBeGreaterThan(0);
+        expect(
+            supabaseState.contractSelectColumns.some((columns) => columns.includes('total_amount'))
+        ).toBe(true);
+        expect(
+            supabaseState.contractSelectColumns.some((columns) => !columns.includes('total_amount'))
+        ).toBe(true);
+    });
+
+    it('falls back to the partner proposal title when a contract conversation id cannot resolve directly', async () => {
+        const conversation = createConversation({
+            id: 'conv-orphan-contract',
+            name: 'ija lenna',
+            contractId: 'orphan-contract-id',
+            otherUserId: 'freelancer-3',
+        });
+        const threadMessages = [
+            createMessage({
+                id: 'msg-orphan-contract',
+                conversationId: conversation.id,
+                content: 'No messages yet',
+                senderId: 'freelancer-3',
+                receiverId: 'user-1',
+                contractId: 'orphan-contract-id',
+            }),
+        ];
+
+        await renderSelectedScenario({
+            conversation,
+            threadMessages,
+            contractRows: [],
+            proposalRows: [{
+                id: 'proposal-88',
+                job_id: 'job-88',
+                freelancer_id: 'freelancer-3',
+                status: 'accepted',
+                created_at: '2026-04-16T10:00:00.000Z',
+            }],
+            jobRows: [{
+                id: 'job-88',
+                title: 'Archive Smoke and Test Job',
+                client_id: 'user-1',
+            }],
+        });
+
+        await waitFor(() => {
+            expect(supabaseState.requestedProposalIds).toEqual(expect.arrayContaining([['freelancer-3']]));
+            expect(supabaseState.requestedJobIds).toEqual(expect.arrayContaining([['job-88']]));
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByText(/Unknown Project/i)).not.toBeInTheDocument();
+        });
+
+        expect(screen.getAllByText(/Archive Smoke and Test Job/i).length).toBeGreaterThan(0);
+    });
+
+    it('falls back to the counterparty name when no contract title can be resolved', async () => {
+        const conversation = createConversation({
+            id: 'conv-name-fallback',
+            name: 'ija lenna',
+            contractId: 'contract-name-fallback',
+            otherUserId: 'freelancer-5',
+        });
+        const threadMessages = [
+            createMessage({
+                id: 'msg-name-fallback',
+                conversationId: conversation.id,
+                content: 'Name fallback contract thread message',
+                senderId: 'freelancer-5',
+                receiverId: 'user-1',
+                contractId: 'contract-name-fallback',
+            }),
+        ];
+
+        await renderSelectedScenario({
+            conversation,
+            threadMessages,
+            contractRows: [],
+            proposalRows: [],
+            jobRows: [],
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByText(/Unknown Project/i)).not.toBeInTheDocument();
+        });
+
+        expect(screen.getAllByText(/Contract with ija lenna/i).length).toBeGreaterThan(0);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Open Contract' }));
+
+        expect(await screen.findByText('Status unavailable')).toBeInTheDocument();
+        expect(screen.getByText('Status is temporarily unavailable. This chat is still available.')).toBeInTheDocument();
+    });
+
     it.each([
         {
             label: 'pending payment',
@@ -517,12 +819,6 @@ describe('Messages lifecycle', () => {
             contractRows: [{ id: 'contract-disputed', status: 'disputed' }],
             banner: 'This contract is under dispute. Keep all messages focused on resolution details.',
             classToken: 'border-amber-500/40',
-        },
-        {
-            label: 'unknown',
-            contractRows: [],
-            banner: 'Contract status is currently unavailable. Messaging remains open.',
-            classToken: 'border-blue-500/40',
         },
     ])('shows a $label banner but keeps the contract thread writable', async ({
         label,
@@ -560,6 +856,37 @@ describe('Messages lifecycle', () => {
         expect(screen.getByRole('button', { name: 'Attach file' })).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Start recording' })).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Reply to message' })).toBeInTheDocument();
+    });
+
+    it('delays the unknown-status banner before showing it', async () => {
+        const contractId = 'contract-unknown';
+        const conversation = createConversation({
+            id: 'conv-unknown',
+            name: 'unknown user',
+            contractId,
+        });
+        const threadMessages = [
+            createMessage({
+                id: 'msg-unknown',
+                conversationId: conversation.id,
+                content: 'unknown contract thread message',
+                contractId,
+            }),
+        ];
+
+        await renderSelectedScenario({ conversation, threadMessages, contractRows: [] });
+
+        await waitFor(() => {
+            expect(supabaseState.requestedContractIds).toEqual(expect.arrayContaining([[contractId]]));
+        });
+
+        expect(screen.queryByText('Contract status is currently unavailable. Messaging remains open.')).not.toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(screen.getByText('Contract status is currently unavailable. Messaging remains open.')).toBeInTheDocument();
+        }, { timeout: 2500 });
+
+        expect(screen.getByPlaceholderText('Type a message...')).toBeEnabled();
     });
 
     it.each([

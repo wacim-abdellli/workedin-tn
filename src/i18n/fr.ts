@@ -981,7 +981,9 @@ export const fr: Translations = {
         "revisionSent": "Demande de révision envoyée",
         "error": "Une erreur s'est produite",
         "disputeError": "Erreur lors de l'ouverture du litige",
-        "reviewSent": "Avis envoyé avec succès"
+        "reviewSent": "Avis envoyé avec succès",
+        "statusUnavailable": "Statut indisponible",
+        "statusUnavailableHint": "Les données du statut sont temporairement indisponibles. Cette discussion reste disponible."
     },
     "jobMatches": {
         "searchError": "Erreur lors de la recherche de correspondances",
@@ -1680,7 +1682,12 @@ export const fr: Translations = {
             "edited": "Modifié",
             "readOnlyThread": "{{message}}",
             "readOnlyPlaceholder": "{{message}}",
-            "lifecycleBanner": "{{message}}"
+            "lifecycleBanner": "{{message}}",
+            "contractSessionFallbackTitle": "Contrat",
+            "contractReferenceFallback": "Contrat",
+            "contractReferenceWithId": "Contrat #{{id}}",
+            "contractWithName": "Contrat avec {{name}}",
+            "contractProjectWithTitle": "Projet du contrat • {{title}}"
         },
         "freelancerProfile": {
             "actions": {

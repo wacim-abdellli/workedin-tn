@@ -237,7 +237,7 @@ export default function ContractDetailsSidebar({
 
         return {
             chipClass: 'border-[#4b5466] bg-[#2d3442] text-gray-200',
-            label: tx('contract.statusUnknown', undefined, 'Unknown status'),
+            label: tx('contract.statusUnavailable', undefined, 'Status unavailable'),
         };
     }, [contractText.disputeOpened, contractText.inProgress, normalizedContractStatus, tx]);
 
@@ -258,7 +258,7 @@ export default function ContractDetailsSidebar({
                         ? tx('contract.statusPendingPaymentHint', undefined, 'Payment confirmation is pending. Messaging stays open during processing.')
                         : normalizedContractStatus === 'cancelled' || normalizedContractStatus === 'canceled'
                             ? tx('contract.statusCancelledHint', undefined, 'Contract is cancelled. Historical details remain available below.')
-                            : tx('contract.statusUnknownHint', undefined, 'Status metadata is not fully synced yet. This chat is still available.');
+                            : tx('contract.statusUnavailableHint', undefined, 'Status is temporarily unavailable. This chat is still available.');
 
     if (!contract) return null;
 

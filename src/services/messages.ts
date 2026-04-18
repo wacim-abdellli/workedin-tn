@@ -31,6 +31,24 @@ function getConversationCacheKey(
     return [user1, user2].sort().join(':') + `:${contractId ?? 'none'}:${scope ?? 'auto'}`;
 }
 
+function extractConversationIdFromRpcPayload(payload: unknown) {
+    if (typeof payload === 'string' && payload.trim().length > 0) {
+        return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+        const candidate = payload as { id?: unknown; conversation_id?: unknown };
+        if (typeof candidate.id === 'string' && candidate.id.trim().length > 0) {
+            return candidate.id;
+        }
+        if (typeof candidate.conversation_id === 'string' && candidate.conversation_id.trim().length > 0) {
+            return candidate.conversation_id;
+        }
+    }
+
+    return null;
+}
+
 async function getOrCreateConversationId(
     user1: string,
     user2: string,
@@ -42,6 +60,35 @@ async function getOrCreateConversationId(
 
     if (cachedConversationId) {
         return { data: cachedConversationId, error: null };
+    }
+
+    if (contractId) {
+        const contractConversationResult = await supabaseWithRetry(
+            () => supabase.rpc('get_or_create_contract_conversation', {
+                p_contract_id: contractId,
+            }),
+            { throwOnError: false, timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
+        );
+
+        const contractConversationId = extractConversationIdFromRpcPayload(contractConversationResult.data);
+        if (!contractConversationResult.error && contractConversationId) {
+            conversationIdCache.set(cacheKey, contractConversationId);
+            return { data: contractConversationId, error: null };
+        }
+
+        const contractErrorMessage =
+            typeof contractConversationResult.error === 'object'
+            && contractConversationResult.error
+            && 'message' in contractConversationResult.error
+            && typeof contractConversationResult.error.message === 'string'
+                ? contractConversationResult.error.message.toLowerCase()
+                : '';
+        const shouldFallbackToGeneric = contractErrorMessage.includes('get_or_create_contract_conversation')
+            && contractErrorMessage.includes('does not exist');
+
+        if (!shouldFallbackToGeneric) {
+            return { data: null, error: contractConversationResult.error ?? new Error('Failed to resolve contract conversation') };
+        }
     }
 
     let { data, error } = await supabaseWithRetry(
@@ -75,11 +122,13 @@ async function getOrCreateConversationId(
         }
     }
 
-    if (!error && typeof data === 'string') {
-        conversationIdCache.set(cacheKey, data);
+    const conversationId = extractConversationIdFromRpcPayload(data);
+
+    if (!error && conversationId) {
+        conversationIdCache.set(cacheKey, conversationId);
     }
 
-    return { data: typeof data === 'string' ? data : null, error };
+    return { data: conversationId, error };
 }
 
 function normalizeMessageError(error: unknown) {

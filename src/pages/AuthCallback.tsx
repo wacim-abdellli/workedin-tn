@@ -24,11 +24,6 @@ const AuthCallback = () => {
 
     useEffect(() => {
         let cancelled = false;
-        const fallbackRedirect = window.setTimeout(() => {
-            if (!cancelled) {
-                window.location.replace('/');
-            }
-        }, 5000);
 
         const redirectToPostAuth = () => {
             window.location.replace(POST_AUTH_ROUTE);
@@ -172,7 +167,6 @@ const AuthCallback = () => {
 
         return () => {
             cancelled = true;
-            window.clearTimeout(fallbackRedirect);
             subscription.unsubscribe();
         };
     }, []);
