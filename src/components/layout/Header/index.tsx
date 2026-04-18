@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n";
 import { useWorkspaceStore } from "@/lib/workspaceState";
+import { resolveActiveWorkspace } from "@/lib/workspaceRoutes";
 import { NotificationBell, Logo } from "@/components/ui";
 import ComingSoonBanner from "@/components/common/ComingSoonBanner";
 import { getTotalUnreadCount, subscribeToConversations, type ConversationScope } from "@/services/messages";
@@ -43,8 +44,9 @@ const AUTH_ROUTES = [
  * Application header with responsive navigation, search, and workspace-aware actions.
  */
 export default function Header() {
-  const { user } = useAuth();
+  const { user, profile, freelancerProfile } = useAuth();
   const { activeWorkspace } = useWorkspaceStore();
+  const resolvedWorkspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
   const { t, dir, tx } = useTranslation();
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -58,7 +60,7 @@ export default function Header() {
 
   const conversationsChannelRef = useRef<RealtimeChannel | null>(null);
 
-  const isFreelancer = Boolean(user) && activeWorkspace === "freelancer";
+  const isFreelancer = Boolean(user) && resolvedWorkspace === "freelancer";
   const isAuthPage = AUTH_ROUTES.includes(pathname);
 
   /** Primary routes shown in freelancer workspace. */
@@ -110,7 +112,7 @@ export default function Header() {
 
   useEffect(() => {
     if (!user) return;
-    const unreadScopes: ConversationScope[] = activeWorkspace === 'freelancer'
+    const unreadScopes: ConversationScope[] = resolvedWorkspace === 'freelancer'
       ? ['freelancer', 'contract', 'shared']
       : ['client', 'contract', 'shared'];
 
@@ -142,7 +144,7 @@ export default function Header() {
       clearTimeout(timer);
       if (conversationsChannelRef.current) conversationsChannelRef.current.unsubscribe();
     };
-  }, [user?.id, activeWorkspace]);
+  }, [user?.id, resolvedWorkspace]);
 
   /** Toggle color theme and keep it persisted across visits. */
   const toggleTheme = () => {
@@ -187,7 +189,7 @@ export default function Header() {
         <div className="mx-auto max-w-[1536px] px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between lg:hidden">
             <button onClick={handleGoHome} className="flex items-center" aria-label={homeLabel}>
-              <Logo variant="full" size="sm" titleStyle="minimal" mode={activeWorkspace === 'freelancer' ? 'freelancer' : 'client'} />
+              <Logo variant="full" size="sm" titleStyle="minimal" mode={resolvedWorkspace === 'freelancer' ? 'freelancer' : 'client'} />
             </button>
             <div className="flex items-center gap-1.5">
               <button onClick={() => setSearchOpen(true)} className="header-icon-btn" aria-label={openSearchLabel}>
@@ -202,7 +204,7 @@ export default function Header() {
           <div className="hidden h-16 items-center gap-4 2xl:gap-6 lg:flex">
             <div className="flex shrink-0 items-center">
               <button onClick={handleGoHome} className="flex items-center transition-all hover:opacity-80" aria-label={homeLabel}>
-                <Logo variant="full" size="sm" titleStyle="minimal" mode={activeWorkspace === 'freelancer' ? 'freelancer' : 'client'} />
+                <Logo variant="full" size="sm" titleStyle="minimal" mode={resolvedWorkspace === 'freelancer' ? 'freelancer' : 'client'} />
               </button>
             </div>
 

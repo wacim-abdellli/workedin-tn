@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n";
 import { useWorkspaceStore } from "@/lib/workspaceState";
 import { switchWorkspace } from "@/lib/switchWorkspace";
+import { resolveActiveWorkspace } from "@/lib/workspaceRoutes";
 import { getInitials, resolveAccountAvatarUrl } from "@/lib/avatar";
 import { hasAdminAccess } from "@/lib/adminAccess";
 import { useToast } from "@/components/ui/Toast";
@@ -110,7 +111,8 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
 
   if (!user) return null;
 
-  const isFreelancer = activeWorkspace === "freelancer";
+  const resolvedWorkspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
+  const isFreelancer = resolvedWorkspace === "freelancer";
   const targetWorkspace = isFreelancer ? "client" : "freelancer";
   const firstName = profile?.full_name?.split(" ")[0] ?? user.email?.split("@")[0] ?? "Me";
   const displayName = profile?.full_name ?? user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Me";

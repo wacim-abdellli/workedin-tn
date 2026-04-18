@@ -95,6 +95,83 @@ function normalizeProposalError(error: unknown): Error {
     return toError(error, 'Failed to submit proposal');
 }
 
+function isMissingSubmitProposalAtomicRpc(error: unknown): boolean {
+    const message = extractMessage(error, '').toLowerCase();
+    if (!message) return false;
+
+    const mentionsRpc = message.includes('submit_proposal_atomic');
+    const missingHint = message.includes('does not exist')
+        || message.includes('could not find the function')
+        || message.includes('function public.submit_proposal_atomic')
+        || message.includes('pgrst202');
+
+    return mentionsRpc && missingHint;
+}
+
+function extractProposalIdFromSubmitProposalRpc(data: unknown): string | null {
+    if (typeof data === 'string' && data.trim().length > 0) {
+        return data;
+    }
+
+    if (data && typeof data === 'object') {
+        const candidate = data as { proposal_id?: unknown; id?: unknown };
+
+        if (typeof candidate.proposal_id === 'string' && candidate.proposal_id.trim().length > 0) {
+            return candidate.proposal_id;
+        }
+
+        if (typeof candidate.id === 'string' && candidate.id.trim().length > 0) {
+            return candidate.id;
+        }
+    }
+
+    return null;
+}
+
+async function fallbackCreateProposalWithoutAtomicRpc(
+    data: CreateProposalInput,
+    attachmentUrls: string[],
+): Promise<{ data: string | null; error: Error | null }> {
+    const insertResult = await supabase
+        .from('proposals')
+        .insert({
+            job_id: data.job_id,
+            freelancer_id: data.freelancer_id,
+            cover_letter: data.cover_letter,
+            bid_amount: data.bid_amount,
+            delivery_time_days: data.delivery_time_days,
+            attachments: attachmentUrls,
+            status: 'pending',
+        })
+        .select('id')
+        .single();
+
+    if (!insertResult.error && typeof insertResult.data?.id === 'string') {
+        return { data: insertResult.data.id, error: null };
+    }
+
+    const duplicateMessage = extractMessage(insertResult.error, '').toLowerCase();
+    const duplicateDetected = duplicateMessage.includes('duplicate key') || duplicateMessage.includes('unique');
+
+    if (duplicateDetected) {
+        const existing = await supabase
+            .from('proposals')
+            .select('id')
+            .eq('job_id', data.job_id)
+            .eq('freelancer_id', data.freelancer_id)
+            .maybeSingle();
+
+        if (!existing.error && typeof existing.data?.id === 'string') {
+            return { data: existing.data.id, error: null };
+        }
+    }
+
+    return {
+        data: null,
+        error: toError(insertResult.error, 'Failed to submit proposal'),
+    };
+}
+
 // --- READ ---
 
 export async function getProposalsByJob(jobId: string) {
@@ -172,14 +249,38 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             p_attachments: attachmentUrls,
         });
 
-        if (error) throw toError(error, 'Failed to submit proposal');
+        if (error) {
+            if (isMissingSubmitProposalAtomicRpc(error)) {
+                // Legacy fallback for environments where submit_proposal_atomic
+                // was not deployed yet. Keep proposal flow functional.
+                return await fallbackCreateProposalWithoutAtomicRpc(data, attachmentUrls);
+            }
 
-        const proposalId =
-            typeof rpcData === 'string'
-                ? rpcData
-                : typeof (rpcData as { proposal_id?: unknown } | null)?.proposal_id === 'string'
-                    ? (rpcData as { proposal_id: string }).proposal_id
-                    : null;
+            throw toError(error, 'Failed to submit proposal');
+        }
+
+        let proposalId = extractProposalIdFromSubmitProposalRpc(rpcData);
+
+        if (!proposalId) {
+            // Defensive confirmation for unexpected RPC payload shapes.
+            const existing = await supabase
+                .from('proposals')
+                .select('id')
+                .eq('job_id', data.job_id)
+                .eq('freelancer_id', data.freelancer_id)
+                .maybeSingle();
+
+            if (!existing.error && typeof existing.data?.id === 'string') {
+                proposalId = existing.data.id;
+            }
+        }
+
+        if (!proposalId) {
+            return {
+                data: null,
+                error: new Error('Proposal submission could not be confirmed. Please try again.'),
+            };
+        }
 
         return { data: proposalId, error: null };
     } catch (error) {

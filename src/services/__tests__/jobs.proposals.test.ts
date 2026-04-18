@@ -305,6 +305,37 @@ describe('proposals service targeted coverage', () => {
         expect(result.error).toBeInstanceOf(Error);
         expect((result.error as Error).message).toBe("You've reached the proposal limit. Try again in an hour.");
     });
+
+    it('falls back to direct insert when submit_proposal_atomic RPC is unavailable', async () => {
+        queryState.state.rpcResult = {
+            data: null,
+            error: new Error('Could not find the function public.submit_proposal_atomic in the schema cache'),
+        };
+
+        queryState.state.tableResults.proposals = {
+            data: { id: 'proposal-fallback-1' },
+            error: null,
+            count: 1,
+        };
+
+        const result = await createProposal({
+            job_id: 'job-legacy',
+            freelancer_id: 'free-1',
+            cover_letter: 'Fallback path proposal.',
+            bid_amount: 90,
+            delivery_time_days: 2,
+        });
+
+        expect(result).toEqual({ data: 'proposal-fallback-1', error: null });
+        expect(queryState.state.insertCalls).toContainEqual(expect.objectContaining({
+            job_id: 'job-legacy',
+            freelancer_id: 'free-1',
+            cover_letter: 'Fallback path proposal.',
+            bid_amount: 90,
+            delivery_time_days: 2,
+            status: 'pending',
+        }));
+    });
 });
 
 describe('proposals public_profiles join regression', () => {

@@ -38,6 +38,8 @@ interface ClientJobRow {
 interface ContractStatusRow {
   id: string;
   job_id: string;
+  client_id?: string | null;
+  freelancer_id?: string | null;
   status: string;
   payment_status: string | null;
   created_at: string;
@@ -181,7 +183,7 @@ export default function ClientJobs() {
       const [contractsResult, proposalsResult] = await Promise.all([
         supabase
           .from('contracts')
-          .select('id, job_id, status, payment_status, created_at, updated_at')
+          .select('id, job_id, client_id, freelancer_id, status, payment_status, created_at, updated_at')
           .eq('client_id', user?.id),
         jobIds.length > 0
           ? supabase
@@ -504,7 +506,11 @@ export default function ClientJobs() {
                   <div className="flex items-center gap-2 sm:flex-col sm:items-end shrink-0">
                     {job.latestContract?.id ? (
                       <button
-                        onClick={() => navigate(`/contracts/${job.latestContract?.id}`)}
+                        onClick={() => navigate(`/contracts/${job.latestContract?.id}`, {
+                          state: {
+                            otherUserId: job.latestContract?.freelancer_id || null,
+                          },
+                        })}
                         className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/12 px-3 py-1.5 text-sm font-medium text-amber-200 hover:bg-amber-500/20"
                       >
                         {job.derivedStatus === 'finished_success' || job.derivedStatus === 'finished_unsuccessful'

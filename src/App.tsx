@@ -28,7 +28,7 @@ import { appRoutes, renderRouteDefinitions } from "./routes";
 import SkipLinks from "./components/layout/SkipLinks";
 import { useRouteFocus } from "./hooks/useRouteFocus";
 import { useAuth } from "./contexts/AuthContext";
-import { shouldRequireUserTypeSelection } from "./lib/workspaceRoutes";
+import { shouldRequireUserTypeSelection, resolveActiveWorkspace } from "./lib/workspaceRoutes";
 
 const PageLoader = () => (
   <FullScreenLoader label="Loading..." hint="Opening the next page" />
@@ -42,9 +42,10 @@ function AppContent() {
   useRouteFocus();
   const { tx } = useTranslation();
   const { pathname, search } = useLocation();
-  const { user, profile, isFullyReady } = useAuth();
+  const { user, profile, freelancerProfile, isFullyReady } = useAuth();
   const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
   const isWorkspaceSwitching = useWorkspaceStore((state) => state.isSwitching);
+  const resolvedWorkspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
 
   const isUserTypeSelectionScreen = useMemo(() =>
     pathname === "/signup" && search.includes("step=select-type"),
@@ -64,7 +65,7 @@ function AppContent() {
 
   const workspaceClass = pathname.startsWith("/admin")
     ? "workspace-admin"
-    : activeWorkspace === "client"
+    : resolvedWorkspace === "client"
       ? "workspace-client"
       : "";
 
