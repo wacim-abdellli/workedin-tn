@@ -461,7 +461,7 @@ function JobBoard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen page-bg-base">
       <SEO {...SEO_CONFIG.jobs} url="/jobs" canonical="https://workedin.tn/jobs" />
       <Header />
 
@@ -469,8 +469,8 @@ function JobBoard() {
 
         {/* Page header */}
         <header className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-black mb-1">{tx('pages.jobBoard.header.title', undefined, 'Find Work')}</h1>
-          <p className="text-white/45 text-sm">{tx('pages.jobBoard.header.subtitle', undefined, 'Browse and apply to freelance opportunities in Tunisia.')}</p>
+          <h1 className="text-3xl sm:text-4xl font-black mb-1 text-on-surface">{tx('pages.jobBoard.header.title', undefined, 'Find Work')}</h1>
+          <p className="text-on-surface-muted text-sm">{tx('pages.jobBoard.header.subtitle', undefined, 'Browse and apply to freelance opportunities in Tunisia.')}</p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -478,19 +478,16 @@ function JobBoard() {
           {/* ── Sidebar Filters ── */}
           <aside className="lg:col-span-1">
             <div className="sticky top-8">
-              <div
-                className="rounded-2xl border border-white/8 p-5"
-                style={{ background: 'rgba(255,255,255,0.025)' }}
-              >
+              <div className="surface-card border rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+                  <h2 className="flex items-center gap-2 text-sm font-bold text-on-surface">
                     <SlidersHorizontal className="w-4 h-4 opacity-60" />
                     {tx('pages.jobBoard.filters.clearAll', undefined, 'Filters')}
                   </h2>
                   <button
                     type="button"
                     onClick={clearAllFilters}
-                    className="text-xs text-violet-400 hover:text-violet-300 transition-colors"
+                    className="text-xs text-violet-500 hover:text-violet-600 dark:text-violet-400 dark:hover:text-violet-300 transition-colors"
                   >
                     {tx('pages.jobBoard.filters.clearAll', undefined, 'Clear all')}
                   </button>
@@ -499,7 +496,7 @@ function JobBoard() {
                 <div className="space-y-6">
                   {/* Category */}
                   <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-3">Category</h3>
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-subtle mb-3">Category</h3>
                     <div className="flex flex-col gap-2">
                       {CATEGORY_VALUES.map((category) => {
                         const checked = filters.categories.includes(category);
@@ -510,7 +507,7 @@ function JobBoard() {
                               <div
                                 className="w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 transition-all"
                                 style={{
-                                  borderColor: checked ? 'var(--workspace-primary,#8b5cf6)' : 'rgba(255,255,255,0.15)',
+                                  borderColor: checked ? 'var(--workspace-primary,#8b5cf6)' : 'var(--color-border-default)',
                                   background: checked ? 'var(--workspace-primary,#8b5cf6)' : 'transparent',
                                 }}
                               >
@@ -521,12 +518,12 @@ function JobBoard() {
                                 )}
                                 <input id={`cat-${category}`} type="checkbox" checked={checked} onChange={() => handleToggleCategory(category)} className="sr-only" />
                               </div>
-                              <span className={`text-sm transition-colors ${checked ? 'text-white' : 'text-white/55 group-hover:text-white/80'}`}>
+                              <span className={`text-sm transition-colors ${checked ? 'text-on-surface' : 'text-on-surface-muted group-hover:text-on-surface'}`}>
                                 {getCategoryLabel(category)}
                               </span>
                             </div>
                             {count > 0 && (
-                              <span className="text-[10px] text-white/30 tabular-nums">{count}</span>
+                              <span className="text-[10px] text-on-surface-subtle tabular-nums">{count}</span>
                             )}
                           </label>
                         );
@@ -535,8 +532,8 @@ function JobBoard() {
                   </div>
 
                   {/* Job Type */}
-                  <div className="pt-5 border-t border-white/8">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-3">{tx('pages.jobBoard.filters.jobType', undefined, 'Job Type')}</h3>
+                  <div className="pt-5 border-t border-surface">
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-subtle mb-3">{tx('pages.jobBoard.filters.jobType', undefined, 'Job Type')}</h3>
                     <div className="flex flex-col gap-2">
                       {JOB_TYPE_OPTIONS.map((item) => {
                         const checked = filters.jobType === item.value;
@@ -545,7 +542,7 @@ function JobBoard() {
                             <div
                               className="w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 transition-all"
                               style={{
-                                borderColor: checked ? 'var(--workspace-primary,#8b5cf6)' : 'rgba(255,255,255,0.15)',
+                                borderColor: checked ? 'var(--workspace-primary,#8b5cf6)' : 'var(--color-border-default)',
                                 background: checked ? 'var(--workspace-primary,#8b5cf6)' : 'transparent',
                               }}
                             >
@@ -556,7 +553,7 @@ function JobBoard() {
                               )}
                               <input id={`type-${item.value}`} type="checkbox" checked={checked} onChange={() => handleToggleJobType(item.value)} className="sr-only" />
                             </div>
-                            <span className={`text-sm transition-colors ${checked ? 'text-white' : 'text-white/55 group-hover:text-white/80'}`}>{item.label}</span>
+                            <span className={`text-sm transition-colors ${checked ? 'text-on-surface' : 'text-on-surface-muted group-hover:text-on-surface'}`}>{item.label}</span>
                           </label>
                         );
                       })}
@@ -564,8 +561,8 @@ function JobBoard() {
                   </div>
 
                   {/* Budget */}
-                  <div className="pt-5 border-t border-white/8">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-3">Budget</h3>
+                  <div className="pt-5 border-t border-surface">
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-subtle mb-3">Budget</h3>
                     <div className="flex flex-col gap-2">
                       {BUDGET_OPTIONS.map((item) => {
                         const checked = filters.budgetRange === item.value;
@@ -574,7 +571,7 @@ function JobBoard() {
                             <div
                               className="w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 transition-all"
                               style={{
-                                borderColor: checked ? 'var(--workspace-primary,#8b5cf6)' : 'rgba(255,255,255,0.15)',
+                                borderColor: checked ? 'var(--workspace-primary,#8b5cf6)' : 'var(--color-border-default)',
                                 background: checked ? 'var(--workspace-primary,#8b5cf6)' : 'transparent',
                               }}
                             >
@@ -585,7 +582,7 @@ function JobBoard() {
                               )}
                               <input id={`budget-${item.value}`} type="checkbox" checked={checked} onChange={() => handleToggleBudget(item.value)} className="sr-only" />
                             </div>
-                            <span className={`text-sm transition-colors ${checked ? 'text-white' : 'text-white/55 group-hover:text-white/80'}`}>{item.label}</span>
+                            <span className={`text-sm transition-colors ${checked ? 'text-on-surface' : 'text-on-surface-muted group-hover:text-on-surface'}`}>{item.label}</span>
                           </label>
                         );
                       })}
@@ -602,19 +599,15 @@ function JobBoard() {
             {/* Search + Sort bar */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 relative">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-subtle pointer-events-none" />
                 <input
                   type="text"
                   value={filters.search}
                   onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
                   placeholder={tx('pages.jobBoard.filters.searchPlaceholder', undefined, 'Search jobs...')}
-                  className="w-full rounded-xl pl-10 pr-4 py-3 text-sm text-white outline-none transition-all"
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                  }}
+                  className="w-full rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all"
                   onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--workspace-primary,#8b5cf6)'; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-default)'; }}
                 />
               </div>
 
@@ -622,11 +615,7 @@ function JobBoard() {
                 <button
                   type="button"
                   onClick={() => setIsSortMenuOpen((p) => !p)}
-                  className="w-full rounded-xl px-4 py-3 text-sm text-white/70 flex items-center justify-between gap-3 transition-all"
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                  }}
+                  className="w-full rounded-xl px-4 py-3 text-sm text-on-surface-muted flex items-center justify-between gap-3 transition-all"
                   aria-haspopup="listbox"
                   aria-expanded={isSortMenuOpen}
                 >
@@ -636,8 +625,7 @@ function JobBoard() {
 
                 {isSortMenuOpen && (
                   <div
-                    className="absolute z-30 mt-2 right-0 w-full min-w-[200px] rounded-xl p-1 shadow-2xl"
-                    style={{ background: '#1a1a24', border: '1px solid rgba(255,255,255,0.1)' }}
+                    className="absolute z-30 mt-2 right-0 w-full min-w-[200px] rounded-xl p-1 shadow-2xl surface-card border"
                     role="listbox"
                   >
                     {SORT_OPTIONS.map((option) => {
@@ -652,7 +640,7 @@ function JobBoard() {
                           className="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors"
                           style={{
                             background: isSelected ? 'color-mix(in srgb,var(--workspace-primary,#8b5cf6) 15%,transparent)' : 'transparent',
-                            color: isSelected ? 'var(--workspace-primary,#8b5cf6)' : 'rgba(255,255,255,0.65)',
+                            color: isSelected ? 'var(--workspace-primary,#8b5cf6)' : 'var(--color-text-secondary)',
                           }}
                         >
                           {option.label}
@@ -665,8 +653,8 @@ function JobBoard() {
             </div>
 
             {/* Count */}
-            <p className="text-xs text-white/35 flex items-center gap-1.5">
-              <span className="font-semibold text-white tabular-nums">{displayedCount}</span>
+            <p className="text-xs text-on-surface-subtle flex items-center gap-1.5">
+              <span className="font-semibold text-on-surface tabular-nums">{displayedCount}</span>
               <span>{tx('pages.jobBoard.filters.showing', { count: displayedCount }, 'jobs')}</span>
             </p>
 
@@ -674,11 +662,11 @@ function JobBoard() {
             {isLoading && jobs.length === 0 && (
               <div className="flex flex-col gap-3">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="rounded-2xl border border-white/8 p-6 animate-pulse" style={{ background: 'rgba(255,255,255,0.025)' }}>
-                    <div className="h-5 w-2/3 bg-white/8 rounded-lg mb-3" />
-                    <div className="h-3.5 w-1/2 bg-white/5 rounded mb-2" />
-                    <div className="h-3.5 w-full bg-white/5 rounded mb-1" />
-                    <div className="h-3.5 w-4/5 bg-white/5 rounded" />
+                  <div key={i} className="rounded-2xl border border-surface surface-card p-6 animate-pulse">
+                    <div className="h-5 w-2/3 bg-[var(--color-bg-muted)] rounded-lg mb-3" />
+                    <div className="h-3.5 w-1/2 bg-[var(--color-bg-muted)] rounded mb-2" />
+                    <div className="h-3.5 w-full bg-[var(--color-bg-muted)] rounded mb-1" />
+                    <div className="h-3.5 w-4/5 bg-[var(--color-bg-muted)] rounded" />
                   </div>
                 ))}
               </div>
@@ -687,14 +675,14 @@ function JobBoard() {
             {/* Error */}
             {error && (
               <div className="rounded-2xl border border-rose-500/30 bg-rose-500/8 p-5">
-                <p className="text-rose-300 text-sm">{tx('pages.jobBoard.errors.loadFailed', undefined, 'Failed to load jobs. Please try again.')}</p>
+                <p className="text-rose-500 text-sm">{tx('pages.jobBoard.errors.loadFailed', undefined, 'Failed to load jobs. Please try again.')}</p>
               </div>
             )}
 
             {/* Empty */}
             {!isLoading && !error && visibleJobs.length === 0 && (
-              <div className="rounded-2xl border border-white/8 p-10 text-center" style={{ background: 'rgba(255,255,255,0.025)' }}>
-                <p className="text-white/50">{tx('pages.jobBoard.empty.filtered', undefined, 'No jobs found for the selected filters.')}</p>
+              <div className="rounded-2xl border border-surface surface-card p-10 text-center">
+                <p className="text-on-surface-muted">{tx('pages.jobBoard.empty.filtered', undefined, 'No jobs found for the selected filters.')}</p>
               </div>
             )}
 
@@ -725,8 +713,7 @@ function JobBoard() {
                           navigate(`/jobs/${job.id}`);
                         }
                       }}
-                      className="group relative rounded-2xl border border-white/8 p-5 sm:p-6 cursor-pointer transition-all duration-200 hover:border-white/16 hover:-translate-y-0.5"
-                      style={{ background: 'rgba(255,255,255,0.025)' }}
+                      className="group relative rounded-2xl border border-surface surface-card p-5 sm:p-6 cursor-pointer transition-all duration-200 hover:border-[var(--workspace-primary)] hover:-translate-y-0.5"
                     >
                       {/* Subtle glow on hover */}
                       <div
@@ -743,24 +730,24 @@ function JobBoard() {
                               className="shrink-0 mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full"
                               style={{
                                 background: isFixed ? 'rgba(59,130,246,0.12)' : 'rgba(16,185,129,0.12)',
-                                color: isFixed ? '#60a5fa' : '#34d399',
+                                color: isFixed ? '#2563eb' : '#16a34a',
                                 border: `1px solid ${isFixed ? 'rgba(59,130,246,0.22)' : 'rgba(16,185,129,0.22)'}`,
                               }}
                             >
                               {isFixed ? 'Fixed' : 'Hourly'}
                             </span>
-                            <h3 className="text-base font-bold text-white group-hover:text-violet-300 transition-colors line-clamp-1 [overflow-wrap:anywhere]">
+                            <h3 className="text-base font-bold text-on-surface group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors line-clamp-1 [overflow-wrap:anywhere]">
                               {job.title || 'Untitled job'}
                             </h3>
                           </div>
 
                           {/* Description */}
-                          <p className="text-sm text-white/45 line-clamp-2 mb-3 [overflow-wrap:anywhere]">
+                          <p className="text-sm text-on-surface-muted line-clamp-2 mb-3 [overflow-wrap:anywhere]">
                             {job.description || 'No description provided.'}
                           </p>
 
                           {/* Meta chips */}
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-white/40 mb-3">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-on-surface-subtle mb-3">
                             <span className="font-semibold" style={{ color: 'var(--workspace-primary,#8b5cf6)' }}>
                               {getBudgetLabel(job)}
                             </span>
@@ -769,7 +756,7 @@ function JobBoard() {
                               {postedAgo}
                             </span>
                             <span className="flex items-center gap-1">
-                              <BadgeCheck className={`w-3 h-3 ${job.client?.payment_verified ? 'text-emerald-400' : 'text-white/25'}`} />
+                              <BadgeCheck className={`w-3 h-3 ${job.client?.payment_verified ? 'text-emerald-500' : 'text-on-surface-subtle'}`} />
                               {job.client?.payment_verified ? 'Payment verified' : 'Payment unverified'}
                             </span>
                             <span className="flex items-center gap-1">
@@ -784,13 +771,13 @@ function JobBoard() {
                               ? skillLabels.map((skill) => (
                                   <span
                                     key={`${job.id}-${skill}`}
-                                    className="text-[11px] px-2.5 py-0.5 rounded-full border border-white/8 bg-white/4 text-white/55"
+                                    className="text-[11px] px-2.5 py-0.5 rounded-full border border-surface surface-sunken text-on-surface-muted"
                                   >
                                     {skill}
                                   </span>
                                 ))
                               : (
-                                <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-white/8 bg-white/4 text-white/40">General</span>
+                                <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-surface surface-sunken text-on-surface-subtle">General</span>
                               )
                             }
                           </div>
@@ -798,8 +785,8 @@ function JobBoard() {
 
                         {/* Right actions */}
                         <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
-                          <div className="flex items-center gap-1 text-xs text-white/35">
-                            <Star className="w-3 h-3 text-amber-400/60 fill-amber-400/40" />
+                          <div className="flex items-center gap-1 text-xs text-on-surface-subtle">
+                            <Star className="w-3 h-3 text-amber-500 fill-amber-400/60" />
                             <span>{clientName} ({ratingValue})</span>
                           </div>
 
@@ -808,9 +795,9 @@ function JobBoard() {
                               type="button"
                               aria-label={isSaved ? 'Unsave job' : 'Save job'}
                               onClick={async (e) => { e.stopPropagation(); await handleToggleSave(job); }}
-                              className="group/save flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/4 transition-all hover:border-rose-500/40 hover:bg-rose-500/10"
+                              className="group/save flex h-8 w-8 items-center justify-center rounded-xl border border-surface surface-sunken transition-all hover:border-rose-500/40 hover:bg-rose-500/10"
                             >
-                              <Heart className={`w-3.5 h-3.5 transition-colors ${isSaved ? 'fill-rose-400 text-rose-400' : 'text-white/40 group-hover/save:text-rose-400'}`} />
+                              <Heart className={`w-3.5 h-3.5 transition-colors ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-on-surface-subtle group-hover/save:text-rose-500'}`} />
                             </button>
 
                             <button
@@ -818,7 +805,7 @@ function JobBoard() {
                               onClick={(e) => { e.stopPropagation(); navigate(`/jobs/${job.id}`); }}
                               className={`h-8 px-4 rounded-xl text-xs font-bold transition-all active:scale-[0.97] ${
                                 isAlreadyApplied
-                                  ? 'text-white/70 border border-white/15 bg-white/5 hover:bg-white/10'
+                                  ? 'text-on-surface-muted border border-surface surface-sunken hover-surface'
                                   : 'text-white hover:brightness-110'
                               }`}
                               style={isAlreadyApplied

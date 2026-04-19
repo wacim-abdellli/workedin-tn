@@ -75,59 +75,59 @@ function AccountSettings({
   const identityPending = identityStatus === 'pending';
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
+    <div className="surface-card border rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-      <h2 className="text-xl font-bold mb-1">{tx('pages.settings.account.overviewTitle', undefined, 'Account Overview')}</h2>
-      <p className="text-sm text-gray-400 mb-8">{tx('pages.settings.account.overviewDescription', undefined, 'Manage your workspace and general account details.')}</p>
+      <h2 className="text-xl font-bold mb-1 text-on-surface">{tx('pages.settings.account.overviewTitle', undefined, 'Account Overview')}</h2>
+      <p className="text-sm text-on-surface-muted mb-8">{tx('pages.settings.account.overviewDescription', undefined, 'Manage your workspace and general account details.')}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
-          <p className="text-xs text-gray-500 mb-1">{tx('pages.settings.account.currentWorkspace', undefined, 'Current workspace')}</p>
-          <p className="text-sm font-semibold text-white">{activeMode === 'freelancer' ? 'Freelancer' : 'Client'}</p>
+        <div className="surface-sunken border rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
+          <p className="text-xs text-on-surface-subtle mb-1">{tx('pages.settings.account.currentWorkspace', undefined, 'Current workspace')}</p>
+          <p className="text-sm font-semibold text-on-surface">{activeMode === 'freelancer' ? 'Freelancer' : 'Client'}</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
-          <p className="text-xs text-gray-500 mb-1">{tx('pages.settings.account.accountType', undefined, 'Account type')}</p>
-          <p className="text-sm font-semibold text-white">{accountType}</p>
+        <div className="surface-sunken border rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
+          <p className="text-xs text-on-surface-subtle mb-1">{tx('pages.settings.account.accountType', undefined, 'Account type')}</p>
+          <p className="text-sm font-semibold text-on-surface">{accountType}</p>
         </div>
-        <div className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
-          <p className="text-xs text-gray-500 mb-1">Identity</p>
-          <p className={`text-sm font-semibold inline-flex items-center gap-2 ${identityVerified ? 'text-green-400' : identityPending ? 'text-amber-400' : 'text-gray-300'}`}>
+        <div className="surface-sunken border rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
+          <p className="text-xs text-on-surface-subtle mb-1">Identity</p>
+          <p className={`text-sm font-semibold inline-flex items-center gap-2 ${identityVerified ? 'text-green-500' : identityPending ? 'text-amber-500' : 'text-on-surface-muted'}`}>
             <Check className="w-4 h-4" />
             {identityVerified ? 'Identity Verified' : identityPending ? 'Verification Under Review' : 'Not Verified'}
           </p>
         </div>
       </div>
 
-      <h3 className="text-sm font-semibold text-gray-200 mb-3">{tx('pages.settings.account.quickActions', undefined, 'Quick Actions')}</h3>
+      <h3 className="text-sm font-semibold text-on-surface-muted mb-3">{tx('pages.settings.account.quickActions', undefined, 'Quick Actions')}</h3>
 
       <button
         type="button"
         onClick={goToPublicProfile}
-        className="w-full flex justify-between items-center p-4 border border-[#262626] rounded-xl mb-3 hover:bg-[#1a1a1a] cursor-pointer transition-all"
+        className="w-full flex justify-between items-center p-4 border border-surface rounded-xl mb-3 hover-surface cursor-pointer transition-all"
         style={{ borderColor: tokens.accentBorder }}
       >
-        <span className="text-sm text-white">{tx('pages.settings.account.openPublicProfileEditor', undefined, 'Open public profile editor')}</span>
-        <ExternalLink className="w-4 h-4 text-gray-500" />
+        <span className="text-sm text-on-surface">{tx('pages.settings.account.openPublicProfileEditor', undefined, 'Open public profile editor')}</span>
+        <ExternalLink className="w-4 h-4 text-on-surface-subtle" />
       </button>
 
       <button
         type="button"
         onClick={goToDashboard}
-        className="w-full flex justify-between items-center p-4 border border-[#262626] rounded-xl mb-3 hover:bg-[#1a1a1a] cursor-pointer transition-all"
+        className="w-full flex justify-between items-center p-4 border border-surface rounded-xl mb-3 hover-surface cursor-pointer transition-all"
         style={{ borderColor: tokens.accentBorder }}
       >
-        <span className="text-sm text-white">{tx('pages.settings.account.goToDashboard', undefined, 'Go to dashboard')}</span>
-        <ExternalLink className="w-4 h-4 text-gray-500" />
+        <span className="text-sm text-on-surface">{tx('pages.settings.account.goToDashboard', undefined, 'Go to dashboard')}</span>
+        <ExternalLink className="w-4 h-4 text-on-surface-subtle" />
       </button>
 
       <button
         type="button"
         onClick={goToNotifications}
-        className="w-full flex justify-between items-center p-4 border border-[#262626] rounded-xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
+        className="w-full flex justify-between items-center p-4 border border-surface rounded-xl hover-surface cursor-pointer transition-all"
         style={{ borderColor: tokens.accentBorder }}
       >
-        <span className="text-sm text-white">{tx('pages.settings.account.manageNotifications', undefined, 'Manage notifications')}</span>
-        <ExternalLink className="w-4 h-4 text-gray-500" />
+        <span className="text-sm text-on-surface">{tx('pages.settings.account.manageNotifications', undefined, 'Manage notifications')}</span>
+        <ExternalLink className="w-4 h-4 text-on-surface-subtle" />
       </button>
     </div>
   );
@@ -239,9 +239,9 @@ function NotificationSettingsTab({
   };
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
+    <div className="surface-card border rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-      <h2 className="text-xl font-bold mb-6">Notifications</h2>
+      <h2 className="text-xl font-bold mb-6 text-on-surface">Notifications</h2>
 
       {loading ? (
         <div className="py-12 flex items-center justify-center">
@@ -251,11 +251,11 @@ function NotificationSettingsTab({
         items.map((item) => (
           <div
             key={item.key}
-            className="flex items-center justify-between border-b border-[#262626] pb-4 mb-4 hover:bg-[#1a1a1a] rounded-lg px-2 transition-colors"
+            className="flex items-center justify-between border-b border-surface pb-4 mb-4 hover-surface rounded-lg px-2 transition-colors"
           >
             <div className="pe-4">
-              <p className="text-sm font-medium text-white">{item.title}</p>
-              <p className="text-sm text-gray-400 mt-1">{item.description}</p>
+              <p className="text-sm font-medium text-on-surface">{item.title}</p>
+              <p className="text-sm text-on-surface-muted mt-1">{item.description}</p>
             </div>
 
             <button
@@ -410,10 +410,10 @@ function PaymentSettingsTab({
   };
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
+    <div className="surface-card border rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">{tx('pages.settings.payment.title', undefined, 'Payment Methods')}</h2>
+        <h2 className="text-xl font-bold text-on-surface">{tx('pages.settings.payment.title', undefined, 'Payment Methods')}</h2>
         <button
           type="button"
           onClick={() => setAdding((prev) => !prev)}
@@ -426,7 +426,7 @@ function PaymentSettingsTab({
       </div>
 
       {adding ? (
-        <div className="mb-6 border border-[#262626] rounded-xl p-4 bg-[#0a0a0a]">
+        <div className="mb-6 border border-surface rounded-xl p-4 surface-sunken">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <select
               value={form.type}
@@ -442,7 +442,7 @@ function PaymentSettingsTab({
               value={form.details}
               onChange={(event) => setForm((prev) => ({ ...prev, details: event.target.value }))}
               placeholder={form.type === 'bank_transfer' ? 'Bank account number' : 'Phone number'}
-              className="sm:col-span-2 bg-[#0a0a0a] border border-[#262626] rounded-lg text-white p-3 outline-none"
+              className="sm:col-span-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none"
             />
           </div>
 
@@ -450,7 +450,7 @@ function PaymentSettingsTab({
             <button
               type="button"
               onClick={() => setAdding(false)}
-              className="px-4 py-2 rounded-lg border border-[#262626] text-gray-300 hover:text-white"
+              className="px-4 py-2 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface"
             >
               Cancel
             </button>
@@ -472,22 +472,22 @@ function PaymentSettingsTab({
           <Loader2 className="w-5 h-5 animate-spin" style={{ color: accentColor }} />
         </div>
       ) : methods.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-[#262626] rounded-2xl bg-[#0a0a0a]">
-          <CreditCard className="w-12 h-12 text-gray-600 mx-auto" />
-          <p className="text-lg font-semibold text-white mt-4">{tx('pages.settings.payment.empty.title', undefined, 'No payment method added yet')}</p>
-          <p className="text-sm text-gray-400 mt-2">{tx('pages.settings.payment.empty.description', undefined, 'Add a payout method now so contracts are ready when you need them.')}</p>
+        <div className="text-center py-16 border border-dashed border-surface rounded-2xl surface-sunken">
+          <CreditCard className="w-12 h-12 text-on-surface-subtle mx-auto" />
+          <p className="text-lg font-semibold text-on-surface mt-4">{tx('pages.settings.payment.empty.title', undefined, 'No payment method added yet')}</p>
+          <p className="text-sm text-on-surface-muted mt-2">{tx('pages.settings.payment.empty.description', undefined, 'Add a payout method now so contracts are ready when you need them.')}</p>
         </div>
       ) : (
         <div className="space-y-3">
           {methods.map((method) => (
             <div
               key={method.id}
-              className="flex items-center justify-between gap-3 p-4 rounded-xl border bg-[#0a0a0a]"
-              style={{ borderColor: method.is_default ? `color-mix(in srgb, ${accentColor} 50%, #262626)` : '#262626' }}
+              className="flex items-center justify-between gap-3 p-4 rounded-xl border surface-sunken"
+              style={{ borderColor: method.is_default ? `color-mix(in srgb, ${accentColor} 50%, var(--color-border-default))` : 'var(--color-border-default)' }}
             >
               <div>
-                <p className="text-sm text-white font-semibold uppercase">{method.type.replace('_', ' ')}</p>
-                <p className="text-xs text-gray-400 mt-1">{method.details}</p>
+                <p className="text-sm text-on-surface font-semibold uppercase">{method.type.replace('_', ' ')}</p>
+                <p className="text-xs text-on-surface-muted mt-1">{method.details}</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -502,7 +502,7 @@ function PaymentSettingsTab({
                   <button
                     type="button"
                     onClick={() => void setDefault(method.id)}
-                    className="text-xs px-3 py-1.5 rounded-lg border border-[#262626] text-gray-300 hover:text-white"
+                    className="text-xs px-3 py-1.5 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface"
                   >
                     {tx('pages.settings.payment.setDefault', undefined, 'Set default')}
                   </button>
@@ -511,7 +511,7 @@ function PaymentSettingsTab({
                 <button
                   type="button"
                   onClick={() => void removeMethod(method.id)}
-                  className="p-2 rounded-lg border border-[#262626] text-gray-400 hover:text-red-400"
+                  className="p-2 rounded-lg border border-surface text-on-surface-muted hover:text-red-500"
                   aria-label={tx('pages.settings.payment.deleteMethod', undefined, 'Delete payment method')}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -589,25 +589,25 @@ function PrivacySettingsTab({
   };
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 relative overflow-hidden">
+    <div className="surface-card border rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-      <h2 className="text-xl font-bold mb-6">{tx('pages.settings.privacy.title', undefined, 'Security & Privacy')}</h2>
+      <h2 className="text-xl font-bold mb-6 text-on-surface">{tx('pages.settings.privacy.title', undefined, 'Security & Privacy')}</h2>
 
-      <div className="border border-[#262626] rounded-xl p-4 mb-4 bg-[#0a0a0a]">
-        <p className="text-sm font-semibold text-white mb-1">{tx('pages.settings.privacy.changePassword', undefined, 'Change password')}</p>
-        <p className="text-sm text-gray-400">
+      <div className="border border-surface rounded-xl p-4 mb-4 surface-sunken">
+        <p className="text-sm font-semibold text-on-surface mb-1">{tx('pages.settings.privacy.changePassword', undefined, 'Change password')}</p>
+        <p className="text-sm text-on-surface-muted">
           You signed in with {authProvider}. Password management is handled by your identity provider.
         </p>
       </div>
 
-      <div className="border border-[#262626] rounded-xl p-4 bg-[#0a0a0a]">
-        <p className="text-sm font-semibold text-white mb-1">{tx('pages.settings.privacy.activeSessions', undefined, 'Active sessions')}</p>
-        <p className="text-sm text-gray-400">{tx('pages.settings.privacy.currentSession', undefined, 'This device is your current session.')}</p>
+      <div className="border border-surface rounded-xl p-4 surface-sunken">
+        <p className="text-sm font-semibold text-on-surface mb-1">{tx('pages.settings.privacy.activeSessions', undefined, 'Active sessions')}</p>
+        <p className="text-sm text-on-surface-muted">{tx('pages.settings.privacy.currentSession', undefined, 'This device is your current session.')}</p>
         <button
           type="button"
           onClick={() => void onSignOutAll()}
-          className="inline-flex items-center gap-2 border border-[#262626] text-white px-4 py-2 rounded-lg mt-3 transition-colors"
-          style={{ borderColor: `color-mix(in srgb, ${accentColor} 45%, #262626)` }}
+          className="inline-flex items-center gap-2 border border-surface text-on-surface px-4 py-2 rounded-lg mt-3 transition-colors hover-surface"
+          style={{ borderColor: `color-mix(in srgb, ${accentColor} 45%, var(--color-border-default))` }}
         >
           <RefreshCw className="w-4 h-4" />
           {tx('pages.settings.privacy.signOutAllDevices', undefined, 'Sign out from all devices')}
@@ -750,24 +750,24 @@ export default function Settings() {
   };
 
   return (
-    <div className="bg-[#0a0a0a]">
+    <div className="page-bg-base">
       <Header />
 
-      <div className="min-h-screen w-full bg-[#0a0a0a] text-white p-4 md:p-8 flex justify-center">
+      <div className="min-h-screen w-full page-bg-base p-4 md:p-8 flex justify-center">
         <div className="max-w-6xl w-full flex flex-col md:flex-row gap-8">
           <aside className="w-full md:w-64 shrink-0">
             <div
-              className="bg-gradient-to-b from-[#131313] to-[#0d0d0d] border rounded-2xl p-4 relative overflow-hidden"
-              style={{ borderColor: `color-mix(in srgb, ${accentColor} 28%, #262626)` }}
+              className="surface-card border rounded-2xl p-4 relative overflow-hidden"
+              style={{ borderColor: `color-mix(in srgb, ${accentColor} 28%, var(--color-border-default))` }}
             >
               <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-              <h1 className="text-2xl font-bold mb-2 text-white">Settings</h1>
+              <h1 className="text-2xl font-bold mb-2 text-on-surface">Settings</h1>
               <div className="mb-6">
                 <span
                   className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border"
                   style={{
                     color: accentColor,
-                    borderColor: `color-mix(in srgb, ${accentColor} 35%, #262626)`,
+                    borderColor: `color-mix(in srgb, ${accentColor} 35%, var(--color-border-default))`,
                     background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
                   }}
                 >
@@ -792,14 +792,14 @@ export default function Settings() {
                       className={`group relative flex items-center gap-3 w-full p-3 rounded-xl text-sm font-medium border transition-all ${
                         isActive
                           ? ''
-                          : 'text-gray-400 border-[#262626] bg-[#101010] hover:bg-[#171717] hover:text-white hover:border-[#3a3a3a]'
+                          : 'text-on-surface-muted border-surface surface-sunken hover-surface hover:text-on-surface'
                       }`}
                       style={
                         isActive
                           ? {
                               background: `linear-gradient(90deg, color-mix(in srgb, ${accentColor} 14%, transparent) 0%, color-mix(in srgb, ${accentColor} 6%, transparent) 100%)`,
                               color: accentColor,
-                              borderColor: `color-mix(in srgb, ${accentColor} 42%, #262626)`,
+                              borderColor: `color-mix(in srgb, ${accentColor} 42%, var(--color-border-default))`,
                               boxShadow: `0 0 0 1px color-mix(in srgb, ${accentColor} 22%, transparent) inset`,
                             }
                           : undefined
@@ -819,14 +819,14 @@ export default function Settings() {
                 })}
               </nav>
 
-              <div className="border-t border-[#262626] mt-6 pt-4">
+              <div className="border-t border-surface mt-6 pt-4">
                 <button
                   type="button"
                   onClick={async () => {
                     await signOut();
                     navigate('/login', { replace: true });
                   }}
-                  className="flex items-center gap-3 w-full p-3 rounded-xl text-sm font-medium text-gray-500 hover:text-red-400 transition-colors"
+                  className="flex items-center gap-3 w-full p-3 rounded-xl text-sm font-medium text-on-surface-subtle hover:text-red-500 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>{tx('pages.settings.actions.signOut', undefined, 'Sign Out')}</span>

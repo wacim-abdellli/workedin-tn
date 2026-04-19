@@ -2,6 +2,7 @@
  * Messages Service - Chat/messaging Supabase queries
  */
 import { supabase, uploadFile } from '@/lib/supabase';
+import { repairContractConversationInboxRows } from '@/lib/contractConversationInbox';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import type { MessageAttachment } from '@/types';
 import type {
@@ -313,8 +314,20 @@ export async function getConversations(
             return bTime - aTime;
         });
 
-        const paginatedConversations = uniqueConversations.slice(start, end + 1);
-        const count = uniqueConversations.length;
+        const repairedConversations = await repairContractConversationInboxRows(uniqueConversations);
+        const scopedConversations = inboxValues && inboxValues.length > 0
+            ? repairedConversations.filter((conversation) => {
+                const myInbox = conversation.participant_1 === userId
+                    ? conversation.inbox_participant_1
+                    : conversation.inbox_participant_2;
+
+                if (typeof myInbox !== 'string' || myInbox.length === 0) return true;
+                return inboxValues.includes(myInbox as ConversationScope);
+            })
+            : repairedConversations;
+
+        const paginatedConversations = scopedConversations.slice(start, end + 1);
+        const count = scopedConversations.length;
 
         const rows = paginatedConversations as unknown as ConversationRow[];
         const otherUserIds = Array.from(new Set(rows.map((conv) => (
@@ -599,6 +612,25 @@ export function subscribeToConversation(
                 schema: 'public',
                 table: 'messages',
                 filter: `conversation_id=eq.${conversationId}`,
+            },
+            callback
+        )
+        .subscribe();
+}
+
+export function subscribeToIncomingMessages(
+    userId: string,
+    callback: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void
+): RealtimeChannel {
+    return supabase
+        .channel(`incoming_messages:${userId}`)
+        .on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+                filter: `receiver_id=eq.${userId}`,
             },
             callback
         )

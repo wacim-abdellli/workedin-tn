@@ -48,14 +48,14 @@ describe('messagingLifecycle policy', () => {
         expect(policy.bannerTone).toBe('danger');
     });
 
-    it('keeps disputed contracts writable with warning banner', () => {
+    it('locks disputed contracts to read-only with warning banner', () => {
         const policy = resolveMessagingLifecyclePolicy({
             kind: 'contract',
             contractStatus: 'disputed',
         });
 
-        expect(policy.isReadOnly).toBe(false);
-        expect(policy.canSend).toBe(true);
+        expect(policy.isReadOnly).toBe(true);
+        expect(policy.canSend).toBe(false);
         expect(policy.bannerTone).toBe('warning');
     });
 

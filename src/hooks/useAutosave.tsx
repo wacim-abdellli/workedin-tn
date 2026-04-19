@@ -42,15 +42,12 @@ export const useAutosave = <T,>({
                 timestamp: new Date().toISOString()
             }));
 
-            // Simulate a short delay for UX purposes (so "Saving..." is visible)
             setTimeout(() => {
                 setStatus('saved');
                 setLastSaved(new Date());
                 onSave?.(dataToSave);
-
-                // Reset to idle after 2 seconds
-                setTimeout(() => setStatus('idle'), 2000);
-            }, 500);
+                // Stay as 'saved' — no reset to idle so the chip stays stable
+            }, 400);
 
         } catch (error) {
             logger.error('Autosave failed:', error);
@@ -60,28 +57,17 @@ export const useAutosave = <T,>({
 
     const debouncedSave = useDebounce(saveToStorage, 1000);
 
-    // Save on data change (debounced)
+    // Save on data change (debounced) — this is the only trigger needed
     useEffect(() => {
         if (initialMount.current) {
             initialMount.current = false;
             return;
         }
 
-        // Only save if data is not empty/null (basic check)
         if (data && typeof data === 'object' && Object.keys(data as Record<string, unknown>).length > 0) {
             debouncedSave(data);
         }
     }, [data, debouncedSave]);
-
-    // Save on interval
-    useEffect(() => {
-        const timer = setInterval(() => {
-            if (data && typeof data === 'object' && Object.keys(data as Record<string, unknown>).length > 0) {
-                saveToStorage(data);
-            }
-        }, interval);
-        return () => clearInterval(timer);
-    }, [data, interval, saveToStorage]);
 
     const loadFromStorage = (): { data: T; timestamp: Date } | null => {
         try {

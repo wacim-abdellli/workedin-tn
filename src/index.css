@@ -1725,3 +1725,178 @@ button[aria-haspopup="listbox"]:focus-visible {
 .delay-600 { animation-delay: 600ms; }
 .delay-700 { animation-delay: 700ms; }
 .delay-800 { animation-delay: 800ms; }
+
+/* ========================================
+   THEME-AWARE PAGE UTILITIES
+   Replaces hardcoded dark hex values with
+   CSS variable equivalents so pages respond
+   to light/dark mode correctly.
+   ======================================== */
+
+/* Page-level backgrounds */
+.page-bg-base {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+}
+
+/* Card / surface tiers */
+.surface-card {
+  background-color: var(--color-bg-elevated);
+  border-color: var(--color-border-default);
+}
+
+.surface-sunken {
+  background-color: var(--color-bg-subtle);
+  border-color: var(--color-border-default);
+}
+
+/* Text helpers */
+.text-on-surface {
+  color: var(--color-text-primary);
+}
+
+.text-on-surface-muted {
+  color: var(--color-text-secondary);
+}
+
+.text-on-surface-subtle {
+  color: var(--color-text-tertiary);
+}
+
+/* Border helpers */
+.border-surface {
+  border-color: var(--color-border-default);
+}
+
+/* Hover backgrounds */
+.hover-surface:hover {
+  background-color: var(--color-bg-muted);
+}
+
+/* ========================================
+   THEME-AWARE GLOBAL RESETS
+   These ensure hardcoded Tailwind color classes
+   respond correctly to light/dark mode.
+   ======================================== */
+
+/* In light mode, any element that still has a hardcoded dark
+   background class gets overridden to the token equivalent.
+   Using html:not(.dark) for maximum specificity. */
+
+html:not(.dark) .bg-\[#0a0a0a\],
+html:not(.dark) .bg-\[#0a0a0f\],
+html:not(.dark) .bg-\[#050507\] {
+  background-color: var(--color-bg-base) !important;
+}
+
+html:not(.dark) .bg-\[#141414\],
+html:not(.dark) .bg-\[#131313\],
+html:not(.dark) .bg-\[#121212\],
+html:not(.dark) .bg-\[#111111\],
+html:not(.dark) .bg-\[#101010\],
+html:not(.dark) .bg-\[#101012\],
+html:not(.dark) .bg-\[#0e0d10\],
+html:not(.dark) .bg-\[#0f0f0f\],
+html:not(.dark) .bg-\[#171a21\] {
+  background-color: var(--color-bg-elevated) !important;
+}
+
+html:not(.dark) .bg-\[#1a1a1a\],
+html:not(.dark) .bg-\[#1a1a24\],
+html:not(.dark) .bg-\[#171717\],
+html:not(.dark) .bg-\[#181818\],
+html:not(.dark) .bg-\[#1e1e1e\],
+html:not(.dark) .bg-\[#1e1c22\],
+html:not(.dark) .bg-\[#161618\],
+html:not(.dark) .bg-\[#18141e\],
+html:not(.dark) .bg-\[#1a1610\],
+html:not(.dark) .bg-\[#0d0d0d\],
+html:not(.dark) .bg-\[#0c0c0e\] {
+  background-color: var(--color-bg-muted) !important;
+}
+
+html:not(.dark) .border-\[#262626\],
+html:not(.dark) .border-\[#252529\],
+html:not(.dark) .border-\[#2a2a2a\],
+html:not(.dark) .border-\[#2b2b2b\],
+html:not(.dark) .border-\[#2c2c30\],
+html:not(.dark) .border-\[#2f333b\],
+html:not(.dark) .border-\[#1e1e22\],
+html:not(.dark) .border-\[#3a3a3a\] {
+  border-color: var(--color-border-default) !important;
+}
+
+/* The key fix: text-white on dark pages becomes invisible in light mode.
+   We target text-white ONLY when it's not on a colored button/badge.
+   The :not() chain excludes elements that have their own colored bg. */
+html:not(.dark) .text-white:not([class*="bg-purple"]):not([class*="bg-violet"]):not([class*="bg-amber"]):not([class*="bg-orange"]):not([class*="bg-red"]):not([class*="bg-green"]):not([class*="bg-blue"]):not([class*="bg-indigo"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-gradient"]) {
+  color: var(--color-text-primary) !important;
+}
+
+html:not(.dark) .text-white\/90,
+html:not(.dark) .text-white\/80,
+html:not(.dark) .text-white\/70 {
+  color: var(--color-text-secondary) !important;
+}
+
+html:not(.dark) .text-white\/60,
+html:not(.dark) .text-white\/55,
+html:not(.dark) .text-white\/50,
+html:not(.dark) .text-white\/45,
+html:not(.dark) .text-white\/40,
+html:not(.dark) .text-white\/35,
+html:not(.dark) .text-white\/30 {
+  color: var(--color-text-tertiary) !important;
+}
+
+html:not(.dark) .text-gray-100,
+html:not(.dark) .text-gray-200,
+html:not(.dark) .text-gray-300,
+html:not(.dark) .text-zinc-100,
+html:not(.dark) .text-zinc-200,
+html:not(.dark) .text-zinc-300 {
+  color: var(--color-text-secondary) !important;
+}
+
+html:not(.dark) .text-gray-400,
+html:not(.dark) .text-gray-500,
+html:not(.dark) .text-zinc-400,
+html:not(.dark) .text-zinc-500,
+html:not(.dark) .text-zinc-600,
+html:not(.dark) .text-slate-300,
+html:not(.dark) .text-slate-400 {
+  color: var(--color-text-tertiary) !important;
+}
+
+/* Hover dark backgrounds */
+html:not(.dark) .hover\:bg-\[#1a1a1a\]:hover,
+html:not(.dark) .hover\:bg-\[#171717\]:hover,
+html:not(.dark) .hover\:bg-\[#1e1c22\]:hover,
+html:not(.dark) .hover\:bg-\[#262626\]:hover {
+  background-color: var(--color-bg-muted) !important;
+}
+
+/* Opacity-modified dark backgrounds */
+html:not(.dark) .bg-\[#262626\]\/50,
+html:not(.dark) .bg-\[#262626\]\/20,
+html:not(.dark) .bg-\[#0a0a0a\]\/30,
+html:not(.dark) .bg-\[#0a0a0a\]\/20,
+html:not(.dark) .bg-\[#0a0a0a\]\/98 {
+  background-color: var(--color-bg-muted) !important;
+}
+
+/* Semi-transparent white overlays used as glass on dark — remap to token surfaces in light */
+html:not(.dark) .bg-white\/4,
+html:not(.dark) .bg-white\/5,
+html:not(.dark) .bg-white\/8,
+html:not(.dark) .bg-white\/\[0\.04\],
+html:not(.dark) .bg-white\/\[0\.05\] {
+  background-color: var(--color-bg-elevated) !important;
+}
+
+html:not(.dark) .border-white\/8,
+html:not(.dark) .border-white\/10,
+html:not(.dark) .border-white\/\[0\.08\],
+html:not(.dark) .border-white\/\[0\.10\] {
+  border-color: var(--color-border-default) !important;
+}

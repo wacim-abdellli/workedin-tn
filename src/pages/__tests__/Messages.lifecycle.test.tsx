@@ -71,6 +71,12 @@ const typingMocks = vi.hoisted(() => ({
     stopTyping: vi.fn(),
 }));
 
+const authMocks = vi.hoisted(() => ({
+    state: {
+        activeMode: 'client' as 'client' | 'freelancer',
+    },
+}));
+
 vi.mock('react-router-dom', async () => {
     const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
     return {
@@ -103,8 +109,8 @@ vi.mock('@/i18n', () => ({
 vi.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({
         user: { id: 'user-1' },
-        profile: { active_mode: 'client' },
-        activeMode: 'client',
+        profile: { active_mode: authMocks.state.activeMode },
+        activeMode: authMocks.state.activeMode,
     }),
 }));
 
@@ -300,16 +306,32 @@ function createConversation({
     name,
     contractId = null,
     otherUserId = 'other-user-1',
+    participant1 = 'user-1',
+    participant2,
+    conversationScope,
+    inboxParticipant1,
+    inboxParticipant2,
 }: {
     id: string;
     name: string;
     contractId?: string | null;
     otherUserId?: string;
+    participant1?: string;
+    participant2?: string;
+    conversationScope?: 'client' | 'freelancer' | 'contract' | 'shared';
+    inboxParticipant1?: 'client' | 'freelancer' | 'contract' | 'shared';
+    inboxParticipant2?: 'client' | 'freelancer' | 'contract' | 'shared';
 }) {
+    const resolvedParticipant2 = participant2 ?? (
+        participant1 === 'user-1'
+            ? otherUserId
+            : 'user-1'
+    );
+
     return {
         id,
-        participant_1: 'user-1',
-        participant_2: otherUserId,
+        participant_1: participant1,
+        participant_2: resolvedParticipant2,
         contract_id: contractId,
         last_message_text: `Preview for ${name}`,
         last_message_at: '2026-04-15T10:00:00.000Z',
@@ -318,7 +340,9 @@ function createConversation({
         unread_count: 0,
         created_at: '2026-04-14T10:00:00.000Z',
         updated_at: '2026-04-15T10:00:00.000Z',
-        conversation_scope: contractId ? 'contract' : 'shared',
+        conversation_scope: conversationScope ?? (contractId ? 'contract' : 'shared'),
+        inbox_participant_1: inboxParticipant1,
+        inbox_participant_2: inboxParticipant2,
         otherUser: {
             id: otherUserId,
             full_name: name,
@@ -468,6 +492,7 @@ describe('Messages lifecycle', () => {
         vi.clearAllMocks();
         localStorage.clear();
         sessionStorage.clear();
+        authMocks.state.activeMode = 'client';
 
         Object.defineProperty(URL, 'createObjectURL', {
             writable: true,
@@ -769,7 +794,7 @@ describe('Messages lifecycle', () => {
         expect(screen.getAllByText(/Archive Smoke and Test Job/i).length).toBeGreaterThan(0);
     });
 
-    it('falls back to the counterparty name when no contract title can be resolved', async () => {
+    it('falls back to a contract reference when no contract title can be resolved', async () => {
         const conversation = createConversation({
             id: 'conv-name-fallback',
             name: 'ija lenna',
@@ -799,12 +824,51 @@ describe('Messages lifecycle', () => {
             expect(screen.queryByText(/Unknown Project/i)).not.toBeInTheDocument();
         });
 
-        expect(screen.getAllByText(/Contract with ija lenna/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/Contract #contract/i).length).toBeGreaterThan(0);
 
         fireEvent.click(screen.getByRole('button', { name: 'Open Contract' }));
+    });
 
-        expect(await screen.findByText('Status unavailable')).toBeInTheDocument();
-        expect(screen.getByText('Status is temporarily unavailable. This chat is still available.')).toBeInTheDocument();
+    it('opens the client profile from a freelancer-side contract conversation', async () => {
+        authMocks.state.activeMode = 'freelancer';
+
+        const conversation = createConversation({
+            id: 'conv-client-profile-route',
+            name: 'wacim abdelli',
+            contractId: 'contract-client-profile-route',
+            otherUserId: 'client-1',
+            participant1: 'client-1',
+            participant2: 'user-1',
+            inboxParticipant1: 'client',
+            inboxParticipant2: 'freelancer',
+        });
+        const threadMessages = [
+            createMessage({
+                id: 'msg-client-profile-route',
+                conversationId: conversation.id,
+                content: 'Profile route contract thread message',
+                senderId: 'client-1',
+                receiverId: 'user-1',
+                contractId: 'contract-client-profile-route',
+            }),
+        ];
+
+        await renderSelectedScenario({
+            conversation,
+            threadMessages,
+            contractRows: [{
+                id: 'contract-client-profile-route',
+                status: 'active',
+                client_id: 'client-1',
+                freelancer_id: 'user-1',
+            }],
+        });
+
+        routeMocks.navigate.mockClear();
+
+        fireEvent.click(screen.getAllByRole('button', { name: 'View profile' })[0]);
+
+        expect(routeMocks.navigate).toHaveBeenCalledWith('/client/client-1');
     });
 
     it.each([
@@ -814,13 +878,7 @@ describe('Messages lifecycle', () => {
             banner: 'Payment is still being confirmed for this contract. Messaging remains open.',
             classToken: 'border-blue-500/40',
         },
-        {
-            label: 'disputed',
-            contractRows: [{ id: 'contract-disputed', status: 'disputed' }],
-            banner: 'This contract is under dispute. Keep all messages focused on resolution details.',
-            classToken: 'border-amber-500/40',
-        },
-    ])('shows a $label banner but keeps the contract thread writable', async ({
+    ])('shows a $label banner and keeps the contract thread writable', async ({
         label,
         contractRows,
         banner,
@@ -901,6 +959,12 @@ describe('Messages lifecycle', () => {
             contractId: 'contract-cancelled',
             banner: 'This contract was cancelled. The thread is now read-only.',
             classToken: 'border-red-500/40',
+        },
+        {
+            label: 'disputed',
+            contractId: 'contract-disputed',
+            banner: 'This contract is under dispute. Messaging is locked while the case is reviewed.',
+            classToken: 'border-amber-500/40',
         },
     ])('locks $label contract threads to read-only and blocks file attachment writes', async ({
         label,

@@ -212,7 +212,7 @@ function ProfileSkeleton() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-5">
       {/* Header card */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-4">
+      <div className="surface-card border border-surface rounded-2xl p-6 space-y-4">
         <div className="flex items-start gap-4">
           <Skeleton className="w-20 h-20 rounded-full flex-shrink-0" />
           <div className="flex-1 space-y-2 pt-1">
@@ -231,7 +231,7 @@ function ProfileSkeleton() {
         ))}
       </div>
       {/* Jobs */}
-      <div className="bg-[#141414] border border-[#262626] rounded-2xl p-5 space-y-3">
+      <div className="surface-card border border-surface rounded-2xl p-5 space-y-3">
         <Skeleton className="h-5 w-40" />
         {[0, 1, 2].map((i) => (
           <Skeleton key={i} className="h-16 rounded-xl" />
@@ -530,7 +530,7 @@ export default function ClientProfile() {
     return (
       <>
         <SEO {...SEO_CONFIG.dashboard} noIndex />
-        <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <div className="min-h-screen page-bg-base">
           <Header />
           <ProfileSkeleton />
         </div>
@@ -548,14 +548,14 @@ export default function ClientProfile() {
     return (
       <>
         <SEO {...SEO_CONFIG.dashboard} noIndex />
-        <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <div className="min-h-screen page-bg-base">
           <Header />
           <div className="max-w-3xl mx-auto px-4 py-20 flex flex-col items-center gap-4 text-center">
-            <UserX className="w-16 h-16 text-gray-500" />
+            <UserX className="w-16 h-16 text-on-surface-subtle" />
             <h2 className="text-xl font-semibold text-white">
               {tx("common.loadFailed", undefined, "Failed to load profile")}
             </h2>
-            <p className="text-sm max-w-xl text-gray-400">
+            <p className="text-sm max-w-xl text-on-surface-muted">
               {errorMessage}
             </p>
             <Button
@@ -576,14 +576,14 @@ export default function ClientProfile() {
     return (
       <>
         <SEO {...SEO_CONFIG.dashboard} noIndex />
-        <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <div className="min-h-screen page-bg-base">
           <Header />
           <div className="max-w-3xl mx-auto px-4 py-20 flex flex-col items-center gap-4 text-center">
-            <UserX className="w-16 h-16 text-gray-500" />
+            <UserX className="w-16 h-16 text-on-surface-subtle" />
             <h2 className="text-xl font-semibold text-white">
               {tx("clientProfile.notFound", undefined, "Client not found")}
             </h2>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-on-surface-muted">
               {tx(
                 "clientProfile.notFoundDesc",
                 undefined,
@@ -663,7 +663,7 @@ export default function ClientProfile() {
   return (
     <>
       <SEO {...SEO_CONFIG.dashboard} noIndex />
-      <div className="min-h-screen bg-[#0a0a0a] text-white">
+      <div className="min-h-screen page-bg-base">
         <Header />
 
         <main className="w-full p-4 sm:p-6">
@@ -858,31 +858,31 @@ export default function ClientProfile() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-white/75">
                     {client.company_name ? (
                       <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
-                        <span className="text-white font-semibold">{tx("profile.companyName", undefined, "Company name")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.companyName", undefined, "Company name")}: </span>
                         {client.company_name}
                       </p>
                     ) : null}
                     {client.company_industry ? (
                       <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
-                        <span className="text-white font-semibold">{tx("profile.companyIndustry", undefined, "Industry")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.companyIndustry", undefined, "Industry")}: </span>
                         {client.company_industry}
                       </p>
                     ) : null}
                     {client.company_size ? (
                       <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
-                        <span className="text-white font-semibold">{tx("profile.companySize", undefined, "Company size")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.companySize", undefined, "Company size")}: </span>
                         {client.company_size}
                       </p>
                     ) : null}
                     {client.company_role ? (
                       <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
-                        <span className="text-white font-semibold">{tx("profile.companyRole", undefined, "Role")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.companyRole", undefined, "Role")}: </span>
                         {client.company_role}
                       </p>
                     ) : null}
                     {client.company_website ? (
                       <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
-                        <span className="text-white font-semibold">{tx("profile.companyWebsite", undefined, "Website")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.companyWebsite", undefined, "Website")}: </span>
                         <a
                           href={client.company_website}
                           target="_blank"
@@ -926,31 +926,31 @@ export default function ClientProfile() {
                   <div className="space-y-2 text-sm text-white/75">
                     {client.project_budget_preference ? (
                       <p>
-                        <span className="text-white font-semibold">{tx("profile.budgetPreference", undefined, "Budget")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.budgetPreference", undefined, "Budget")}: </span>
                         {client.project_budget_preference}
                       </p>
                     ) : null}
                     {client.project_timeline_preference ? (
                       <p>
-                        <span className="text-white font-semibold">{tx("profile.timelinePreference", undefined, "Timeline")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.timelinePreference", undefined, "Timeline")}: </span>
                         {client.project_timeline_preference}
                       </p>
                     ) : null}
                     {communicationSummary ? (
                       <p>
-                        <span className="text-white font-semibold">{tx("profile.communicationPreferences", undefined, "Communication")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.communicationPreferences", undefined, "Communication")}: </span>
                         {communicationSummary}
                       </p>
                     ) : null}
                     {screeningSummary ? (
                       <p>
-                        <span className="text-white font-semibold">{tx("profile.screeningPreferences", undefined, "Screening")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.screeningPreferences", undefined, "Screening")}: </span>
                         {screeningSummary}
                       </p>
                     ) : null}
                     {legalSummary ? (
                       <p>
-                        <span className="text-white font-semibold">{tx("profile.legalPreferences", undefined, "Legal")}: </span>
+                        <span className="text-on-surface font-semibold">{tx("profile.legalPreferences", undefined, "Legal")}: </span>
                         {legalSummary}
                       </p>
                     ) : null}
@@ -1160,3 +1160,4 @@ export default function ClientProfile() {
     </>
   );
 }
+

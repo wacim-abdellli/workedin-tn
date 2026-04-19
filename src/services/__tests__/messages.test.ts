@@ -32,6 +32,7 @@ vi.mock('@/lib/supabase', () => {
                 state.orCalls.push({ table, value });
                 return builder;
             }),
+            in: vi.fn(async () => getTableResult(table)),
             order: vi.fn((column: string, options?: unknown) => {
                 state.orderCalls.push({ table, column, options });
                 return builder;
@@ -99,7 +100,9 @@ describe('messages service coverage', () => {
         state.uploadFile.mockClear();
         state.tableResults = {
             conversations: { data: [], error: null },
+            contracts: { data: [], error: null },
             messages: { data: [], error: null },
+            public_profiles: { data: [], error: null },
         };
     });
 
@@ -132,6 +135,114 @@ describe('messages service coverage', () => {
             { table: 'conversations', column: 'last_message_at', options: { ascending: false } },
             { table: 'messages', column: 'created_at', options: { ascending: false } },
         ]));
+    });
+
+    it('repairs legacy contract inbox rows before returning them', async () => {
+        state.tableResults.conversations = {
+            data: [{
+                id: 'contract-conversation-1',
+                participant_1: 'user-1',
+                participant_2: 'freelancer-1',
+                contract_id: 'contract-1',
+                last_message_text: 'Hello from contract',
+                last_message_at: '2026-04-18T10:00:00.000Z',
+                unread_count_1: 1,
+                unread_count_2: 0,
+                created_at: '2026-04-17T10:00:00.000Z',
+                updated_at: '2026-04-18T10:00:00.000Z',
+                conversation_scope: 'contract',
+                inbox_participant_1: 'contract',
+                inbox_participant_2: 'contract',
+            }],
+            error: null,
+        };
+        state.tableResults.contracts = {
+            data: [{
+                id: 'contract-1',
+                client_id: 'user-1',
+                freelancer_id: 'freelancer-1',
+            }],
+            error: null,
+        };
+        state.tableResults.public_profiles = {
+            data: [{
+                id: 'freelancer-1',
+                full_name: 'Freelancer One',
+                avatar_url: null,
+                username: 'freelancer-one',
+            }],
+            error: null,
+        };
+
+        const result = await getConversations('user-1', 0, 20, {
+            scopes: ['client', 'contract', 'shared'],
+        });
+
+        expect(result.error).toBeNull();
+        expect(result.data).toEqual([
+            expect.objectContaining({
+                id: 'contract-conversation-1',
+                inbox_participant_1: 'client',
+                inbox_participant_2: 'freelancer',
+                otherUser: expect.objectContaining({
+                    id: 'freelancer-1',
+                    full_name: 'Freelancer One',
+                }),
+            }),
+        ]);
+        expect(state.updateCalls).toContainEqual({
+            table: 'conversations',
+            value: {
+                conversation_scope: 'contract',
+                inbox_participant_1: 'client',
+                inbox_participant_2: 'freelancer',
+            },
+        });
+    });
+
+    it('drops repaired contract rows from the wrong mode scope', async () => {
+        state.tableResults.conversations = {
+            data: [{
+                id: 'contract-conversation-2',
+                participant_1: 'client-1',
+                participant_2: 'user-1',
+                contract_id: 'contract-2',
+                last_message_text: 'Wrong inbox before repair',
+                last_message_at: '2026-04-18T11:00:00.000Z',
+                unread_count_1: 0,
+                unread_count_2: 3,
+                created_at: '2026-04-17T11:00:00.000Z',
+                updated_at: '2026-04-18T11:00:00.000Z',
+                conversation_scope: 'contract',
+                inbox_participant_1: 'contract',
+                inbox_participant_2: 'contract',
+            }],
+            error: null,
+        };
+        state.tableResults.contracts = {
+            data: [{
+                id: 'contract-2',
+                client_id: 'client-1',
+                freelancer_id: 'user-1',
+            }],
+            error: null,
+        };
+
+        const result = await getConversations('user-1', 0, 20, {
+            scopes: ['client', 'contract', 'shared'],
+        });
+
+        expect(result.error).toBeNull();
+        expect(result.data).toEqual([]);
+        expect(result.count).toBe(0);
+        expect(state.updateCalls).toContainEqual({
+            table: 'conversations',
+            value: {
+                conversation_scope: 'contract',
+                inbox_participant_1: 'client',
+                inbox_participant_2: 'freelancer',
+            },
+        });
     });
 
     it('sends messages successfully and supports read updates and subscriptions', async () => {

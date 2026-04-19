@@ -367,12 +367,12 @@ export default function ContractsList() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white py-8">
+    <div className="min-h-screen page-bg-base">
       <Header />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold mb-2 text-white">{tx("contracts.title", undefined, "Contracts")}</h1>
-        <p className="text-gray-400 mb-6">
+        <h1 className="text-3xl font-bold mb-2 text-on-surface">{tx("contracts.title", undefined, "Contracts")}</h1>
+        <p className="text-on-surface-muted mb-6">
           {tx(
             "contracts.subtitle",
             undefined,
@@ -383,17 +383,17 @@ export default function ContractsList() {
         <section className="bg-purple-900/10 border border-purple-500/20 rounded-xl p-4 flex gap-4 items-start mb-8">
           <AlertShield className="text-purple-400 shrink-0 mt-0.5 w-5 h-5" />
           <div>
-            <p className="text-sm font-bold text-purple-300">
+            <p className="text-sm font-bold text-purple-600 dark:text-purple-300">
               {tx("contracts.paymentProtectionTitle", undefined, "Payment Protection")}
             </p>
-            <p className="text-sm text-purple-200/70 mt-1">
+            <p className="text-sm text-purple-700/80 dark:text-purple-200/70 mt-1">
               Always communicate and request payments through WorkedIn. Contracts paid outside
               the platform are not protected by our secure escrow system.
             </p>
           </div>
         </section>
 
-        <nav className="flex items-center gap-6 border-b border-[#262626] mb-8 pb-px">
+        <nav className="flex items-center gap-6 border-b border-surface mb-8 pb-px">
           {tabConfig.map((tab) => (
             <button
               key={tab.key}
@@ -401,8 +401,8 @@ export default function ContractsList() {
               onClick={() => setActiveTab(tab.key)}
               className={
                 activeTab === tab.key
-                  ? "pb-4 border-b-2 border-purple-500 text-purple-400 font-semibold text-sm transition-all"
-                  : "pb-4 border-b-2 border-transparent text-gray-400 hover:text-gray-200 font-medium text-sm transition-all cursor-pointer"
+                  ? "pb-4 border-b-2 border-purple-500 text-purple-600 dark:text-purple-400 font-semibold text-sm transition-all"
+                  : "pb-4 border-b-2 border-transparent text-on-surface-muted hover:text-on-surface font-medium text-sm transition-all cursor-pointer"
               }
             >
               {tab.label} ({tab.count})
@@ -410,23 +410,23 @@ export default function ContractsList() {
           ))}
         </nav>
 
-        <section className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-[#262626] flex gap-4 bg-[#0a0a0a]/30">
+        <section className="surface-card border rounded-2xl overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-surface flex gap-4 surface-sunken">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-on-surface-subtle absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={tx("contracts.searchPlaceholder", undefined, "Search contracts or users...")}
-                className="w-full bg-[#0a0a0a] border border-[#262626] focus:border-purple-500 rounded-xl text-sm text-white placeholder:text-gray-500 pl-9 pr-4 py-2.5 outline-none"
+                className="w-full rounded-xl text-sm pl-9 pr-4 py-2.5 outline-none"
               />
             </div>
           </div>
 
           {error ? (
-            <div className="p-6 border-b border-[#262626] bg-red-500/5">
-              <p className="text-sm text-red-300">
+            <div className="p-6 border-b border-surface bg-red-500/5">
+              <p className="text-sm text-red-500">
                 {tx("contracts.loadError", undefined, "Failed to load contracts.")}
               </p>
             </div>
@@ -437,21 +437,21 @@ export default function ContractsList() {
               {Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={index}
-                  className="p-6 border border-[#262626] rounded-xl bg-[#0a0a0a]/20 animate-pulse"
+                  className="p-6 border border-surface rounded-xl surface-sunken animate-pulse"
                 >
-                  <div className="h-5 w-1/3 bg-[#262626] rounded mb-3" />
-                  <div className="h-4 w-1/2 bg-[#262626] rounded mb-2" />
-                  <div className="h-4 w-1/4 bg-[#262626] rounded" />
+                  <div className="h-5 w-1/3 bg-[var(--color-bg-muted)] rounded mb-3" />
+                  <div className="h-4 w-1/2 bg-[var(--color-bg-muted)] rounded mb-2" />
+                  <div className="h-4 w-1/4 bg-[var(--color-bg-muted)] rounded" />
                 </div>
               ))}
             </div>
           ) : error ? (
             <div className="py-20 flex flex-col items-center justify-center text-center">
-              <div className="size-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-300 mb-6">
+              <div className="size-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 mb-6">
                 <AlertShield className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{tx("contracts.loadError", undefined, "Failed to load contracts.")}</h3>
-              <p className="text-sm text-gray-400 max-w-md">
+              <h3 className="text-xl font-bold text-on-surface mb-2">{tx("contracts.loadError", undefined, "Failed to load contracts.")}</h3>
+              <p className="text-sm text-on-surface-muted max-w-md">
                 {tx("common.tryAgain", undefined, "Try again in a moment.")}
               </p>
             </div>
@@ -465,31 +465,31 @@ export default function ContractsList() {
               return (
                 <article
                   key={contract.id}
-                  className="p-6 border-b border-[#262626] last:border-b-0 hover:bg-[#262626]/20 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-6 group"
+                  className="p-6 border-b border-surface last:border-b-0 hover-surface transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-6 group"
                 >
                   <div>
-                    <h3 className="text-lg font-bold text-white group-hover:text-purple-400 transition-colors line-clamp-1 mb-2">
+                    <h3 className="text-lg font-bold text-on-surface group-hover:text-purple-500 transition-colors line-clamp-1 mb-2">
                       {contract.job?.title || contract.title || tx("contracts.unknownProject", undefined, "Unknown Project")}
                     </h3>
 
-                    <div className="flex items-center gap-4 text-sm text-gray-400 flex-wrap">
+                    <div className="flex items-center gap-4 text-sm text-on-surface-muted flex-wrap">
                       <span>
-                        {rate.typeLabel}: <span className="text-white">{rate.amountLabel}</span>
+                        {rate.typeLabel}: <span className="text-on-surface">{rate.amountLabel}</span>
                       </span>
                       <span>
-                        Started <span className="text-white">{formatHiredDate(contract.createdAt)}</span>
+                        Started <span className="text-on-surface">{formatHiredDate(contract.createdAt)}</span>
                       </span>
                     </div>
 
-                    <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+                    <div className="mt-3 flex items-center gap-2 text-xs text-on-surface-subtle">
                       {partner?.avatar_url ? (
                         <img
                           src={partner.avatar_url}
                           alt={partnerName}
-                          className="w-6 h-6 rounded-full object-cover border border-[#262626]"
+                          className="w-6 h-6 rounded-full object-cover border border-surface"
                         />
                       ) : (
-                        <div className="w-6 h-6 bg-[#262626] rounded-full" />
+                        <div className="w-6 h-6 surface-sunken border border-surface rounded-full" />
                       )}
                       <span>
                         {isFreelancerWorkspace
@@ -514,7 +514,7 @@ export default function ContractsList() {
                           `/messages?contract=${contract.id}${partner?.id ? `&with=${partner.id}` : ''}`,
                           { state: { contractId: contract.id, otherUserId: partner?.id || null } }
                         )}
-                        className="border border-[#262626] text-gray-300 hover:text-purple-400 hover:border-purple-500 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
+                        className="border border-surface text-on-surface-muted hover:text-purple-500 hover:border-purple-500 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
                       >
                         <MessageSquare className="w-4 h-4" />
                         {tx("contracts.message", undefined, "Message")}
@@ -537,21 +537,21 @@ export default function ContractsList() {
             })
           ) : activeTab === "cancelled" ? (
             <div className="py-20 flex flex-col items-center justify-center text-center">
-              <div className="size-16 rounded-full bg-[#262626]/50 flex items-center justify-center text-gray-600 mb-6">
+              <div className="size-16 rounded-full surface-sunken border border-surface flex items-center justify-center text-on-surface-subtle mb-6">
                 <Briefcase className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{tx("contracts.emptyCancelledTitle", undefined, "No cancelled contracts")}</h3>
-              <p className="text-sm text-gray-400 max-w-md">
+              <h3 className="text-xl font-bold text-on-surface mb-2">{tx("contracts.emptyCancelledTitle", undefined, "No cancelled contracts")}</h3>
+              <p className="text-sm text-on-surface-muted max-w-md">
                 {tx("contracts.emptyCancelledDescription", undefined, "You don't have any cancelled contracts.")}
               </p>
             </div>
           ) : (
             <div className="py-20 flex flex-col items-center justify-center text-center">
-              <div className="size-16 rounded-full bg-[#262626]/50 flex items-center justify-center text-gray-600 mb-6">
+              <div className="size-16 rounded-full surface-sunken border border-surface flex items-center justify-center text-on-surface-subtle mb-6">
                 <Briefcase className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{tx("contracts.emptyTitle", undefined, "No contracts found")}</h3>
-              <p className="text-sm text-gray-400 max-w-md">
+              <h3 className="text-xl font-bold text-on-surface mb-2">{tx("contracts.emptyTitle", undefined, "No contracts found")}</h3>
+              <p className="text-sm text-on-surface-muted max-w-md">
                 {tx("contracts.emptyDescription", undefined, "Try another tab or adjust your search to find contracts faster.")}
               </p>
             </div>

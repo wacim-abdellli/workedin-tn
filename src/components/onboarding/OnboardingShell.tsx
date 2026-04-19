@@ -74,7 +74,7 @@ export default function OnboardingShell({
                                 <h1 className="text-4xl font-bold text-white">
                                     {title}
                                 </h1>
-                                <p className="mt-3 text-gray-400 leading-relaxed text-lg">
+                                <p className="mt-3 text-on-surface-muted leading-relaxed text-lg">
                                     {description}
                                 </p>
                             </div>
@@ -84,18 +84,18 @@ export default function OnboardingShell({
                         <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-gray-800 rounded-2xl p-6 shadow-lg">
                             <div className={`absolute top-0 right-0 w-24 h-24 ${colors.progressGlow} rounded-full blur-2xl -z-10`} />
                             
-                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-muted">
                                 {tx('onboarding.currentStep', undefined, 'Current step')}
                             </p>
                             <h2 className="mt-3 text-xl font-semibold text-white">
                                 {steps[currentStep - 1]?.title}
                             </h2>
-                            <p className="mt-2 text-sm text-gray-400">
+                            <p className="mt-2 text-sm text-on-surface-muted">
                                 {steps[currentStep - 1]?.description || `Step ${currentStep} of ${totalSteps}`}
                             </p>
 
                             <div className="mt-6 space-y-2">
-                                <div className="flex items-center justify-between text-sm font-medium text-gray-300">
+                                <div className="flex items-center justify-between text-sm font-medium text-on-surface-muted">
                                     <span>Progress</span>
                                     <span className={colors.progressText}>{completion}%</span>
                                 </div>
@@ -136,7 +136,7 @@ export default function OnboardingShell({
                                                 ? colors.stepIcon
                                                 : isCompleted
                                                 ? colors.stepIconCompleted
-                                                : 'bg-[#1a1a1a] text-gray-500 border border-gray-800'
+                                                : 'bg-[#1a1a1a] text-on-surface-subtle border border-gray-800'
                                         }`}>
                                             {step.id}
                                         </div>
@@ -145,7 +145,7 @@ export default function OnboardingShell({
                                                 {step.title}
                                             </p>
                                             {step.description && (
-                                                <p className="mt-1 text-sm text-gray-400">
+                                                <p className="mt-1 text-sm text-on-surface-muted">
                                                     {step.description}
                                                 </p>
                                             )}
@@ -174,3 +174,4 @@ export default function OnboardingShell({
         </main>
     );
 }
+

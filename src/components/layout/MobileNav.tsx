@@ -42,6 +42,7 @@ export default function MobileNav() {
 
   useEffect(() => {
     if (!user?.id) return;
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Fetch initial counts
     const fetchCounts = async () => {
@@ -113,6 +114,14 @@ export default function MobileNav() {
       }, () => {
         fetchCounts(); // Refetch when conversations update
       })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversations',
+        filter: `participant_1=eq.${user.id}`
+      }, () => {
+        fetchCounts(); // Refetch when new conversations are created
+      })
       .on('postgres_changes', { 
         event: 'UPDATE', 
         schema: 'public', 
@@ -121,9 +130,59 @@ export default function MobileNav() {
       }, () => {
         fetchCounts(); // Refetch when conversations update
       })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'conversations',
+        filter: `participant_2=eq.${user.id}`
+      }, () => {
+        fetchCounts(); // Refetch when new conversations are created
+      })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `receiver_id=eq.${user.id}`
+      }, () => {
+        // Optimistic update for instant badge feedback.
+        setUnreadMessages((prev) => prev + 1);
+        if (refreshTimer) {
+          clearTimeout(refreshTimer);
+        }
+        // Reconcile with DB shortly after to keep count exact.
+        refreshTimer = setTimeout(() => {
+          void fetchCounts();
+        }, 280);
+      })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    const handleUnreadSeen = (event: Event) => {
+      const customEvent = event as CustomEvent<{ count?: number } | undefined>;
+      const seenCount = typeof customEvent.detail?.count === 'number'
+        ? Math.max(0, Math.floor(customEvent.detail.count))
+        : 0;
+
+      if (seenCount > 0) {
+        setUnreadMessages((prev) => Math.max(0, prev - seenCount));
+      }
+
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
+      refreshTimer = setTimeout(() => {
+        void fetchCounts();
+      }, 220);
+    };
+
+    window.addEventListener('messages:unread-seen', handleUnreadSeen as EventListener);
+
+    return () => {
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
+      window.removeEventListener('messages:unread-seen', handleUnreadSeen as EventListener);
+      supabase.removeChannel(channel);
+    };
   }, [user?.id]);
 
   const getBadge = (badgeKey?: string) => {

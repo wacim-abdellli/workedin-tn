@@ -477,7 +477,7 @@ export default function SearchResults() {
             : '';
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-white">
+        <div className="min-h-screen page-bg-base">
             <SEO {...SEO_CONFIG.search} url="/search" />
             <Header />
 
@@ -1142,3 +1142,4 @@ export default function SearchResults() {
         </div>
     );
 }
+

@@ -4,7 +4,7 @@ export type AccountStatus = 'active' | 'suspended' | 'archived';
 export type Language = 'ar' | 'fr' | 'en';
 export type JobStatus = 'open' | 'matched' | 'in_progress' | 'completed' | 'cancelled' | 'disputed';
 export type MatchStatus = 'suggested' | 'accepted' | 'rejected';
-export type ContractStatus = 'active' | 'completed' | 'cancelled' | 'disputed';
+export type ContractStatus = 'active' | 'completed' | 'cancelled' | 'disputed' | 'pending_payment' | 'revision_requested';
 export type PaymentStatus = 'pending' | 'paid' | 'released';
 export type PaymentMethod = 'bank_transfer' | 'd17' | 'cash';
 

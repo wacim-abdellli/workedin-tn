@@ -310,7 +310,7 @@ export default function ClientJobs() {
     if (job.derivedStatus === 'finished_unsuccessful') return 'text-red-300';
     if (job.derivedStatus === 'needs_attention') return 'text-amber-300';
     if (job.derivedStatus === 'in_progress') return 'text-amber-200';
-    return 'text-gray-300';
+    return 'text-on-surface-muted';
   }
 
   const formatBudget = (job: EnrichedClientJob) => {
@@ -410,36 +410,36 @@ export default function ClientJobs() {
 
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="rounded-2xl border border-[#2f333b] bg-[#171a21] p-4">
-            <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.open', undefined, 'Open')}</p>
+          <div className="rounded-2xl border border-surface surface-card p-4">
+            <p className="text-sm text-on-surface-muted font-medium">{tx('pages.clientJobs.open', undefined, 'Open')}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.open}</p>
           </div>
-          <div className="rounded-2xl border border-[#2f333b] bg-[#171a21] p-4">
-            <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.inProgress', undefined, 'In progress')}</p>
-            <p className="text-2xl font-bold text-foreground dark:text-white mt-1">{stats.inProgress}</p>
+          <div className="rounded-2xl border border-surface surface-card p-4">
+            <p className="text-sm text-on-surface-muted font-medium">{tx('pages.clientJobs.inProgress', undefined, 'In progress')}</p>
+            <p className="text-2xl font-bold text-on-surface mt-1">{stats.inProgress}</p>
           </div>
-          <div className="rounded-2xl border border-[#2f333b] bg-[#171a21] p-4">
-            <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.needsAttention', undefined, 'Needs attention')}</p>
+          <div className="rounded-2xl border border-surface surface-card p-4">
+            <p className="text-sm text-on-surface-muted font-medium">{tx('pages.clientJobs.needsAttention', undefined, 'Needs attention')}</p>
             <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.needsAttention}</p>
           </div>
-          <div className="rounded-2xl border border-[#2f333b] bg-[#171a21] p-4">
-            <p className="text-sm text-muted font-medium">{tx('pages.clientJobs.finished', undefined, 'Finished')}</p>
-            <p className="text-2xl font-bold text-foreground dark:text-white mt-1">{stats.finished}</p>
-            <p className="text-xs text-muted mt-1">
+          <div className="rounded-2xl border border-surface surface-card p-4">
+            <p className="text-sm text-on-surface-muted font-medium">{tx('pages.clientJobs.finished', undefined, 'Finished')}</p>
+            <p className="text-2xl font-bold text-on-surface mt-1">{stats.finished}</p>
+            <p className="text-xs text-on-surface-muted mt-1">
               {tx('pages.clientJobs.finishedBreakdown', { success: stats.finishedSuccess, unsuccessful: stats.finishedUnsuccessful }, `${stats.finishedSuccess} success / ${stats.finishedUnsuccessful} unsuccessful`) }
             </p>
           </div>
         </div>
 
         {/* Filter tabs */}
-        <div className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-[#2f333b] bg-[#15181d] p-1.5">
+        <div className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-surface surface-card p-1.5">
           {(['all', 'active', 'attention', 'finished'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab
-                ? 'bg-[#242a34] text-amber-300 border border-amber-500/40'
-                : 'text-gray-400 border border-transparent hover:text-gray-200 hover:bg-[#1d222b]'
+                ? 'surface-sunken text-on-surface border border-[var(--workspace-primary)]/40'
+                : 'text-on-surface-muted border border-transparent hover:text-on-surface hover-surface'
                 }`}
             >
               {tabLabel(tab)}
@@ -487,7 +487,7 @@ export default function ClientJobs() {
             {jobs.map((job) => (
               <div 
                 key={job.id}
-                className="rounded-2xl border border-[#2f333b] bg-[#171a21] px-4 py-4 sm:px-5"
+                className="rounded-2xl border border-surface surface-card px-4 py-4 sm:px-5"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
                   <div>
@@ -529,7 +529,7 @@ export default function ClientJobs() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => navigate(getJobEditRoute(job.id))}
-                          className="inline-flex items-center justify-center rounded-lg border border-[#3b414d] bg-[#1c212b] px-3 py-1.5 text-sm font-medium text-gray-200 hover:bg-[#232934]"
+                          className="inline-flex items-center justify-center rounded-lg border border-surface surface-sunken px-3 py-1.5 text-sm font-medium text-on-surface-muted hover-surface"
                         >
                           {tx('pages.clientJobs.edit', undefined, 'Edit')}
                         </button>
@@ -547,7 +547,7 @@ export default function ClientJobs() {
                     {job.derivedStatus === 'finished_unsuccessful' && (
                       <button
                         onClick={() => handleRepost(job)}
-                        className="inline-flex items-center justify-center rounded-lg border border-[#3b414d] bg-[#1c212b] px-3 py-1.5 text-sm font-medium text-gray-200 hover:bg-[#232934]"
+                        className="inline-flex items-center justify-center rounded-lg border border-surface surface-sunken px-3 py-1.5 text-sm font-medium text-on-surface-muted hover-surface"
                       >
                         {tx('pages.clientJobs.repostProject', undefined, 'Repost project')}
                       </button>
@@ -559,7 +559,7 @@ export default function ClientJobs() {
                   <p className="font-semibold text-gray-100 flex items-center gap-1">
                     {formatBudget(job)}
                   </p>
-                  <p className="inline-flex items-center gap-1 rounded-full border border-[#3b414d] bg-[#1c212b] px-2 py-0.5 text-xs font-medium text-gray-300">
+                  <p className="inline-flex items-center gap-1 rounded-full border border-surface surface-sunken px-2 py-0.5 text-xs font-medium text-on-surface-muted">
                     {job.job_type === 'fixed' || job.job_type === 'fixed_price'
                       ? tx('pages.clientJobs.fixedPrice', undefined, 'Fixed Price')
                       : tx('pages.clientJobs.hourlyRate', undefined, 'Hourly Rate')}
@@ -591,7 +591,7 @@ export default function ClientJobs() {
           <div className="flex justify-end gap-3 mt-4">
             <button
               onClick={() => setJobToConfirmDelete(null)}
-              className="px-4 py-2 rounded-xl text-gray-300 hover:text-white transition-colors border border-[#3b414d] hover:bg-[#232934]"
+              className="px-4 py-2 rounded-xl text-on-surface-muted hover:text-on-surface transition-colors border border-surface hover-surface"
             >
               {tx('common.cancel', undefined, 'Cancel')}
             </button>
@@ -605,10 +605,11 @@ export default function ClientJobs() {
           </div>
         }
       >
-        <p className="text-gray-300 mt-2">
+        <p className="text-on-surface-muted mt-2">
           {tx('pages.clientJobs.deleteConfirmText', undefined, 'Are you sure you want to delete this project permanently? This action cannot be undone.')}
         </p>
       </Modal>
     </div>
   )
 }
+

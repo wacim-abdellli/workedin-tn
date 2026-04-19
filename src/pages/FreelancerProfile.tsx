@@ -362,14 +362,14 @@ function CompactMultiSelectEditor({
     }, [activeCategory, options, searchQuery]);
 
     return (
-        <div className="mt-3 rounded-xl border border-[#262626] bg-[#0a0a0a] p-3 space-y-3">
+        <div className="mt-3 rounded-xl border border-surface bg-[#0a0a0a] p-3 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <input
                     type="text"
                     value={searchQuery}
                     onChange={(event) => onSearchChange(event.target.value)}
                     placeholder={`Search ${title.toLowerCase()}...`}
-                    className="flex-1 bg-[#0f0f0f] border border-[#262626] rounded-lg text-white p-2.5 outline-none transition-all"
+                    className="flex-1 bg-[#0f0f0f] border border-surface rounded-lg text-white p-2.5 outline-none transition-all"
                 />
                 <span
                     className="text-xs font-semibold px-2.5 py-1 rounded-full border w-fit"
@@ -409,7 +409,7 @@ function CompactMultiSelectEditor({
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_220px] gap-3">
-                <div className="border border-[#262626] rounded-xl p-2 bg-[#111111] max-h-56 overflow-y-auto">
+                <div className="border border-surface rounded-xl p-2 bg-[#111111] max-h-56 overflow-y-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {filteredOptions.map((option) => {
                             const isSelected = selectedValues.includes(option.name);
@@ -438,11 +438,11 @@ function CompactMultiSelectEditor({
                     </div>
                 </div>
 
-                <div className="border border-[#262626] rounded-xl p-2 bg-[#111111] max-h-56 overflow-y-auto">
-                    <p className="text-xs font-semibold text-gray-400 mb-2">Selected {title}</p>
+                <div className="border border-surface rounded-xl p-2 bg-[#111111] max-h-56 overflow-y-auto">
+                    <p className="text-xs font-semibold text-on-surface-muted mb-2">Selected {title}</p>
                     <div className="flex flex-wrap gap-1.5">
                         {selectedValues.length === 0 ? (
-                            <p className="text-xs text-gray-500">No {title.toLowerCase()} selected.</p>
+                            <p className="text-xs text-on-surface-subtle">No {title.toLowerCase()} selected.</p>
                         ) : (
                             selectedValues.map((value) => (
                                 <button
@@ -941,7 +941,7 @@ function ProfileView({
             };
 
     return (
-        <div className="min-h-screen w-full bg-[#0a0a0a] text-white p-4 sm:p-6">
+        <div className="min-h-screen w-full page-bg-base p-4 sm:p-6">
             {isOwner ? (
                 <input
                     ref={avatarInputRef}
@@ -1089,7 +1089,7 @@ function ProfileView({
                                                 type="button"
                                                 onClick={saveBasics}
                                                 disabled={savingBasics}
-                                                className="px-4 py-2 rounded-lg text-white text-sm font-semibold transition-colors disabled:opacity-70"
+                                                className="px-4 py-2 rounded-lg text-on-surface text-sm font-semibold transition-colors disabled:opacity-70"
                                                 style={{ background: accentColor }}
                                             >
                                                 {savingBasics ? 'Saving...' : 'Save profile'}
@@ -1160,7 +1160,7 @@ function ProfileView({
                                         type="button"
                                         onClick={saveBio}
                                         disabled={savingBio}
-                                        className="px-4 py-2 rounded-lg text-white text-sm font-semibold transition-colors disabled:opacity-70"
+                                        className="px-4 py-2 rounded-lg text-on-surface text-sm font-semibold transition-colors disabled:opacity-70"
                                         style={{ background: accentColor }}
                                     >
                                         {savingBio ? 'Saving...' : 'Save bio'}
@@ -1223,7 +1223,7 @@ function ProfileView({
                                         type="button"
                                         onClick={saveSkills}
                                         disabled={savingSkills || selectedSkillNames.length === 0}
-                                        className="px-4 py-2 rounded-lg text-white text-sm font-semibold transition-colors disabled:opacity-70"
+                                        className="px-4 py-2 rounded-lg text-on-surface text-sm font-semibold transition-colors disabled:opacity-70"
                                         style={{ background: accentColor }}
                                     >
                                         {savingSkills ? 'Saving...' : 'Save skills'}
@@ -1298,7 +1298,7 @@ function ProfileView({
                                         type="button"
                                         onClick={saveTools}
                                         disabled={savingTools || selectedToolNames.length === 0}
-                                        className="px-4 py-2 rounded-lg text-white text-sm font-semibold transition-colors disabled:opacity-70"
+                                        className="px-4 py-2 rounded-lg text-on-surface text-sm font-semibold transition-colors disabled:opacity-70"
                                         style={{ background: accentColor }}
                                     >
                                         {savingTools ? 'Saving...' : 'Save tools'}
@@ -1558,7 +1558,7 @@ function ProfileView({
                                         ) : null}
                                     </section>
 
-                                    <aside className="h-full flex flex-col bg-[#121212]">
+                                    <aside className="h-full flex flex-col bg-[var(--color-bg-elevated)]">
                                         <div className="border-b border-white/10 px-4 py-4 sm:px-5">
                                             <p className="text-xs uppercase tracking-[0.12em] text-[#c4b5fd] font-semibold">
                                                 Project {Math.max(1, activeWorkSamplePosition + 1)} of {workSamples.length}
@@ -2533,13 +2533,13 @@ export default function FreelancerProfile() {
 
     if (isLoading && !freelancer) {
         return (
-            <div className="min-h-screen bg-[#0a0a0a] text-white">
+            <div className="min-h-screen page-bg-base">
                 <Header />
                 <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
                     {/* Left column */}
                     <div className="lg:col-span-2 flex flex-col gap-6">
                         {/* Profile header skeleton */}
-                        <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                        <div className="surface-card border border-surface rounded-2xl p-6">
                             <div className="flex items-center gap-6">
                                 <div className="w-24 h-24 rounded-full bg-[#262626]" />
                                 <div className="flex-1 space-y-3">
@@ -2553,13 +2553,13 @@ export default function FreelancerProfile() {
                             </div>
                         </div>
                         {/* Bio skeleton */}
-                        <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-3">
+                        <div className="surface-card border border-surface rounded-2xl p-6 space-y-3">
                             <div className="h-4 w-32 bg-[#262626] rounded" />
                             <div className="h-4 w-full bg-[#262626] rounded" />
                             <div className="h-4 w-3/4 bg-[#262626] rounded" />
                         </div>
                         {/* Skills skeleton */}
-                        <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-3">
+                        <div className="surface-card border border-surface rounded-2xl p-6 space-y-3">
                             <div className="h-4 w-32 bg-[#262626] rounded" />
                             <div className="flex flex-wrap gap-2">
                                 {[1,2,3,4].map(i => <div key={i} className="h-8 w-24 bg-[#262626] rounded-full" />)}
@@ -2568,12 +2568,12 @@ export default function FreelancerProfile() {
                     </div>
                     {/* Right column */}
                     <div className="flex flex-col gap-4">
-                        <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 space-y-3">
+                        <div className="surface-card border border-surface rounded-2xl p-6 space-y-3">
                             <div className="h-10 w-full bg-[#262626] rounded-xl" />
                             <div className="h-10 w-full bg-[#262626] rounded-xl" />
                             <div className="h-10 w-full bg-[#262626] rounded-xl" />
                         </div>
-                        <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 grid grid-cols-2 gap-3">
+                        <div className="surface-card border border-surface rounded-2xl p-6 grid grid-cols-2 gap-3">
                             {[1,2,3,4].map(i => <div key={i} className="h-16 bg-[#262626] rounded-xl" />)}
                         </div>
                     </div>
@@ -2584,21 +2584,21 @@ export default function FreelancerProfile() {
 
     if (!freelancer) {
         return (
-            <div className="min-h-screen bg-[#0a0a0a] text-white">
+            <div className="min-h-screen page-bg-base">
                 <Header />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <div className="min-h-screen page-bg-base">
             <Header />
             {isPublicPreview ? (
                 <div className="max-w-6xl mx-auto px-6 pt-5">
-                    <div className="bg-[#141414] border border-[#262626] rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                    <div className="surface-card border border-surface rounded-xl px-4 py-3 flex items-center justify-between gap-3">
                         <div>
                             <p className="text-sm font-semibold text-white">{tx('pages.freelancerProfile.publicPreview.title', undefined, 'Public Profile Preview')}</p>
-                            <p className="text-xs text-gray-400">{tx('pages.freelancerProfile.publicPreview.description', undefined, 'You are viewing your profile as other users see it.')}</p>
+                            <p className="text-xs text-on-surface-muted">{tx('pages.freelancerProfile.publicPreview.description', undefined, 'You are viewing your profile as other users see it.')}</p>
                         </div>
                         <button
                             type="button"
@@ -2639,3 +2639,4 @@ export default function FreelancerProfile() {
         </div>
     );
 }
+

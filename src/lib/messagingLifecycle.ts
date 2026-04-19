@@ -1,6 +1,6 @@
 import type { ContractStatus } from '@/types';
 
-export type ContractMessagingStatus = ContractStatus | 'pending_payment' | 'unknown';
+export type ContractMessagingStatus = ContractStatus | 'pending_payment' | 'revision_requested' | 'unknown';
 export type MessagingConversationKind = 'direct' | 'contract';
 export type MessagingPolicyTone = 'none' | 'info' | 'success' | 'warning' | 'danger';
 
@@ -35,6 +35,7 @@ export const normalizeContractStatus = (value: string | null | undefined): Contr
         || normalized === 'completed'
         || normalized === 'cancelled'
         || normalized === 'disputed'
+        || normalized === 'revision_requested'
         || normalized === 'pending_payment'
     ) {
         return normalized;
@@ -44,9 +45,9 @@ export const normalizeContractStatus = (value: string | null | undefined): Contr
 };
 
 const buildReadOnlyContractPolicy = (
-    status: Extract<ContractMessagingStatus, 'completed' | 'cancelled'>,
+    status: Extract<ContractMessagingStatus, 'completed' | 'cancelled' | 'disputed'>,
     stateLabelFallback: string,
-    bannerTone: Extract<MessagingPolicyTone, 'success' | 'danger'>,
+    bannerTone: Extract<MessagingPolicyTone, 'success' | 'warning' | 'danger'>,
     bannerFallback: string,
 ): MessagingLifecyclePolicy => ({
     kind: 'contract',
@@ -95,21 +96,28 @@ const buildContractPolicy = (status: ContractMessagingStatus): MessagingLifecycl
                 bannerFallback: 'Payment is still being confirmed for this contract. Messaging remains open.',
                 blockedReasonFallback: null,
             };
-        case 'disputed':
+        case 'revision_requested':
             return {
                 kind: 'contract',
                 contractStatus: status,
-                stateLabelFallback: 'Disputed',
-                contextLabelFallback: 'Contract chat • Disputed',
+                stateLabelFallback: 'Revision requested',
+                contextLabelFallback: 'Contract chat • Revision requested',
                 isReadOnly: false,
                 canSend: true,
                 canAttachFiles: true,
                 canSendVoiceNotes: true,
                 canReply: true,
-                bannerTone: 'warning',
-                bannerFallback: 'This contract is under dispute. Keep all messages focused on resolution details.',
+                bannerTone: 'info',
+                bannerFallback: 'A revision has been requested. Share only the updates needed to close the loop.',
                 blockedReasonFallback: null,
             };
+        case 'disputed':
+            return buildReadOnlyContractPolicy(
+                status,
+                'Disputed',
+                'warning',
+                'This contract is under dispute. Messaging is locked while the case is reviewed.',
+            );
         case 'completed':
             return buildReadOnlyContractPolicy(
                 status,

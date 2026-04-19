@@ -738,7 +738,7 @@ function JobDetail() {
   }
 
   return (
-    <div className="page-enter min-h-screen bg-[#0a0a0f] transition-colors duration-300">
+    <div className="page-enter min-h-screen page-bg-base transition-colors duration-300">
       <SEO
         title={job ? `${job.title} | ${t.seo.jobDetail.titleSuffix}` : t.seo.jobDetail.titleSuffix}
         description={job?.description?.slice(0, 160) || t.seo.jobDetail.descriptionFallback}
@@ -1100,7 +1100,7 @@ function JobDetail() {
                       <CheckCircle className="w-7 h-7 text-emerald-400" />
                     )}
                   </div>
-                  <h3 className="font-bold text-white text-base mb-1">{proposalCardTitle}</h3>
+                  <h3 className="font-bold text-on-surface text-base mb-1">{proposalCardTitle}</h3>
                   <p className="text-xs text-white/45 mb-1">{proposalStatusLabel}</p>
                   <p className="text-sm text-white/50 mb-4">{tx('jobDetail.yourBid', undefined, 'Your bid:')} {myProposal.bid_amount} {tx('common.currency', undefined, 'TND')}</p>
                   <div className="space-y-2">
@@ -1146,7 +1146,7 @@ function JobDetail() {
                         <CheckCircle className="w-6 h-6 text-blue-400" />
                       )}
                     </div>
-                    <h3 className="font-bold text-white text-sm mb-1">
+                    <h3 className="font-bold text-on-surface text-sm mb-1">
                       {requiresFreelancerWorkspace
                         ? tx('jobDetail.clientCantApplyTitle', undefined, 'Client accounts cannot apply')
                         : applyDecision.reason === 'auth_required'
@@ -1180,7 +1180,7 @@ function JobDetail() {
                   <button
                     onClick={openProposalFlow}
                     disabled={!canSubmitToday}
-                    className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-2xl font-bold text-white text-sm transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-2xl font-bold text-on-surface text-sm transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
                       background: 'linear-gradient(135deg,var(--workspace-primary,#8b5cf6) 0%,color-mix(in srgb,var(--workspace-primary,#8b5cf6) 70%,#6d28d9) 100%)',
                       boxShadow: '0 10px 30px -15px color-mix(in srgb,var(--workspace-primary,#8b5cf6) 60%,transparent)',
@@ -1335,7 +1335,7 @@ function JobDetail() {
         >
           <button
             onClick={openProposalFlow}
-            className="w-full h-12 rounded-2xl font-bold text-white text-sm transition-all hover:brightness-110 active:scale-[0.98]"
+            className="w-full h-12 rounded-2xl font-bold text-on-surface text-sm transition-all hover:brightness-110 active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg,var(--workspace-primary,#8b5cf6) 0%,color-mix(in srgb,var(--workspace-primary,#8b5cf6) 70%,#6d28d9) 100%)' }}
           >
             {tx('jobDetail.submitProposal', undefined, 'Submit Proposal')}
@@ -1402,3 +1402,5 @@ function JobDetail() {
 }
 
 export default JobDetail;
+
+

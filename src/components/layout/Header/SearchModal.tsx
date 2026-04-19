@@ -170,15 +170,15 @@ export default function SearchModal({ onClose }: SearchModalProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[8vh]"
-      style={{ background: 'rgba(4,4,8,0.82)', backdropFilter: 'blur(18px)' }}
+      style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(18px)' }}
       onClick={onClose}
     >
       <div
         className="relative w-full max-w-2xl overflow-hidden rounded-2xl shadow-2xl"
         style={{
-          background: 'linear-gradient(160deg,#18181f 0%,#101015 100%)',
-          border: `1px solid color-mix(in srgb,${accent} 22%,rgba(255,255,255,0.06))`,
-          boxShadow: `0 40px 100px -30px color-mix(in srgb,${accent} 22%,#000),0 0 0 1px rgba(255,255,255,0.04)`,
+          background: 'var(--color-bg-elevated)',
+          border: `1px solid color-mix(in srgb,${accent} 22%,var(--color-border-default))`,
+          boxShadow: `0 40px 100px -30px color-mix(in srgb,${accent} 22%,rgba(0,0,0,0.5)),0 0 0 1px var(--color-border-subtle)`,
           animation: 'searchModalIn 0.18s cubic-bezier(0.22,1,0.36,1) both',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -188,27 +188,27 @@ export default function SearchModal({ onClose }: SearchModalProps) {
 
         {/* Search input */}
         <div className="relative px-4 pt-4">
-          <div className="flex items-center gap-3 rounded-xl px-4 py-3.5" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}>
-            <Search className="w-4.5 h-4.5 text-white/35 shrink-0" />
+          <div className="flex items-center gap-3 rounded-xl px-4 py-3.5" style={{ background: 'var(--color-bg-muted)', border: '1px solid var(--color-border-default)' }}>
+            <Search className="w-4.5 h-4.5 text-on-surface-subtle shrink-0" />
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 bg-transparent text-white text-base outline-none placeholder-white/30"
+              className="flex-1 bg-transparent text-on-surface text-base outline-none placeholder:text-on-surface-subtle"
             />
             {query && (
-              <button onClick={() => setQuery('')} className="flex h-6 w-6 items-center justify-center rounded-md bg-white/8 text-white/50 hover:text-white transition-colors">
+              <button onClick={() => setQuery('')} className="flex h-6 w-6 items-center justify-center rounded-md surface-sunken text-on-surface-subtle hover:text-on-surface transition-colors">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
-            <kbd className="hidden sm:flex items-center justify-center rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-mono text-white/30">ESC</kbd>
+            <kbd className="hidden sm:flex items-center justify-center rounded-md border border-surface surface-sunken px-1.5 py-0.5 text-[10px] font-mono text-on-surface-subtle">ESC</kbd>
           </div>
         </div>
 
         {/* Workspace label + filter pills */}
         <div className="flex items-center justify-between px-5 pt-3 pb-2">
-          <span className="text-[10px] uppercase tracking-widest font-bold text-white/30">{workspaceLabel}</span>
+          <span className="text-[10px] uppercase tracking-widest font-bold text-on-surface-subtle">{workspaceLabel}</span>
           <div className="flex items-center gap-1">
             {pills.map((pill) => {
               const active = pill.key === activeFilter
@@ -219,7 +219,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
                   className="rounded-full px-3 py-1 text-xs font-semibold transition-all"
                   style={{
                     background: active ? accentLight : 'transparent',
-                    color: active ? accent : 'rgba(255,255,255,0.4)',
+                    color: active ? accent : 'var(--color-text-tertiary)',
                     border: `1px solid ${active ? accentBorder : 'transparent'}`,
                   }}
                 >
@@ -231,7 +231,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
         </div>
 
         {/* Divider */}
-        <div className="mx-4 border-t border-white/6" />
+        <div className="mx-4 border-t border-surface" />
 
         {/* Results area */}
         <div className="max-h-[46vh] overflow-y-auto p-2">
@@ -239,7 +239,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
             <>
               {filteredQuick.length > 0 && (
                 <div className="px-3 pt-2 pb-1">
-                  <p className="text-[10px] uppercase tracking-widest text-white/25 font-semibold mb-1">
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-subtle font-semibold mb-1">
                     {tx('pages.searchModal.quickActions', undefined, 'Quick actions')}
                   </p>
                   {filteredQuick.map((item, idx) => (
@@ -255,7 +255,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
 
               {recentItems.length > 0 && (
                 <div className="px-3 pt-2 pb-1">
-                  <p className="text-[10px] uppercase tracking-widest text-white/25 font-semibold mb-1">
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-subtle font-semibold mb-1">
                     {tx('pages.searchModal.recentSection', undefined, 'Recent')}
                   </p>
                   {recentItems.map((item, i) => {
@@ -273,12 +273,12 @@ export default function SearchModal({ onClose }: SearchModalProps) {
               )}
             </>
           ) : loading ? (
-            <div className="flex flex-col items-center justify-center py-10 gap-2 text-white/40">
+            <div className="flex flex-col items-center justify-center py-10 gap-2 text-on-surface-subtle">
               <Loader2 className="w-5 h-5 animate-spin" style={{ color: accent }} />
               <span className="text-xs">{tx('globalSearch.searching', undefined, 'Searching...')}</span>
             </div>
           ) : filteredResults.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 gap-2 text-white/35">
+            <div className="flex flex-col items-center justify-center py-10 gap-2 text-on-surface-subtle">
               <Search className="w-5 h-5" />
               <p className="text-sm">{tx('globalSearch.noResultsFor', { query }, `No results for "${query}"`)}</p>
             </div>
@@ -297,15 +297,15 @@ export default function SearchModal({ onClose }: SearchModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-white/6 px-5 py-2.5">
-          <div className="flex items-center gap-3 text-[10px] text-white/25">
+        <div className="flex items-center justify-between border-t border-surface px-5 py-2.5">
+          <div className="flex items-center gap-3 text-[10px] text-on-surface-subtle">
             <span>↑↓ navigate</span>
             <span>↵ select</span>
           </div>
           {trimmedQuery && (
             <button
               onClick={goToResults}
-              className="flex items-center gap-1.5 text-xs font-medium transition-colors hover:text-white"
+              className="flex items-center gap-1.5 text-xs font-medium transition-colors hover:opacity-80"
               style={{ color: accent }}
             >
               Search everything
@@ -347,20 +347,20 @@ function ResultRow({
         style={{
           background: isSelected
             ? `color-mix(in srgb,${accent} 20%,transparent)`
-            : 'rgba(255,255,255,0.06)',
-          color: isSelected ? accent : 'rgba(255,255,255,0.4)',
+            : 'var(--color-bg-muted)',
+          color: isSelected ? accent : 'var(--color-text-tertiary)',
         }}
       >
         <item.Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium truncate" style={{ color: isSelected ? '#fff' : 'rgba(255,255,255,0.75)' }}>
+        <p className="text-sm font-medium truncate" style={{ color: isSelected ? accent : 'var(--color-text-primary)' }}>
           {item.label}
         </p>
-        {item.meta && <p className="text-[11px] text-white/35 truncate">{item.meta}</p>}
+        {item.meta && <p className="text-[11px] text-on-surface-subtle truncate">{item.meta}</p>}
       </div>
       {item.shortcut && (
-        <kbd className="hidden sm:inline-flex items-center justify-center rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-mono text-white/30 shrink-0">
+        <kbd className="hidden sm:inline-flex items-center justify-center rounded-md border border-surface surface-sunken px-1.5 py-0.5 text-[10px] font-mono text-on-surface-subtle shrink-0">
           {item.shortcut}
         </kbd>
       )}

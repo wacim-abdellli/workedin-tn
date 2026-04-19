@@ -370,7 +370,7 @@ export default function FindFreelancers() {
         : '0.0';
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-white scroll-smooth">
+        <div className="min-h-screen page-bg-base scroll-smooth">
             <SEO {...SEO_CONFIG.findFreelancers} url="/find-freelancers" canonical="https://workedin.tn/find-freelancers" />
             <Header />
 
@@ -615,7 +615,7 @@ export default function FindFreelancers() {
                             <button
                                 type="button"
                                 onClick={() => setShowFilters(false)}
-                                className="w-full h-12 rounded-2xl font-bold text-white text-sm"
+                                className="w-full h-12 rounded-2xl font-bold text-on-surface text-sm"
                                 style={{ background: 'linear-gradient(135deg,var(--workspace-primary) 0%,color-mix(in srgb,var(--workspace-primary) 70%,#000) 100%)' }}
                             >
                                 {copy.resultsCount.replace('{{count}}', filteredFreelancers.length.toString())}
@@ -670,3 +670,5 @@ export default function FindFreelancers() {
         </div>
     );
 }
+
+

@@ -89,10 +89,10 @@ interface SearchableTagInputProps {
 }
 
 const INPUT_CLASS =
-  "bg-[#0a0a0a] border border-[#262626] rounded-xl focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-white p-3.5 w-full outline-none transition-all";
+  "bg-[#0a0a0a] border border-surface rounded-xl focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-white p-3.5 w-full outline-none transition-all";
 
 const CLIENT_INPUT_CLASS =
-  "bg-[#0a0a0a] border border-[#262626] rounded-xl focus:border-[#E8820C] focus:ring-1 focus:ring-[#E8820C] text-white p-3.5 w-full outline-none transition-all";
+  "bg-[#0a0a0a] border border-surface rounded-xl focus:border-[#E8820C] focus:ring-1 focus:ring-[#E8820C] text-white p-3.5 w-full outline-none transition-all";
 
 function scrollToStepAnchor() {
   if (typeof window === "undefined") return;
@@ -410,12 +410,12 @@ function SearchableTagInput({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-4">
         <label className="text-sm font-medium text-white">{label}</label>
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-on-surface-muted">
           {tags.length}/{maxTags}
         </span>
       </div>
 
-      {hint ? <p className="text-xs text-gray-400 -mt-1">{hint}</p> : null}
+      {hint ? <p className="text-xs text-on-surface-muted -mt-1">{hint}</p> : null}
 
       <input
         value={query}
@@ -437,7 +437,7 @@ function SearchableTagInput({
               key={item}
               type="button"
               onClick={() => addTag(item)}
-              className="px-3 py-1.5 rounded-full border border-[#262626] text-xs text-gray-300 hover:text-white hover:border-purple-500/50 transition-colors"
+              className="px-3 py-1.5 rounded-full border border-surface text-xs text-on-surface-muted hover:text-white hover:border-purple-500/50 transition-colors"
             >
               {item}
             </button>
@@ -504,7 +504,7 @@ function OnboardingLayout({
   const panelAccentIcon = isClient ? "#E8820C" : "#a78bfa";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen page-bg-base">
       <Header />
 
       <main className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-8">
@@ -517,7 +517,7 @@ function OnboardingLayout({
               activeLabelColor={stepLabelColor}
             />
 
-            <section className="bg-[#141414] border border-[#262626] p-6 md:p-8 rounded-3xl shadow-[0_35px_80px_-60px_rgba(0,0,0,0.9)]">
+            <section className="surface-card border border-surface p-6 md:p-8 rounded-3xl shadow-[0_35px_80px_-60px_rgba(0,0,0,0.9)]">
               <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] font-semibold mb-3" style={{ color: panelAccentText }}>
@@ -528,7 +528,7 @@ function OnboardingLayout({
                     )}
                   </p>
                   <h1 className="text-2xl md:text-3xl font-semibold text-white">{title}</h1>
-                  <p className="text-sm md:text-base text-gray-400 mt-2">{subtitle}</p>
+                  <p className="text-sm md:text-base text-on-surface-muted mt-2">{subtitle}</p>
                 </div>
 
                 <button
@@ -556,14 +556,14 @@ function OnboardingLayout({
 
               <div>{children}</div>
 
-              <footer className="sticky bottom-0 z-10 flex justify-between mt-8 pt-4 pb-1 border-t border-[#262626] bg-gradient-to-t from-[#141414] to-[#141414]/95 backdrop-blur">
+              <footer className="sticky bottom-0 z-10 flex justify-between mt-8 pt-4 pb-1 border-t border-surface bg-gradient-to-t from-[#141414] to-[#141414]/95 backdrop-blur">
                 <div>
                   {showBackButton ? (
                     <button
                       type="button"
                       onClick={onBack}
                       disabled={isBackDisabled}
-                      className="px-5 py-3 rounded-xl border border-[#262626] text-gray-200 hover:text-white transition-colors"
+                      className="px-5 py-3 rounded-xl border border-surface text-gray-200 hover:text-white transition-colors"
                       style={{
                         borderColor: "#262626",
                         opacity: isBackDisabled ? 0.65 : 1,
@@ -1091,7 +1091,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="w-24 h-24 rounded-2xl border border-[#262626] bg-[#0a0a0a] flex items-center justify-center overflow-hidden hover:border-purple-500/60 transition-colors"
+                className="w-24 h-24 rounded-2xl border border-surface bg-[#0a0a0a] flex items-center justify-center overflow-hidden hover:border-purple-500/60 transition-colors"
               >
                 {formData.avatarPreviewUrl ? (
                   <img
@@ -1100,7 +1100,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <UserCircle2 className="w-10 h-10 text-gray-500" />
+                  <UserCircle2 className="w-10 h-10 text-on-surface-subtle" />
                 )}
               </button>
 
@@ -1108,12 +1108,12 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#262626] bg-[#0a0a0a] text-sm text-gray-200 hover:border-purple-500/60 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-surface bg-[#0a0a0a] text-sm text-gray-200 hover:border-purple-500/60 transition-colors"
                 >
                   <Upload className="w-4 h-4" />
                   {tx("onboarding.progressive.freelancer.fields.chooseAvatar", undefined, "Choose avatar")}
                 </button>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-on-surface-subtle mt-2">
                   {tx("onboarding.progressive.freelancer.fields.avatarHint", undefined, "PNG, JPG, WEBP")}
                 </p>
                 <input
@@ -1209,7 +1209,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
               )}
             />
             <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-gray-500">{formData.bio.length}/500</p>
+              <p className="text-xs text-on-surface-subtle">{formData.bio.length}/500</p>
               {errors.bio ? <p className="text-xs text-red-400">{errors.bio}</p> : null}
             </div>
           </div>
@@ -1289,7 +1289,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
               {tx("onboarding.progressive.freelancer.fields.hourlyRate", undefined, "Hourly Rate")}
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-on-surface-muted">
                 {tx("onboarding.progressive.freelancer.currency", undefined, "TND")}
               </span>
               <input
@@ -1406,7 +1406,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
                 "For security and verified badge",
               )}
             />
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-on-surface-subtle mt-2">
               {tx(
                 "onboarding.progressive.freelancer.hints.phoneNumber",
                 undefined,
@@ -1934,3 +1934,4 @@ export default function ProgressiveOnboarding({
     <ClientOnboarding onSaveExit={handleSaveExit} onComplete={onComplete} />
   );
 }
+

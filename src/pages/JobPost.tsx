@@ -798,7 +798,7 @@ export default function JobPost() {
   };
 
   return (
-    <div className="bg-[#0a0a0a] min-h-screen text-white">
+    <div className="page-bg-base min-h-screen">
       <SEO
         title={tx('jobs.new.seo.title', undefined, 'Post a Project')}
         description={tx(
@@ -810,14 +810,14 @@ export default function JobPost() {
       <Header />
 
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="min-h-screen w-full bg-[#0a0a0a] text-white p-4 md:p-8 flex justify-center pb-24 md:pb-28">
+        <form onSubmit={methods.handleSubmit(onSubmit)} className="min-h-screen w-full page-bg-base p-4 md:p-8 flex justify-center pb-24 md:pb-28">
           <div className="max-w-4xl w-full flex flex-col gap-6">
             <section className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_18rem] gap-4 items-start">
               <div className="space-y-4">
-                <h1 className="text-3xl font-bold max-w-xl">
+                <h1 className="text-3xl font-bold max-w-xl text-on-surface">
                   {tx('jobs.new.heroTitle', undefined, 'Post a project with clarity and attract better-fit freelancers.')}
                 </h1>
-                <p className="text-gray-400 max-w-2xl">
+                <p className="text-on-surface-muted max-w-2xl">
                   {tx(
                     'jobs.new.heroDescription',
                     undefined,
@@ -825,53 +825,49 @@ export default function JobPost() {
                   )}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="bg-[#141414] border border-[#262626] px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5">
+                  <span className="surface-card border px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5 text-on-surface-muted">
                     {autosaveStatus === 'saving' ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : autosaveStatus === 'saved' ? (
-                      <Check className="w-3.5 h-3.5" />
                     ) : (
-                      <Clock className="w-3.5 h-3.5" />
+                      <Check className="w-3.5 h-3.5" />
                     )}
                     {autosaveStatus === 'saving'
                       ? tx('jobs.new.autosave.saving', undefined, 'Saving...')
-                      : autosaveStatus === 'saved'
-                        ? tx('jobs.new.autosave.saved', undefined, 'Saved')
-                        : lastSaved
-                        ? tx('jobs.new.autosave.lastSaved', { time: timeAgo(lastSaved) }, `Last saved: ${timeAgo(lastSaved)}`)
-                        : tx('jobs.new.autosave.ready', undefined, 'Autosave ready')}
+                      : lastSaved
+                      ? tx('jobs.new.autosave.lastSaved', { time: 'Just now' }, 'Last saved: Just now')
+                      : tx('jobs.new.autosave.ready', undefined, 'Autosave ready')}
                   </span>
-                  <span className="bg-[#141414] border border-[#262626] px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5">
+                  <span className="surface-card border px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5 text-on-surface-muted">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     {tx('jobs.new.wizard.metaDraft', undefined, 'Draft-safe flow')}
                   </span>
                 </div>
               </div>
 
-              <aside className="bg-[#141414] border border-[#262626] rounded-2xl p-5 w-full lg:w-72">
-                <p className="text-orange-400 text-xs font-semibold tracking-wide">
+              <aside className="surface-card border rounded-2xl p-5 w-full lg:w-72">
+                <p className="text-orange-500 text-xs font-semibold tracking-wide">
                   {tx('jobs.new.currentPhase', undefined, 'CURRENT PHASE')}
                 </p>
-                <h2 className="text-white text-lg font-semibold mt-1">{currentStepMeta.label}</h2>
-                <p className="text-gray-400 text-sm mt-1">{currentStepMeta.description}</p>
+                <h2 className="text-on-surface text-lg font-semibold mt-1">{currentStepMeta.label}</h2>
+                <p className="text-on-surface-muted text-sm mt-1">{currentStepMeta.description}</p>
 
                 <div className="mt-4">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">{tx('jobs.new.progress', undefined, 'Progress')}</span>
-                    <span className="text-white">{progress}</span>
+                    <span className="text-on-surface-muted">{tx('jobs.new.progress', undefined, 'Progress')}</span>
+                    <span className="text-on-surface">{progress}</span>
                   </div>
-                  <div className="h-1.5 w-full bg-[#262626] rounded-full mt-2 overflow-hidden">
+                  <div className="h-1.5 w-full bg-[var(--color-bg-muted)] rounded-full mt-2 overflow-hidden">
                     <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: progress }} />
                   </div>
                 </div>
 
-                <p className="text-gray-400 text-xs mt-3">
+                <p className="text-on-surface-muted text-xs mt-3">
                   {tx('jobs.new.stepCounter', { current: currentStep, total: STEP_ITEMS.length }, `Step ${currentStep} of ${STEP_ITEMS.length}`)}
                 </p>
               </aside>
             </section>
 
-            <section className="bg-[#141414] border border-[#262626] rounded-2xl p-2">
+            <section className="surface-card border rounded-2xl p-2">
               <ol className="flex items-center justify-between gap-2 overflow-x-auto">
                 {STEP_ITEMS.map((step, index) => {
                   const isCompleted = step.id < currentStep;
@@ -884,21 +880,21 @@ export default function JobPost() {
                           className={`w-7 h-7 rounded-full text-xs font-semibold inline-flex items-center justify-center ${
                             isActive || isCompleted
                               ? 'bg-orange-500 text-white'
-                              : 'bg-[#262626] text-gray-400'
+                              : 'surface-sunken text-on-surface-muted'
                           }`}
                         >
                           {isCompleted ? <Check className="w-4 h-4" /> : step.id}
                         </span>
                         <span
                           className={`${
-                            isActive ? 'text-white' : 'text-gray-500'
+                            isActive ? 'text-on-surface' : 'text-on-surface-muted'
                           } text-sm font-medium`}
                         >
                           {step.label}
                         </span>
                       </div>
                       {index < STEP_ITEMS.length - 1 ? (
-                        <ChevronRight className="w-4 h-4 text-gray-600" />
+                        <ChevronRight className="w-4 h-4 text-on-surface-subtle" />
                       ) : null}
                     </li>
                   );
@@ -907,7 +903,7 @@ export default function JobPost() {
             </section>
 
             {currentStep === 1 ? (
-              <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8 flex flex-col gap-8">
+              <section className="surface-card border rounded-2xl p-6 md:p-8 flex flex-col gap-8">
                 <header>
                   <h2 className="text-xl font-bold">{tx('jobs.new.steps.basics', undefined, 'Job details')}</h2>
                   <p className="text-gray-400 mt-1">
@@ -939,7 +935,7 @@ export default function JobPost() {
                         key={template}
                         type="button"
                         onClick={() => applyTitleTemplate(template)}
-                        className="text-xs px-2.5 py-1 rounded-full border border-[#2b2b2b] text-gray-300 hover:text-white hover:border-orange-500/60 transition-colors"
+                        className="text-xs px-2.5 py-1 rounded-full border border-surface text-on-surface-muted hover:text-on-surface hover:border-orange-500/60 transition-colors"
                       >
                         {template}
                       </button>
@@ -1004,7 +1000,7 @@ export default function JobPost() {
                         <option
                           key={subcategory.id}
                           value={subcategory.id}
-                          className="bg-[#0a0a0a] text-white"
+                          className="bg-[var(--input-bg)] text-[var(--color-text-primary)]"
                         >
                           {subcategory.name}
                         </option>
@@ -1050,7 +1046,7 @@ export default function JobPost() {
                         key={snippet}
                         type="button"
                         onClick={() => addDescriptionSnippet(snippet)}
-                        className="text-xs px-2.5 py-1 rounded-full border border-[#2b2b2b] text-gray-300 hover:text-white hover:border-orange-500/60 transition-colors"
+                        className="text-xs px-2.5 py-1 rounded-full border border-surface text-on-surface-muted hover:text-on-surface hover:border-orange-500/60 transition-colors"
                       >
                         + template
                       </button>
@@ -1059,7 +1055,7 @@ export default function JobPost() {
 
                   <div className="bg-orange-500/5 text-orange-400 border border-orange-500/20 rounded-xl p-4 flex gap-3">
                     <Lightbulb className="w-5 h-5 mt-0.5 shrink-0" />
-                    <ul className="text-sm text-gray-300 space-y-1">
+                    <ul className="text-sm text-on-surface-muted space-y-1">
                       <li className="inline-flex items-center gap-2">
                         <Check className="w-3.5 h-3.5 text-orange-400" />
                         {tx(
@@ -1097,7 +1093,7 @@ export default function JobPost() {
                 </div>
 
                 <div className="space-y-3" data-field="reference_links">
-                  <div className="rounded-2xl border border-[#262626] bg-[#0f0f0f] p-4 sm:p-5">
+                  <div className="rounded-2xl border border-surface surface-sunken p-4 sm:p-5">
                     <JobLinksInput
                       value={referenceLinks}
                       onChange={(links) => {
@@ -1109,7 +1105,7 @@ export default function JobPost() {
                       maxLinks={MAX_JOB_REFERENCE_LINKS}
                     />
                     {methods.formState.errors.reference_links ? (
-                      <p className="mt-2 text-red-400 text-xs">
+                      <p className="mt-2 text-red-500 text-xs">
                         {methods.formState.errors.reference_links.message as string}
                       </p>
                     ) : null}
@@ -1117,12 +1113,12 @@ export default function JobPost() {
                 </div>
 
                 <div className="space-y-3" data-field="required_skills">
-                  <label className="text-sm font-medium">
+                  <label className="text-sm font-medium text-on-surface">
                     {tx('jobs.new.fields.requiredSkills', undefined, 'Required skills (max 5)')}
                   </label>
 
                   <div className="relative">
-                    <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Search className="w-4 h-4 text-on-surface-subtle absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={skillQuery}
@@ -1147,13 +1143,13 @@ export default function JobPost() {
                       return (
                         <span
                           key={skill.id}
-                          className="flex items-center gap-2 bg-[#262626] text-white px-3 py-1.5 rounded-full text-sm"
+                          className="flex items-center gap-2 surface-sunken border border-surface text-on-surface px-3 py-1.5 rounded-full text-sm"
                         >
                           {label}
                           <button
                             type="button"
                             onClick={() => removeSkill(skill.id)}
-                            className="text-gray-400 hover:text-white transition-colors"
+                            className="text-on-surface-muted hover:text-on-surface transition-colors"
                             aria-label={`Remove ${label}`}
                           >
                             <X className="w-3.5 h-3.5" />
@@ -1164,7 +1160,7 @@ export default function JobPost() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="text-gray-400">{tx('jobs.new.fields.suggested', undefined, 'Suggested:')}</span>
+                    <span className="text-on-surface-muted">{tx('jobs.new.fields.suggested', undefined, 'Suggested:')}</span>
                     {filteredSkillSuggestions.map((skill) => {
                       const label =
                         language === 'ar'
@@ -1178,7 +1174,7 @@ export default function JobPost() {
                           key={skill.id}
                           type="button"
                           onClick={() => addSkill(skill)}
-                          className="border border-[#262626] text-gray-400 px-3 py-1 rounded-full hover:border-orange-500 hover:text-orange-500 cursor-pointer transition-all"
+                          className="border border-surface text-on-surface-muted px-3 py-1 rounded-full hover:border-orange-500 hover:text-orange-500 cursor-pointer transition-all"
                         >
                           {label}
                         </button>
@@ -1186,12 +1182,12 @@ export default function JobPost() {
                     })}
                   </div>
 
-                  <div className="rounded-xl border border-[#2b2b2b] bg-[#111111] p-4">
+                  <div className="rounded-xl border border-surface surface-sunken p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs uppercase tracking-wide text-gray-400">{tx('jobs.new.quality.title', undefined, 'Quality Score')}</p>
-                      <p className="text-sm font-semibold text-white">{qualityScore}%</p>
+                      <p className="text-xs uppercase tracking-wide text-on-surface-muted">{tx('jobs.new.quality.title', undefined, 'Quality Score')}</p>
+                      <p className="text-sm font-semibold text-on-surface">{qualityScore}%</p>
                     </div>
-                    <div className="h-2 rounded-full bg-[#262626] overflow-hidden mb-3">
+                    <div className="h-2 rounded-full bg-[var(--color-bg-muted)] overflow-hidden mb-3">
                       <div
                         className="h-full transition-all"
                         style={{
@@ -1203,23 +1199,23 @@ export default function JobPost() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {qualityChecks.map((check) => (
                         <div key={check.id} className="inline-flex items-center gap-2 text-xs">
-                          <span className={`inline-flex w-4 h-4 items-center justify-center rounded-full ${check.pass ? 'bg-emerald-500/20 text-emerald-400' : 'bg-[#262626] text-gray-500'}`}>
+                          <span className={`inline-flex w-4 h-4 items-center justify-center rounded-full ${check.pass ? 'bg-emerald-500/20 text-emerald-400' : 'surface-sunken text-on-surface-subtle'}`}>
                             {check.pass ? <Check className="w-3 h-3" /> : <span>•</span>}
                           </span>
-                          <span className={check.pass ? 'text-gray-200' : 'text-gray-500'}>{check.label}</span>
+                          <span className={check.pass ? 'text-on-surface-muted' : 'text-on-surface-subtle'}>{check.label}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                   {methods.formState.errors.required_skills ? (
-                    <p className="text-red-400 text-xs">
+                    <p className="text-red-500 text-xs">
                       {methods.formState.errors.required_skills.message as string}
                     </p>
                   ) : null}
                 </div>
 
                 <div className="space-y-3" data-field="attachments_files">
-                  <label className="text-sm font-medium">
+                  <label className="text-sm font-medium text-on-surface">
                     {tx('jobs.new.fields.attachments', undefined, 'Attachments (optional)')}
                   </label>
 
@@ -1228,17 +1224,17 @@ export default function JobPost() {
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
-                    className={`border-2 border-dashed bg-[#0a0a0a] rounded-2xl py-12 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors ${
+                    className={`border-2 border-dashed surface-sunken rounded-2xl py-12 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors ${
                       isDragging
                         ? 'border-orange-500/50'
-                        : 'border-[#262626] hover:border-orange-500/50'
+                        : 'border-surface hover:border-orange-500/50'
                     }`}
                   >
-                    <UploadCloud className="size-10 text-gray-500" />
-                    <p className="text-white font-medium">
+                    <UploadCloud className="size-10 text-on-surface-subtle" />
+                    <p className="text-on-surface font-medium">
                       {tx('jobs.new.fields.attachmentsDrop', undefined, 'Drag files here or click to browse')}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-on-surface-subtle">
                       {tx(
                         'jobs.new.fields.attachmentsHint',
                         undefined,
@@ -1248,7 +1244,7 @@ export default function JobPost() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="border border-[#262626] text-white px-4 py-2 rounded-lg text-sm mt-2"
+                      className="border border-surface text-on-surface px-4 py-2 rounded-lg text-sm mt-2 hover-surface transition-colors"
                     >
                       {tx('jobs.new.fields.chooseFiles', undefined, 'Choose files')}
                     </button>
@@ -1269,12 +1265,12 @@ export default function JobPost() {
                       {attachments.map((file, index) => (
                         <div
                           key={`${file.name}-${file.size}-${index}`}
-                          className="bg-[#0a0a0a] border border-[#262626] rounded-xl px-3 py-2.5 flex items-center justify-between"
+                          className="surface-sunken border border-surface rounded-xl px-3 py-2.5 flex items-center justify-between"
                         >
-                          <span className="text-sm text-white truncate">{file.name}</span>
+                          <span className="text-sm text-on-surface truncate">{file.name}</span>
                           <button
                             type="button"
-                            className="text-gray-400 hover:text-white transition-colors"
+                            className="text-on-surface-muted hover:text-on-surface transition-colors"
                             onClick={() => removeAttachment(index)}
                             aria-label={`Remove ${file.name}`}
                           >
@@ -1285,7 +1281,7 @@ export default function JobPost() {
                     </div>
                   ) : null}
                   {methods.formState.errors.attachments_files ? (
-                    <p className="text-red-400 text-xs">
+                    <p className="text-red-500 text-xs">
                       {methods.formState.errors.attachments_files.message as string}
                     </p>
                   ) : null}
@@ -1294,28 +1290,28 @@ export default function JobPost() {
             ) : null}
 
             {currentStep === 2 ? (
-              <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">
+              <section className="surface-card border rounded-2xl p-6 md:p-8">
                 <StepBudget />
               </section>
             ) : null}
 
             {currentStep === 3 ? (
-              <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">
+              <section className="surface-card border rounded-2xl p-6 md:p-8">
                 <StepVisibility />
               </section>
             ) : null}
 
             {currentStep === 4 ? (
-              <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">
+              <section className="surface-card border rounded-2xl p-6 md:p-8">
                 <StepReview />
               </section>
             ) : null}
           </div>
 
           <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-1.5rem)] md:w-[calc(100%-3rem)] md:max-w-4xl">
-            <div className="bg-[#141414]/95 backdrop-blur-md border border-[#262626] rounded-2xl px-3 py-3 md:px-4 md:py-3 flex items-center justify-between gap-3 shadow-[0_20px_45px_-30px_rgba(0,0,0,0.9)]">
+            <div className="surface-card border backdrop-blur-md rounded-2xl px-3 py-3 md:px-4 md:py-3 flex items-center justify-between gap-3 shadow-[0_20px_45px_-30px_rgba(0,0,0,0.4)]">
               <div className="min-w-0">
-                <p className="text-gray-400 text-xs">
+                <p className="text-on-surface-muted text-xs">
                   {tx(
                     'jobs.new.stepCounter',
                     { current: currentStep, total: STEP_ITEMS.length },
@@ -1323,7 +1319,7 @@ export default function JobPost() {
                   )}{' '}
                   • {currentStepMeta.label}
                 </p>
-                <p className="text-gray-500 text-xs mt-0.5 hidden sm:block">
+                <p className="text-on-surface-subtle text-xs mt-0.5 hidden sm:block">
                   {lastSaved
                     ? tx('jobs.new.autosave.savedAt', { time: formatTime(lastSaved) }, `Saved at ${formatTime(lastSaved)}`)
                     : tx('jobs.new.autosave.notSaved', undefined, 'Not saved yet')}
@@ -1336,7 +1332,7 @@ export default function JobPost() {
                     type="button"
                     onClick={handleBack}
                     disabled={isSubmitting}
-                    className="border border-[#262626] text-gray-300 hover:text-white px-3.5 py-2 rounded-xl inline-flex items-center gap-2 transition-colors text-sm disabled:opacity-60"
+                    className="border border-surface text-on-surface-muted hover:text-on-surface px-3.5 py-2 rounded-xl inline-flex items-center gap-2 transition-colors text-sm disabled:opacity-60"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     {tx('jobs.new.actions.previous', undefined, 'Previous')}

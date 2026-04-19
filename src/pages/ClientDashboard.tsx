@@ -251,20 +251,20 @@ function ClientDashboardPage() {
 
     if (isAuthLoading || !isFullyReady) {
         return (
-            <div className="min-h-screen bg-[#0a0a0a] text-white">
+            <div className="min-h-screen page-bg-base">
                 <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
                 <Header />
-                <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+                <main className="min-h-screen page-bg-base pt-10 pb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-                        <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-40" />
+                        <div className="animate-pulse rounded-2xl border border-surface surface-card h-40" />
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                             <div className="lg:col-span-8 space-y-8">
-                                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-72" />
-                                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-64" />
+                                <div className="animate-pulse rounded-2xl border border-surface surface-card h-72" />
+                                <div className="animate-pulse rounded-2xl border border-surface surface-card h-64" />
                             </div>
                             <div className="lg:col-span-4 space-y-6">
-                                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-52" />
-                                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-64" />
+                                <div className="animate-pulse rounded-2xl border border-surface surface-card h-52" />
+                                <div className="animate-pulse rounded-2xl border border-surface surface-card h-64" />
                             </div>
                         </div>
                     </div>
@@ -275,10 +275,10 @@ function ClientDashboardPage() {
 
     if (!profile?.id) {
         return (
-            <div className="min-h-screen bg-[#0a0a0a] text-white">
+            <div className="min-h-screen page-bg-base">
                 <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
                 <Header />
-                <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+                <main className="min-h-screen page-bg-base pt-10 pb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <EmptyState
                             icon={Users}
@@ -304,13 +304,13 @@ function ClientDashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <div className="min-h-screen page-bg-base">
             <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
             <Header />
 
-            <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+            <main className="min-h-screen page-bg-base pt-10 pb-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-                    <section className="relative overflow-hidden border border-[#2b2b2b] rounded-2xl bg-[#121212] p-5 sm:p-6 lg:p-7">
+                    <section className="relative overflow-hidden border border-surface rounded-2xl bg-[var(--color-bg-elevated)] p-5 sm:p-6 lg:p-7">
                         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_160%_at_0%_0%,rgba(249,115,22,0.16)_0%,transparent_48%),radial-gradient(75%_140%_at_100%_0%,rgba(154,52,18,0.2)_0%,transparent_52%)]" />
                         <div className="pointer-events-none absolute -top-10 right-8 h-28 w-28 rounded-full bg-orange-500/20 blur-3xl" />
 
@@ -440,8 +440,8 @@ function ClientDashboardPage() {
 
                     <div className="flex flex-col gap-8">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                            <section className="lg:col-span-8 h-full bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden">
-                                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+                            <section className="lg:col-span-8 h-full surface-card border border-surface rounded-2xl flex flex-col overflow-hidden">
+                                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
                                     <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
                                         {tx(
                                             'dashboard.client.activeProjects',
@@ -465,9 +465,9 @@ function ClientDashboardPage() {
 
                                 {isStatsLoading ? (
                                     <div className="p-6 space-y-3">
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
                                     </div>
                                 ) : jobs.length === 0 ? (
                                     <div className="px-6 py-8">
@@ -497,7 +497,7 @@ function ClientDashboardPage() {
                                                 key={job.id}
                                                 type="button"
                                                 onClick={() => navigate(`/jobs/${job.id}`)}
-                                                className={`w-full text-left px-6 py-4 hover:bg-[#262626]/30 transition-colors ${index < Math.min(jobs.length, 3) - 1 ? 'border-b border-[#262626]' : ''}`}
+                                                className={`w-full text-left px-6 py-4 hover:bg-[#262626]/30 transition-colors ${index < Math.min(jobs.length, 3) - 1 ? 'border-b border-surface' : ''}`}
                                             >
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div className="min-w-0">
@@ -576,8 +576,8 @@ function ClientDashboardPage() {
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                            <section className="lg:col-span-8 h-full bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden">
-                                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+                            <section className="lg:col-span-8 h-full surface-card border border-surface rounded-2xl flex flex-col overflow-hidden">
+                                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
                                     <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
                                         {tx(
                                             'dashboard.client.recentProposals',
@@ -601,9 +601,9 @@ function ClientDashboardPage() {
 
                                 {isStatsLoading ? (
                                     <div className="p-6 space-y-3">
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
                                     </div>
                                 ) : proposals.length === 0 ? (
                                     <div className="px-6 py-8 text-sm text-orange-100/70">
@@ -618,7 +618,7 @@ function ClientDashboardPage() {
                                         {proposals.slice(0, 4).map((proposal, index) => (
                                             <div
                                                 key={proposal.id}
-                                                className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < Math.min(proposals.length, 4) - 1 ? 'border-b border-[#262626]' : ''}`}
+                                                className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < Math.min(proposals.length, 4) - 1 ? 'border-b border-surface' : ''}`}
                                             >
                                                 <div className="flex items-center gap-3 min-w-0">
                                                     <div className="relative h-10 w-10 rounded-full overflow-hidden border border-[#3a3a3a] shrink-0">
@@ -685,7 +685,7 @@ function ClientDashboardPage() {
                                 )}
                             </section>
 
-                            <section className="lg:col-span-4 h-full bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                            <section className="lg:col-span-4 h-full surface-card border border-surface rounded-2xl p-6">
                                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
                                     {tx('dashboard.client.thisMonth', undefined, 'This Month')}
                                 </p>
@@ -720,8 +720,8 @@ function ClientDashboardPage() {
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                            <section className="lg:col-span-8 h-full bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden">
-                                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+                            <section className="lg:col-span-8 h-full surface-card border border-surface rounded-2xl flex flex-col overflow-hidden">
+                                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
                                     <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
                                         {tx(
                                             'dashboard.client.activeContracts',
@@ -745,8 +745,8 @@ function ClientDashboardPage() {
 
                                 {isStatsLoading ? (
                                     <div className="p-6 space-y-3">
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
                                     </div>
                                 ) : activeContracts.length === 0 ? (
                                     <div className="px-6 py-8 text-sm text-orange-100/70">
@@ -763,7 +763,7 @@ function ClientDashboardPage() {
                                             .map((contract, index) => (
                                                 <div
                                                     key={contract.id}
-                                                    className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < Math.min(activeContracts.length, 3) - 1 ? 'border-b border-[#262626]' : ''}`}
+                                                    className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < Math.min(activeContracts.length, 3) - 1 ? 'border-b border-surface' : ''}`}
                                                 >
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-semibold text-white truncate">
@@ -807,7 +807,7 @@ function ClientDashboardPage() {
                                 )}
                             </section>
 
-                            <section className="lg:col-span-4 h-full bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                            <section className="lg:col-span-4 h-full surface-card border border-surface rounded-2xl p-6">
                                 <p className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
                                     {tx(
                                         'dashboard.client.quickActions',
@@ -859,7 +859,7 @@ function ClientDashboardPage() {
                                             key={action.label}
                                             type="button"
                                             onClick={() => navigate(action.path)}
-                                            className="w-full rounded-xl border border-[#262626] bg-[#101010] hover:bg-[#262626]/40 text-white px-3 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
+                                            className="w-full rounded-xl border border-surface bg-[#101010] hover:bg-[#262626]/40 text-white px-3 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
                                         >
                                             <span>{action.label}</span>
                                             <action.icon className="h-4 w-4 text-orange-300" />

@@ -21,7 +21,7 @@ import { useWorkspaceStore } from "@/lib/workspaceState";
 import { resolveActiveWorkspace } from "@/lib/workspaceRoutes";
 import { NotificationBell, Logo } from "@/components/ui";
 import ComingSoonBanner from "@/components/common/ComingSoonBanner";
-import { getTotalUnreadCount, subscribeToConversations, type ConversationScope } from "@/services/messages";
+import { getTotalUnreadCount, subscribeToConversations, subscribeToIncomingMessages, type ConversationScope } from "@/services/messages";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const SearchModal = lazy(() => import("./SearchModal"));
@@ -59,6 +59,7 @@ export default function Header() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const conversationsChannelRef = useRef<RealtimeChannel | null>(null);
+  const incomingMessagesChannelRef = useRef<RealtimeChannel | null>(null);
 
   const isFreelancer = Boolean(user) && resolvedWorkspace === "freelancer";
   const isAuthPage = AUTH_ROUTES.includes(pathname);
@@ -86,6 +87,23 @@ export default function Header() {
   ];
 
   const navItems = !user ? PUBLIC_NAV : isFreelancer ? FREELANCER_NAV : CLIENT_NAV;
+  const messageBadgePalette = resolvedWorkspace === "freelancer"
+    ? {
+        iconActive: "#c4b5fd",
+        borderActive: "rgba(139, 92, 246, 0.52)",
+        surfaceActive: "rgba(76, 29, 149, 0.24)",
+        badgeStart: "#8b5cf6",
+        badgeEnd: "#6d28d9",
+        badgeGlow: "rgba(124, 58, 237, 0.58)",
+      }
+    : {
+        iconActive: "#fcd34d",
+        borderActive: "rgba(245, 158, 11, 0.56)",
+        surfaceActive: "rgba(120, 53, 15, 0.28)",
+        badgeStart: "#f59e0b",
+        badgeEnd: "#d97706",
+        badgeGlow: "rgba(245, 158, 11, 0.6)",
+      };
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -122,9 +140,19 @@ export default function Header() {
     setUnreadCount(0);
 
     let cancelled = false;
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
     const loadUnreadCount = async () => {
       const { count } = await getTotalUnreadCount(user.id, unreadScopes);
       if (!cancelled) setUnreadCount(count);
+    };
+
+    const scheduleUnreadRefresh = (delayMs: number = 80) => {
+      if (cancelled) return;
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        void loadUnreadCount();
+      }, delayMs);
     };
 
     // Tear down any existing channel before creating a new one for the updated scopes
@@ -133,16 +161,47 @@ export default function Header() {
       conversationsChannelRef.current = null;
     }
 
+    if (incomingMessagesChannelRef.current) {
+      incomingMessagesChannelRef.current.unsubscribe();
+      incomingMessagesChannelRef.current = null;
+    }
+
     // Debounce slightly to coalesce rapid workspace-switch events
     const timer = setTimeout(() => { void loadUnreadCount(); }, 100);
 
     conversationsChannelRef.current = subscribeToConversations(user.id, unreadScopes, () => {
-      void loadUnreadCount();
+      scheduleUnreadRefresh();
     });
+
+    incomingMessagesChannelRef.current = subscribeToIncomingMessages(user.id, () => {
+      // Optimistic bump so users see the badge immediately without waiting for DB counter propagation.
+      setUnreadCount((prev) => prev + 1);
+      // Reconcile shortly after to keep count exact (handles read-on-open and trigger timing).
+      scheduleUnreadRefresh(280);
+    });
+
+    const handleUnreadSeen = (event: Event) => {
+      const customEvent = event as CustomEvent<{ count?: number } | undefined>;
+      const seenCount = typeof customEvent.detail?.count === "number"
+        ? Math.max(0, Math.floor(customEvent.detail.count))
+        : 0;
+
+      if (seenCount > 0) {
+        setUnreadCount((prev) => Math.max(0, prev - seenCount));
+      }
+
+      scheduleUnreadRefresh(220);
+    };
+
+    window.addEventListener("messages:unread-seen", handleUnreadSeen as EventListener);
+
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      if (refreshTimer) clearTimeout(refreshTimer);
+      window.removeEventListener("messages:unread-seen", handleUnreadSeen as EventListener);
       if (conversationsChannelRef.current) conversationsChannelRef.current.unsubscribe();
+      if (incomingMessagesChannelRef.current) incomingMessagesChannelRef.current.unsubscribe();
     };
   }, [user?.id, resolvedWorkspace]);
 
@@ -257,15 +316,29 @@ export default function Header() {
                       <div className="mx-0.5 h-4 w-[1px]" style={{ background: "color-mix(in srgb, var(--color-border-default) 75%, transparent)" }} />
                       <button
                         onClick={() => navigate("/messages")}
-                        className="relative flex h-7 w-7 items-center justify-center rounded-xl transition-all"
+                        className="relative flex h-8 w-8 items-center justify-center rounded-xl border transition-colors duration-200"
                         aria-label={t.nav?.messages || "Messages"}
-                        style={{ color: "var(--color-text-secondary)" }}
+                        style={{
+                          color: unreadCount > 0 ? messageBadgePalette.iconActive : "var(--color-text-secondary)",
+                          borderColor: unreadCount > 0
+                            ? messageBadgePalette.borderActive
+                            : "color-mix(in srgb, var(--color-border-default) 60%, transparent)",
+                          background: unreadCount > 0
+                            ? messageBadgePalette.surfaceActive
+                            : "color-mix(in srgb, var(--color-text-primary) 4%, transparent)",
+                          boxShadow: unreadCount > 0
+                            ? `0 8px 20px -14px ${messageBadgePalette.badgeGlow}`
+                            : "none",
+                        }}
                       >
-                        <MessageSquare className="h-3.5 w-3.5" />
+                        <MessageSquare className="h-4 w-4" />
                         {unreadCount > 0 && (
                           <span
-                            className="absolute -right-0.5 -top-0.5 flex min-h-3.5 min-w-3.5 items-center justify-center rounded-full px-1 text-[9px] font-bold text-white shadow-sm ring-2"
-                            style={{ background: "var(--workspace-accent)", boxShadow: "0 0 0 2px var(--color-background-elevated)" }}
+                            className="absolute -right-1 -top-1 inline-flex h-[17px] min-w-[17px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white"
+                            style={{
+                              background: `linear-gradient(135deg, ${messageBadgePalette.badgeStart} 0%, ${messageBadgePalette.badgeEnd} 100%)`,
+                              boxShadow: `0 0 0 2px var(--color-background-elevated), 0 8px 16px -11px ${messageBadgePalette.badgeGlow}`,
+                            }}
                           >
                             {unreadCount > 99 ? "99+" : unreadCount}
                           </span>

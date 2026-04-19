@@ -453,20 +453,20 @@ function FreelancerDashboardPage() {
 
   if (isAuthLoading || !isFullyReady) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white">
+      <div className="min-h-screen page-bg-base">
         <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
         <Header />
-        <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+        <main className="min-h-screen page-bg-base pt-10 pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-            <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-36" />
+            <div className="animate-pulse rounded-2xl border border-surface surface-card h-36" />
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               <div className="lg:col-span-8 space-y-8">
-                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-72" />
-                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-64" />
+                <div className="animate-pulse rounded-2xl border border-surface surface-card h-72" />
+                <div className="animate-pulse rounded-2xl border border-surface surface-card h-64" />
               </div>
               <div className="lg:col-span-4 space-y-6">
-                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-48" />
-                <div className="animate-pulse rounded-2xl border border-[#262626] bg-[#141414] h-64" />
+                <div className="animate-pulse rounded-2xl border border-surface surface-card h-48" />
+                <div className="animate-pulse rounded-2xl border border-surface surface-card h-64" />
               </div>
             </div>
           </div>
@@ -477,10 +477,10 @@ function FreelancerDashboardPage() {
 
   if (!profile?.id) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white">
+      <div className="min-h-screen page-bg-base">
         <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
         <Header />
-        <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+        <main className="min-h-screen page-bg-base pt-10 pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <EmptyState
               icon={User}
@@ -502,13 +502,13 @@ function FreelancerDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen page-bg-base">
       <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
       <Header />
 
-      <main className="min-h-screen bg-[#0a0a0a] text-white pt-10 pb-12">
+      <main className="min-h-screen page-bg-base pt-10 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-          <section className="relative overflow-hidden border border-[#2a2a2a] rounded-2xl bg-[#121212] p-5 sm:p-6 lg:p-7">
+          <section className="relative overflow-hidden border border-surface rounded-2xl bg-[var(--color-bg-elevated)] p-5 sm:p-6 lg:p-7">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_160%_at_0%_0%,rgba(168,85,247,0.22)_0%,transparent_48%),radial-gradient(75%_140%_at_100%_0%,rgba(88,28,135,0.28)_0%,transparent_52%)]" />
             <div className="pointer-events-none absolute -top-10 right-8 h-28 w-28 rounded-full bg-purple-500/20 blur-3xl" />
 
@@ -598,8 +598,8 @@ function FreelancerDashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <section className="lg:col-span-8">
-              <section className="bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden mb-8">
-                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+              <section className="surface-card border border-surface rounded-2xl flex flex-col overflow-hidden mb-8">
+                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
                   <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
                     {tx("dashboard.freelancer.activeContracts", undefined, "Active Contracts")}
                   </h2>
@@ -614,9 +614,9 @@ function FreelancerDashboardPage() {
 
                 {isLoading ? (
                   <div className="p-6 space-y-3">
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
                   </div>
                 ) : activeContractRows.length === 0 ? (
                   <div className="px-6 py-8 text-sm text-purple-200/70">
@@ -631,7 +631,7 @@ function FreelancerDashboardPage() {
                     {activeContractRows.map((row, index) => (
                       <div
                         key={row.id}
-                        className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${index < activeContractRows.length - 1 ? "border-b border-[#262626]" : ""}`}
+                        className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${index < activeContractRows.length - 1 ? "border-b border-surface" : ""}`}
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-white truncate">{row.jobTitle}</p>
@@ -651,8 +651,8 @@ function FreelancerDashboardPage() {
                 )}
               </section>
 
-              <section className="bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden">
-                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+              <section className="surface-card border border-surface rounded-2xl flex flex-col overflow-hidden">
+                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
                   <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
                     {tx("dashboard.freelancer.recentProposals", undefined, "Recent Proposals")}
                   </h2>
@@ -667,9 +667,9 @@ function FreelancerDashboardPage() {
 
                 {isLoading ? (
                   <div className="p-6 space-y-3">
-                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-surface" />
+                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-surface" />
+                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-surface" />
                   </div>
                 ) : proposalRows.length === 0 ? (
                   <div className="px-6 py-8 text-sm text-purple-200/70">
@@ -684,7 +684,7 @@ function FreelancerDashboardPage() {
                     {proposalRows.map((row, index) => (
                       <div
                         key={row.id}
-                        className={`px-6 py-3 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < proposalRows.length - 1 ? "border-b border-[#262626]" : ""}`}
+                        className={`px-6 py-3 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < proposalRows.length - 1 ? "border-b border-surface" : ""}`}
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-white truncate">{row.jobTitle}</p>
@@ -702,8 +702,8 @@ function FreelancerDashboardPage() {
                 )}
               </section>
 
-              <section className="bg-[#141414] border border-[#262626] rounded-2xl flex flex-col overflow-hidden mt-8">
-                <header className="px-6 py-4 border-b border-[#262626] flex justify-between items-center">
+              <section className="surface-card border border-surface rounded-2xl flex flex-col overflow-hidden mt-8">
+                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
                   <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
                     {tx("dashboard.freelancer.matchedForYou", undefined, "Matched Jobs")}
                   </h2>
@@ -718,8 +718,8 @@ function FreelancerDashboardPage() {
 
                 {isLoadingJobs ? (
                   <div className="p-6 space-y-3">
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-[#262626]" />
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
                   </div>
                 ) : jobs.length === 0 ? (
                   <div className="px-6 py-8 text-sm text-purple-200/70">
@@ -736,7 +736,7 @@ function FreelancerDashboardPage() {
                         key={job.id}
                         type="button"
                         onClick={() => navigate(`/jobs/${job.id}`)}
-                        className={`w-full text-left px-6 py-4 hover:bg-[#262626]/30 transition-colors ${index < jobs.length - 1 ? "border-b border-[#262626]" : ""}`}
+                        className={`w-full text-left px-6 py-4 hover:bg-[#262626]/30 transition-colors ${index < jobs.length - 1 ? "border-b border-surface" : ""}`}
                       >
                         <p className="text-sm font-semibold text-white truncate">{job.title}</p>
                         <div className="mt-1 flex items-center gap-2 text-xs text-purple-300/70">
@@ -754,27 +754,27 @@ function FreelancerDashboardPage() {
                 )}
               </section>
 
-              <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 mt-8">
+              <section className="surface-card border border-surface rounded-2xl p-6 mt-8">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
                   {tx("dashboard.freelancer.performanceSnapshot", undefined, "Performance Snapshot")}
                 </h2>
 
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="rounded-xl border border-[#262626] bg-[#101010] p-3">
+                  <div className="rounded-xl border border-surface bg-[#101010] p-3">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-purple-300/60">
                       {tx("dashboard.freelancer.pendingProposals", undefined, "Pending Proposals")}
                     </p>
                     <p className="mt-2 text-xl font-bold text-white">{stats?.pendingProposals ?? 0}</p>
                   </div>
 
-                  <div className="rounded-xl border border-[#262626] bg-[#101010] p-3">
+                  <div className="rounded-xl border border-surface bg-[#101010] p-3">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-purple-300/60">
                       {tx("dashboard.freelancer.profileViews", undefined, "Profile Views")}
                     </p>
                     <p className="mt-2 text-xl font-bold text-white">{stats?.profileViews ?? 0}</p>
                   </div>
 
-                  <div className="rounded-xl border border-[#262626] bg-[#101010] p-3">
+                  <div className="rounded-xl border border-surface bg-[#101010] p-3">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-purple-300/60">
                       {tx("dashboard.freelancer.walletBalance", undefined, "Wallet Balance")}
                     </p>
@@ -788,7 +788,7 @@ function FreelancerDashboardPage() {
 
             <aside className="lg:col-span-4">
               <div className="flex flex-col gap-6 sticky top-28">
-                <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                <section className="surface-card border border-surface rounded-2xl p-6">
                   <p className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
                     {tx("dashboard.freelancer.earningsThisMonth", undefined, "Earnings this month")}
                   </p>
@@ -819,7 +819,7 @@ function FreelancerDashboardPage() {
                   </button>
                 </section>
 
-                <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                <section className="surface-card border border-surface rounded-2xl p-6">
                   <p className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
                     {tx("dashboard.freelancer.profileCompletion", undefined, "Profile Completion")}
                   </p>
@@ -831,7 +831,7 @@ function FreelancerDashboardPage() {
                         background: `conic-gradient(rgb(168 85 247) ${completionValue}%, #262626 ${completionValue}% 100%)`,
                       }}
                     >
-                      <div className="h-24 w-24 rounded-full border border-[#262626] bg-[#141414] flex items-center justify-center">
+                      <div className="h-24 w-24 rounded-full border border-surface bg-[#141414] flex items-center justify-center">
                         <span className="text-lg font-bold text-white">{completionValue}%</span>
                       </div>
                     </div>
@@ -861,7 +861,7 @@ function FreelancerDashboardPage() {
                   ) : null}
                 </section>
 
-                <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                <section className="surface-card border border-surface rounded-2xl p-6">
                   <p className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
                     {tx("dashboard.freelancer.quickActions", undefined, "Quick Actions")}
                   </p>
@@ -883,7 +883,7 @@ function FreelancerDashboardPage() {
                         key={action.label}
                         type="button"
                         onClick={() => navigate(action.path)}
-                        className="w-full rounded-xl border border-[#262626] bg-[#101010] hover:bg-[#262626]/40 text-white px-3 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
+                        className="w-full rounded-xl border border-surface bg-[#101010] hover:bg-[#262626]/40 text-white px-3 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
                       >
                         <span>{action.label}</span>
                         <action.icon className="h-4 w-4 text-purple-400" />
@@ -901,3 +901,4 @@ function FreelancerDashboardPage() {
 }
 
 export default FreelancerDashboardPage;
+

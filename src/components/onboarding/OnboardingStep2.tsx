@@ -121,7 +121,7 @@ export default function OnboardingStep2({
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
                     {tx('onboarding.freelancer.step2TitleUpdated', undefined, 'Choose skills and set your hourly rate')}
                 </h2>
-                <p className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-base text-gray-600 dark:text-on-surface-muted leading-relaxed">
                     {tx('onboarding.freelancer.step2Description', undefined, 'Use Upwork-style profile signals: clear services, realistic hourly rate, and current availability.')}
                 </p>
             </div>
@@ -135,11 +135,11 @@ export default function OnboardingStep2({
                         <label className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                             <Sparkles className="w-5 h-5 text-purple-400" />
                             {t.profile.skills}
-                            <span className="text-xs font-normal text-gray-500 dark:text-gray-400">({t.profile.optional})</span>
+                            <span className="text-xs font-normal text-on-surface-subtle dark:text-on-surface-muted">({t.profile.optional})</span>
                         </label>
                         <span className={`text-sm font-bold px-3 py-1.5 rounded-full transition-all duration-300 ${selectedSkillCount === maxSkills
                             ? 'bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/20 scale-105'
-                            : 'bg-[#1a1a1a] text-gray-400 border border-gray-800'
+                            : 'bg-[#1a1a1a] text-on-surface-muted border border-gray-800'
                             }`}>
                             {selectedSkillCount}/{maxSkills}
                         </span>
@@ -147,7 +147,7 @@ export default function OnboardingStep2({
 
                     {/* Search Bar */}
                     <div className="mb-4 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-subtle" />
                         <input
                             type="text"
                             placeholder={tx('profile.searchSkills', undefined, 'Search skills...')}
@@ -178,13 +178,13 @@ export default function OnboardingStep2({
                                             {getCategoryLabel(category)}
                                         </span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs text-gray-500">
+                                            <span className="text-xs text-on-surface-subtle">
                                                 {skills.filter(s => selectedSkills.find(sel => sel.id === s.id)).length}/{skills.length}
                                             </span>
                                             {isExpanded ? (
-                                                <ChevronUp className="w-4 h-4 text-gray-500" />
+                                                <ChevronUp className="w-4 h-4 text-on-surface-subtle" />
                                             ) : (
-                                                <ChevronDown className="w-4 h-4 text-gray-500" />
+                                                <ChevronDown className="w-4 h-4 text-on-surface-subtle" />
                                             )}
                                         </div>
                                     </button>
@@ -235,7 +235,7 @@ export default function OnboardingStep2({
                         })}
                     </div>
 
-                    <p className="mt-3 text-xs text-gray-400">
+                    <p className="mt-3 text-xs text-on-surface-muted">
                         {tx('onboarding.freelancer.skillsClarification', undefined, 'These skills appear on your profile and in client search filters. Pick only what you can deliver now.')}
                     </p>
                 </div>
@@ -297,3 +297,4 @@ export default function OnboardingStep2({
         </div>
     );
 }
+

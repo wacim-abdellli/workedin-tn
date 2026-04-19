@@ -51,9 +51,9 @@ class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: 
             }
 
             return (
-                <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4">
+                <div className="relative flex min-h-screen items-center justify-center overflow-hidden page-bg-base px-4">
                     <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.15),transparent_68%)] blur-[110px]" />
-                    <div className="relative z-10 w-full max-w-xl rounded-[32px] border border-white/10 bg-[#101012]/92 p-8 text-center shadow-[0_40px_90px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-[fade-in_0.5s_ease-out]">
+                    <div className="relative z-10 w-full max-w-xl rounded-[32px] border border-[var(--color-border-default)] surface-card p-8 text-center shadow-[0_40px_90px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-[fade-in_0.5s_ease-out]">
                         <div className="flex justify-center mb-6">
                             <div className="inline-flex items-center justify-center rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 shadow-[0_14px_45px_-30px_rgba(245,158,11,0.9)]">
                                 <Logo variant="full" size="sm" mode="client" className="scale-[1.02]" />
@@ -62,10 +62,10 @@ class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: 
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-rose-400/25 bg-rose-500/10">
                             <AlertTriangle className="h-8 w-8 text-rose-300" />
                         </div>
-                        <h1 className="mb-3 text-3xl font-bold tracking-[-0.02em] text-white sm:text-[2rem]">
+                        <h1 className="mb-3 text-3xl font-bold tracking-[-0.02em] text-on-surface sm:text-[2rem]">
                             {this.props.tx('pages.errorBoundary.title', undefined, 'Something went wrong')}
                         </h1>
-                        <p className="mx-auto mb-6 max-w-md text-base leading-7 text-zinc-300/95">
+                        <p className="mx-auto mb-6 max-w-md text-base leading-7 text-on-surface-muted">
                             {this.props.tx('pages.errorBoundary.description', undefined, 'An unexpected error interrupted this page. Refresh and try again, or head back to the homepage.')}
                         </p>
                         <div className="flex flex-col justify-center gap-3 sm:flex-row">

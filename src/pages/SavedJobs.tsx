@@ -106,24 +106,24 @@ export function SavedItems({
     : 'text-orange-500 fill-orange-500';
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white py-8 pt-24">
+    <div className="min-h-screen page-bg-base py-8 pt-24">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <header>
-          <h1 className="text-3xl font-bold mb-2 text-white">{title}</h1>
-          <p className="text-gray-400 mb-8">{subtitle}</p>
+          <h1 className="text-3xl font-bold mb-2 text-on-surface">{title}</h1>
+          <p className="text-on-surface-muted mb-8">{subtitle}</p>
         </header>
 
-        <section className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden flex flex-col">
+        <section className="surface-card border rounded-2xl overflow-hidden flex flex-col">
           {isLoading ? (
             <div className="p-6 space-y-3">
-              <div className="h-14 rounded-xl border border-[#262626] bg-[#1a1a1a] animate-pulse" />
-              <div className="h-14 rounded-xl border border-[#262626] bg-[#1a1a1a] animate-pulse" />
-              <div className="h-14 rounded-xl border border-[#262626] bg-[#1a1a1a] animate-pulse" />
+              <div className="h-14 rounded-xl border border-surface surface-sunken animate-pulse" />
+              <div className="h-14 rounded-xl border border-surface surface-sunken animate-pulse" />
+              <div className="h-14 rounded-xl border border-surface surface-sunken animate-pulse" />
             </div>
           ) : roleItems.length === 0 ? (
             <div className="py-20 flex flex-col items-center justify-center text-center">
-              <Heart className="w-12 h-12 text-gray-600 mb-4" />
-              <h2 className="text-xl font-bold text-white mb-2">{tx('pages.savedJobs.empty.title', undefined, 'Nothing saved yet')}</h2>
+              <Heart className="w-12 h-12 text-on-surface-subtle mb-4" />
+              <h2 className="text-xl font-bold text-on-surface mb-2">{tx('pages.savedJobs.empty.title', undefined, 'Nothing saved yet')}</h2>
               <button
                 type="button"
                 className={`text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${actionButtonClass}`}
@@ -135,19 +135,19 @@ export function SavedItems({
             savedJobs.map((job) => (
               <article
                 key={job.id}
-                className="p-6 border-b border-[#262626] last:border-b-0 hover:bg-[#262626]/20 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group"
+                className="p-6 border-b border-surface last:border-b-0 hover-surface transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group"
               >
                 <div className="min-w-0">
-                  <h3 className={`text-lg font-bold text-white transition-colors line-clamp-1 mb-2 cursor-pointer ${titleHoverClass}`}>
+                  <h3 className={`text-lg font-bold text-on-surface transition-colors line-clamp-1 mb-2 cursor-pointer ${titleHoverClass}`}>
                     {job.title}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-on-surface-muted">
                     <span className="inline-flex items-center gap-1.5">
                       <Briefcase className="w-3.5 h-3.5" />
                       {job.jobType}
                     </span>
                     <span>
-                      {tx('pages.savedJobs.labels.budget', undefined, 'Budget:')} <span className="text-white">{job.budget}</span>
+                      {tx('pages.savedJobs.labels.budget', undefined, 'Budget:')} <span className="text-on-surface">{job.budget}</span>
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
@@ -166,7 +166,7 @@ export function SavedItems({
                   <button
                     type="button"
                     aria-label={tx('pages.savedJobs.actions.removeSavedJob', undefined, 'Remove saved job')}
-                    className={`p-2 rounded-full border border-[#262626] bg-[#0a0a0a] hover:text-gray-400 hover:fill-transparent transition-all cursor-pointer ${heartClass}`}
+                    className={`p-2 rounded-full border border-surface surface-sunken hover:text-on-surface-muted hover:fill-transparent transition-all cursor-pointer ${heartClass}`}
                   >
                     <Heart className="w-4 h-4" />
                   </button>
@@ -177,19 +177,19 @@ export function SavedItems({
             savedTalent.map((talent) => (
               <article
                 key={talent.id}
-                className="p-6 border-b border-[#262626] last:border-b-0 hover:bg-[#262626]/20 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group"
+                className="p-6 border-b border-surface last:border-b-0 hover-surface transition-colors flex flex-col md:flex-row md:items-center justify-between gap-6 group"
               >
                 <div className="flex items-start gap-4 min-w-0">
-                  <div className="w-12 h-12 rounded-full bg-[#262626] shrink-0 flex items-center justify-center text-sm font-semibold text-white">
+                  <div className="w-12 h-12 rounded-full surface-sunken border border-surface shrink-0 flex items-center justify-center text-sm font-semibold text-on-surface">
                     {getInitials(talent.name)}
                   </div>
 
                   <div className="min-w-0">
-                    <h3 className={`text-lg font-bold text-white transition-colors line-clamp-1 cursor-pointer ${titleHoverClass}`}>
+                    <h3 className={`text-lg font-bold text-on-surface transition-colors line-clamp-1 cursor-pointer ${titleHoverClass}`}>
                       {talent.name}
                     </h3>
-                    <p className="text-sm text-gray-400 mb-1 line-clamp-1">{talent.title}</p>
-                    <p className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                    <p className="text-sm text-on-surface-muted mb-1 line-clamp-1">{talent.title}</p>
+                    <p className="inline-flex items-center gap-1.5 text-xs text-on-surface-subtle">
                       <MapPin className="w-3.5 h-3.5" />
                       {talent.location}
                     </p>
@@ -198,11 +198,11 @@ export function SavedItems({
 
                 <div className="flex items-center gap-4 shrink-0">
                   <div className="flex items-center gap-4 text-sm mr-4">
-                    <span className="inline-flex items-center gap-1 text-gray-400">
+                    <span className="inline-flex items-center gap-1 text-on-surface-muted">
                       <Star className="w-4 h-4 text-orange-500 fill-orange-500" />
-                      <span className="text-white">{talent.rating.toFixed(1)}</span>
+                      <span className="text-on-surface">{talent.rating.toFixed(1)}</span>
                     </span>
-                    <span className="text-white font-medium">{talent.hourlyRate} TND/hr</span>
+                    <span className="text-on-surface font-medium">{talent.hourlyRate} TND/hr</span>
                   </div>
 
                   <button
@@ -215,7 +215,7 @@ export function SavedItems({
                   <button
                     type="button"
                     aria-label={tx('pages.savedJobs.actions.removeSavedFreelancer', undefined, 'Remove saved freelancer')}
-                    className={`p-2 rounded-full border border-[#262626] bg-[#0a0a0a] hover:text-gray-400 hover:fill-transparent transition-all cursor-pointer ${heartClass}`}
+                    className={`p-2 rounded-full border border-surface surface-sunken hover:text-on-surface-muted hover:fill-transparent transition-all cursor-pointer ${heartClass}`}
                   >
                     <Heart className="w-4 h-4" />
                   </button>

@@ -34,6 +34,10 @@ import Modal from '../components/ui/Modal';
 import { ReviewForm } from '../components/ui/Reviews';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { supabase } from '../lib/supabase';
+import {
+    getContractConversationInboxPatch,
+    repairContractConversationInboxRows,
+} from '../lib/contractConversationInbox';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import {
@@ -66,6 +70,12 @@ import {
     type ContractMessagingStatus,
     type MessagingPolicyTone,
 } from '../lib/messagingLifecycle';
+import {
+    canClientAcceptForStatus,
+    canClientRequestChangesForStatus,
+    canFreelancerDeliverForStatus,
+    canOpenDisputeForStatus,
+} from '../lib/contractWorkflow';
 
 import {
   fileToBase64,
@@ -133,6 +143,21 @@ const extractMessageAttachmentPath = (value: string | null | undefined): string 
 const truncateText = (text: string | null | undefined, max: number): string => {
     if (!text) return '';
     return text.length > max ? text.slice(0, max) + '...' : text;
+};
+
+const GENERIC_CONTRACT_TITLES = new Set([
+    'unknown project',
+    'contract project',
+    'untitled project',
+    'untitled job',
+    'unknown job',
+]);
+
+const sanitizeContractTitle = (value: string | null | undefined): string => {
+    const normalized = String(value || '').trim();
+    if (!normalized) return '';
+
+    return GENERIC_CONTRACT_TITLES.has(normalized.toLowerCase()) ? '' : normalized;
 };
 
 type MessageAttachment = NonNullable<Message['attachments']>[number];
@@ -225,6 +250,7 @@ type ContractSessionMeta = {
     title: string | null;
     amount: number | null;
     total_amount: number | null;
+    job_deadline: string | null;
     client_id: string | null;
     freelancer_id: string | null;
     job_id: string | null;
@@ -289,6 +315,7 @@ const isConversationVisibleInMode = (
     if (myInbox === 'client' || myInbox === 'freelancer' || myInbox === 'shared') {
         return myInbox === activeMode || myInbox === 'shared';
     }
+    // Legacy fallback for rows that still need role-specific inbox repair.
     if (myInbox === 'contract') return true;
 
     // Legacy fallback when inbox columns are absent.
@@ -355,9 +382,61 @@ const shouldHideAttachmentUrlText = (message: ThreadMessage | null | undefined) 
     });
 };
 
+type ContractSystemMessageKind = 'delivery' | 'revision_requested' | 'contract_completed' | 'dispute_opened';
+
+const resolveContractSystemMessage = (rawBodyText: string): { kind: ContractSystemMessageKind; text: string } | null => {
+    const trimmed = rawBodyText.trim();
+    if (!trimmed) return null;
+
+    const markerMatch = trimmed.match(/^\[\[([a-z_]+)\]\]\s*(.*)$/i);
+    if (!markerMatch) return null;
+
+    const marker = markerMatch[1].toLowerCase();
+    const details = markerMatch[2]?.trim() || '';
+
+    if (marker === 'delivery') {
+        return {
+            kind: 'delivery',
+            text: details || 'Work delivered and ready for review',
+        };
+    }
+
+    if (marker === 'revision_requested') {
+        return {
+            kind: 'revision_requested',
+            text: details || 'Revision requested by client',
+        };
+    }
+
+    if (marker === 'contract_completed') {
+        return {
+            kind: 'contract_completed',
+            text: details || 'Contract completed and payment released',
+        };
+    }
+
+    if (marker === 'dispute_opened') {
+        return {
+            kind: 'dispute_opened',
+            text: details || 'Dispute opened for this contract',
+        };
+    }
+
+    return null;
+};
+
 const getMessageDisplayText = (message: ThreadMessage | null | undefined, deletedLabel: string) => {
     if (!message) return null;
-    return isDeletedMessage(message) ? deletedLabel : parseReplyMetadataFromContent(message.content).bodyText;
+    if (isDeletedMessage(message)) return deletedLabel;
+
+    const bodyText = parseReplyMetadataFromContent(message.content).bodyText;
+    const contractSystemMessage = resolveContractSystemMessage(bodyText);
+    return contractSystemMessage?.text || bodyText;
+};
+
+const getMessageContractSystemKind = (message: ThreadMessage | null | undefined): ContractSystemMessageKind | null => {
+    if (!message || isDeletedMessage(message)) return null;
+    return resolveContractSystemMessage(parseReplyMetadataFromContent(message.content).bodyText)?.kind || null;
 };
 
 const getMessageReplyMetadata = (message: ThreadMessage | null | undefined) => {
@@ -400,7 +479,7 @@ const getLifecycleBannerClassName = (tone: MessagingPolicyTone) => {
             return 'border-blue-500/40 bg-blue-500/10 text-blue-100';
         case 'none':
         default:
-            return 'border-[#333] bg-[#141414] text-gray-300';
+            return 'border-surface surface-sunken text-on-surface-muted';
     }
 };
 
@@ -420,6 +499,15 @@ const isMissingSchemaColumnError = (error: unknown, tableName: string, columnNam
     return message.includes('does not exist')
         && message.includes(tableName.toLowerCase())
         && message.includes(columnName.toLowerCase());
+};
+
+const isEnumValueUnsupportedError = (error: unknown, enumName: string, enumValue: string): boolean => {
+    if (!error || typeof error !== 'object') return false;
+    const candidate = error as { message?: unknown };
+    const message = typeof candidate.message === 'string' ? candidate.message.toLowerCase() : '';
+    return message.includes('invalid input value for enum')
+        && message.includes(enumName.toLowerCase())
+        && message.includes(enumValue.toLowerCase());
 };
 
 type ContractConversationLookupRow = {
@@ -542,7 +630,8 @@ const fetchConversationById = async (
     if (!row) return null;
     if (row.participant_1 !== userId && row.participant_2 !== userId) return null;
 
-    return hydrateConversationRow(userId, row);
+    const [repairedRow] = await repairContractConversationInboxRows([row]);
+    return hydrateConversationRow(userId, repairedRow ?? row);
 };
 
 const fetchConversationByContractId = async (
@@ -591,7 +680,8 @@ const fetchConversationByContractId = async (
     const row = (participant1Result.data || participant2Result.data) as ContractConversationLookupRow | null;
     if (!row) return null;
 
-    return hydrateConversationRow(userId, row);
+    const [repairedRow] = await repairContractConversationInboxRows([row]);
+    return hydrateConversationRow(userId, repairedRow ?? row);
 };
 
 const fetchConversationByParticipants = async (
@@ -632,7 +722,8 @@ const fetchConversationByParticipants = async (
     const row = lookupResult.data as ContractConversationLookupRow | null;
     if (!row) return null;
 
-    return hydrateConversationRow(userId, row);
+    const [repairedRow] = await repairContractConversationInboxRows([row]);
+    return hydrateConversationRow(userId, repairedRow ?? row);
 };
 
 const createContractConversationFallback = async (
@@ -643,6 +734,13 @@ const createContractConversationFallback = async (
     const [participant1, participant2] = userId < otherUserId
         ? [userId, otherUserId]
         : [otherUserId, userId];
+    const contractInboxPatch = await getContractConversationInboxPatch(
+        participant1,
+        participant2,
+        contractId,
+    );
+
+    if (!contractInboxPatch) return null;
 
     const insertModern = () => supabase
         .from('conversations')
@@ -650,9 +748,7 @@ const createContractConversationFallback = async (
             participant_1: participant1,
             participant_2: participant2,
             contract_id: contractId,
-            conversation_scope: 'contract',
-            inbox_participant_1: 'contract',
-            inbox_participant_2: 'contract',
+            ...contractInboxPatch,
         })
         .select('id')
         .maybeSingle();
@@ -794,16 +890,19 @@ function MessagesComponent() {
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [showUnknownContractBanner, setShowUnknownContractBanner] = useState(false);
     const [deliveryNote, setDeliveryNote] = useState('');
+    const [deliveryActionError, setDeliveryActionError] = useState<string | null>(null);
     const [disputeReason, setDisputeReason] = useState('');
     const [isDeliveringContractWork, setIsDeliveringContractWork] = useState(false);
     const [isAcceptingContractWork, setIsAcceptingContractWork] = useState(false);
     const [isRequestingContractChanges, setIsRequestingContractChanges] = useState(false);
     const [isOpeningContractDispute, setIsOpeningContractDispute] = useState(false);
+    const [loadingMilestonesContractId, setLoadingMilestonesContractId] = useState<string | null>(null);
+    const [loadingReviewContractId, setLoadingReviewContractId] = useState<string | null>(null);
     const [isContractSidebarVisible, setIsContractSidebarVisible] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const replyHighlightTimeoutRef = useRef<number | null>(null);
-     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const {
         isRecording,
         recordingTime,
@@ -877,6 +976,17 @@ function MessagesComponent() {
     const isContractSession = Boolean(selectedContractId);
     const activeWorkspace = activeMode ?? profile?.active_mode;
     const isFreelancerWorkspace = activeWorkspace === 'freelancer';
+    const conversationWorkspaceLabel = useMemo(() => {
+        if (activeWorkspace === 'client') {
+            return tx('pages.messages.clientInboxLabel', undefined, 'Client inbox');
+        }
+
+        if (activeWorkspace === 'freelancer') {
+            return tx('pages.messages.freelancerInboxLabel', undefined, 'Freelancer inbox');
+        }
+
+        return tx('pages.messages.allConversationsLabel', undefined, 'All conversations');
+    }, [activeWorkspace, tx]);
 
     useEffect(() => {
         if (!isContractSession) {
@@ -929,18 +1039,30 @@ function MessagesComponent() {
 
     const accentClasses = useMemo(() => ({
         selectedConversationBorder: isFreelancerWorkspace ? 'border-violet-500' : 'border-amber-500',
+        selectedConversationSurface: isFreelancerWorkspace
+            ? 'border-violet-500/25 bg-[linear-gradient(135deg,rgba(20,14,32,0.99),rgba(12,12,14,0.99))] shadow-[0_14px_28px_-26px_rgba(124,58,237,0.38)]'
+            : 'border-amber-500/25 bg-[linear-gradient(135deg,rgba(28,18,6,0.99),rgba(12,12,14,0.99))] shadow-[0_14px_28px_-26px_rgba(245,158,11,0.34)]',
+        conversationHoverSurface: isFreelancerWorkspace
+            ? 'hover:border-violet-500/25 hover:bg-[var(--color-bg-muted)]'
+            : 'hover:border-amber-500/25 hover:bg-[var(--color-bg-muted)]',
         avatarHoverRing: isFreelancerWorkspace ? 'hover:ring-violet-500/60' : 'hover:ring-amber-500/60',
         headerAvatarHoverRing: isFreelancerWorkspace ? 'hover:ring-violet-500' : 'hover:ring-amber-500',
         contextLabelText: isFreelancerWorkspace ? 'text-violet-300/90' : 'text-amber-300/90',
         unreadBadgeBg: isFreelancerWorkspace ? 'bg-violet-600' : 'bg-amber-600',
         inputFocusBorder: isFreelancerWorkspace ? 'focus:border-violet-500' : 'focus:border-amber-500',
         headerMetaText: isFreelancerWorkspace ? 'text-violet-300' : 'text-amber-300',
+        searchSurface: isFreelancerWorkspace
+            ? 'border-violet-500/20 bg-[var(--color-bg-muted)] focus-within:border-violet-500/50'
+            : 'border-amber-500/20 bg-[var(--color-bg-muted)] focus-within:border-amber-500/50',
         contractToggleActive: isFreelancerWorkspace
             ? 'border-violet-500/50 bg-violet-500/12 text-violet-200 hover:bg-violet-500/20'
             : 'border-amber-500/50 bg-amber-500/12 text-amber-200 hover:bg-amber-500/20',
         contractToggleIdle: isFreelancerWorkspace
-            ? 'border-[#3a3a3a] text-violet-300 hover:border-violet-500 hover:text-violet-200'
-            : 'border-[#3a3a3a] text-amber-300 hover:border-amber-500 hover:text-amber-200',
+            ? 'border-violet-500/20 text-violet-300 hover:border-violet-400 hover:bg-violet-500/10'
+            : 'border-amber-500/20 text-amber-300 hover:border-amber-400 hover:bg-amber-500/10',
+        threadAmbientGlow: isFreelancerWorkspace
+            ? 'from-violet-500/8 via-transparent to-transparent'
+            : 'from-amber-500/8 via-transparent to-transparent',
         ownBubbleBg: isFreelancerWorkspace ? 'bg-violet-600' : 'bg-amber-600',
         ownReplyCard: isFreelancerWorkspace
             ? 'border-violet-300/40 bg-violet-700/30 text-violet-100'
@@ -960,12 +1082,16 @@ function MessagesComponent() {
         replyStripe: isFreelancerWorkspace ? 'bg-violet-500' : 'bg-amber-500',
         iconAccent: isFreelancerWorkspace ? 'text-violet-400' : 'text-amber-400',
         sendButton: isFreelancerWorkspace ? 'bg-violet-600 hover:bg-violet-500' : 'bg-amber-600 hover:bg-amber-500',
+        composerShell: isFreelancerWorkspace
+            ? 'border-violet-500/20 bg-[var(--color-bg-elevated)] focus-within:border-violet-400/50 focus-within:shadow-[0_0_0_1px_rgba(139,92,246,0.20)]'
+            : 'border-amber-500/20 bg-[var(--color-bg-elevated)] focus-within:border-amber-400/50 focus-within:shadow-[0_0_0_1px_rgba(251,191,36,0.20)]',
     }), [isFreelancerWorkspace]);
 
     useEffect(() => {
         if (!selectedContractId) return;
 
         let cancelled = false;
+        setLoadingMilestonesContractId(selectedContractId);
 
         const loadMilestones = async () => {
             try {
@@ -981,6 +1107,12 @@ function MessagesComponent() {
 
                     if (!shouldRetryWithoutOrder) {
                         console.warn('[Messages] Failed to load contract milestones', error);
+                        if (!cancelled) {
+                            setMilestonesByContractId((prev) => ({
+                                ...prev,
+                                [selectedContractId]: prev[selectedContractId] ?? [],
+                            }));
+                        }
                         return;
                     }
 
@@ -992,6 +1124,12 @@ function MessagesComponent() {
 
                     if (fallback.error) {
                         console.warn('[Messages] Failed to load contract milestones fallback', fallback.error);
+                        if (!cancelled) {
+                            setMilestonesByContractId((prev) => ({
+                                ...prev,
+                                [selectedContractId]: prev[selectedContractId] ?? [],
+                            }));
+                        }
                         return;
                     }
 
@@ -1018,6 +1156,18 @@ function MessagesComponent() {
                 }));
             } catch (caughtError) {
                 console.warn('[Messages] Failed to load contract milestones', caughtError);
+                if (!cancelled) {
+                    setMilestonesByContractId((prev) => ({
+                        ...prev,
+                        [selectedContractId]: prev[selectedContractId] ?? [],
+                    }));
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoadingMilestonesContractId((current) => (
+                        current === selectedContractId ? null : current
+                    ));
+                }
             }
         };
 
@@ -1032,6 +1182,7 @@ function MessagesComponent() {
         if (!selectedContractId || !user?.id) return;
 
         let cancelled = false;
+        setLoadingReviewContractId(selectedContractId);
 
         const loadReviewStatus = async () => {
             try {
@@ -1046,6 +1197,10 @@ function MessagesComponent() {
 
                 if (error) {
                     console.warn('[Messages] Failed to load review status for contract', error);
+                    setHasReviewedContractById((prev) => ({
+                        ...prev,
+                        [selectedContractId]: prev[selectedContractId] ?? false,
+                    }));
                     return;
                 }
 
@@ -1055,6 +1210,18 @@ function MessagesComponent() {
                 }));
             } catch (caughtError) {
                 console.warn('[Messages] Failed to load review status for contract', caughtError);
+                if (!cancelled) {
+                    setHasReviewedContractById((prev) => ({
+                        ...prev,
+                        [selectedContractId]: prev[selectedContractId] ?? false,
+                    }));
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoadingReviewContractId((current) => (
+                        current === selectedContractId ? null : current
+                    ));
+                }
             }
         };
 
@@ -1126,22 +1293,26 @@ function MessagesComponent() {
         return tx('pages.messages.contractReferenceWithId', { id: shortId }, `Contract #${shortId}`);
     }, [tx]);
 
-    const getContractFallbackTitle = useCallback((conversation: Conversation) => {
-        const personName = conversation.otherUser.full_name?.trim();
-        if (personName) {
-            return tx('pages.messages.contractWithName', { name: personName }, `Contract with ${personName}`);
+    const getContractFallbackTitle = useCallback((
+        conversation: Conversation,
+        variant: 'compact' | 'hero' = 'hero'
+    ) => {
+        const referenceLabel = getContractReferenceLabel(conversation.contract_id);
+
+        if (variant === 'compact') {
+            return referenceLabel;
         }
 
-        return getContractReferenceLabel(conversation.contract_id);
+        return tx('pages.messages.contractWorkspaceTitle', undefined, 'Contract workspace');
     }, [getContractReferenceLabel, tx]);
 
     const getResolvedContractTitle = useCallback((conversation: Conversation) => {
         if (!conversation.contract_id) return '';
 
-        const jobTitle = (contractSessionMetaById[conversation.contract_id]?.title || '').trim();
+        const jobTitle = sanitizeContractTitle(contractSessionMetaById[conversation.contract_id]?.title);
         if (jobTitle) return jobTitle;
 
-        return getContractFallbackTitle(conversation);
+        return getContractFallbackTitle(conversation, 'hero');
     }, [contractSessionMetaById, getContractFallbackTitle]);
 
     const contractSidebarData = useMemo(() => {
@@ -1152,6 +1323,7 @@ function MessagesComponent() {
         const amountValue = selectedContractMeta?.total_amount
             ?? selectedContractMeta?.amount
             ?? 0;
+        const jobDeadline = selectedContractMeta?.job_deadline || null;
 
         const firstUpcomingDueDate = selectedContractMilestones
             .filter((milestone) => {
@@ -1192,7 +1364,7 @@ function MessagesComponent() {
             amount: amountValue,
             job: {
                 title,
-                deadline: firstUpcomingDueDate,
+                deadline: firstUpcomingDueDate || jobDeadline,
             },
             milestones: selectedContractMilestones.map((milestone) => ({
                 id: milestone.id,
@@ -1213,6 +1385,7 @@ function MessagesComponent() {
         isContractSession,
         selectedContractMilestones,
         selectedContractMeta?.amount,
+        selectedContractMeta?.job_deadline,
         selectedContractId,
         selectedContractMeta?.title,
         selectedContractMeta?.total_amount,
@@ -1246,6 +1419,27 @@ function MessagesComponent() {
         || isRequestingContractChanges
         || isOpeningContractDispute;
 
+    const isContractSidebarDataLoading = useMemo(() => {
+        if (!isContractSession || !selectedContractId) return false;
+
+        const hasMilestonesEntry = Object.prototype.hasOwnProperty.call(milestonesByContractId, selectedContractId);
+        const hasReviewEntry = !user?.id
+            || Object.prototype.hasOwnProperty.call(hasReviewedContractById, selectedContractId);
+
+        const isMilestonesLoading = loadingMilestonesContractId === selectedContractId;
+        const isReviewLoading = Boolean(user?.id) && loadingReviewContractId === selectedContractId;
+
+        return !hasMilestonesEntry || !hasReviewEntry || isMilestonesLoading || isReviewLoading;
+    }, [
+        hasReviewedContractById,
+        isContractSession,
+        loadingMilestonesContractId,
+        loadingReviewContractId,
+        milestonesByContractId,
+        selectedContractId,
+        user?.id,
+    ]);
+
     const deleteModalWorkspaceVars = useMemo(() => {
         return {
             '--workspace-primary': '#9333ea',
@@ -1258,71 +1452,106 @@ function MessagesComponent() {
 
     const getConversationIdentityLabel = useCallback((conversation: Conversation) => {
         const username = conversation.otherUser.username?.trim();
+        return username ? `@${username}` : null;
+    }, []);
+
+    const getConversationProfilePath = useCallback((conversation: Conversation) => {
         const counterpartyRole = getCounterpartyRoleFromConversation(
             conversation,
             user?.id,
             activeMode ?? profile?.active_mode
         );
 
-        const roleLabel = counterpartyRole
-            ? tx(`mobileNav.${counterpartyRole}`, undefined, counterpartyRole === 'client' ? 'Client' : 'Freelancer')
-            : null;
+        if (counterpartyRole === 'client') {
+            return `/client/${conversation.otherUser.id}`;
+        }
 
-        if (roleLabel && username) return `${roleLabel} • @${username}`;
-        if (roleLabel) return roleLabel;
-
-        return `@${username || tx('pages.messages.userFallback', undefined, 'user')}`;
-    }, [activeMode, profile?.active_mode, user?.id, tx]);
+        return `/freelancer/${conversation.otherUser.id}`;
+    }, [activeMode, profile?.active_mode, user?.id]);
 
     const getConversationWorkDescriptor = useCallback((conversation: Conversation) => {
         if (!conversation.contract_id) {
-            return tx('pages.messages.directMessage', undefined, 'Direct message');
+            return tx('pages.messages.directChat', undefined, 'Direct chat');
         }
 
-        const jobTitle = (contractSessionMetaById[conversation.contract_id]?.title || '').trim();
+        const jobTitle = sanitizeContractTitle(contractSessionMetaById[conversation.contract_id]?.title);
 
         if (jobTitle) {
-            return tx('pages.messages.contractProjectWithTitle', { title: jobTitle }, `Contract project • ${jobTitle}`);
+            return jobTitle;
         }
 
-        return getContractFallbackTitle(conversation);
+        return getContractFallbackTitle(conversation, 'compact');
     }, [contractSessionMetaById, getContractFallbackTitle, tx]);
 
-    const getConversationContextLabel = useCallback((conversation: Conversation) => {
-        const lifecyclePolicy = getConversationLifecyclePolicy(conversation);
+    const getConversationRoleMeta = useCallback((conversation: Conversation) => {
+        const counterpartyRole = getCounterpartyRoleFromConversation(
+            conversation,
+            user?.id,
+            activeMode ?? profile?.active_mode
+        );
 
-        if (lifecyclePolicy.kind === 'direct') {
-            return tx('pages.messages.directContext', undefined, lifecyclePolicy.contextLabelFallback);
+        if (counterpartyRole === 'client') {
+            return {
+                label: tx('mobileNav.client', undefined, 'Client'),
+                className: 'border-sky-500/25 bg-sky-500/10 text-sky-100',
+            };
         }
 
-        const workDescriptor = getConversationWorkDescriptor(conversation);
-        const contractLabel = tx('pages.messages.contractContext', undefined, 'Contract chat');
-        let statusLabel: string | null = null;
+        if (counterpartyRole === 'freelancer') {
+            return {
+                label: tx('mobileNav.freelancer', undefined, 'Freelancer'),
+                className: 'border-violet-500/25 bg-violet-500/10 text-violet-100',
+            };
+        }
+
+        if (!conversation.contract_id) {
+            return {
+                label: tx('pages.messages.directChat', undefined, 'Direct chat'),
+                className: 'border-surface surface-sunken text-on-surface-muted',
+            };
+        }
+
+        return null;
+    }, [activeMode, profile?.active_mode, user?.id, tx]);
+
+    const getConversationStatusMeta = useCallback((conversation: Conversation) => {
+        if (!conversation.contract_id) return null;
+
+        const lifecyclePolicy = getConversationLifecyclePolicy(conversation);
 
         switch (lifecyclePolicy.contractStatus) {
             case 'active':
-                statusLabel = tx('contract.inProgress', undefined, 'Active');
-                break;
+                return {
+                    label: tx('contract.inProgress', undefined, 'In progress'),
+                    className: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-100',
+                };
             case 'pending_payment':
-                statusLabel = tx('contract.pendingPayment', undefined, 'Pending payment');
-                break;
+                return {
+                    label: tx('contract.pendingPayment', undefined, 'Pending payment'),
+                    className: 'border-sky-500/25 bg-sky-500/10 text-sky-100',
+                };
             case 'completed':
-                statusLabel = tx('contract.completed', undefined, 'Completed');
-                break;
+                return {
+                    label: tx('contract.completed', undefined, 'Completed'),
+                    className: 'border-cyan-500/25 bg-cyan-500/10 text-cyan-100',
+                };
             case 'cancelled':
-                statusLabel = tx('contract.cancelled', undefined, 'Cancelled');
-                break;
+                return {
+                    label: tx('contract.cancelled', undefined, 'Cancelled'),
+                    className: 'border-red-500/25 bg-red-500/10 text-red-100',
+                };
             case 'disputed':
-                statusLabel = tx('contract.disputeOpened', undefined, 'Disputed');
-                break;
-            case 'unknown':
+                return {
+                    label: tx('contract.disputeOpened', undefined, 'Disputed'),
+                    className: 'border-amber-500/30 bg-amber-500/10 text-amber-100',
+                };
             default:
-                statusLabel = null;
+                return {
+                    label: tx('contract.statusUnavailable', undefined, 'Status unavailable'),
+                    className: 'border-surface surface-sunken text-on-surface-muted',
+                };
         }
-
-        if (statusLabel && workDescriptor) return `${workDescriptor} • ${statusLabel}`;
-        return workDescriptor || [contractLabel, statusLabel].filter(Boolean).join(' • ');
-    }, [getConversationLifecyclePolicy, getConversationWorkDescriptor, tx]);
+    }, [getConversationLifecyclePolicy, tx]);
 
     const handleOpenAttachment = useCallback(async (attachment: NonNullable<Message['attachments']>[number]) => {
         const sourceUrl = resolveMessageAttachmentUrl(attachment.url);
@@ -1442,6 +1671,7 @@ function MessagesComponent() {
         setIsAcceptModalOpen(false);
         setIsDisputeModalOpen(false);
         setDeliveryNote('');
+        setDeliveryActionError(null);
         setDisputeReason('');
     }, [selectedConversation?.id]);
 
@@ -1638,8 +1868,35 @@ function MessagesComponent() {
     const handleSelectConversation = useCallback(async (conversation: Conversation) => {
         if (selectedConversation?.id === conversation.id) return;
 
-        setSelectedConversation(conversation);
+        const seenCount = Math.max(0, Math.floor(conversation.unread_count || 0));
+        if (seenCount > 0 && typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('messages:unread-seen', { detail: { count: seenCount } }));
+        }
+
+        const isParticipant1 = user ? conversation.participant_1 === user.id : false;
+        const nextSelectedConversation = user
+            ? {
+                ...conversation,
+                unread_count: 0,
+                unread_count_1: isParticipant1 ? 0 : conversation.unread_count_1,
+                unread_count_2: isParticipant1 ? conversation.unread_count_2 : 0,
+            }
+            : conversation;
+
+        setSelectedConversation(nextSelectedConversation);
         setShowMobileThread(true);
+
+        // Optimistically clear unread badge in list immediately for better UX.
+        setConversations((prev) => prev.map((conv) => {
+            if (conv.id !== conversation.id || !user) return conv;
+            const isConvParticipant1 = conv.participant_1 === user.id;
+            return {
+                ...conv,
+                unread_count: 0,
+                unread_count_1: isConvParticipant1 ? 0 : conv.unread_count_1,
+                unread_count_2: isConvParticipant1 ? conv.unread_count_2 : 0,
+            };
+        }));
 
         const cachedMessages = messageCacheRef.current[conversation.id]
             ?? readSessionCache<ThreadMessage[]>(getMessagesCacheKey(conversation.id));
@@ -1657,11 +1914,6 @@ function MessagesComponent() {
         // Mark as read and update UI
         if (user && conversation.unread_count > 0) {
             await markConversationRead(conversation.id, user.id);
-            setConversations((prev) =>
-                prev.map((conv) =>
-                    conv.id === conversation.id ? { ...conv, unread_count: 0 } : conv
-                )
-            );
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedConversation?.id, user?.id]);
@@ -1821,6 +2073,7 @@ function MessagesComponent() {
             type JobTitleLookupRow = {
                 id: string;
                 title: string | null;
+                deadline?: string | null;
                 client_id?: string | null;
             };
             const contractSelectColumns =
@@ -2072,11 +2325,12 @@ function MessagesComponent() {
             ]));
 
             const jobTitleById: Record<string, string> = {};
+            const jobDeadlineById: Record<string, string> = {};
 
             if (fallbackJobIds.length > 0) {
                 const { data: jobsData, error: jobsError } = await supabase
                     .from('jobs')
-                    .select('id, title')
+                    .select('id, title, deadline')
                     .in('id', fallbackJobIds);
 
                 if (cancelled) return;
@@ -2084,10 +2338,16 @@ function MessagesComponent() {
                 if (jobsError) {
                     console.warn('[Messages] Failed to load job titles for contract conversations', jobsError);
                 } else {
-                    for (const job of (jobsData ?? []) as Array<{ id: string; title: string | null }>) {
+                    for (const job of (jobsData ?? []) as Array<{ id: string; title: string | null; deadline?: string | null }>) {
                         const normalizedTitle = typeof job.title === 'string' ? job.title.trim() : '';
-                        if (!job.id || !normalizedTitle) continue;
-                        jobTitleById[job.id] = normalizedTitle;
+                        if (job.id && normalizedTitle) {
+                            jobTitleById[job.id] = normalizedTitle;
+                        }
+
+                        const normalizedDeadline = typeof job.deadline === 'string' ? job.deadline.trim() : '';
+                        if (job.id && normalizedDeadline) {
+                            jobDeadlineById[job.id] = normalizedDeadline;
+                        }
                     }
                 }
 
@@ -2100,16 +2360,24 @@ function MessagesComponent() {
                         const title = typeof (jobData as { title?: string | null }).title === 'string'
                             ? (jobData as { title?: string | null }).title?.trim()
                             : '';
-                        if (!title) return null;
+                        const deadline = typeof (jobData as { deadline?: string | null }).deadline === 'string'
+                            ? (jobData as { deadline?: string | null }).deadline?.trim()
+                            : '';
+                        if (!title && !deadline) return null;
 
-                        return { jobId, title };
+                        return { jobId, title, deadline };
                     }));
 
                     if (cancelled) return;
 
                     for (const resolved of resolvedViaPublicLookup) {
                         if (!resolved) continue;
-                        jobTitleById[resolved.jobId] = resolved.title;
+                        if (resolved.title) {
+                            jobTitleById[resolved.jobId] = resolved.title;
+                        }
+                        if (resolved.deadline) {
+                            jobDeadlineById[resolved.jobId] = resolved.deadline;
+                        }
                     }
                 }
             }
@@ -2315,6 +2583,9 @@ function MessagesComponent() {
                     || (resolvedJobId ? jobTitleById[resolvedJobId] : '')
                     || partnerFallback?.title
                     || null;
+                const resolvedJobDeadline = resolvedJobId
+                    ? (jobDeadlineById[resolvedJobId] || null)
+                    : null;
 
                 nextStatuses[conversationContractId] = normalizeContractStatus(row.status);
                 nextMeta[conversationContractId] = {
@@ -2323,6 +2594,7 @@ function MessagesComponent() {
                     title: resolvedTitle,
                     amount: row.amount ?? null,
                     total_amount: row.total_amount ?? null,
+                    job_deadline: resolvedJobDeadline,
                     client_id: row.client_id ?? null,
                     freelancer_id: row.freelancer_id ?? null,
                     job_id: resolvedJobId || null,
@@ -2338,8 +2610,9 @@ function MessagesComponent() {
                 const partnerFallback = partnerProposalFallbackByConversationContractId[unresolvedId];
                 const resolvedJobId = jobIdFromProposal || partnerFallback?.jobId || unresolvedId;
                 const resolvedTitle = jobTitleById[resolvedJobId] || partnerFallback?.title || null;
+                const resolvedJobDeadline = jobDeadlineById[resolvedJobId] || null;
 
-                if (!resolvedTitle) continue;
+                if (!resolvedTitle && !resolvedJobDeadline) continue;
 
                 nextMeta[unresolvedId] = {
                     id: unresolvedId,
@@ -2347,6 +2620,7 @@ function MessagesComponent() {
                     title: resolvedTitle,
                     amount: null,
                     total_amount: null,
+                    job_deadline: resolvedJobDeadline,
                     client_id: null,
                     freelancer_id: null,
                     job_id: resolvedJobId,
@@ -2674,6 +2948,7 @@ function MessagesComponent() {
     // - /messages?contract=<contractId>
     // - navigate('/messages', { state: { contractId } })
     useEffect(() => {
+        if (isLoadingConversations) return;
         if (conversations.length === 0) return;
 
         const targetConversationId = searchParams.get('conversation');
@@ -2689,12 +2964,22 @@ function MessagesComponent() {
             match = conversations.find((conversation) => conversation.contract_id === targetContractId);
         }
 
-        if (match) {
+        const alreadySelected = match && selectedConversation?.id === match.id;
+
+        if (match && !alreadySelected) {
             void handleSelectConversation(match);
             // Clean transient route hints after selection.
             navigate('/messages', { replace: true, state: null });
         }
-    }, [searchParams, conversations, routeContractId]);
+    }, [
+        searchParams,
+        conversations,
+        routeContractId,
+        handleSelectConversation,
+        isLoadingConversations,
+        navigate,
+        selectedConversation?.id,
+    ]);
 
     // Load conversations
     useEffect(() => {
@@ -2837,6 +3122,11 @@ function MessagesComponent() {
             // Mark conversation as read
             const { error: readError } = await markConversationRead(selectedConversation.id, user.id);
             if (!readError && messageRequestIdRef.current === requestId) {
+                const seenCount = Math.max(0, Math.floor(selectedConversation.unread_count || 0));
+                if (seenCount > 0 && typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('messages:unread-seen', { detail: { count: seenCount } }));
+                }
+
                 setMessages((prev) => prev.map((message) => (
                     message.receiver_id === user.id ? { ...message, is_read: true, status: undefined } : message
                 )));
@@ -3040,15 +3330,42 @@ function MessagesComponent() {
     const handleDeliverContractWork = useCallback(async () => {
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
 
+        setDeliveryActionError(null);
         setIsDeliveringContractWork(true);
         try {
+            if (selectedContractUserRole !== 'freelancer') {
+                throw new Error(tx('contract.deliverBlocked', undefined, 'Only the freelancer can deliver work for this contract.'));
+            }
+
+            const workflowStatus = selectedContractStatus === 'unknown' ? null : selectedContractStatus;
+            if (!canFreelancerDeliverForStatus(workflowStatus)) {
+                throw new Error(tx('contract.deliverBlocked', undefined, 'This contract is not ready for delivery.'));
+            }
+
+            const contractId = selectedConversation.contract_id;
             const trimmedNote = deliveryNote.trim();
             const messageContent = trimmedNote
                 ? `[[delivery]] ${trimmedNote}`
                 : '[[delivery]] Work delivered and ready for review';
+            const { data: deliveryResult, error: deliveryError } = await supabase.rpc('submit_contract_delivery_atomic', {
+                p_contract_id: contractId,
+                p_delivery_note: trimmedNote || 'submitted',
+            });
+
+            if (deliveryError) throw deliveryError;
+
+            const returnedStatus = normalizeContractStatus(
+                deliveryResult && typeof deliveryResult === 'object' && 'status' in deliveryResult
+                    ? String((deliveryResult as { status?: string }).status || '')
+                    : null
+            );
+
+            if (returnedStatus !== 'unknown') {
+                syncContractStatusLocally(contractId, returnedStatus);
+            }
 
             const { error } = await sendContractMessage({
-                contract_id: selectedConversation.contract_id,
+                contract_id: contractId,
                 sender_id: user.id,
                 receiver_id: selectedConversation.otherUser.id,
                 content: messageContent,
@@ -3064,29 +3381,66 @@ function MessagesComponent() {
             const message = error instanceof Error
                 ? error.message
                 : tx('contract.deliverError', undefined, 'Failed to deliver work');
+            setDeliveryActionError(message);
             showToast(message, 'error');
         } finally {
             setIsDeliveringContractWork(false);
         }
-    }, [deliveryNote, selectedConversation, showToast, tx, user?.id]);
+    }, [deliveryNote, selectedConversation, selectedContractStatus, selectedContractUserRole, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleRequestContractChanges = useCallback(async () => {
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
 
         setIsRequestingContractChanges(true);
         try {
+            const workflowStatus = selectedContractStatus === 'unknown' ? null : selectedContractStatus;
+            if (!canClientRequestChangesForStatus(workflowStatus, contractDeliverySubmitted)) {
+                throw new Error(tx('contract.requestChangesBlocked', undefined, 'Changes can only be requested after a delivery is submitted.'));
+            }
+
+            const contractId = selectedConversation.contract_id;
+            let revisionStatusApplied = false;
+
+            const { error: updateStatusError } = await supabase.rpc('request_contract_revision_atomic', {
+                p_contract_id: contractId,
+                p_reason: tx('contract.requestRevision', undefined, 'Please revise according to feedback'),
+            });
+
+            if (!updateStatusError) {
+                revisionStatusApplied = true;
+                syncContractStatusLocally(contractId, 'revision_requested');
+            } else if (
+                isEnumValueUnsupportedError(updateStatusError, 'contract_status_enum', 'revision_requested')
+                || isMissingSchemaColumnError(updateStatusError, 'contracts', 'status')
+            ) {
+                console.warn('[Messages] Revision status update skipped for compatibility', updateStatusError);
+            } else {
+                console.warn('[Messages] Failed to update contract status to revision_requested', updateStatusError);
+            }
+
             const changeNote = tx('contract.requestRevision', undefined, 'Please revise according to feedback');
             const { error } = await sendContractMessage({
-                contract_id: selectedConversation.contract_id,
+                contract_id: contractId,
                 sender_id: user.id,
                 receiver_id: selectedConversation.otherUser.id,
-                content: `Changes requested: ${changeNote}`,
-                message_type: 'feedback',
+                content: `[[revision_requested]] ${changeNote}`,
+                message_type: 'system',
             });
 
             if (error) throw error;
 
-            showToast(tx('contract.revisionSent', undefined, 'Revision request sent'), 'info');
+            if (revisionStatusApplied) {
+                showToast(tx('contract.revisionSent', undefined, 'Revision request sent'), 'info');
+            } else {
+                showToast(
+                    tx(
+                        'contract.revisionSentCompatibilityNotice',
+                        undefined,
+                        'Revision request sent. Status update will apply once the latest contract enum migration is available.'
+                    ),
+                    'warning'
+                );
+            }
         } catch (error) {
             const message = error instanceof Error
                 ? error.message
@@ -3095,13 +3449,18 @@ function MessagesComponent() {
         } finally {
             setIsRequestingContractChanges(false);
         }
-    }, [selectedConversation, showToast, tx, user?.id]);
+    }, [contractDeliverySubmitted, selectedContractStatus, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleAcceptContractAndPay = useCallback(async () => {
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
 
         setIsAcceptingContractWork(true);
         try {
+            const workflowStatus = selectedContractStatus === 'unknown' ? null : selectedContractStatus;
+            if (!canClientAcceptForStatus(workflowStatus, contractDeliverySubmitted)) {
+                throw new Error(tx('contract.acceptBlocked', undefined, 'Work must be delivered before it can be accepted.'));
+            }
+
             const { error: releaseError } = await supabase.rpc('release_contract_payment_atomic', {
                 p_contract_id: selectedConversation.contract_id,
             });
@@ -3114,7 +3473,7 @@ function MessagesComponent() {
                 contract_id: selectedConversation.contract_id,
                 sender_id: user.id,
                 receiver_id: selectedConversation.otherUser.id,
-                content: 'Work has been accepted and payment released',
+                content: '[[contract_completed]] Work has been accepted and payment released',
                 message_type: 'system',
             });
 
@@ -3130,7 +3489,7 @@ function MessagesComponent() {
         } finally {
             setIsAcceptingContractWork(false);
         }
-    }, [selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
+    }, [contractDeliverySubmitted, selectedContractStatus, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleOpenContractDispute = useCallback(async () => {
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
@@ -3138,6 +3497,11 @@ function MessagesComponent() {
 
         setIsOpeningContractDispute(true);
         try {
+            const workflowStatus = selectedContractStatus === 'unknown' ? null : selectedContractStatus;
+            if (!canOpenDisputeForStatus(workflowStatus)) {
+                throw new Error(tx('contract.disputeBlocked', undefined, 'A dispute cannot be opened in the current contract state.'));
+            }
+
             const { error: disputeError } = await supabase.rpc('open_dispute_atomic', {
                 p_contract_id: selectedConversation.contract_id,
                 p_reason: disputeReason.trim(),
@@ -3151,7 +3515,7 @@ function MessagesComponent() {
                 contract_id: selectedConversation.contract_id,
                 sender_id: user.id,
                 receiver_id: selectedConversation.otherUser.id,
-                content: `Dispute opened: ${disputeReason.trim()}`,
+                content: `[[dispute_opened]] Dispute opened: ${disputeReason.trim()}`,
                 message_type: 'dispute',
             });
 
@@ -3170,7 +3534,7 @@ function MessagesComponent() {
         } finally {
             setIsOpeningContractDispute(false);
         }
-    }, [disputeReason, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
+    }, [disputeReason, selectedContractStatus, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleSubmitContractReview = useCallback(async (rating: number, comment: string) => {
         if (!selectedContractId || !user?.id) {
@@ -3527,21 +3891,8 @@ function MessagesComponent() {
     };
 
     const getConversationSidebarTitle = useCallback((conversation: Conversation) => {
-        const personName = conversation.otherUser.full_name;
-        const contractTitle = conversation.contract_id
-            ? contractSessionMetaById[conversation.contract_id]?.title?.trim()
-            : '';
-
-        if (contractTitle) {
-            return tx(
-                'pages.messages.contractSidebarTitle',
-                { name: personName, title: contractTitle },
-                `${personName} • ${contractTitle}`,
-            );
-        }
-
-        return personName;
-    }, [contractSessionMetaById, tx]);
+        return conversation.otherUser.full_name;
+    }, []);
 
     // Filter conversations based on search and filter
     const filteredConversations = conversations.filter((c) => {
@@ -3572,10 +3923,18 @@ function MessagesComponent() {
         return deduped;
     }, [filteredConversations]);
 
+    const conversationSummaryLabel = useMemo(() => {
+        const countLabel = searchQuery
+            ? tx('pages.messages.searchResultsSummary', { count: displayConversations.length }, `${displayConversations.length} results`)
+            : tx('pages.messages.threadCountSummary', { count: displayConversations.length }, `${displayConversations.length} threads`);
+
+        return `${conversationWorkspaceLabel} / ${countLabel}`;
+    }, [conversationWorkspaceLabel, displayConversations.length, searchQuery, tx]);
+
     const conversationsVirtualizer = useVirtualizer({
         count: displayConversations.length,
         getScrollElement: () => conversationsParentRef.current,
-        estimateSize: () => 80,
+        estimateSize: () => 106,
         overscan: 5,
     });
 
@@ -3748,23 +4107,25 @@ function MessagesComponent() {
     }, [conversations, getConversationLastPreviewText, getReplyPreviewTextForMessage, isLoadingConversations]);
 
     const renderConversationList = () => (
-        <div className={`${showMobileThread ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-[#2d3138] flex-col bg-[#15181d] shrink-0`}>
-            <div className="p-4 border-b border-[#2d3138]">
-                <h2 className="text-xl font-bold mb-4 text-white">{tx('pages.messages.title', undefined, 'Messages')}</h2>
+        <div className={`${showMobileThread ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-[#1b1f24] bg-[#121212] flex-col shrink-0`}>
+            <div className="border-b border-[#1b1f24] bg-[#141414] p-4">
+                <div className="mb-4">
+                    <h2 className="text-xl font-bold tracking-tight text-on-surface">{tx('pages.messages.title', undefined, 'Messages')}</h2>
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-on-surface-subtle">
+                        {conversationSummaryLabel}
+                    </p>
+                </div>
                 <div
-                    className="flex h-10 w-full items-center gap-2 rounded-2xl px-3 text-sm transition-colors focus-within:bg-[#141922]"
-                    style={{
-                        background: 'color-mix(in srgb, var(--color-text-primary) 4%, transparent)',
-                    }}
+                    className={`flex h-11 w-full items-center gap-2 rounded-2xl border border-[#2a2112] bg-[#161616] px-3 text-sm transition-all ${accentClasses.searchSurface}`}
                 >
-                    <Search className="h-4 w-4 shrink-0 text-gray-500" />
+                    <Search className="h-4 w-4 shrink-0 text-on-surface-subtle" />
                     <input
                         id="messages-conversation-search"
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
-                        className="w-full border-0 bg-transparent p-0 text-sm text-white outline-none placeholder:text-gray-500 focus:outline-none focus:ring-0"
+                        className="w-full border-0 bg-transparent p-0 text-sm text-on-surface outline-none placeholder:text-on-surface-subtle focus:outline-none focus:ring-0"
                     />
                 </div>
             </div>
@@ -3772,11 +4133,11 @@ function MessagesComponent() {
             <div ref={conversationsParentRef} className="flex-1 overflow-y-auto">
                 {isLoadingConversations ? (
                     <div className="h-full flex items-center justify-center px-6 py-10">
-                        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                        <Loader2 className="h-6 w-6 animate-spin text-on-surface-subtle" />
                     </div>
                 ) : displayConversations.length === 0 ? (
                     <div className="h-full flex items-center justify-center px-6 py-10 text-center">
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-on-surface-subtle">
                             {searchQuery
                                 ? tx('pages.messages.empty.noMatchingTitle', undefined, 'No matching conversations')
                                 : tx('pages.messages.empty.noConversationsTitle', undefined, 'No conversations yet')}
@@ -3816,51 +4177,93 @@ function MessagesComponent() {
                                                 void handleSelectConversation(conversation);
                                             }
                                         }}
-                                        className={`p-4 flex gap-3 cursor-pointer transition-colors ${
-                                            isActive
-                                                ? `bg-[#222730] border-l-4 ${accentClasses.selectedConversationBorder}`
-                                                : 'hover:bg-[#1f232b] border-l-4 border-transparent border-b border-[#2d3138]'
-                                        }`}
+                                        className="h-full px-2 py-1.5"
                                     >
-                                        <button
-                                            type="button"
-                                            onClick={(event) => {
-                                                event.stopPropagation();
-                                                navigate(`/freelancer/${conversation.otherUser.id}`);
-                                            }}
-                                            aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
-                                            className={`w-12 h-12 rounded-full bg-[#262a32] shrink-0 relative overflow-hidden flex items-center justify-center text-sm font-semibold text-gray-200 transition-all hover:ring-2 ${accentClasses.avatarHoverRing}`}
-                                        >
-                                            <span aria-hidden="true">{conversation.otherUser.full_name.charAt(0)}</span>
-                                            {conversation.otherUser.avatar_url ? (
-                                                <img
-                                                    src={conversation.otherUser.avatar_url}
-                                                    alt={conversation.otherUser.full_name}
-                                                    className="absolute inset-0 h-full w-full object-cover"
-                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                />
-                                            ) : null}
-                                        </button>
+                                        <div className={`flex h-full gap-3 rounded-2xl border px-3 py-3 transition-all ${
+                                            isActive
+                                                ? accentClasses.selectedConversationSurface
+                                                : `border-transparent bg-transparent ${accentClasses.conversationHoverSurface}`
+                                        }`}>
+                                            {/* Avatar */}
+                                            <button
+                                                type="button"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    navigate(getConversationProfilePath(conversation));
+                                                }}
+                                                aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
+                                                className={`relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-[#22272d] bg-[#0f1114] text-sm font-semibold text-on-surface-muted transition-all hover:ring-2 ${accentClasses.avatarHoverRing}`}
+                                            >
+                                                <span aria-hidden="true">{conversation.otherUser.full_name.charAt(0)}</span>
+                                                {conversation.otherUser.avatar_url ? (
+                                                    <img
+                                                        src={conversation.otherUser.avatar_url}
+                                                        alt={conversation.otherUser.full_name}
+                                                        className="absolute inset-0 h-full w-full object-cover"
+                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                    />
+                                                ) : null}
+                                            </button>
 
-                                        <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <p className={`text-sm truncate ${conversation.unread_count > 0 ? 'font-semibold text-white' : 'text-gray-200'}`}>
-                                                    {getConversationSidebarTitle(conversation)}
-                                                </p>
-                                                <span className="text-xs text-gray-500 shrink-0">{formatTime(conversation.last_message_at)}</span>
-                                            </div>
-                                            <p className={`mt-0.5 text-[11px] tracking-wide truncate ${accentClasses.contextLabelText}`}>
-                                                {getConversationContextLabel(conversation)}
-                                            </p>
-                                            <div className="mt-1 flex items-center gap-2">
-                                                <p className={`text-xs truncate ${conversation.unread_count > 0 ? 'text-gray-300' : 'text-gray-400'} ${previewText === deletedMessageLabel ? 'italic' : ''}`}>
+                                            {/* Content */}
+                                            <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden gap-[4px]">
+
+                                                {/* Row 1 — Job/Project name (PRIMARY — what matters most) + time + unread */}
+                                                <div className="flex items-start justify-between gap-2">
+                                                    {(() => {
+                                                        const workDesc = getConversationWorkDescriptor(conversation);
+                                                        return (
+                                                            <p className={`truncate text-[13px] font-semibold leading-tight ${
+                                                                conversation.unread_count > 0 ? 'text-on-surface' : 'text-on-surface-muted'
+                                                            }`}>
+                                                                {workDesc || conversation.otherUser.full_name}
+                                                            </p>
+                                                        );
+                                                    })()}
+                                                    <div className="flex shrink-0 items-center gap-1.5">
+                                                        <span className="text-[11px] tabular-nums text-on-surface-subtle">
+                                                            {formatTime(conversation.last_message_at)}
+                                                        </span>
+                                                        {conversation.unread_count > 0 ? (
+                                                            <span className={`inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-px text-[10px] font-bold leading-tight text-white ${accentClasses.unreadBadgeBg}`}>
+                                                                {conversation.unread_count}
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+                                                </div>
+
+                                                {/* Row 2 — Person name + Role + Status (SECONDARY) */}
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <p className="truncate text-[11.5px] leading-tight text-on-surface-muted">
+                                                        {conversation.otherUser.full_name}
+                                                    </p>
+                                                    {(() => {
+                                                        const roleMeta = getConversationRoleMeta(conversation);
+                                                        const statusMeta = getConversationStatusMeta(conversation);
+                                                        return (
+                                                            <>
+                                                                {roleMeta ? (
+                                                                    <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${roleMeta.className}`}>
+                                                                        {roleMeta.label}
+                                                                    </span>
+                                                                ) : null}
+                                                                {statusMeta ? (
+                                                                    <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${statusMeta.className}`}>
+                                                                        {statusMeta.label}
+                                                                    </span>
+                                                                ) : null}
+                                                            </>
+                                                        );
+                                                    })()}
+                                                </div>
+
+                                                {/* Row 3 — Last message preview */}
+                                                <p className={`truncate text-[11px] leading-tight ${
+                                                    conversation.unread_count > 0 ? 'text-on-surface-muted' : 'text-on-surface-subtle'
+                                                } ${previewText === deletedMessageLabel ? 'italic' : ''}`}>
                                                     {previewText}
                                                 </p>
-                                                {conversation.unread_count > 0 ? (
-                                                    <span className={`ml-auto shrink-0 min-w-5 h-5 px-1 rounded-full text-[10px] font-semibold text-white flex items-center justify-center ${accentClasses.unreadBadgeBg}`}>
-                                                        {conversation.unread_count}
-                                                    </span>
-                                                ) : null}
+
                                             </div>
                                         </div>
                                     </div>
@@ -3871,12 +4274,12 @@ function MessagesComponent() {
                 )}
 
                 {hasMoreConversations && displayConversations.length > 0 && !searchQuery ? (
-                    <div className="px-4 py-4 border-t border-[#2d3138]">
+                    <div className="border-t border-[#1b1f24] bg-[#141414] px-4 py-4">
                         <button
                             type="button"
                             onClick={() => setPage((prev) => prev + 1)}
                             disabled={isLoadingMore}
-                            className={`w-full rounded-xl border border-[#3a3a3a] bg-[#1b1f26] px-3 py-2 text-sm text-gray-200 transition-colors hover:bg-[#252a33] disabled:opacity-50 ${accentClasses.inputFocusBorder}`}
+                            className={`w-full rounded-xl border border-[#242a31] bg-[#101214] px-3 py-2 text-sm text-on-surface-muted transition-colors hover:bg-[#171a1f] disabled:opacity-50 ${accentClasses.inputFocusBorder}`}
                         >
                             {isLoadingMore ? tx('common.loading', undefined, 'Loading...') : tx('pages.messages.loadMore', undefined, 'Load more conversations')}
                         </button>
@@ -3887,121 +4290,153 @@ function MessagesComponent() {
     );
 
     const renderMessageThread = () => (
-        <div className={`${showMobileThread ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-[#0a0a0a] relative`}>
+        <div className={`${showMobileThread ? 'flex' : 'hidden md:flex'} flex-1 flex-col page-bg-base relative`}>
             {selectedConversation ? (
                 <div className="flex h-full min-h-0 flex-1">
-                    <div className="flex min-w-0 flex-1 flex-col">
-                    <div className="h-16 px-4 md:px-6 border-b border-[#262626] bg-[#141414] flex items-center justify-between shrink-0 relative">
-                        <div className="flex items-center gap-3 min-w-0">
-                            <button
-                                type="button"
-                                onClick={() => setShowMobileThread(false)}
-                                aria-label={tx('common.back', undefined, 'Back')}
-                                className="md:hidden p-2.5 text-gray-400 hover:text-white hover:bg-[#262626] rounded-xl transition-colors"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                            </button>
+                    <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
+                        <div className={`pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-stops))] ${accentClasses.threadAmbientGlow}`} />
+                        <div className="relative z-20 min-h-[84px] border-b border-[#1b1f24] bg-[#151515] px-4 py-4 backdrop-blur-sm md:px-6">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="flex min-w-0 items-start gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowMobileThread(false)}
+                                        aria-label={tx('common.back', undefined, 'Back')}
+                                        className="rounded-xl p-2.5 text-on-surface-muted transition-colors hover-surface hover:text-on-surface md:hidden"
+                                    >
+                                        <ArrowLeft className="w-4 h-4" />
+                                    </button>
 
-                            <button
-                                type="button"
-                                onClick={() => navigate(`/freelancer/${selectedConversation.otherUser.id}`)}
-                                aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
-                                className={`relative w-10 h-10 rounded-full bg-[#262626] shrink-0 overflow-hidden flex items-center justify-center text-sm font-semibold text-gray-200 cursor-pointer hover:ring-2 transition-all shadow-md ${accentClasses.headerAvatarHoverRing}`}
-                            >
-                                <span aria-hidden="true">{selectedConversation.otherUser.full_name.charAt(0)}</span>
-                                {selectedConversation.otherUser.avatar_url ? (
-                                    <img
-                                        src={selectedConversation.otherUser.avatar_url}
-                                        alt={selectedConversation.otherUser.full_name}
-                                        className="absolute inset-0 h-full w-full object-cover"
-                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                    />
-                                ) : null}
-                            </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(getConversationProfilePath(selectedConversation))}
+                                        aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
+                                        className={`relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-[#22272d] bg-[#0f1114] text-sm font-semibold text-on-surface-muted shadow-md transition-all hover:ring-2 ${accentClasses.headerAvatarHoverRing}`}
+                                    >
+                                        <span aria-hidden="true">{selectedConversation.otherUser.full_name.charAt(0)}</span>
+                                        {selectedConversation.otherUser.avatar_url ? (
+                                            <img
+                                                src={selectedConversation.otherUser.avatar_url}
+                                                alt={selectedConversation.otherUser.full_name}
+                                                className="absolute inset-0 h-full w-full object-cover"
+                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            />
+                                        ) : null}
+                                    </button>
 
-                            <div className="min-w-0">
-                                <p className="font-bold text-white truncate">{selectedConversation.otherUser.full_name}</p>
-                                <p className={`text-xs truncate ${accentClasses.headerMetaText}`}>
-                                    {`${getConversationIdentityLabel(selectedConversation)} • ${getConversationWorkDescriptor(selectedConversation)}`}
-                                </p>
+                                    <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                                            <p className="truncate text-base font-bold text-on-surface shrink-0">
+                                                {selectedConversation.otherUser.full_name}
+                                            </p>
+                                            {(() => {
+                                                const roleMeta = getConversationRoleMeta(selectedConversation);
+                                                const statusMeta = getConversationStatusMeta(selectedConversation);
+
+                                                return (
+                                                    <>
+                                                        {roleMeta ? (
+                                                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0 ${roleMeta.className}`}>
+                                                                {roleMeta.label}
+                                                            </span>
+                                                        ) : null}
+                                                        <span className="inline-flex max-w-[160px] items-center rounded-full border border-surface surface-sunken px-2 py-0.5 text-[10px] font-medium text-on-surface-muted shrink-0">
+                                                            <span className="truncate">{truncateText(getConversationWorkDescriptor(selectedConversation), 28)}</span>
+                                                        </span>
+                                                        {statusMeta ? (
+                                                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0 ${statusMeta.className}`}>
+                                                                {statusMeta.label}
+                                                            </span>
+                                                        ) : null}
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    {selectedConversation.contract_id ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsContractSidebarVisible((prev) => !prev)}
+                                            aria-expanded={isContractSidebarVisible}
+                                            aria-controls="contract-workspace-sidebar"
+                                            className={`hidden xl:inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                                                isContractSidebarVisible
+                                                    ? accentClasses.contractToggleActive
+                                                    : accentClasses.contractToggleIdle
+                                            }`}
+                                        >
+                                            {isContractSidebarVisible
+                                                ? tx('pages.messages.hideContract', undefined, 'Hide Contract')
+                                                : tx('pages.messages.openContract', undefined, 'Open Contract')}
+                                        </button>
+                                    ) : null}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsMenuOpen((prev) => !prev)}
+                                        aria-label={tx('common.more', undefined, 'More')}
+                                        className="rounded-lg p-2 text-on-surface-muted transition-colors hover-surface hover:text-on-surface"
+                                    >
+                                        <MoreVertical className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                            {selectedConversation.contract_id ? (
-                                <button
-                                    type="button"
-                                    onClick={() => setIsContractSidebarVisible((prev) => !prev)}
-                                    aria-expanded={isContractSidebarVisible}
-                                    aria-controls="contract-workspace-sidebar"
-                                    className={`hidden xl:inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                                        isContractSidebarVisible
-                                            ? accentClasses.contractToggleActive
-                                            : accentClasses.contractToggleIdle
-                                    }`}
-                                >
-                                    {isContractSidebarVisible
-                                        ? tx('pages.messages.hideContract', undefined, 'Hide Contract')
-                                        : tx('pages.messages.openContract', undefined, 'Open Contract')}
-                                </button>
+                            {isMenuOpen ? (
+                                <div ref={menuRef} className="absolute right-6 top-[72px] z-[70] mt-2 w-48 overflow-hidden rounded-xl border border-[#232830] bg-[#121418] py-1 shadow-2xl">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            navigate(getConversationProfilePath(selectedConversation));
+                                            setIsMenuOpen(false);
+                                        }}
+                                        className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-on-surface-muted transition-colors hover-surface hover:text-on-surface"
+                                    >
+                                        <span className="flex items-center gap-3">
+                                            <User className="w-4 h-4" />
+                                            <span>{tx('pages.messages.profileAction', undefined, 'View Profile')}</span>
+                                        </span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setConversations((prev) => prev.map((conversation) => (
+                                                conversation.id === selectedConversation.id
+                                                    ? { ...conversation, unread_count: Math.max(1, conversation.unread_count) }
+                                                    : conversation
+                                            )));
+                                            setIsMenuOpen(false);
+                                        }}
+                                        className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-on-surface-muted transition-colors hover-surface hover:text-on-surface"
+                                    >
+                                        <span className="flex items-center gap-3">
+                                            <Mail className="w-4 h-4" />
+                                            <span>{tx('pages.messages.markUnread', undefined, 'Mark as Unread')}</span>
+                                        </span>
+                                    </button>
+
+                                    <div className="my-1 border-t border-surface" />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            showToast(tx('pages.messages.reportSubmitted', undefined, 'User report queued for review'), 'success');
+                                            setIsMenuOpen(false);
+                                        }}
+                                        className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-red-500 transition-colors hover:bg-red-500/10"
+                                    >
+                                        <span className="flex items-center gap-3">
+                                            <Flag className="w-4 h-4" />
+                                            <span>{tx('pages.messages.reportUser', undefined, 'Report User')}</span>
+                                        </span>
+                                    </button>
+                                </div>
                             ) : null}
-
-                            <button
-                                type="button"
-                                onClick={() => setIsMenuOpen((prev) => !prev)}
-                                aria-label={tx('common.more', undefined, 'More')}
-                                className="p-2 rounded-lg text-gray-400 cursor-pointer hover:text-white hover:bg-[#262626] transition-colors"
-                            >
-                                <MoreVertical className="w-4 h-4" />
-                            </button>
                         </div>
-
-                        {isMenuOpen ? (
-                            <div ref={menuRef} className="absolute right-6 top-16 mt-2 w-48 bg-[#141414] border border-[#262626] rounded-xl shadow-2xl z-50 py-1 overflow-hidden">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        navigate(`/freelancer/${selectedConversation.otherUser.id}`);
-                                        setIsMenuOpen(false);
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer transition-colors text-gray-300 hover:bg-[#262626] hover:text-white"
-                                >
-                                    <User className="w-4 h-4" />
-                                    <span>{tx('pages.messages.profileAction', undefined, 'View Profile')}</span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setConversations((prev) => prev.map((conversation) => (
-                                            conversation.id === selectedConversation.id
-                                                ? { ...conversation, unread_count: Math.max(1, conversation.unread_count) }
-                                                : conversation
-                                        )));
-                                        setIsMenuOpen(false);
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer transition-colors text-gray-300 hover:bg-[#262626] hover:text-white"
-                                >
-                                    <Mail className="w-4 h-4" />
-                                    <span>{tx('pages.messages.markUnread', undefined, 'Mark as Unread')}</span>
-                                </button>
-
-                                <div className="border-t border-[#262626] my-1" />
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        showToast(tx('pages.messages.reportSubmitted', undefined, 'User report queued for review'), 'success');
-                                        setIsMenuOpen(false);
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer transition-colors text-red-500 hover:bg-red-500/10"
-                                >
-                                    <Flag className="w-4 h-4" />
-                                    <span>{tx('pages.messages.reportUser', undefined, 'Report User')}</span>
-                                </button>
-                            </div>
-                        ) : null}
-                    </div>
 
                     {selectedConversationPolicy
                         && selectedConversationPolicy.bannerTone !== 'none'
@@ -4019,28 +4454,34 @@ function MessagesComponent() {
                         </div>
                     ) : null}
 
-                    <div ref={messagesParentRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 flex flex-col">
+                    <div ref={messagesParentRef} className="relative z-0 flex flex-1 flex-col overflow-y-auto p-4 md:p-6">
                         {isLoadingMessages ? (
                             <div className="flex-1 flex items-center justify-center">
-                                <Loader2 className="h-7 w-7 animate-spin text-gray-400" />
+                                <Loader2 className="h-7 w-7 animate-spin text-on-surface-subtle" />
                             </div>
                         ) : displayMessages.length === 0 && pendingQueue.length === 0 ? (
                             <div className="flex-1 flex items-center justify-center">
                                 <div className="text-center">
-                                    <Send className="mx-auto h-10 w-10 text-gray-500" />
-                                    <p className="mt-3 text-sm text-gray-400">{tx('pages.messages.emptyThread', undefined, 'No messages yet. Start the conversation!')}</p>
+                                    <Send className="mx-auto h-10 w-10 text-on-surface-subtle" />
+                                    <p className="mt-3 text-sm text-on-surface-subtle">{tx('pages.messages.emptyThread', undefined, 'No messages yet. Start the conversation!')}</p>
                                 </div>
                             </div>
                         ) : (
                             <>
-                                <div className="flex justify-center mb-2">
-                                    <span className="bg-[#262626] text-gray-400 text-xs px-3 py-1 rounded-full">{tx('pages.messages.today', undefined, 'Today')}</span>
+                                <div className="mb-4 flex items-center gap-3">
+                                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#2a2a2e] to-transparent" />
+                                    <span className="rounded-full border border-[#262b31] bg-[#111317] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-on-surface-subtle">
+                                        {tx('pages.messages.today', undefined, 'Today')}
+                                    </span>
+                                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#2a2a2e] to-transparent" />
                                 </div>
 
                                 <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
                                     {messagesVirtualizer.getVirtualItems().map((virtualRow) => {
                                         const message = displayMessages[virtualRow.index];
                                         const isOwnMessage = message.sender_id === user?.id;
+                                        const contractSystemMessageKind = getMessageContractSystemKind(message);
+                                        const isContractSystemMessage = Boolean(contractSystemMessageKind);
                                         const messageText = getMessageDisplayText(message, deletedMessageLabel);
                                         const replyMetadata = getMessageReplyMetadata(message);
                                         const shouldRenderMessageText = Boolean(messageText) && !shouldHideAttachmentUrlText(message);
@@ -4070,7 +4511,7 @@ function MessagesComponent() {
                                                     paddingBottom: '18px',
                                                 }}
                                             >
-                                                <div className={`group/message flex w-full ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`group/message flex w-full ${isContractSystemMessage ? 'justify-center' : isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                                                     <div className="relative w-full max-w-[85%] md:max-w-[80%]">
                                                         {isOwnMessage && !message.status && !message.is_deleted ? (
                                                             <button
@@ -4078,7 +4519,7 @@ function MessagesComponent() {
                                                                 onClick={() => void handleDeleteMessage(message)}
                                                                 disabled={deletingMessageId === message.id}
                                                                 aria-label={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
-                                                                className="absolute -left-9 top-2 z-10 h-7 w-7 rounded-full border border-[#3a3a3a] bg-[#141414] text-gray-500 hidden md:flex items-center justify-center hover:text-white hover:bg-[#262626] transition-colors transition-opacity opacity-0 group-hover/message:opacity-100 focus-visible:opacity-100 disabled:opacity-50"
+                                                                className="absolute -left-9 top-2 z-10 h-7 w-7 rounded-full border border-surface surface-sunken text-on-surface-subtle hidden md:flex items-center justify-center hover:text-on-surface hover-surface transition-colors transition-opacity opacity-0 group-hover/message:opacity-100 focus-visible:opacity-100 disabled:opacity-50"
                                                             >
                                                                 {deletingMessageId === message.id ? (
                                                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -4088,9 +4529,9 @@ function MessagesComponent() {
                                                             </button>
                                                         ) : null}
 
-                                                        <div className={`flex items-end gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                                                            {!isOwnMessage ? (
-                                                                <div className="w-6 h-6 rounded-full bg-[#262626] overflow-hidden shrink-0 flex items-center justify-center text-[10px] text-gray-300">
+                                                        <div className={`flex items-end gap-2 ${isContractSystemMessage ? 'justify-center' : isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                            {!isOwnMessage && !isContractSystemMessage ? (
+                                                                <div className="w-6 h-6 rounded-full surface-sunken overflow-hidden shrink-0 flex items-center justify-center text-[10px] text-on-surface-subtle">
                                                                     <span aria-hidden="true">{selectedConversation.otherUser.full_name.charAt(0)}</span>
                                                                     {selectedConversation.otherUser.avatar_url ? (
                                                                         <img
@@ -4106,14 +4547,16 @@ function MessagesComponent() {
                                                             <div
                                                                 className={`max-w-[75%] ${
                                                                     isDeletedMessage(message)
-                                                                        ? 'rounded-full border border-[#2a2a2a] bg-[#111111] text-gray-500 px-3 py-1.5 text-xs'
+                                                                        ? 'rounded-full border border-surface surface-sunken text-on-surface-subtle px-3 py-1.5 text-xs'
+                                                                        : isContractSystemMessage
+                                                                        ? 'rounded-xl border border-sky-500/35 bg-sky-500/10 text-sky-100 px-3 py-2 text-xs font-medium'
                                                                         : (hasImageAttachment && (isImageOnlyMessage || shouldRenderImageCaption))
                                                                         ? (isOwnMessage
                                                                             ? `${accentClasses.ownBubbleBg} p-1 overflow-hidden rounded-2xl rounded-br-sm text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
-                                                                            : 'bg-[#141414] border border-[#262626] p-1 overflow-hidden rounded-2xl rounded-bl-sm text-gray-200')
+                                                                            : 'surface-card border border-surface p-1 overflow-hidden rounded-2xl rounded-bl-sm text-on-surface')
                                                                         : isOwnMessage
                                                                         ? `${accentClasses.ownBubbleBg} text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-md ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
-                                                                        : 'bg-[#141414] border border-[#262626] text-gray-200 px-4 py-2 rounded-2xl rounded-bl-sm text-sm'
+                                                                        : 'surface-card border border-surface text-on-surface px-4 py-2 rounded-2xl rounded-bl-sm text-sm'
                                                                 } ${highlightedMessageId === message.id ? `ring-1 ${accentClasses.highlightRing}` : ''}`}
                                                             >
                                                                 {replyMetadata ? (
@@ -4122,7 +4565,7 @@ function MessagesComponent() {
                                                                         onClick={() => {
                                                                             scrollToMessageById(replyMetadata.messageId);
                                                                         }}
-                                                                        className={`mb-2 w-full rounded-lg border px-2 py-1.5 text-left ${isOwnMessage ? accentClasses.ownReplyCard : 'border-[#3a3a3a] bg-[#101010] text-gray-300'}`}
+                                                                        className={`mb-2 w-full rounded-lg border px-2 py-1.5 text-left ${isOwnMessage ? accentClasses.ownReplyCard : 'border-surface surface-sunken text-on-surface-muted'}`}
                                                                         aria-label={tx('pages.messages.jumpToRepliedMessage', undefined, 'Jump to replied message')}
                                                                     >
                                                                         <p className="text-[10px] font-semibold uppercase tracking-wide opacity-90">{replyMetadata.senderName}</p>
@@ -4166,12 +4609,12 @@ function MessagesComponent() {
                                                                                                     if (fallback) fallback.style.display = 'flex';
                                                                                                 }}
                                                                                             />
-                                                                                            <div className="hidden w-full max-w-sm rounded-xl aspect-video items-center justify-center bg-[#141414] border border-[#262626] text-gray-500">
+                                                                                            <div className="hidden w-full max-w-sm rounded-xl aspect-video items-center justify-center surface-sunken border border-surface text-on-surface-subtle">
                                                                                                 <ImageIcon className="h-6 w-6" />
                                                                                             </div>
                                                                                         </div>
                                                                                         {shouldRenderImageCaption && index === firstImageAttachmentIndex ? (
-                                                                                            <p className={`px-3 py-2 text-sm break-words ${isOwnMessage ? accentClasses.ownTextMuted : 'text-gray-200'}`}>
+                                                                                            <p className={`px-3 py-2 text-sm break-words ${isOwnMessage ? accentClasses.ownTextMuted : 'text-zinc-200'}`}>
                                                                                                 {messageText}
                                                                                             </p>
                                                                                         ) : null}
@@ -4201,20 +4644,20 @@ function MessagesComponent() {
                                                                                     className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors w-full max-w-sm ${
                                                                                         isOwnMessage
                                                                                             ? accentClasses.ownAttachmentCard
-                                                                                            : 'bg-[#141414] hover:bg-[#1a1a1a] border border-[#333]'
+                                                                                            : 'surface-card hover-surface border border-surface'
                                                                                     }`}
                                                                                     aria-label={tx('pages.messages.a11y.openAttachment', undefined, 'Open attachment')}
                                                                                 >
-                                                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? accentClasses.ownAttachmentIcon : `bg-[#202020] ${accentClasses.neutralAttachmentIcon}`}`}>
+                                                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? accentClasses.ownAttachmentIcon : `bg-[#1e1c22] ${accentClasses.neutralAttachmentIcon}`}`}>
                                                                                         <FileText className="w-5 h-5" />
                                                                                     </div>
 
                                                                                     <div className="min-w-0 flex-1 text-start">
-                                                                                        <p className="font-semibold text-sm truncate text-gray-100">{att.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment')}</p>
-                                                                                        <p className="text-xs opacity-70 text-gray-300">{fileMetaLabel}</p>
+                                                                                        <p className="font-semibold text-sm truncate text-on-surface">{att.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment')}</p>
+                                                                                        <p className="text-xs opacity-70 text-on-surface-muted">{fileMetaLabel}</p>
                                                                                     </div>
 
-                                                                                    <Download className="w-4 h-4 opacity-50 hover:opacity-100 transition-opacity ml-auto shrink-0 text-gray-200" />
+                                                                                    <Download className="w-4 h-4 opacity-50 hover:opacity-100 transition-opacity ml-auto shrink-0 text-on-surface-muted" />
                                                                                 </button>
                                                                             );
                                                                         })}
@@ -4223,11 +4666,11 @@ function MessagesComponent() {
                                                             </div>
 
                                                             {isOwnMessage && !isDeletedMessage(message) && !message.status ? (
-                                                                <CheckCheck className={`h-3 w-3 mb-1 ${message.is_read ? accentClasses.readReceipt : 'text-gray-500'}`} />
+                                                                <CheckCheck className={`h-3 w-3 mb-1 ${message.is_read ? accentClasses.readReceipt : 'text-zinc-600'}`} />
                                                             ) : null}
                                                         </div>
 
-                                                        <p className={`mt-1 text-[11px] text-gray-500 flex items-center gap-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                        <p className={`mt-1 text-[11px] text-zinc-600 flex items-center gap-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                                                             <span>{formatMessageTime(message.created_at)}</span>
                                                             {isOwnMessage && message.status === 'sending' ? <Clock className="h-3 w-3" /> : null}
                                                             {isOwnMessage && message.status === 'failed' ? (
@@ -4241,7 +4684,7 @@ function MessagesComponent() {
                                                                 onClick={() => {
                                                                     handleReplyToMessage(message);
                                                                 }}
-                                                                className={`mt-1 inline-flex items-center gap-1 text-[11px] text-gray-500 transition-colors opacity-0 group-hover/message:opacity-100 ${accentClasses.replyActionHover} ${isOwnMessage ? 'ms-auto' : ''}`}
+                                                                className={`mt-1 inline-flex items-center gap-1 text-[11px] text-zinc-600 transition-colors opacity-0 group-hover/message:opacity-100 ${accentClasses.replyActionHover} ${isOwnMessage ? 'ms-auto' : ''}`}
                                                                 aria-label={tx('pages.messages.replyAction', undefined, 'Reply to message')}
                                                             >
                                                                 <CornerUpLeft className="h-3 w-3" />
@@ -4267,7 +4710,7 @@ function MessagesComponent() {
                                                     </div>
                                                 ) : null}
                                             </div>
-                                            <p className="mt-1 text-[11px] text-gray-500 flex items-center justify-end gap-1">
+                                            <p className="mt-1 text-[11px] text-zinc-600 flex items-center justify-end gap-1">
                                                 <Clock className="w-3 h-3" /> {tx('pages.messages.offline.statusWaiting', undefined, 'Pending connection...')}
                                             </p>
                                         </div>
@@ -4280,8 +4723,8 @@ function MessagesComponent() {
                     </div>
 
                     {typingUsers.length > 0 ? (
-                        <div className="px-4 md:px-6 py-2 border-t border-[#262626]">
-                            <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <div className="px-4 md:px-6 py-2 border-t border-[#1e1e22]">
+                            <div className="flex items-center gap-2 text-xs text-zinc-500">
                                 <div className="flex gap-1">
                                     <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${accentClasses.typingDot}`} />
                                     <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${accentClasses.typingDot}`} />
@@ -4296,19 +4739,19 @@ function MessagesComponent() {
                         </div>
                     ) : null}
 
-                    <div className="p-4 bg-[#141414] border-t border-[#262626] shrink-0">
+                    <div className="shrink-0 border-t border-[#191c21] bg-[#0d0d0f]/98 p-4 backdrop-blur-sm">
                         {replyTarget ? (
-                            <div className="mb-3 rounded-xl border border-[#333] bg-[#1a1a1a] px-3 py-2">
+                            <div className="mb-3 rounded-xl border border-[#1f2328] bg-[#111317] px-3 py-2">
                                 <div className="flex items-start gap-2">
                                     <span className={`mt-0.5 h-8 w-1 rounded-full ${accentClasses.replyStripe}`} aria-hidden="true" />
                                     <div className="min-w-0 flex-1">
                                         <p className={`text-xs font-semibold ${accentClasses.headerMetaText}`}>{tx('pages.messages.replyingTo', undefined, 'Replying to')} {replyTarget.senderName}</p>
-                                        <p className="text-xs text-gray-300 truncate">{replyTarget.previewText}</p>
+                                        <p className="text-xs text-zinc-400 truncate">{replyTarget.previewText}</p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setReplyTarget(null)}
-                                        className="rounded-md p-1 text-gray-400 hover:bg-[#262626] hover:text-white transition-colors"
+                                        className="rounded-md p-1 text-zinc-500 hover:bg-[#1e1c22] hover:text-white transition-colors"
                                         aria-label={tx('pages.messages.cancelReply', undefined, 'Cancel reply')}
                                     >
                                         <X className="h-4 w-4" />
@@ -4335,8 +4778,8 @@ function MessagesComponent() {
                                 ) : null}
 
                                 {audioBlob ? (
-                                    <div className="rounded-xl border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2">
-                                        <div className="flex items-center gap-2 text-sm text-gray-200">
+                                    <div className="rounded-xl border border-[#1f2328] bg-[#111317] px-3 py-2">
+                                        <div className="flex items-center gap-2 text-sm text-zinc-200">
                                             <FileAudio className={`w-4 h-4 ${accentClasses.iconAccent}`} />
                                             <span className="flex-1">{tx('pages.messages.voiceMemo', undefined, 'Audio note')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
                                             <button
@@ -4344,13 +4787,13 @@ function MessagesComponent() {
                                                 onClick={cancelRecording}
                                                 disabled={isSending}
                                                 aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')}
-                                                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#262626] transition-colors disabled:opacity-50"
+                                                className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-[#1e1c22] transition-colors disabled:opacity-50"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
                                         </div>
                                         {audioPreviewUrl ? (
-                                            <div className="mt-2 rounded-xl border border-[#262626] bg-[#141414] px-3 py-2">
+                                            <div className="mt-2 rounded-xl border border-[#1d2126] bg-[#0f1114] px-3 py-2">
                                                 <MessageAudioPlayer
                                                     src={audioPreviewUrl}
                                                     name={tx('pages.messages.voiceMemo', undefined, 'Audio note')}
@@ -4363,8 +4806,8 @@ function MessagesComponent() {
                                 ) : null}
 
                                 {selectedFile ? (
-                                    <div className="rounded-xl border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2">
-                                        <div className="flex items-center gap-2 text-sm text-gray-200">
+                                    <div className="rounded-xl border border-[#1f2328] bg-[#111317] px-3 py-2">
+                                        <div className="flex items-center gap-2 text-sm text-zinc-200">
                                             <FileText className={`w-4 h-4 ${accentClasses.iconAccent}`} />
                                             <span className="flex-1 truncate">{selectedFile.name}</span>
                                             <button
@@ -4372,7 +4815,7 @@ function MessagesComponent() {
                                                 onClick={() => setSelectedFile(null)}
                                                 disabled={isSending}
                                                 aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')}
-                                                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#262626] transition-colors disabled:opacity-50"
+                                                className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-[#1e1c22] transition-colors disabled:opacity-50"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
@@ -4384,13 +4827,13 @@ function MessagesComponent() {
 
                         <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={MESSAGE_ATTACHMENT_ACCEPT} />
 
-                        <div className="bg-[#0a0a0a] rounded-2xl flex items-end p-1.5 transition-all shadow-inner">
+                        <div className={`flex items-end rounded-[26px] border p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02),0_20px_45px_-32px_rgba(0,0,0,0.85)] transition-all ${accentClasses.composerShell}`}>
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isSending || !!selectedFile || !canAttachInSelectedConversation}
                                 aria-label={tx('pages.messages.a11y.attachFile', undefined, 'Attach file')}
-                                className="p-2.5 text-gray-500 hover:text-white hover:bg-[#262626] rounded-xl cursor-pointer transition-all disabled:opacity-50"
+                                className="p-2.5 text-zinc-500 hover:text-white hover:bg-[#1e1c22] rounded-xl cursor-pointer transition-all disabled:opacity-50"
                             >
                                 <Paperclip className="w-4 h-4" />
                             </button>
@@ -4425,7 +4868,7 @@ function MessagesComponent() {
                                 className={`p-2.5 rounded-xl transition-all ${
                                     isRecording
                                         ? 'bg-red-500/20 text-red-300'
-                                        : 'text-gray-500 hover:text-white hover:bg-[#262626]'
+                                        : 'text-zinc-500 hover:text-white hover:bg-[#1e1c22]'
                                 } disabled:opacity-50`}
                             >
                                 {isRecording ? <Square className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
@@ -4467,7 +4910,7 @@ function MessagesComponent() {
                                     })()}
                                 disabled={isSending || isRecording || !canSendInSelectedConversation}
                                 rows={1}
-                                className="flex-1 bg-transparent border-0 ring-0 focus:ring-0 focus:border-transparent text-white text-sm px-3 py-2.5 outline-none resize-none max-h-32 min-h-[44px] placeholder:text-gray-500 disabled:opacity-50"
+                                className="flex-1 bg-transparent border-0 ring-0 focus:ring-0 focus:border-transparent text-white text-sm px-3 py-2.5 outline-none resize-none max-h-32 min-h-[44px] placeholder:text-zinc-500 disabled:opacity-50"
                             />
 
                             <button
@@ -4487,46 +4930,66 @@ function MessagesComponent() {
 
                     </div>
 
-                    {isContractSession && contractSidebarData ? (
+                    {isContractSession ? (
                         <div
                             className={`hidden xl:block shrink-0 overflow-hidden transition-[width,opacity] duration-300 ease-out ${
                                 isContractSidebarVisible
-                                    ? 'w-[360px] 2xl:w-[390px] opacity-100'
+                                    ? 'w-[420px] 2xl:w-[460px] opacity-100'
                                     : 'w-0 opacity-0 pointer-events-none'
                             }`}
                             aria-hidden={!isContractSidebarVisible}
                         >
                             <aside
                                 id="contract-workspace-sidebar"
-                                className={`h-full w-[360px] 2xl:w-[390px] border-l border-[#262626] bg-[#111111] transition-transform duration-300 ease-out ${
+                                className={`h-full w-[420px] 2xl:w-[460px] border-l border-[#18130f] bg-[#090807] transition-transform duration-300 ease-out ${
                                     isContractSidebarVisible ? 'translate-x-0' : 'translate-x-6'
                                 }`}
                             >
-                                <ContractDetailsSidebar
-                                    contract={contractSidebarData}
-                                    userRole={selectedContractUserRole}
-                                    currentStatus={selectedContractStatus || 'unknown'}
-                                    deliverySubmitted={contractDeliverySubmitted}
-                                    isActionLoading={isAnyContractActionLoading}
-                                    onDeliver={() => setIsDeliverModalOpen(true)}
-                                    onRequestChanges={() => {
-                                        void handleRequestContractChanges();
-                                    }}
-                                    onAcceptAndPay={() => setIsAcceptModalOpen(true)}
-                                    onDispute={() => setIsDisputeModalOpen(true)}
-                                    onReview={() => {
-                                        setIsReviewModalOpen(true);
-                                    }}
-                                    onOpenSharedFile={(file: { url: string; name: string; type?: string | null; size?: number | string | null }) => {
-                                        void handleOpenAttachment({
-                                            url: file.url,
-                                            name: file.name,
-                                            type: file.type || 'application/octet-stream',
-                                            size: file.size ?? 0,
-                                        });
-                                    }}
-                                    hasLeftReview={selectedContractHasReview}
-                                />
+                                {isContractSidebarDataLoading ? (
+                                    <div className="flex h-full items-center justify-center px-6 text-center">
+                                        <div className="space-y-3">
+                                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-on-surface-subtle" />
+                                            <p className="text-xs text-on-surface-subtle">
+                                                {tx('pages.messages.loadingContractSidebar', undefined, 'Loading contract details...')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : contractSidebarData ? (
+                                    <ContractDetailsSidebar
+                                        contract={contractSidebarData}
+                                        userRole={selectedContractUserRole}
+                                        currentStatus={selectedContractStatus || 'unknown'}
+                                        deliverySubmitted={contractDeliverySubmitted}
+                                        isActionLoading={isAnyContractActionLoading}
+                                        onDeliver={() => {
+                                            setDeliveryActionError(null);
+                                            setIsDeliverModalOpen(true);
+                                        }}
+                                        onRequestChanges={() => {
+                                            void handleRequestContractChanges();
+                                        }}
+                                        onAcceptAndPay={() => setIsAcceptModalOpen(true)}
+                                        onDispute={() => setIsDisputeModalOpen(true)}
+                                        onReview={() => {
+                                            setIsReviewModalOpen(true);
+                                        }}
+                                        onOpenSharedFile={(file: { url: string; name: string; type?: string | null; size?: number | string | null }) => {
+                                            void handleOpenAttachment({
+                                                url: file.url,
+                                                name: file.name,
+                                                type: file.type || 'application/octet-stream',
+                                                size: file.size ?? 0,
+                                            });
+                                        }}
+                                        hasLeftReview={selectedContractHasReview}
+                                    />
+                                ) : (
+                                    <div className="flex h-full items-center justify-center px-6 text-center">
+                                        <p className="text-xs text-on-surface-subtle">
+                                            {tx('pages.messages.contractSidebarUnavailable', undefined, 'Contract details are not available for this conversation yet.')}
+                                        </p>
+                                    </div>
+                                )}
                             </aside>
                         </div>
                     ) : null}
@@ -4534,9 +4997,9 @@ function MessagesComponent() {
             ) : (
                 <div className="flex-1 flex items-center justify-center px-6">
                     <div className="text-center">
-                        <Send className="mx-auto h-10 w-10 text-gray-500" />
+                        <Send className="mx-auto h-10 w-10 text-on-surface-subtle" />
                         <h3 className="mt-3 text-lg font-semibold text-white">{tx('pages.messages.selectConversationTitle', undefined, 'Select a conversation')}</h3>
-                        <p className="mt-1 text-sm text-gray-400">{tx('pages.messages.selectConversationDescription', undefined, 'Choose a conversation to start messaging')}</p>
+                        <p className="mt-1 text-sm text-on-surface-subtle">{tx('pages.messages.selectConversationDescription', undefined, 'Choose a conversation to start messaging')}</p>
                     </div>
                 </div>
             )}
@@ -4545,7 +5008,7 @@ function MessagesComponent() {
 
     return (
         <>
-            <div className="min-h-screen bg-[#0a0a0a] text-white">
+            <div className="min-h-screen page-bg-base">
                 <SEO {...SEO_CONFIG.messages} url="/messages" noIndex />
                 <Header />
 
@@ -4557,7 +5020,11 @@ function MessagesComponent() {
 
             <Modal
                 isOpen={isDeliverModalOpen}
-                onClose={() => setIsDeliverModalOpen(false)}
+                onClose={() => {
+                    if (isDeliveringContractWork) return;
+                    setIsDeliverModalOpen(false);
+                    setDeliveryActionError(null);
+                }}
                 title={tx('contract.deliverWork', undefined, 'Deliver Work')}
                 size="md"
             >
@@ -4565,16 +5032,33 @@ function MessagesComponent() {
                     <p className="text-sm text-muted-foreground">
                         {tx('contract.deliverNoteLabel', undefined, 'Add a note for the client')}
                     </p>
+                    {deliveryActionError ? (
+                        <div className="rounded-xl border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs text-red-100">
+                            {deliveryActionError}
+                        </div>
+                    ) : null}
                     <textarea
                         value={deliveryNote}
-                        onChange={(event) => setDeliveryNote(event.target.value)}
+                        onChange={(event) => {
+                            if (deliveryActionError) {
+                                setDeliveryActionError(null);
+                            }
+                            setDeliveryNote(event.target.value);
+                        }}
                         rows={4}
                         className="w-full resize-none rounded-xl border border-[#333] bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-amber-500"
                         placeholder={tx('contract.deliverNotePlaceholder', undefined, 'Delivery notes (optional)...')}
                         aria-label={tx('contract.deliverNoteAria', undefined, 'Delivery notes')}
                     />
                     <div className="flex items-center justify-end gap-3">
-                        <Button variant="ghost" onClick={() => setIsDeliverModalOpen(false)}>
+                        <Button
+                            variant="ghost"
+                            onClick={() => {
+                                setIsDeliverModalOpen(false);
+                                setDeliveryActionError(null);
+                            }}
+                            disabled={isDeliveringContractWork}
+                        >
                             {tx('common.cancel', undefined, 'Cancel')}
                         </Button>
                         <Button

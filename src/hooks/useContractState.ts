@@ -4,6 +4,14 @@ import { QueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { sendContractMessage } from '../services/messages';
 import type { ContractStatus } from '../types';
+import {
+    canClientAcceptForStatus,
+    canClientRequestChangesForStatus,
+    canFreelancerDeliverForStatus,
+    canOpenDisputeForStatus,
+    canTransitionContractStatus,
+    hasRecordedDeliveryEvidence,
+} from '../lib/contractWorkflow';
 
 interface ContractData {
     id: string;
@@ -41,13 +49,6 @@ interface UseContractStateReturn {
     isDisputing: boolean;
     refresh: () => Promise<void>;
 }
-
-const VALID_TRANSITIONS: Record<ContractStatus, ContractStatus[]> = {
-    active: ['completed', 'disputed'],
-    completed: [],
-    cancelled: [],
-    disputed: ['active', 'cancelled'],
-};
 
 function getCounterpartyId(contract: ContractData | null, userRole: 'client' | 'freelancer') {
     if (!contract) return null;
@@ -93,7 +94,7 @@ export function useContractState({
     const canTransition = useCallback(
         (to: ContractStatus): boolean => {
             if (!contract) return false;
-            return VALID_TRANSITIONS[contract.status]?.includes(to) || false;
+            return canTransitionContractStatus(contract.status, to);
         },
         [contract]
     );
@@ -141,6 +142,9 @@ export function useContractState({
             if (userRole !== 'freelancer') {
                 throw new Error('Only freelancers can deliver work');
             }
+            if (!contract || !canFreelancerDeliverForStatus(contract.status)) {
+                throw new Error('This contract is not ready for delivery');
+            }
 
             setIsDelivering(true);
             try {
@@ -152,6 +156,15 @@ export function useContractState({
                     ? `[[delivery]] ${trimmedNote}`
                     : '[[delivery]] Work delivered and ready for review';
 
+                const nextDeliveryNote = trimmedNote || 'submitted';
+
+                const { data: deliveryResult, error: deliveryError } = await supabase.rpc('submit_contract_delivery_atomic', {
+                    p_contract_id: contractId,
+                    p_delivery_note: nextDeliveryNote,
+                });
+
+                if (deliveryError) throw deliveryError;
+
                 const { error: messageError } = await sendContractMessage({
                     contract_id: contractId,
                     sender_id: userId,
@@ -162,21 +175,29 @@ export function useContractState({
 
                 if (messageError) throw messageError;
 
-                await updateStatus('completed', {
-                    delivery_note: trimmedNote || 'submitted',
-                    completed_at: new Date().toISOString(),
-                });
+                setContract((current) => current ? {
+                    ...current,
+                    status: String(deliveryResult?.status || current.status) as ContractStatus,
+                    delivery_note: String(deliveryResult?.delivery_note || nextDeliveryNote),
+                } : current);
+
+                if (queryClient) {
+                    await queryClient.invalidateQueries({ queryKey: ['contract', contractId] });
+                }
             } finally {
                 setIsDelivering(false);
             }
         },
-        [contract, contractId, updateStatus, userId, userRole]
+        [contract, contractId, queryClient, userId, userRole]
     );
 
     const acceptWork = useCallback(
         async () => {
             if (userRole !== 'client') {
                 throw new Error('Only clients can accept work');
+            }
+            if (!contract || !canClientAcceptForStatus(contract.status, hasRecordedDeliveryEvidence(contract.delivery_note))) {
+                throw new Error('Work must be delivered before it can be accepted');
             }
 
             setIsAccepting(true);
@@ -222,6 +243,25 @@ export function useContractState({
             if (userRole !== 'client') {
                 throw new Error('Only clients can request changes');
             }
+            if (!contract || !canClientRequestChangesForStatus(contract.status, hasRecordedDeliveryEvidence(contract.delivery_note))) {
+                throw new Error('Changes can only be requested after a delivery is submitted');
+            }
+
+            const { error: revisionError } = await supabase.rpc('request_contract_revision_atomic', {
+                p_contract_id: contractId,
+                p_reason: feedback,
+            });
+
+            if (revisionError) throw revisionError;
+
+            setContract((current) => current ? {
+                ...current,
+                status: 'revision_requested',
+            } : current);
+
+            if (queryClient) {
+                await queryClient.invalidateQueries({ queryKey: ['contract', contractId] });
+            }
 
             const receiverId = getCounterpartyId(contract, userRole);
             if (!receiverId) throw new Error('Unable to determine message recipient');
@@ -236,11 +276,15 @@ export function useContractState({
 
             if (messageError) throw messageError;
         },
-        [contract, contractId, userId, userRole]
+        [contract, contractId, queryClient, userId, userRole]
     );
 
     const openDispute = useCallback(
         async (reason: string) => {
+            if (!contract || !canOpenDisputeForStatus(contract.status)) {
+                throw new Error('A dispute cannot be opened in the current contract state');
+            }
+
             setIsDisputing(true);
             try {
                 const receiverId = getCounterpartyId(contract, userRole);
@@ -281,9 +325,9 @@ export function useContractState({
         [contract, contractId, queryClient, userId, userRole]
     );
 
-    const canDeliver = userRole === 'freelancer' && contract?.status === 'active';
-    const canAccept = userRole === 'client' && contract?.status === 'active';
-    const canDispute = contract?.status === 'active';
+    const canDeliver = userRole === 'freelancer' && canFreelancerDeliverForStatus(contract?.status);
+    const canAccept = userRole === 'client' && canClientAcceptForStatus(contract?.status, hasRecordedDeliveryEvidence(contract?.delivery_note));
+    const canDispute = canOpenDisputeForStatus(contract?.status);
 
     useEffect(() => {
         void refresh();

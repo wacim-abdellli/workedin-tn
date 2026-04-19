@@ -426,7 +426,7 @@ export default function PortfolioDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white pb-20">
+        <div className="min-h-screen page-bg-base pb-20">
             <Header />
 
             <div className="container-custom py-8">
@@ -639,3 +639,4 @@ export default function PortfolioDashboard() {
         </div>
     );
 }
+
