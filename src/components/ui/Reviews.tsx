@@ -28,7 +28,7 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: ReviewCardProps) {
-    const { t, tx } = useTranslation();
+    const { tx } = useTranslation();
     const [showResponseModal, setShowResponseModal] = useState(false);
     const [responseText, setResponseText] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,7 +72,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
                     <div>
                         <p className="font-medium text-foreground">{review.reviewer.name}</p>
                         <p className="text-sm text-muted">
-                            {review.reviewer.type === 'client' ? t.reviews.client : t.reviews.freelancer}
+                            {review.reviewer.type === 'client' ? tx('reviews.client', undefined, 'Client') : tx('reviews.freelancer', undefined, 'Freelancer')}
                         </p>
                     </div>
                 </div>
@@ -91,18 +91,16 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
                 </div>
             </div>
 
-            {/* Job Title */}
             <p className="text-sm text-muted mb-2">
-                <span className="font-medium">{t.reviews.jobLabel}:</span> {review.job_title}
+                <span className="font-medium">{tx('reviews.jobLabel', undefined, 'Job:')}</span> {review.job_title}
             </p>
 
             {/* Comment */}
             <p className="text-foreground leading-relaxed mb-4">{review.comment}</p>
 
-            {/* Response if exists */}
             {review.response && (
                 <div className="bg-surface rounded-lg p-4 mb-4">
-                    <p className="text-sm font-medium text-muted mb-1">{tx('dynamic_key_890920977')}</p>
+                    <p className="text-sm font-medium text-muted mb-1">{tx('reviews.response', undefined, 'Response')}</p>
                     <p className="text-sm text-foreground">{review.response}</p>
                 </div>
             )}
@@ -117,7 +115,7 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
                         className="flex items-center gap-1 text-muted hover:text-primary-600 transition-colors"
                     >
                         <ThumbsUp className="w-4 h-4" />
-                        <span>{tx('dynamic_key_233190025')}{review.helpful_count})</span>
+                        <span>{tx('reviews.helpful', undefined, 'Helpful')} ({review.helpful_count})</span>
                     </button>
 
                     {canRespond && !review.response && (
@@ -126,39 +124,40 @@ export function ReviewCard({ review, onMarkHelpful, onRespond, canRespond }: Rev
                             className="flex items-center gap-1 text-primary-600 hover:text-primary-700 transition-colors"
                         >
                             <MessageSquare className="w-4 h-4" />
-                            <span>{tx('dynamic_key_50718')}</span>
+                            <span>{tx('reviews.respond', undefined, 'Respond')}</span>
                         </button>
                     )}
                 </div>
             </div>
 
-            {/* Response Modal */}
             <Modal
                 isOpen={showResponseModal}
                 onClose={() => setShowResponseModal(false)}
-                title={tx('dynamic_key_2001555607')}
+                title={tx('reviews.responseTitle', undefined, 'Write a response')}
             >
                 <div className="space-y-4">
                     <p className="text-muted text-sm">
-                        {tx('dynamic_key_18255446')}{review.reviewer.name}
+                        {tx('reviews.responseTo', undefined, 'Responding to')} {review.reviewer.name}
                     </p>
                     <textarea
                         value={responseText}
                         onChange={(e) => setResponseText(e.target.value)}
-                        placeholder={tx('dynamic_key_979253881')}
+                        placeholder={tx('reviews.responsePlaceholder', undefined, 'Type your response...')}
                         rows={4}
-                        className="input-base w-full resize-none"
+                        className="w-full resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none focus:border-primary-500 transition-colors"
                     />
                     <div className="flex gap-3 justify-end">
                         <Button variant="outline" onClick={() => setShowResponseModal(false)}>
-                            {tx('dynamic_key_1502065525')}</Button>
+                            {tx('common.cancel', undefined, 'Cancel')}
+                        </Button>
                         <Button
                             variant="primary"
                             onClick={handleSubmitResponse}
                             isLoading={isSubmitting}
                             disabled={!responseText.trim()}
                         >
-                            {tx('dynamic_key_639337527')}</Button>
+                            {tx('reviews.submitResponse', undefined, 'Submit Response')}
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -174,37 +173,41 @@ interface StarRatingInputProps {
 }
 
 export function StarRatingInput({ value, onChange, size = 'md' }: StarRatingInputProps) {
-    const { tx } = useTranslation();
     const [hovered, setHovered] = useState(0);
 
-    const sizeClasses = {
+    const sizeMap = {
         sm: 'w-5 h-5',
         md: 'w-7 h-7',
-        lg: 'w-9 h-9',
+        lg: 'w-10 h-10',
     };
 
+    const labels = ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
     return (
-        <div className="flex gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                    key={star}
-                    type="button"
-                    onClick={() => onChange(star)}
-                    onMouseEnter={() => setHovered(star)}
-                    onMouseLeave={() => setHovered(0)}
-                    className="transition-transform hover:scale-110"
-                >
-                    <Star
-                        className={`
-                            ${sizeClasses[size]}
-                            ${(hovered || value) >= star
-                                ? 'text-yellow-500 fill-yellow-500'
-                                : 'text-muted'
-                            }
-                        `}
-                    />
-                </button>
-            ))}
+        <div className="flex gap-1" role="group" aria-label="Star rating">
+            {[1, 2, 3, 4, 5].map((star) => {
+                const isActive = (hovered || value) >= star;
+                return (
+                    <button
+                        key={star}
+                        type="button"
+                        aria-label={labels[star - 1]}
+                        aria-pressed={value >= star}
+                        onClick={() => onChange(star)}
+                        onMouseEnter={() => setHovered(star)}
+                        onMouseLeave={() => setHovered(0)}
+                        className="cursor-pointer transition-transform hover:scale-115 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded"
+                    >
+                        <Star
+                            className={`${sizeMap[size]} transition-colors duration-100 ${
+                                isActive
+                                    ? 'text-amber-400 fill-amber-400'
+                                    : 'text-zinc-600 fill-transparent'
+                            }`}
+                        />
+                    </button>
+                );
+            })}
         </div>
     );
 }
@@ -237,49 +240,54 @@ export function ReviewForm({ jobTitle, recipientName, onSubmit, onCancel }: Revi
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-                <p className="text-muted mb-2">{tx('dynamic_key_1016245850')}{recipientName}</p>
-                <p className="text-sm text-muted mb-1">{tx('dynamic_key_2132806281')}{jobTitle}</p>
+            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-4">
+                <p className="text-zinc-400 text-sm mb-1">{tx('reviews.leavingReviewFor', undefined, 'Leaving a review for:')} <span className="font-semibold text-zinc-200">{recipientName}</span></p>
+                <p className="text-xs text-zinc-500">{tx('reviews.jobLabel', undefined, 'Job:')} {jobTitle}</p>
             </div>
 
             {/* Star Rating */}
-            <div>
-                <label className="block text-sm font-medium mb-3">{tx('dynamic_key_2137084368')}</label>
+            <div className="flex flex-col items-center justify-center p-4">
+                <label className="block text-sm font-medium mb-3 text-zinc-300">{tx('reviews.ratingLabel', undefined, 'How was your experience?')}</label>
                 <StarRatingInput value={rating} onChange={setRating} size="lg" />
-                {rating > 0 && (
-                    <p className="text-sm text-muted mt-2">
-                        {rating === 5 && 'ممتاز! 🌟'}
-                        {rating === 4 && 'جيد جداً 👍'}
-                        {rating === 3 && 'جيد'}
-                        {rating === 2 && 'مقبول'}
-                        {rating === 1 && 'سيء'}
-                    </p>
-                )}
+                <div className="h-6 mt-2">
+                    {rating > 0 && (
+                        <span className="inline-flex items-center justify-center rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-400">
+                            {rating === 5 && tx('reviews.rating5', undefined, 'Excellent! 🌟')}
+                            {rating === 4 && tx('reviews.rating4', undefined, 'Very Good 👍')}
+                            {rating === 3 && tx('reviews.rating3', undefined, 'Good')}
+                            {rating === 2 && tx('reviews.rating2', undefined, 'Fair')}
+                            {rating === 1 && tx('reviews.rating1', undefined, 'Poor')}
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Comment */}
             <div>
-                <label className="block text-sm font-medium mb-2">{tx('dynamic_key_669258706')}</label>
+                <label className="block text-sm font-medium mb-2 text-zinc-300">{tx('reviews.commentLabel', undefined, 'Add a comment (optional)')}</label>
                 <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder={tx('dynamic_key_72742741')}
+                    placeholder={tx('reviews.commentPlaceholder', undefined, 'Share details of your experience...')}
                     rows={4}
-                    className="input-base w-full resize-none"
+                    className="w-full resize-none rounded-xl border border-zinc-800 bg-[#0f0f0f] px-4 py-3 text-sm text-zinc-200 outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all placeholder:text-zinc-600"
                 />
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 justify-end">
-                <Button variant="outline" type="button" onClick={onCancel}>
-                    {tx('dynamic_key_1502065525')}</Button>
+            <div className="flex gap-3 justify-end pt-2">
+                <Button variant="ghost" type="button" onClick={onCancel} className="text-zinc-400 hover:text-white">
+                    {tx('common.cancel', undefined, 'Cancel')}
+                </Button>
                 <Button
                     variant="primary"
                     type="submit"
                     isLoading={isSubmitting}
                     disabled={rating === 0}
+                    className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-semibold shadow-lg shadow-amber-500/20"
                 >
-                    {tx('dynamic_key_1679990796')}</Button>
+                    {tx('reviews.submitAction', undefined, 'Submit Review')}
+                </Button>
             </div>
         </form>
     );
@@ -311,7 +319,7 @@ export function ReviewsSummary({ totalReviews, averageRating, ratingDistribution
                             />
                         ))}
                     </div>
-                    <p className="text-sm text-muted">{totalReviews} {tx('dynamic_key_1506640045')}</p>
+                    <p className="text-sm text-muted">{totalReviews} {tx('reviews.reviewCountLabel', undefined, 'reviews')}</p>
                 </div>
 
                 {/* Distribution */}

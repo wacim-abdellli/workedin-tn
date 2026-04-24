@@ -290,7 +290,7 @@ describe('contracts service coverage', () => {
 
         expect(serviceState.state.insertCalls).toContainEqual({
             table: 'contracts',
-            value: expect.objectContaining({ status: 'active', payment_status: 'pending' }),
+            value: expect.objectContaining({ status: 'pending_payment', payment_status: 'pending' }),
         });
         expect(serviceState.state.insertCalls).toContainEqual({
             table: 'milestones',

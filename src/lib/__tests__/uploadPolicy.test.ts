@@ -82,6 +82,18 @@ describe('upload policy', () => {
     ).toEqual({ ok: true });
   });
 
+  it('rejects message attachments whose bytes do not match the declared type', () => {
+    expect(
+      validateUploadPayload({
+        bucket: 'message_attachments',
+        fileName: 'contract.mp4',
+        mimeType: 'video/mp4',
+        size: 24,
+        bytes: new Uint8Array([0x25, 0x50, 0x44, 0x46]),
+      }),
+    ).toEqual({ ok: false, reason: 'File content does not match its declared type.' });
+  });
+
   it('limits uploads that exceed the bucket rate policy', () => {
     expect(isUploadRateLimited('identity-documents', 6)).toBe(true);
     expect(isUploadRateLimited('identity-documents', 5)).toBe(false);

@@ -328,17 +328,21 @@ describe('messages service coverage', () => {
     });
 
     it('uploads message attachments inside the conversation-scoped prefix', async () => {
-        const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(1712345678901);
+        const randomUuidSpy = vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('uuid-attachment-token');
 
-        const file = new File(['hi'], 'brief @!.pdf', { type: 'application/pdf' });
+        const file = new File([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])], 'brief @!.pdf', { type: 'application/pdf' });
+        Object.defineProperty(file, 'arrayBuffer', {
+            configurable: true,
+            value: vi.fn(async () => new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d]).buffer),
+        });
         const result = await uploadMessageAttachment(file, 'conversation-1');
 
         expect(state.uploadFile).toHaveBeenCalledWith(
             'message_attachments',
-            'conversation-1/1712345678901-brief___.pdf',
+            'conversation-1/uuid-attachment-token-brief___.pdf',
             file,
         );
         expect(result).toEqual({ url: 'https://mock-url.com/file.jpg', error: null });
-        nowSpy.mockRestore();
+        randomUuidSpy.mockRestore();
     });
 });

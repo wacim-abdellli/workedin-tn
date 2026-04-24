@@ -4,24 +4,11 @@ import type { PaymentMethodConfig } from '@/config/paymentMethods';
 import { PAYMENT_METHODS } from '@/config/paymentMethods';
 import { useTranslation } from '@/i18n';
 
-// --- Real-world logo URLs from official sources --------------------------
-
+// Hand-crafted SVG logos — crisp at any size, zero CORS
 const REAL_LOGOS: Record<string, { src: string; bg: string; contain?: boolean }> = {
-  dhmad: {
-    src: 'https://dhmad.tn/og-image.svg',
-    bg: '#6C3CE1',
-    contain: true,
-  },
-  flouci: {
-    src: 'https://fr.flouci.com/hubfs/flouci_logo_new.png',
-    bg: '#ffffff',
-    contain: true,
-  },
-  d17: {
-    src: 'https://www.poste.tn/images/logo.png',
-    bg: '#ffffff',
-    contain: true,
-  },
+  dhmad:  { src: '/logos/dhmad.svg',  bg: '#ffffff', contain: true },
+  flouci: { src: '/logos/flouci.svg', bg: '#ffffff', contain: true },
+  d17:    { src: '/logos/d17.svg',    bg: '#ffffff', contain: true },
 };
 
 // Branded SVG fallback for when external image fails to load
@@ -56,7 +43,7 @@ function MethodLogo({ id, className }: { id: string; className?: string }) {
 
   return (
     <div
-      className={`flex items-center justify-center rounded-xl overflow-hidden p-1 ${className}`}
+      className={`flex items-center justify-center rounded-xl overflow-hidden p-1.5 ${className}`}
       style={{ background: logo.bg }}
     >
       <img
@@ -64,8 +51,6 @@ function MethodLogo({ id, className }: { id: string; className?: string }) {
         alt={id}
         className={`w-full h-full ${logo.contain ? 'object-contain' : 'object-cover'}`}
         onError={() => setFailed(true)}
-        referrerPolicy="no-referrer"
-        crossOrigin="anonymous"
       />
     </div>
   );

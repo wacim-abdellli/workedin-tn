@@ -18,6 +18,10 @@ This is the canonical repository entrypoint.
   - master audit backlog and phase definitions
 - `audit/*.md`
   - current enforced policy and verification artifacts
+- `audit/CONTRACT_WORKFLOW_SECURITY_QA.md`
+  - end-to-end verification matrix for the secured contract workflow
+- `audit/CONTRACT_WORKFLOW_ROLLOUT_CHECKLIST.md`
+  - migration order and deploy verification for the secured contract workflow
 - `DEPLOYMENT_GUIDE_PRODUCTION.md`
   - production deployment and verification
 - `scripts/README.md`

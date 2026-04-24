@@ -33,6 +33,11 @@ export const useAutosave = <T,>({
     const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const initialMount = useRef(true);
+    const latestDataRef = useRef(data);
+
+    useEffect(() => {
+        latestDataRef.current = data;
+    }, [data]);
 
     const saveToStorage = useCallback((dataToSave: T) => {
         try {
@@ -68,6 +73,21 @@ export const useAutosave = <T,>({
             debouncedSave(data);
         }
     }, [data, debouncedSave]);
+
+    useEffect(() => {
+        if (interval <= 0) return;
+
+        const timer = setInterval(() => {
+            const currentData = latestDataRef.current;
+            if (currentData && typeof currentData === 'object' && Object.keys(currentData as Record<string, unknown>).length > 0) {
+                saveToStorage(currentData);
+            }
+        }, interval);
+
+        return () => {
+            clearInterval(timer);
+        };
+    }, [interval, saveToStorage]);
 
     const loadFromStorage = (): { data: T; timestamp: Date } | null => {
         try {

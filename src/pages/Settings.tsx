@@ -13,6 +13,10 @@ import {
   Trash2,
   Loader2,
   RefreshCw,
+  Clock,
+  Wallet,
+  Building2,
+  Info,
 } from 'lucide-react';
 
 import { Header } from '../components/layout';
@@ -22,18 +26,18 @@ import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
 import { getVerificationStatus, subscribeToVerificationChanges, type VerificationStatus } from '@/lib/verificationStatus';
 import { useTranslation } from '@/i18n';
+import {
+  type PaymentMethodRow,
+  getPaymentMethods,
+  buildPaymentMethodInsert,
+  getPaymentMethodLabel,
+  getPaymentMethodDetails,
+} from '@/services/payments';
 
 type SettingsTab = 'account' | 'notifications' | 'payment' | 'privacy';
 type NotificationKey = 'new_job' | 'messages' | 'payments' | 'reviews' | 'marketing';
 
 type NotificationState = Record<NotificationKey, boolean>;
-
-interface PaymentMethodRow {
-  id: string;
-  type: string;
-  details: string;
-  is_default: boolean;
-}
 
 const DEFAULT_NOTIFICATIONS: NotificationState = {
   new_job: true,
@@ -289,241 +293,208 @@ function PaymentSettingsTab({
   showToast: (message: string, variant?: 'success' | 'error' | 'info') => void;
 }) {
   const { tx } = useTranslation();
+  const navigate = useNavigate();
   const [methods, setMethods] = useState<PaymentMethodRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ type: 'd17', details: '' });
-
-  const loadMethods = async () => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase
-        .from('payment_methods')
-        .select('id, type, details, is_default')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        throw error;
-      }
-
-      setMethods((data ?? []) as PaymentMethodRow[]);
-    } catch (error) {
-      logger.error('Failed to load payment methods', error);
-      showToast(tx('pages.settings.payment.toasts.loadError', undefined, 'Failed to load payment methods'), 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [form, setForm] = useState({ iban: '', bankName: '', accountName: '', label: '' });
+  const resetForm = () => setForm({ iban: '', bankName: '', accountName: '', label: '' });
+  const formIsValid = form.iban.trim().length > 0;
 
   useEffect(() => {
-    void loadMethods();
+    if (!userId) { setLoading(false); return; }
+    setLoading(true);
+    void getPaymentMethods(userId).then(({ data, error }) => {
+      if (error) {
+        logger.error('Failed to load payment methods', error);
+        showToast(tx('pages.settings.payment.toasts.loadError', undefined, 'Failed to load payment methods'), 'error');
+      } else {
+        setMethods((data ?? []) as PaymentMethodRow[]);
+      }
+      setLoading(false);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const addMethod = async () => {
-    if (!userId || !form.details.trim()) {
-      return;
-    }
-
+    if (!userId || !formIsValid) return;
     setSaving(true);
-
     try {
-      const { data, error } = await supabase
-        .from('payment_methods')
-        .insert({
-          user_id: userId,
-          type: form.type,
-          details: form.details.trim(),
-          is_default: methods.length === 0,
-        })
-        .select('id, type, details, is_default')
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
+      const payload = buildPaymentMethodInsert(userId, {
+        type: 'bank_transfer',
+        is_default: methods.length === 0,
+        details: {
+          iban: form.iban.trim(),
+          bank_name: form.bankName.trim(),
+          bank_account_name: form.accountName.trim(),
+          label: form.label.trim(),
+        },
+      });
+      const { data, error } = await supabase.from('payment_methods').insert(payload).select('*').single();
+      if (error) throw error;
       setMethods((prev) => [...prev, data as PaymentMethodRow]);
-      setForm({ type: 'd17', details: '' });
-      setAdding(false);
-      showToast(tx('pages.settings.payment.toasts.added', undefined, 'Payment method added'), 'success');
-    } catch (error) {
-      logger.error('Failed to add payment method', error);
-      showToast(tx('pages.settings.payment.toasts.addError', undefined, 'Could not add payment method'), 'error');
-    } finally {
-      setSaving(false);
-    }
+      resetForm(); setAdding(false);
+      showToast(tx('pages.settings.payment.toasts.added', undefined, 'Payout method saved'), 'success');
+    } catch (err) {
+      logger.error('Failed to add payment method', err);
+      showToast(tx('pages.settings.payment.toasts.addError', undefined, 'Could not save payout method'), 'error');
+    } finally { setSaving(false); }
   };
 
   const setDefault = async (id: string) => {
-    if (!userId) {
-      return;
-    }
-
+    if (!userId) return;
     try {
-      await supabase
-        .from('payment_methods')
-        .update({ is_default: false })
-        .eq('user_id', userId);
-
-      const { error } = await supabase
-        .from('payment_methods')
-        .update({ is_default: true })
-        .eq('id', id);
-
-      if (error) {
-        throw error;
-      }
-
-      setMethods((prev) => prev.map((method) => ({ ...method, is_default: method.id === id })));
-      showToast(tx('pages.settings.payment.toasts.defaultUpdated', undefined, 'Default payment method updated'), 'success');
-    } catch (error) {
-      logger.error('Failed to set default payment method', error);
-      showToast(tx('pages.settings.payment.toasts.defaultUpdateError', undefined, 'Could not update default payment method'), 'error');
-    }
+      await supabase.from('payment_methods').update({ is_default: false }).eq('user_id', userId);
+      const { error } = await supabase.from('payment_methods').update({ is_default: true }).eq('id', id);
+      if (error) throw error;
+      setMethods((prev) => prev.map((m) => ({ ...m, is_default: m.id === id })));
+      showToast(tx('pages.settings.payment.toasts.defaultUpdated', undefined, 'Default updated'), 'success');
+    } catch (err) { logger.error('Failed to set default', err); }
   };
 
   const removeMethod = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('payment_methods')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        throw error;
-      }
-
-      setMethods((prev) => prev.filter((method) => method.id !== id));
-      showToast(tx('pages.settings.payment.toasts.removed', undefined, 'Payment method removed'), 'success');
-    } catch (error) {
-      logger.error('Failed to remove payment method', error);
-      showToast(tx('pages.settings.payment.toasts.removeError', undefined, 'Could not remove payment method'), 'error');
-    }
+      const { error } = await supabase.from('payment_methods').delete().eq('id', id);
+      if (error) throw error;
+      setMethods((prev) => prev.filter((m) => m.id !== id));
+      showToast(tx('pages.settings.payment.toasts.removed', undefined, 'Payout method removed'), 'success');
+    } catch (err) { logger.error('Failed to remove method', err); }
   };
 
   return (
-    <div className="surface-card border rounded-2xl p-6 relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-on-surface">{tx('pages.settings.payment.title', undefined, 'Payment Methods')}</h2>
-        <button
-          type="button"
-          onClick={() => setAdding((prev) => !prev)}
-          className="inline-flex items-center gap-2 text-white px-4 py-2 rounded-lg transition-colors"
-          style={{ background: accentColor }}
-        >
-          <Plus className="w-4 h-4" />
-          {tx('pages.settings.payment.addMethod', undefined, 'Add method')}
-        </button>
-      </div>
+    <div className="space-y-6">
 
-      {adding ? (
-        <div className="mb-6 border border-surface rounded-xl p-4 surface-sunken">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <select
-              value={form.type}
-              onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value }))}
-              className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none"
-            >
-              <option value="d17">D17</option>
-              <option value="flouci">Flouci</option>
-              <option value="bank_transfer">{tx('pages.settings.payment.bankTransfer', undefined, 'Bank transfer')}</option>
-            </select>
+      {/* ── Section 1: Payment Gateway ─────────────────────────── */}
+      <div className="surface-card border rounded-2xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
+        <h2 className="text-xl font-bold text-on-surface mb-1">Payment Gateway</h2>
+        <p className="text-sm text-on-surface-muted mb-5">How clients fund contracts on WorkedIn.</p>
 
-            <input
-              value={form.details}
-              onChange={(event) => setForm((prev) => ({ ...prev, details: event.target.value }))}
-              placeholder={form.type === 'bank_transfer' ? 'Bank account number' : 'Phone number'}
-              className="sm:col-span-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none"
-            />
+        {/* Dhmad — live */}
+        <div className="rounded-xl border p-4 flex items-center gap-4" style={{ borderColor: 'color-mix(in srgb,#8B5CF6 35%,var(--color-border-default))', background: 'color-mix(in srgb,#8B5CF6 6%,transparent)' }}>
+          {/* Dhmad logo */}
+          <div className="w-20 h-12 rounded-xl overflow-hidden shrink-0 flex items-center justify-center p-1.5 bg-white">
+            <img src="/logos/dhmad.svg" alt="Dhmad" className="w-full h-full object-contain" />
           </div>
-
-          <div className="flex justify-end gap-2 mt-3">
-            <button
-              type="button"
-              onClick={() => setAdding(false)}
-              className="px-4 py-2 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => void addMethod()}
-              disabled={saving || !form.details.trim()}
-              className="px-4 py-2 rounded-lg text-white disabled:opacity-60"
-              style={{ background: accentColor }}
-            >
-              {saving ? 'Saving...' : 'Save method'}
-            </button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-semibold text-on-surface">Dhmad Escrow</p>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-emerald-500/10 text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live
+              </span>
+            </div>
+            <p className="text-xs text-on-surface-muted mt-0.5">Secure escrow — funds held until work is approved. Used for all contracts.</p>
           </div>
+          <button type="button" onClick={() => navigate('/wallet')} className="flex items-center gap-1.5 shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg border border-surface hover:bg-surface transition-colors text-on-surface-muted hover:text-on-surface">
+            Wallet <ExternalLink className="w-3 h-3" />
+          </button>
         </div>
-      ) : null}
 
-      {loading ? (
-        <div className="py-12 flex items-center justify-center">
-          <Loader2 className="w-5 h-5 animate-spin" style={{ color: accentColor }} />
-        </div>
-      ) : methods.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-surface rounded-2xl surface-sunken">
-          <CreditCard className="w-12 h-12 text-on-surface-subtle mx-auto" />
-          <p className="text-lg font-semibold text-on-surface mt-4">{tx('pages.settings.payment.empty.title', undefined, 'No payment method added yet')}</p>
-          <p className="text-sm text-on-surface-muted mt-2">{tx('pages.settings.payment.empty.description', undefined, 'Add a payout method now so contracts are ready when you need them.')}</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {methods.map((method) => (
-            <div
-              key={method.id}
-              className="flex items-center justify-between gap-3 p-4 rounded-xl border surface-sunken"
-              style={{ borderColor: method.is_default ? `color-mix(in srgb, ${accentColor} 50%, var(--color-border-default))` : 'var(--color-border-default)' }}
-            >
-              <div>
-                <p className="text-sm text-on-surface font-semibold uppercase">{method.type.replace('_', ' ')}</p>
-                <p className="text-xs text-on-surface-muted mt-1">{method.details}</p>
+        {/* Coming soon gateways */}
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            { id: 'flouci', logo: '/logos/flouci.svg', label: 'Flouci', desc: 'Mobile wallet · 250K+ users' },
+            { id: 'd17', logo: '/logos/d17.svg', label: 'D17 — DigiPostBank', desc: 'E-dinar · Government-backed' },
+          ].map((g) => (
+            <div key={g.id} className="rounded-xl border border-dashed border-surface p-3 flex items-center gap-3 opacity-60">
+              {/* Logo */}
+              <div className="w-20 h-11 rounded-lg overflow-hidden shrink-0 flex items-center justify-center p-1.5 bg-white">
+                <img src={g.logo} alt={g.label} className="w-full h-full object-contain" />
               </div>
-
-              <div className="flex items-center gap-2">
-                {method.is_default ? (
-                  <span
-                    className="text-xs px-2.5 py-1 rounded-full font-semibold"
-                    style={{ background: `color-mix(in srgb, ${accentColor} 14%, transparent)`, color: accentColor }}
-                  >
-                    Default
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-semibold text-on-surface-muted">{g.label}</p>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-full bg-amber-500/10 text-amber-500">
+                    <Clock className="w-2.5 h-2.5" />Soon
                   </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => void setDefault(method.id)}
-                    className="text-xs px-3 py-1.5 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface"
-                  >
-                    {tx('pages.settings.payment.setDefault', undefined, 'Set default')}
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => void removeMethod(method.id)}
-                  className="p-2 rounded-lg border border-surface text-on-surface-muted hover:text-red-500"
-                  aria-label={tx('pages.settings.payment.deleteMethod', undefined, 'Delete payment method')}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                </div>
+                <p className="text-[11px] text-on-surface-subtle">{g.desc}</p>
               </div>
             </div>
           ))}
         </div>
-      )}
+      </div>
+
+      {/* ── Section 2: Payout methods ──────────────────────────────── */}
+      <div className="surface-card border rounded-2xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h2 className="text-xl font-bold text-on-surface">Payout Methods</h2>
+            <p className="text-sm text-on-surface-muted mt-0.5">Where you receive your earnings when you withdraw from your wallet.</p>
+          </div>
+          {!adding && (
+            <button type="button" onClick={() => setAdding(true)} className="inline-flex items-center gap-1.5 text-white px-3 py-2 rounded-lg text-sm font-medium shrink-0" style={{ background: accentColor }}>
+              <Plus className="w-4 h-4" />Add
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl mb-5 border border-amber-500/15 bg-amber-500/5">
+          <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-300/80 leading-relaxed">
+            Bank transfer (IBAN) is the only available payout channel right now. D17 and Flouci payouts are coming soon.
+          </p>
+        </div>
+
+        {adding && (
+          <div className="mb-5 border border-surface rounded-xl p-4 surface-sunken space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input value={form.iban} onChange={(e) => setForm((p) => ({ ...p, iban: e.target.value }))} placeholder="IBAN — TN59 …" className="sm:col-span-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none text-sm" />
+              <input value={form.bankName} onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))} placeholder="Bank name" className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none text-sm" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input value={form.accountName} onChange={(e) => setForm((p) => ({ ...p, accountName: e.target.value }))} placeholder="Account holder name" className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none text-sm" />
+              <input value={form.label} onChange={(e) => setForm((p) => ({ ...p, label: e.target.value }))} placeholder="Friendly label (optional)" className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none text-sm" />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => { setAdding(false); resetForm(); }} className="px-4 py-2 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface text-sm">Cancel</button>
+              <button type="button" onClick={() => void addMethod()} disabled={saving || !formIsValid} className="px-4 py-2 rounded-lg text-white text-sm disabled:opacity-50" style={{ background: accentColor }}>{saving ? 'Saving…' : 'Save'}</button>
+            </div>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="py-10 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin" style={{ color: accentColor }} /></div>
+        ) : methods.length === 0 ? (
+          <div className="text-center py-12 border border-dashed border-surface rounded-xl">
+            <Shield className="w-10 h-10 text-on-surface-subtle mx-auto mb-3" />
+            <p className="text-sm font-semibold text-on-surface">No payout method yet</p>
+            <p className="text-xs text-on-surface-muted mt-1">Add a bank account to receive your earnings.</p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {methods.map((m) => (
+              <div key={m.id} className="flex items-center gap-3 p-4 rounded-xl border surface-sunken" style={{ borderColor: m.is_default ? `color-mix(in srgb,${accentColor} 50%,var(--color-border-default))` : 'var(--color-border-default)' }}>
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: `color-mix(in srgb,${accentColor} 10%,transparent)` }}>
+                  <CreditCard className="w-4 h-4" style={{ color: accentColor }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-on-surface">{getPaymentMethodLabel(m.type, m.label)}</p>
+                  <p className="text-xs text-on-surface-muted font-mono mt-0.5">{getPaymentMethodDetails(m) || '—'}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {m.is_default ? (
+                    <span className="text-[10px] px-2 py-1 rounded-full font-semibold" style={{ background: `color-mix(in srgb,${accentColor} 14%,transparent)`, color: accentColor }}>Default</span>
+                  ) : (
+                    <button type="button" onClick={() => void setDefault(m.id)} className="text-[11px] px-2.5 py-1 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface">Set default</button>
+                  )}
+                  <button type="button" onClick={() => void removeMethod(m.id)} className="p-1.5 rounded-lg border border-surface text-on-surface-muted hover:text-red-500" aria-label="Remove">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+
 
 function PrivacySettingsTab({
   userId,

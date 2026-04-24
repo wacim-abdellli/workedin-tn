@@ -247,7 +247,7 @@ function JobMatches() {
                     freelancer_id: selectedMatch.freelancer.id,
                     client_id: job.client_id,
                     amount: job.budget,
-                    status: 'active',
+                    status: 'pending_payment',
                     payment_status: 'pending'
                 })
                 .select()
@@ -260,7 +260,10 @@ function JobMatches() {
             navigate(`/contracts/${contract.id}`);
         } catch (error) {
             logger.error('Error creating contract:', error);
-            showToast(t.jobMatches.contractError, 'error');
+            const message = error instanceof Error && error.message
+                ? error.message
+                : t.jobMatches.contractError;
+            showToast(message, 'error');
         } finally {
             setIsLoading(false);
         }

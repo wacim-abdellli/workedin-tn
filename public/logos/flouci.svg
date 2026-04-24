@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 90" fill="none">
+  <defs>
+    <linearGradient id="og" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F7BD4A"/>
+      <stop offset="100%" stop-color="#F47B20"/>
+    </linearGradient>
+    <clipPath id="cc">
+      <circle cx="45" cy="45" r="43"/>
+    </clipPath>
+  </defs>
+
+  <!-- Orange gradient circle -->
+  <circle cx="45" cy="45" r="43" fill="url(#og)"/>
+
+  <!-- White swirl / abstract icon inside circle -->
+  <!-- Outer white arc ring (open C shape) -->
+  <path d="M67,22 A28,28 0 1,0 68,68" stroke="white" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <!-- Inner teardrop shape -->
+  <ellipse cx="44" cy="51" rx="10" ry="14" fill="white" transform="rotate(20,44,51)"/>
+  <!-- Small filled circle at top of swirl -->
+  <circle cx="60" cy="24" r="5" fill="white"/>
+
+  <!-- "flouci" wordmark — bold rounded sans -->
+  <text
+    x="104" y="60"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="46"
+    font-weight="900"
+    fill="#1A1A1A"
+    letter-spacing="-1"
+  >flouci</text>
+</svg>

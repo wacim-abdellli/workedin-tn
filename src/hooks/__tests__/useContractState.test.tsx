@@ -103,19 +103,35 @@ describe('useContractState', () => {
             receiver_id: 'client-1',
             message_type: 'delivery',
         }));
-        expect(hookState.updateCalls).toContainEqual({
-            table: 'contracts',
-            value: expect.objectContaining({
-                status: 'completed',
-                delivery_note: 'Ready for review',
-                completed_at: expect.any(String),
-                updated_at: expect.any(String),
-            }),
+        expect(hookState.rpcCalls).toContainEqual({
+            fn: 'submit_contract_delivery_atomic',
+            params: {
+                p_contract_id: 'contract-1',
+                p_delivery_note: 'Ready for review',
+            },
         });
+        expect(result.current.contract).toEqual(expect.objectContaining({
+            status: 'active',
+            delivery_note: 'Ready for review',
+        }));
         expect(result.current.isDelivering).toBe(false);
     });
 
     it('supports client acceptance, feedback, and disputes', async () => {
+        hookState.tableResults.contracts = {
+            data: {
+                id: 'contract-1',
+                job_id: 'job-1',
+                freelancer_id: 'freelancer-1',
+                client_id: 'client-1',
+                status: 'active',
+                payment_status: 'pending',
+                delivery_note: 'submitted',
+                started_at: '2026-03-01T00:00:00.000Z',
+            },
+            error: null,
+        };
+
         const { result } = renderHook(() =>
             useContractState({
                 contractId: 'contract-1',
@@ -138,15 +154,27 @@ describe('useContractState', () => {
             message_type: 'feedback',
         }));
 
+        const acceptHook = renderHook(() =>
+            useContractState({
+                contractId: 'contract-1',
+                userId: 'client-1',
+                userRole: 'client',
+            })
+        );
+
         await act(async () => {
-            await result.current.acceptWork();
+            await acceptHook.result.current.refresh();
+        });
+
+        await act(async () => {
+            await acceptHook.result.current.acceptWork();
         });
 
         expect(hookState.rpcCalls).toContainEqual({
             fn: 'release_contract_payment_atomic',
             params: { p_contract_id: 'contract-1' },
         });
-        expect(result.current.contract).toEqual(expect.objectContaining({
+        expect(acceptHook.result.current.contract).toEqual(expect.objectContaining({
             status: 'completed',
             payment_status: 'released',
             completed_at: expect.any(String),
@@ -215,6 +243,19 @@ describe('useContractState', () => {
 
     it('surfaces release RPC failures during client acceptance', async () => {
         hookState.rpcErrors.release_contract_payment_atomic = new Error('release failed');
+        hookState.tableResults.contracts = {
+            data: {
+                id: 'contract-1',
+                job_id: 'job-1',
+                freelancer_id: 'freelancer-1',
+                client_id: 'client-1',
+                status: 'active',
+                payment_status: 'pending',
+                delivery_note: 'submitted',
+                started_at: '2026-03-01T00:00:00.000Z',
+            },
+            error: null,
+        };
 
         const { result } = renderHook(() =>
             useContractState({

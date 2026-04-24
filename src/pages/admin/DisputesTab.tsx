@@ -12,6 +12,11 @@ interface DisputeRecord {
     opened_at: string;
     reason: string;
     status: string;
+    evidence_captured_at?: string | null;
+    evidence_snapshot?: {
+        milestones?: { total?: number; completed?: number } | null;
+        messages?: { attachment_message_count?: number; protected_event_count?: number } | null;
+    } | null;
     contract: { id: string; amount: number; job: { title: string } } | null;
     opener: { full_name: string; email: string } | null;
 }
@@ -28,7 +33,7 @@ export default function DisputesTab() {
         queryFn: async (): Promise<DisputeRecord[]> => {
             const { data, error } = await supabase
                 .from('disputes')
-                .select('id,contract_id,opened_at,reason,status,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
+                .select('id,contract_id,opened_at,reason,status,evidence_captured_at,evidence_snapshot,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
                 .eq('status', 'open')
                 .order('opened_at', { ascending: true });
             if (error) throw error;
@@ -99,6 +104,28 @@ export default function DisputesTab() {
                                                 <p className="text-sm text-foreground"><strong>{tr('سبب النزاع', 'Dispute reason', 'Raison du litige')}:</strong> {d.reason}</p>
                                             </div>
                                             {d.contract?.amount && <p className="text-sm font-medium text-muted mt-2">{tr('مبلغ العقد', 'Contract amount', 'Montant du contrat')}: {d.contract.amount} {tx('dynamic_key_1524267')}</p>}
+                                            <div className="mt-3 flex flex-wrap gap-2">
+                                                <span className={`rounded-full px-2.5 py-1 text-xs ${d.evidence_captured_at ? adminPillClass('emerald') : adminPillClass('amber')}`}>
+                                                    {d.evidence_captured_at
+                                                        ? tr('تم حفظ الأدلة', 'Evidence captured', 'Preuves capturees')
+                                                        : tr('الأدلة غير مكتملة', 'Evidence missing', 'Preuves manquantes')}
+                                                </span>
+                                                {typeof d.evidence_snapshot?.milestones?.total === 'number' ? (
+                                                    <span className={`rounded-full px-2.5 py-1 text-xs ${adminPillClass('neutral')}`}>
+                                                        {tr('المراحل', 'Milestones', 'Jalons')}: {d.evidence_snapshot?.milestones?.completed ?? 0}/{d.evidence_snapshot?.milestones?.total ?? 0}
+                                                    </span>
+                                                ) : null}
+                                                {typeof d.evidence_snapshot?.messages?.attachment_message_count === 'number' ? (
+                                                    <span className={`rounded-full px-2.5 py-1 text-xs ${adminPillClass('neutral')}`}>
+                                                        {tr('ملفات الأدلة', 'Evidence files', 'Fichiers de preuve')}: {d.evidence_snapshot?.messages?.attachment_message_count ?? 0}
+                                                    </span>
+                                                ) : null}
+                                                {typeof d.evidence_snapshot?.messages?.protected_event_count === 'number' ? (
+                                                    <span className={`rounded-full px-2.5 py-1 text-xs ${adminPillClass('neutral')}`}>
+                                                        {tr('الأحداث المحمية', 'Protected events', 'Evenements proteges')}: {d.evidence_snapshot?.messages?.protected_event_count ?? 0}
+                                                    </span>
+                                                ) : null}
+                                            </div>
                                         </div>
                                         <div className="flex flex-col gap-2 shrink-0">
                                             <Button size="sm" variant="outline" onClick={() => window.open(`/contracts/${d.contract_id}`, '_blank')}>

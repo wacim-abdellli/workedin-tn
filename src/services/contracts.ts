@@ -130,11 +130,20 @@ export async function createContract(data: {
     freelancer_id: string;
     amount: number;
 }) {
-    return supabase
+    const result = await supabase
         .from('contracts')
-        .insert({ ...data, status: 'active', payment_status: 'pending' })
+        .insert({ ...data, status: 'pending_payment', payment_status: 'pending' })
         .select()
         .single();
+
+    if (result.error?.message) {
+        const normalized = result.error.message.trim();
+        if (normalized.includes('identity verification') || normalized.includes('risk guardrails') || normalized.includes('New first-time accounts')) {
+            result.error.message = normalized;
+        }
+    }
+
+    return result;
 }
 
 export async function updateContractStatus(contractId: string, status: string) {

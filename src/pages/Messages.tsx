@@ -27,6 +27,7 @@ import {
     Flag,
     CheckCircle,
     AlertTriangle,
+    Archive,
 } from 'lucide-react';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
@@ -76,6 +77,10 @@ import {
     canFreelancerDeliverForStatus,
     canOpenDisputeForStatus,
 } from '../lib/contractWorkflow';
+import { detectContractChatSafetyRisk } from '../lib/contractChatSafety';
+import { isProtectedContractEvidenceMessage } from '../lib/contractEvidence';
+import { validateUploadPayload } from '../lib/uploadPolicy';
+import { getErrorMessage } from '../lib/errorMessage';
 
 import {
   fileToBase64,
@@ -250,6 +255,12 @@ type ContractSessionMeta = {
     title: string | null;
     amount: number | null;
     total_amount: number | null;
+    revision_requests_count?: number | null;
+    max_revision_rounds?: number | null;
+    funded_at?: string | null;
+    delivery_submitted_at?: string | null;
+    review_due_at?: string | null;
+    revision_requested_at?: string | null;
     job_deadline: string | null;
     client_id: string | null;
     freelancer_id: string | null;
@@ -351,10 +362,19 @@ const writeSessionCache = (key: string, value: unknown) => {
     }
 };
 
-const sortConversationsByActivity = (items: Conversation[]) => {
-    return [...items].sort(
-        (a, b) => new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime()
-    );
+const TERMINAL_STATUSES = new Set(['completed', 'cancelled', 'canceled', 'disputed']);
+
+const sortConversationsByActivity = (items: Conversation[], contractStatusById: Record<string, string> = {}) => {
+    return [...items].sort((a, b) => {
+        const aStatus = a.contract_id ? contractStatusById[a.contract_id] ?? '' : '';
+        const bStatus = b.contract_id ? contractStatusById[b.contract_id] ?? '' : '';
+        const aTerminal = TERMINAL_STATUSES.has(aStatus);
+        const bTerminal = TERMINAL_STATUSES.has(bStatus);
+        // Terminal conversations always sink to the bottom
+        if (aTerminal !== bTerminal) return aTerminal ? 1 : -1;
+        // Within same group: sort by last activity
+        return new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime();
+    });
 };
 
 const isDeletedMessage = (message: ThreadMessage | null | undefined) => Boolean(message?.is_deleted);
@@ -382,7 +402,7 @@ const shouldHideAttachmentUrlText = (message: ThreadMessage | null | undefined) 
     });
 };
 
-type ContractSystemMessageKind = 'delivery' | 'revision_requested' | 'contract_completed' | 'dispute_opened';
+type ContractSystemMessageKind = 'delivery' | 'revision_requested' | 'contract_completed' | 'dispute_opened' | 'review_left';
 
 const resolveContractSystemMessage = (rawBodyText: string): { kind: ContractSystemMessageKind; text: string } | null => {
     const trimmed = rawBodyText.trim();
@@ -419,6 +439,13 @@ const resolveContractSystemMessage = (rawBodyText: string): { kind: ContractSyst
         return {
             kind: 'dispute_opened',
             text: details || 'Dispute opened for this contract',
+        };
+    }
+
+    if (marker === 'review_left') {
+        return {
+            kind: 'review_left',
+            text: details || 'Review submitted',
         };
     }
 
@@ -864,7 +891,16 @@ function MessagesComponent() {
     const [messages, setMessages] = useState<ThreadMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const [filter, setFilter] = useState<'all' | 'unread' | 'starred'>('all');
+    const [filter, setFilter] = useState<'all' | 'unread'>('all');
+    const [showArchived, setShowArchived] = useState(false);
+    const [archivedConversationIds, setArchivedConversationIds] = useState<Set<string>>(() => {
+        try {
+            const stored = localStorage.getItem('workedin_archived_conversations');
+            return stored ? new Set(JSON.parse(stored) as string[]) : new Set();
+        } catch {
+            return new Set();
+        }
+    });
     const [showMobileThread, setShowMobileThread] = useState(false);
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
@@ -873,10 +909,35 @@ function MessagesComponent() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [pendingQueue, setPendingQueue] = useState<any[]>([]);
-    const [contractStatusById, setContractStatusById] = useState<Record<string, ContractMessagingStatus>>({});
+    const [contractStatusById, setContractStatusById] = useState<Record<string, ContractMessagingStatus>>(() => {
+        try {
+            const cached = sessionStorage.getItem('workedin_contract_statuses');
+            return cached ? (JSON.parse(cached) as Record<string, ContractMessagingStatus>) : {};
+        } catch {
+            return {};
+        }
+    });
+    // Always starts false — we MUST wait for loadContractStatuses to complete before
+    // rendering the list. Using sessionStorage to pre-set this caused a flash because
+    // the cached contract IDs could be stale, letting conversations render with
+    // 'unknown' status, then disappear once real statuses (e.g. 'completed') arrived.
+    // The sessionStorage cache of contractStatusById (above) still speeds up the fetch
+    // by giving it a pre-populated starting state to diff against.
+    const [contractStatusesHydrated, setContractStatusesHydrated] = useState(false);
     const [contractSessionMetaById, setContractSessionMetaById] = useState<Record<string, ContractSessionMeta>>({});
     const [milestonesByContractId, setMilestonesByContractId] = useState<Record<string, ContractMilestone[]>>({});
     const [hasReviewedContractById, setHasReviewedContractById] = useState<Record<string, boolean>>({});
+
+    // Keep contract status cache in sessionStorage so archived items don't flash on reload
+    useEffect(() => {
+        if (Object.keys(contractStatusById).length === 0) return;
+        try {
+            sessionStorage.setItem('workedin_contract_statuses', JSON.stringify(contractStatusById));
+        } catch {
+            // sessionStorage quota exceeded or unavailable — safe to ignore
+        }
+    }, [contractStatusById]);
+
     const [page, setPage] = useState(0);
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -1020,6 +1081,11 @@ function MessagesComponent() {
     const selectedContractHasReview = selectedContractId
         ? (hasReviewedContractById[selectedContractId] ?? false)
         : true;
+    const selectedContractRevisionCount = Number(selectedContractMeta?.revision_requests_count ?? 0);
+    const selectedContractRevisionLimit = Number(selectedContractMeta?.max_revision_rounds ?? 2);
+    const selectedContractRevisionRemaining = Math.max(selectedContractRevisionLimit - selectedContractRevisionCount, 0);
+    const selectedContractDeliverySubmittedAt = selectedContractMeta?.delivery_submitted_at || null;
+    const selectedContractReviewDueAt = selectedContractMeta?.review_due_at || null;
 
     useEffect(() => {
         if (!selectedContractId || selectedConversationPolicy?.contractStatus !== 'unknown') {
@@ -1362,6 +1428,11 @@ function MessagesComponent() {
 
         return {
             amount: amountValue,
+            revisionRequestsCount: selectedContractMeta?.revision_requests_count ?? 0,
+            maxRevisionRounds: selectedContractMeta?.max_revision_rounds ?? 2,
+            fundedAt: selectedContractMeta?.funded_at ?? null,
+            deliverySubmittedAt: selectedContractDeliverySubmittedAt,
+            reviewDueAt: selectedContractReviewDueAt,
             job: {
                 title,
                 deadline: firstUpcomingDueDate || jobDeadline,
@@ -1384,8 +1455,12 @@ function MessagesComponent() {
         currentUserDisplayName,
         isContractSession,
         selectedContractMilestones,
+        selectedContractDeliverySubmittedAt,
         selectedContractMeta?.amount,
         selectedContractMeta?.job_deadline,
+        selectedContractMeta?.max_revision_rounds,
+        selectedContractMeta?.revision_requests_count,
+        selectedContractReviewDueAt,
         selectedContractId,
         selectedContractMeta?.title,
         selectedContractMeta?.total_amount,
@@ -1545,11 +1620,10 @@ function MessagesComponent() {
                     label: tx('contract.disputeOpened', undefined, 'Disputed'),
                     className: 'border-amber-500/30 bg-amber-500/10 text-amber-100',
                 };
+            // 'unknown' or any unrecognized status: show no badge.
+            // This prevents "Status unavailable" from flashing while statuses are loading.
             default:
-                return {
-                    label: tx('contract.statusUnavailable', undefined, 'Status unavailable'),
-                    className: 'border-surface surface-sunken text-on-surface-muted',
-                };
+                return null;
         }
     }, [getConversationLifecyclePolicy, tx]);
 
@@ -2077,9 +2151,9 @@ function MessagesComponent() {
                 client_id?: string | null;
             };
             const contractSelectColumns =
-                'id, proposal_id, status, title, amount, total_amount, client_id, freelancer_id, job_id, created_at';
+                'id, proposal_id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, revision_requested_at, client_id, freelancer_id, job_id, created_at';
             const legacyContractSelectColumns =
-                'id, proposal_id, status, title, amount, client_id, freelancer_id, job_id, created_at';
+                'id, proposal_id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, revision_requested_at, client_id, freelancer_id, job_id, created_at';
             const fetchContractRows = async (
                 field: 'id' | 'proposal_id' | 'job_id' | 'client_id' | 'freelancer_id',
                 ids: string[],
@@ -2651,6 +2725,8 @@ function MessagesComponent() {
                     fallbackStatuses[contractId] = 'unknown';
                 }
                 setContractStatusById(fallbackStatuses);
+            } finally {
+                if (!cancelled) setContractStatusesHydrated(true);
             }
         };
 
@@ -2660,6 +2736,14 @@ function MessagesComponent() {
             cancelled = true;
         };
     }, [contractConversationIdsKey, conversations, user?.id]);
+
+    // If there are no contract conversations at all (after loading), mark statuses as ready immediately
+    // so the list renders without waiting for the status-fetch effect (which won't run)
+    useEffect(() => {
+        if (isLoadingConversations) return;
+        if (contractConversationIds.length === 0) setContractStatusesHydrated(true);
+    }, [isLoadingConversations, contractConversationIds.length]);
+
 
     // Bootstrap and force-load contract conversations when arriving via /messages?contract=<id>.
     // This keeps messaging functional even if scope metadata is stale or the conversation row was not pre-created.
@@ -3378,9 +3462,7 @@ function MessagesComponent() {
             setDeliveryNote('');
             showToast(tx('contract.workDelivered', undefined, 'Work delivered successfully'), 'success');
         } catch (error) {
-            const message = error instanceof Error
-                ? error.message
-                : tx('contract.deliverError', undefined, 'Failed to deliver work');
+            const message = getErrorMessage(error, tx('contract.deliverError', undefined, 'Failed to deliver work'));
             setDeliveryActionError(message);
             showToast(message, 'error');
         } finally {
@@ -3397,11 +3479,14 @@ function MessagesComponent() {
             if (!canClientRequestChangesForStatus(workflowStatus, contractDeliverySubmitted)) {
                 throw new Error(tx('contract.requestChangesBlocked', undefined, 'Changes can only be requested after a delivery is submitted.'));
             }
+            if (selectedContractRevisionRemaining <= 0) {
+                throw new Error(tx('contract.revisionLimitReached', undefined, 'Revision limit reached for this contract.'));
+            }
 
             const contractId = selectedConversation.contract_id;
             let revisionStatusApplied = false;
 
-            const { error: updateStatusError } = await supabase.rpc('request_contract_revision_atomic', {
+            const { data: revisionResult, error: updateStatusError } = await supabase.rpc('request_contract_revision_atomic', {
                 p_contract_id: contractId,
                 p_reason: tx('contract.requestRevision', undefined, 'Please revise according to feedback'),
             });
@@ -3409,6 +3494,26 @@ function MessagesComponent() {
             if (!updateStatusError) {
                 revisionStatusApplied = true;
                 syncContractStatusLocally(contractId, 'revision_requested');
+                setContractSessionMetaById((prev) => {
+                    const existing = prev[contractId];
+                    if (!existing) return prev;
+
+                    return {
+                        ...prev,
+                        [contractId]: {
+                            ...existing,
+                            status: 'revision_requested',
+                            revision_requests_count:
+                                revisionResult && typeof revisionResult === 'object' && 'revision_requests_count' in revisionResult
+                                    ? Number((revisionResult as { revision_requests_count?: number }).revision_requests_count ?? existing.revision_requests_count ?? 0)
+                                    : (existing.revision_requests_count ?? 0) + 1,
+                            max_revision_rounds:
+                                revisionResult && typeof revisionResult === 'object' && 'max_revision_rounds' in revisionResult
+                                    ? Number((revisionResult as { max_revision_rounds?: number }).max_revision_rounds ?? existing.max_revision_rounds ?? 2)
+                                    : (existing.max_revision_rounds ?? 2),
+                        },
+                    };
+                });
             } else if (
                 isEnumValueUnsupportedError(updateStatusError, 'contract_status_enum', 'revision_requested')
                 || isMissingSchemaColumnError(updateStatusError, 'contracts', 'status')
@@ -3442,14 +3547,12 @@ function MessagesComponent() {
                 );
             }
         } catch (error) {
-            const message = error instanceof Error
-                ? error.message
-                : tx('contract.error', undefined, 'Action failed');
+            const message = getErrorMessage(error, tx('contract.error', undefined, 'Action failed'));
             showToast(message, 'error');
         } finally {
             setIsRequestingContractChanges(false);
         }
-    }, [contractDeliverySubmitted, selectedContractStatus, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
+    }, [contractDeliverySubmitted, selectedContractRevisionRemaining, selectedContractStatus, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleAcceptContractAndPay = useCallback(async () => {
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
@@ -3482,9 +3585,7 @@ function MessagesComponent() {
             setIsAcceptModalOpen(false);
             showToast(tx('contract.workAccepted', undefined, 'Work accepted and payment released'), 'success');
         } catch (error) {
-            const message = error instanceof Error
-                ? error.message
-                : tx('contract.acceptError', undefined, 'Failed to accept work');
+            const message = getErrorMessage(error, tx('contract.acceptError', undefined, 'Failed to accept work'));
             showToast(message, 'error');
         } finally {
             setIsAcceptingContractWork(false);
@@ -3527,9 +3628,7 @@ function MessagesComponent() {
             setDisputeReason('');
             showToast(tx('contract.disputeOpened', undefined, 'Dispute opened successfully'), 'warning');
         } catch (error) {
-            const message = error instanceof Error
-                ? error.message
-                : tx('contract.disputeError', undefined, 'Failed to open dispute');
+            const message = getErrorMessage(error, tx('contract.disputeError', undefined, 'Failed to open dispute'));
             showToast(message, 'error');
         } finally {
             setIsOpeningContractDispute(false);
@@ -3537,7 +3636,7 @@ function MessagesComponent() {
     }, [disputeReason, selectedContractStatus, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleSubmitContractReview = useCallback(async (rating: number, comment: string) => {
-        if (!selectedContractId || !user?.id) {
+        if (!selectedContractId || !user?.id || !selectedConversation) {
             throw new Error('Missing contract context for review submission.');
         }
 
@@ -3549,13 +3648,21 @@ function MessagesComponent() {
             throw new Error(errMessage || tx('contract.error', undefined, 'An error occurred'));
         }
 
+        await sendContractMessage({
+            contract_id: selectedContractId,
+            sender_id: user.id,
+            receiver_id: selectedConversation.otherUser.id,
+            content: `[[review_left]] ${rating} stars: ${comment || 'No comment provided'}`,
+            message_type: 'system',
+        });
+
         setHasReviewedContractById((prev) => ({
             ...prev,
             [selectedContractId]: true,
         }));
         setIsReviewModalOpen(false);
         showToast(tx('contract.reviewSent', undefined, 'Review submitted successfully'), 'success');
-    }, [selectedContractId, showToast, tx, user?.id]);
+    }, [selectedContractId, selectedConversation, showToast, tx, user?.id]);
 
     const handleSendMessage = async () => {
         const messageContent = newMessage.trim();
@@ -3596,6 +3703,21 @@ function MessagesComponent() {
                 'warning'
             );
             return;
+        }
+
+        if (selectedConversation.contract_id && messageContent) {
+            const safetyResult = detectContractChatSafetyRisk(messageContent);
+            if (safetyResult.blocked) {
+                showToast(
+                    tx(
+                        'contract.chatSafetyBlocked',
+                        { message: safetyResult.reason || '' },
+                        safetyResult.reason || 'This message is blocked by contract safety rules.'
+                    ),
+                    'warning'
+                );
+                return;
+            }
         }
 
         if (!isOnline) {
@@ -3857,7 +3979,7 @@ function MessagesComponent() {
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             if (!canAttachInSelectedConversation) {
@@ -3886,6 +4008,28 @@ function MessagesComponent() {
                 e.target.value = '';
                 return;
             }
+
+            try {
+                const payloadValidation = validateUploadPayload({
+                    bucket: 'message_attachments',
+                    fileName: file.name,
+                    mimeType: normalizeMimeType(file.type),
+                    size: file.size,
+                    bytes: new Uint8Array(await file.arrayBuffer()),
+                });
+
+                if (!payloadValidation.ok) {
+                    showToast(payloadValidation.reason || tx('pages.messages.errors.fileUnsupported', undefined, 'Unsupported file type'), 'error');
+                    e.target.value = '';
+                    return;
+                }
+            } catch (error) {
+                console.error('[Messages] Failed to inspect attachment payload:', error);
+                showToast(tx('pages.messages.errors.fileInspectionFailed', undefined, 'Could not verify this file safely. Please choose another file.'), 'error');
+                e.target.value = '';
+                return;
+            }
+
             setSelectedFile(file);
         }
     };
@@ -3893,18 +4037,53 @@ function MessagesComponent() {
     const getConversationSidebarTitle = useCallback((conversation: Conversation) => {
         return conversation.otherUser.full_name;
     }, []);
-
-    // Filter conversations based on search and filter
-    const filteredConversations = conversations.filter((c) => {
-        if (filter === 'unread' && c.unread_count === 0) return false;
-        if (searchQuery) {
-            const normalizedQuery = searchQuery.toLowerCase();
-            const byName = c.otherUser.full_name.toLowerCase().includes(normalizedQuery);
-            const contractTitle = getResolvedContractTitle(c).toLowerCase();
-            if (!byName && !contractTitle.includes(normalizedQuery)) return false;
+    const archiveConversation = useCallback((conversationId: string) => {
+        setArchivedConversationIds((prev) => {
+            const next = new Set(prev);
+            next.add(conversationId);
+            try { localStorage.setItem('workedin_archived_conversations', JSON.stringify([...next])); } catch {}
+            return next;
+        });
+        // Deselect if currently open
+        if (selectedConversation?.id === conversationId) {
+            setSelectedConversation(null);
+            setShowMobileThread(false);
         }
-        return true;
-    });
+    }, [selectedConversation?.id]);
+
+    const unarchiveConversation = useCallback((conversationId: string) => {
+        setArchivedConversationIds((prev) => {
+            const next = new Set(prev);
+            next.delete(conversationId);
+            try { localStorage.setItem('workedin_archived_conversations', JSON.stringify([...next])); } catch {}
+            return next;
+        });
+    }, []);
+
+    // Archive-aware filtering and smart sorting
+    const filteredConversations = useMemo(() => {
+        return conversations.filter((c) => {
+            const contractStatus = c.contract_id ? contractStatusById[c.contract_id] ?? '' : '';
+            const isTerminalAndRead = TERMINAL_STATUSES.has(contractStatus) && c.unread_count === 0
+                && selectedConversation?.id !== c.id;
+            const isManuallyArchived = archivedConversationIds.has(c.id);
+            const isArchived = isManuallyArchived || isTerminalAndRead;
+
+            // In archive view: show only archived items
+            if (showArchived) return isArchived;
+            // In normal view: hide archived items
+            if (isArchived) return false;
+
+            if (filter === 'unread' && c.unread_count === 0) return false;
+            if (searchQuery) {
+                const normalizedQuery = searchQuery.toLowerCase();
+                const byName = c.otherUser.full_name.toLowerCase().includes(normalizedQuery);
+                const contractTitle = getResolvedContractTitle(c).toLowerCase();
+                if (!byName && !contractTitle.includes(normalizedQuery)) return false;
+            }
+            return true;
+        });
+    }, [conversations, contractStatusById, archivedConversationIds, showArchived, filter, searchQuery, selectedConversation?.id, getResolvedContractTitle]);
 
     const displayConversations = useMemo(() => {
         const seenKeys = new Set<string>();
@@ -3920,23 +4099,22 @@ function MessagesComponent() {
             deduped.push(conversation);
         }
 
-        return deduped;
-    }, [filteredConversations]);
+        return sortConversationsByActivity(deduped, contractStatusById);
+    }, [filteredConversations, contractStatusById]);
 
     const conversationSummaryLabel = useMemo(() => {
+        if (showArchived) {
+            return `${conversationWorkspaceLabel} / ${tx('pages.messages.archivedLabel', undefined, 'ARCHIVED')}`;
+        }
         const countLabel = searchQuery
             ? tx('pages.messages.searchResultsSummary', { count: displayConversations.length }, `${displayConversations.length} results`)
             : tx('pages.messages.threadCountSummary', { count: displayConversations.length }, `${displayConversations.length} threads`);
 
         return `${conversationWorkspaceLabel} / ${countLabel}`;
-    }, [conversationWorkspaceLabel, displayConversations.length, searchQuery, tx]);
+    }, [conversationWorkspaceLabel, displayConversations.length, searchQuery, showArchived, tx]);
 
-    const conversationsVirtualizer = useVirtualizer({
-        count: displayConversations.length,
-        getScrollElement: () => conversationsParentRef.current,
-        estimateSize: () => 106,
-        overscan: 5,
-    });
+    // conversationsVirtualizer removed — the list now uses a plain scrollable div
+    // (virtualizer caused layout bugs with dynamic row heights).
 
     // Filter out messages deleted for the current user
     const displayMessages = messages.filter((message) => !deletedForMeMessageIds.has(message.id));
@@ -4036,7 +4214,12 @@ function MessagesComponent() {
 
     const getConversationLastPreviewText = useCallback((conversationId: string, rawLastMessageText: string | null | undefined) => {
         const inlinePreview = parseReplyMetadataFromContent(rawLastMessageText).bodyText.trim();
-        if (inlinePreview) return inlinePreview;
+        if (inlinePreview) {
+            // Decode system message markers (e.g. [[review_left]], [[contract_completed]]) into
+            // human-readable text so they don't appear raw in the conversation list preview.
+            const decoded = resolveContractSystemMessage(inlinePreview);
+            return decoded ? decoded.text : inlinePreview;
+        }
 
         const cachedThread = messageCacheRef.current[conversationId];
         if (!cachedThread || cachedThread.length === 0) return null;
@@ -4108,17 +4291,20 @@ function MessagesComponent() {
 
     const renderConversationList = () => (
         <div className={`${showMobileThread ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-[#1b1f24] bg-[#121212] flex-col shrink-0`}>
-            <div className="border-b border-[#1b1f24] bg-[#141414] p-4">
-                <div className="mb-4">
-                    <h2 className="text-xl font-bold tracking-tight text-on-surface">{tx('pages.messages.title', undefined, 'Messages')}</h2>
-                    <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-on-surface-subtle">
-                        {conversationSummaryLabel}
-                    </p>
+            {/* Header */}
+            <div className="border-b border-[#1b1f24] bg-[#141414] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-bold tracking-tight text-on-surface">{tx('pages.messages.title', undefined, 'Messages')}</h2>
+                        <p className="mt-0.5 text-[11px] uppercase tracking-[0.18em] text-on-surface-subtle">
+                            {conversationSummaryLabel}
+                        </p>
+                    </div>
                 </div>
-                <div
-                    className={`flex h-11 w-full items-center gap-2 rounded-2xl border border-[#2a2112] bg-[#161616] px-3 text-sm transition-all ${accentClasses.searchSurface}`}
-                >
-                    <Search className="h-4 w-4 shrink-0 text-on-surface-subtle" />
+
+                {/* Search */}
+                <div className={`flex h-9 w-full items-center gap-2 rounded-xl border px-3 text-sm transition-all ${accentClasses.searchSurface}`}>
+                    <Search className="h-3.5 w-3.5 shrink-0 text-on-surface-subtle" />
                     <input
                         id="messages-conversation-search"
                         type="text"
@@ -4127,27 +4313,64 @@ function MessagesComponent() {
                         placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
                         className="w-full border-0 bg-transparent p-0 text-sm text-on-surface outline-none placeholder:text-on-surface-subtle focus:outline-none focus:ring-0"
                     />
+                    {searchQuery && (
+                        <button type="button" onClick={() => setSearchQuery('')} className="text-on-surface-subtle hover:text-on-surface transition-colors">
+                            <X className="h-3.5 w-3.5" />
+                        </button>
+                    )}
                 </div>
+
+                {/* Filter chips */}
+                {!showArchived && (
+                    <div className="flex gap-1.5">
+                        {(['all', 'unread'] as const).map((f) => (
+                            <button
+                                key={f}
+                                type="button"
+                                onClick={() => setFilter(f)}
+                                className={`rounded-lg px-3 py-1 text-[11px] font-medium transition-all ${
+                                    filter === f
+                                        ? `${accentClasses.contractToggleActive} border`
+                                        : 'text-on-surface-subtle hover:text-on-surface hover:bg-[#1f1f1f] border border-transparent'
+                                }`}
+                            >
+                                {f === 'all' ? tx('pages.messages.filterAll', undefined, 'All') : tx('pages.messages.filterUnread', undefined, 'Unread')}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            <div ref={conversationsParentRef} className="flex-1 overflow-y-auto">
-                {isLoadingConversations ? (
+            {/* Conversation list — plain scroll, no virtualizer */}
+            <div
+                ref={conversationsParentRef}
+                className="flex-1 overflow-y-auto"
+                style={{ scrollbarWidth: 'thin', scrollbarColor: '#2a2a2a transparent' }}
+            >
+                {(isLoadingConversations || !contractStatusesHydrated) ? (
                     <div className="h-full flex items-center justify-center px-6 py-10">
                         <Loader2 className="h-6 w-6 animate-spin text-on-surface-subtle" />
                     </div>
                 ) : displayConversations.length === 0 ? (
-                    <div className="h-full flex items-center justify-center px-6 py-10 text-center">
+                    <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
+                        <div className="h-10 w-10 rounded-full bg-[#1a1a1a] flex items-center justify-center">
+                            {showArchived
+                                ? <Archive className="h-5 w-5 text-on-surface-subtle" />
+                                : <Mail className="h-5 w-5 text-on-surface-subtle" />}
+                        </div>
                         <p className="text-sm text-on-surface-subtle">
-                            {searchQuery
+                            {showArchived
+                                ? tx('pages.messages.empty.noArchivedTitle', undefined, 'No archived conversations')
+                                : searchQuery
                                 ? tx('pages.messages.empty.noMatchingTitle', undefined, 'No matching conversations')
                                 : tx('pages.messages.empty.noConversationsTitle', undefined, 'No conversations yet')}
                         </p>
                     </div>
                 ) : (
-                    <div style={{ height: `${conversationsVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
-                        {conversationsVirtualizer.getVirtualItems().map((virtualRow) => {
-                            const conversation = displayConversations[virtualRow.index];
+                    <div className="py-1">
+                        {displayConversations.map((conversation) => {
                             const isActive = selectedConversation?.id === conversation.id;
+                            const isArchived = archivedConversationIds.has(conversation.id);
                             const previewText = getConversationLastPreviewText(conversation.id, conversation.last_message_text)
                                 || ((conversation.message_count ?? 0) > 0
                                     ? tx('pages.messages.attachmentLabel', undefined, 'Attachment')
@@ -4156,15 +4379,22 @@ function MessagesComponent() {
                             return (
                                 <div
                                     key={conversation.id}
-                                    style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: `${virtualRow.size}px`,
-                                        transform: `translateY(${virtualRow.start}px)`,
-                                    }}
+                                    className="group/item relative px-2 py-1"
                                 >
+                                    {/* Archive button — appears on hover */}
+                                    <button
+                                        type="button"
+                                        title={isArchived ? tx('pages.messages.unarchive', undefined, 'Unarchive') : tx('pages.messages.archive', undefined, 'Archive')}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            isArchived ? unarchiveConversation(conversation.id) : archiveConversation(conversation.id);
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 rounded-full border border-[#2a2a2a] bg-[#141414] items-center justify-center text-on-surface-subtle hover:text-on-surface transition-all opacity-0 group-hover/item:opacity-100 hidden md:flex"
+                                        aria-label={isArchived ? 'Unarchive conversation' : 'Archive conversation'}
+                                    >
+                                        <Archive className="h-3 w-3" />
+                                    </button>
+
                                     <div
                                         onClick={() => handleSelectConversation(conversation)}
                                         onMouseEnter={() => { void prefetchConversationMessages(conversation.id); }}
@@ -4177,9 +4407,9 @@ function MessagesComponent() {
                                                 void handleSelectConversation(conversation);
                                             }
                                         }}
-                                        className="h-full px-2 py-1.5"
+                                        className="cursor-pointer"
                                     >
-                                        <div className={`flex h-full gap-3 rounded-2xl border px-3 py-3 transition-all ${
+                                        <div className={`flex gap-3 rounded-2xl border px-3 py-3 transition-all ${
                                             isActive
                                                 ? accentClasses.selectedConversationSurface
                                                 : `border-transparent bg-transparent ${accentClasses.conversationHoverSurface}`
@@ -4207,8 +4437,7 @@ function MessagesComponent() {
 
                                             {/* Content */}
                                             <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden gap-[4px]">
-
-                                                {/* Row 1 — Job/Project name (PRIMARY — what matters most) + time + unread */}
+                                                {/* Row 1 — Job/Project name + time + unread */}
                                                 <div className="flex items-start justify-between gap-2">
                                                     {(() => {
                                                         const workDesc = getConversationWorkDescriptor(conversation);
@@ -4232,7 +4461,7 @@ function MessagesComponent() {
                                                     </div>
                                                 </div>
 
-                                                {/* Row 2 — Person name + Role + Status (SECONDARY) */}
+                                                {/* Row 2 — Person name + Role + Status */}
                                                 <div className="flex items-center gap-1.5 min-w-0">
                                                     <p className="truncate text-[11.5px] leading-tight text-on-surface-muted">
                                                         {conversation.otherUser.full_name}
@@ -4263,7 +4492,6 @@ function MessagesComponent() {
                                                 } ${previewText === deletedMessageLabel ? 'italic' : ''}`}>
                                                     {previewText}
                                                 </p>
-
                                             </div>
                                         </div>
                                     </div>
@@ -4273,21 +4501,40 @@ function MessagesComponent() {
                     </div>
                 )}
 
-                {hasMoreConversations && displayConversations.length > 0 && !searchQuery ? (
-                    <div className="border-t border-[#1b1f24] bg-[#141414] px-4 py-4">
+                {hasMoreConversations && displayConversations.length > 0 && !searchQuery && !showArchived ? (
+                    <div className="border-t border-[#1b1f24] px-4 py-3">
                         <button
                             type="button"
                             onClick={() => setPage((prev) => prev + 1)}
                             disabled={isLoadingMore}
-                            className={`w-full rounded-xl border border-[#242a31] bg-[#101214] px-3 py-2 text-sm text-on-surface-muted transition-colors hover:bg-[#171a1f] disabled:opacity-50 ${accentClasses.inputFocusBorder}`}
+                            className="w-full rounded-xl border border-[#242a31] bg-[#101214] px-3 py-2 text-[12px] text-on-surface-muted transition-colors hover:bg-[#171a1f] disabled:opacity-50"
                         >
-                            {isLoadingMore ? tx('common.loading', undefined, 'Loading...') : tx('pages.messages.loadMore', undefined, 'Load more conversations')}
+                            {isLoadingMore ? tx('common.loading', undefined, 'Loading...') : tx('pages.messages.loadMore', undefined, 'Load more')}
                         </button>
                     </div>
                 ) : null}
             </div>
+
+            {/* Archived toggle at the bottom */}
+            <div className="border-t border-[#1b1f24] bg-[#141414] px-4 py-2.5">
+                <button
+                    type="button"
+                    onClick={() => { setShowArchived((v) => !v); setSearchQuery(''); setFilter('all'); }}
+                    className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-medium transition-all ${
+                        showArchived
+                            ? `${accentClasses.contractToggleActive} border`
+                            : 'text-on-surface-subtle hover:text-on-surface hover:bg-[#1f1f1f] border border-transparent'
+                    }`}
+                >
+                    <Archive className="h-3.5 w-3.5" />
+                    {showArchived
+                        ? tx('pages.messages.backToInbox', undefined, 'Back to inbox')
+                        : tx('pages.messages.viewArchived', undefined, 'Archived conversations')}
+                </button>
+            </div>
         </div>
     );
+
 
     const renderMessageThread = () => (
         <div className={`${showMobileThread ? 'flex' : 'hidden md:flex'} flex-1 flex-col page-bg-base relative`}>
@@ -4513,7 +4760,7 @@ function MessagesComponent() {
                                             >
                                                 <div className={`group/message flex w-full ${isContractSystemMessage ? 'justify-center' : isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                                                     <div className="relative w-full max-w-[85%] md:max-w-[80%]">
-                                                        {isOwnMessage && !message.status && !message.is_deleted ? (
+                                                        {isOwnMessage && !message.status && !message.is_deleted && !isProtectedContractEvidenceMessage(message) ? (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => void handleDeleteMessage(message)}

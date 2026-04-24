@@ -3,6 +3,7 @@
  */
 import { supabase, uploadFile } from '@/lib/supabase';
 import { repairContractConversationInboxRows } from '@/lib/contractConversationInbox';
+import { validateUploadPayload } from '@/lib/uploadPolicy';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import type { MessageAttachment } from '@/types';
 import type {
@@ -16,6 +17,24 @@ const MESSAGE_SEND_TIMEOUT_MS = 20000;
 const MESSAGE_WRITE_TIMEOUT_MS = 12000;
 
 const conversationIdCache = new Map<string, string>();
+
+function buildMessageAttachmentPath(conversationId: string, fileName: string) {
+    const safeFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const uniqueToken = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+
+    return `${conversationId}/${uniqueToken}-${safeFileName}`;
+}
+
+async function getFileBytes(file: File): Promise<Uint8Array> {
+    if (typeof file.arrayBuffer === 'function') {
+        return new Uint8Array(await file.arrayBuffer());
+    }
+
+    const fallbackBuffer = await new Response(file).arrayBuffer();
+    return new Uint8Array(fallbackBuffer);
+}
 
 export type ConversationScope = 'client' | 'freelancer' | 'contract' | 'shared';
 
@@ -144,6 +163,9 @@ function normalizeMessageError(error: unknown) {
             : String(error);
     if (message.includes('rate_limit_exceeded')) {
         return new Error('Slow down - max 30 messages per minute.');
+    }
+    if (message.toLowerCase().includes('contract chat safety violation')) {
+        return new Error(message);
     }
     return error instanceof Error ? error : new Error(message);
 }
@@ -505,7 +527,20 @@ export async function getMessages(conversationId: string, limit: number = 50, of
 
 export async function uploadMessageAttachment(file: File, conversationId: string): Promise<{ url: string | null; error: Error | null }> {
     try {
-        const path = `${conversationId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const bytes = await getFileBytes(file);
+        const validation = validateUploadPayload({
+            bucket: 'message_attachments',
+            fileName: file.name,
+            mimeType: file.type,
+            size: file.size,
+            bytes,
+        });
+
+        if (!validation.ok) {
+            throw new Error(validation.reason || 'Unsafe attachment blocked.');
+        }
+
+        const path = buildMessageAttachmentPath(conversationId, file.name);
         const uploadedUrl = await uploadFile('message_attachments', path, file);
         return { url: uploadedUrl, error: null };
     } catch (error) {

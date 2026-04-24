@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 90" fill="none">
+  <!-- White background -->
+  <rect width="260" height="90" fill="white"/>
+
+  <!-- Rounded border box -->
+  <rect x="3" y="3" width="176" height="84" rx="14" ry="14"
+        stroke="#2B5EA7" stroke-width="3.5" fill="white"/>
+
+  <!-- "D" in sky blue -->
+  <text
+    x="16" y="68"
+    font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+    font-size="60"
+    font-weight="900"
+    fill="#29B6E8"
+  >D</text>
+
+  <!-- "17" in dark navy -->
+  <text
+    x="70" y="68"
+    font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+    font-size="60"
+    font-weight="900"
+    fill="#1B3D7C"
+  >17</text>
+
+  <!-- "DIGI" in orange -->
+  <text x="14" y="84"
+    font-family="Arial, sans-serif"
+    font-size="11" font-weight="800"
+    fill="#F7941D" letter-spacing="0.5"
+  >DIGI</text>
+
+  <!-- "POST" in dark navy -->
+  <text x="44" y="84"
+    font-family="Arial, sans-serif"
+    font-size="11" font-weight="800"
+    fill="#1B3D7C" letter-spacing="0.5"
+  >POST</text>
+
+  <!-- "BANK" in dark navy -->
+  <text x="78" y="84"
+    font-family="Arial, sans-serif"
+    font-size="11" font-weight="800"
+    fill="#1B3D7C" letter-spacing="0.5"
+  >BANK</text>
+</svg>

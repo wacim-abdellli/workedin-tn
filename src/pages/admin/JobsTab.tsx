@@ -41,6 +41,15 @@ interface AdminJobStatusMismatch {
     contractUpdatedAt: string;
 }
 
+interface AdminReviewTimeoutCandidate {
+    contract_id: string;
+    client_id: string;
+    freelancer_id: string | null;
+    review_due_at: string;
+    timeout_stage: 'reminder' | 'overdue';
+    job_title: string;
+}
+
 function normalizeAdminJobClient(client: AdminJobRow['client']): AdminJob['client'] {
     if (Array.isArray(client)) {
         const [firstClient] = client;
@@ -207,6 +216,21 @@ export default function JobsTab() {
         refetchOnWindowFocus: false,
     });
 
+    const {
+        data: reviewTimeoutCandidates = [],
+        isLoading: isLoadingReviewTimeoutCandidates,
+    } = useQuery({
+        queryKey: ['admin-contract-review-timeouts'],
+        queryFn: async (): Promise<AdminReviewTimeoutCandidate[]> => {
+            const { data, error } = await supabase.rpc('get_contract_review_timeout_candidates', { p_limit: 50 });
+            if (error) throw error;
+            return (data || []) as AdminReviewTimeoutCandidate[];
+        },
+        retry: 1,
+        staleTime: 30000,
+        refetchOnWindowFocus: false,
+    });
+
     const updateJobsCache = (updater: (prev: AdminJob[]) => AdminJob[]) => {
         queryClient.setQueryData<AdminJob[]>(ADMIN_JOBS_QUERY_KEY, (prev = []) => updater(prev));
     };
@@ -360,6 +384,66 @@ export default function JobsTab() {
                                         )}
                                     </p>
                                 )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className={panelClass}>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="space-y-1">
+                            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4 text-orange-300" />
+                                {tx('dashboard.admin.jobs.reviewTimeoutsTitle', undefined, 'Contract review timeout watch')}
+                            </p>
+                            <p className="text-xs text-muted">
+                                {tx('dashboard.admin.jobs.reviewTimeoutsDescription', undefined, 'Tracks due-soon and overdue client review windows after delivery.')}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-contract-review-timeouts'] })}
+                            className={`${adminActionButtonClass} border-orange-500/20 text-orange-200 hover:bg-orange-500/12`}
+                        >
+                            {tx('dashboard.admin.jobs.refreshReviewTimeouts', undefined, 'Refresh watch')}
+                        </button>
+                    </div>
+
+                    {isLoadingReviewTimeoutCandidates ? (
+                        <div className="mt-3 flex items-center gap-2 text-sm text-muted">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            {tx('dashboard.admin.jobs.reviewTimeoutsLoading', undefined, 'Checking review windows...')}
+                        </div>
+                    ) : reviewTimeoutCandidates.length === 0 ? (
+                        <div className="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-3 py-2 text-sm text-emerald-300">
+                            {tx('dashboard.admin.jobs.reviewTimeoutsHealthy', undefined, 'No due-soon or overdue review windows detected.')}
+                        </div>
+                    ) : (
+                        <div className="mt-3 rounded-xl border border-orange-500/25 bg-orange-500/8 p-3">
+                            <p className="text-sm font-semibold text-orange-200 mb-2">
+                                {tx(
+                                    'dashboard.admin.jobs.reviewTimeoutsCount',
+                                    { count: reviewTimeoutCandidates.length },
+                                    `${reviewTimeoutCandidates.length} contract review window(s) need attention`,
+                                )}
+                            </p>
+                            <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+                                {reviewTimeoutCandidates.slice(0, 12).map((item) => (
+                                    <div key={`${item.contract_id}:${item.timeout_stage}`} className="rounded-lg border border-orange-500/20 bg-black/20 px-3 py-2 text-xs">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <p className="font-semibold text-foreground truncate">{item.job_title}</p>
+                                            <span className={`rounded-full px-2 py-0.5 text-[10px] ${item.timeout_stage === 'overdue' ? adminPillClass('red') : adminPillClass('amber')}`}>
+                                                {item.timeout_stage === 'overdue'
+                                                    ? tx('dashboard.admin.jobs.reviewTimeoutStageOverdue', undefined, 'Overdue')
+                                                    : tx('dashboard.admin.jobs.reviewTimeoutStageReminder', undefined, 'Due soon')}
+                                            </span>
+                                        </div>
+                                        <p className="text-muted mt-1">
+                                            {tx('dashboard.admin.jobs.reviewDueAt', undefined, 'Review due')}: {new Date(item.review_due_at).toLocaleString(locale)}
+                                        </p>
+                                        <p className="text-muted mt-1">#{item.contract_id.slice(0, 8)}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

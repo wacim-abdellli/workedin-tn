@@ -202,7 +202,7 @@ export async function getReviewsByUser(userId: string) {
 export async function getFreelancerReviewStats(userId: string) {
     const { data, error } = await supabase
         .from('reviews')
-        .select('rating')
+        .select('rating, trust_weight')
         .eq('reviewee_id', userId)
         .eq('is_public', true);
     
@@ -210,8 +210,9 @@ export async function getFreelancerReviewStats(userId: string) {
         return { averageRating: 0, reviewCount: 0 };
     }
     
-    const totalRating = data.reduce((sum, review) => sum + review.rating, 0);
-    const averageRating = totalRating / data.length;
+    const totalWeight = data.reduce((sum, review) => sum + Number(review.trust_weight ?? 1), 0);
+    const weightedTotal = data.reduce((sum, review) => sum + (Number(review.rating) * Number(review.trust_weight ?? 1)), 0);
+    const averageRating = totalWeight > 0 ? weightedTotal / totalWeight : 0;
     
     return {
         averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal

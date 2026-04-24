@@ -24,6 +24,8 @@ interface ContractData {
     completed_at?: string;
     delivery_note?: string;
     dispute_reason?: string;
+    revision_requests_count?: number;
+    max_revision_rounds?: number;
 }
 
 interface UseContractStateOptions {
@@ -246,6 +248,9 @@ export function useContractState({
             if (!contract || !canClientRequestChangesForStatus(contract.status, hasRecordedDeliveryEvidence(contract.delivery_note))) {
                 throw new Error('Changes can only be requested after a delivery is submitted');
             }
+            if ((contract.revision_requests_count ?? 0) >= (contract.max_revision_rounds ?? 2)) {
+                throw new Error('Revision limit reached for this contract');
+            }
 
             const { error: revisionError } = await supabase.rpc('request_contract_revision_atomic', {
                 p_contract_id: contractId,
@@ -257,6 +262,7 @@ export function useContractState({
             setContract((current) => current ? {
                 ...current,
                 status: 'revision_requested',
+                revision_requests_count: (current.revision_requests_count ?? 0) + 1,
             } : current);
 
             if (queryClient) {

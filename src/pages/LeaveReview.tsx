@@ -240,9 +240,12 @@ export default function LeaveReview() {
       );
       navigate(`/contracts/${contractId}`);
     },
-    onError: () => {
+    onError: (error) => {
+      const message = error instanceof Error && error.message
+        ? error.message
+        : tx("review.error", undefined, "Failed to submit review. Try again.");
       showToast(
-        tx("review.error", undefined, "Failed to submit review. Try again."),
+        message,
         "error",
       );
     },

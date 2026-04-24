@@ -50,7 +50,7 @@ interface Job {
 
 type JobEngagementState = {
   proposalJobIds: string[];
-  contractJobIds: string[];
+  activeContractJobIds: string[]; // jobs with active (non-completed, non-cancelled) contracts only
 };
 
 interface FilterState {
@@ -276,7 +276,7 @@ function JobBoard() {
 
   const listedJobIdsKey = useMemo(() => listedJobIds.join('|'), [listedJobIds]);
 
-  const { data: jobEngagementState } = useQuery({
+  const { data: jobEngagementState, isFetching: isEngagementFetching } = useQuery({
     queryKey: ['job-board-engagement-state', user?.id, listedJobIdsKey],
     enabled: isFreelancerViewer && listedJobIds.length > 0,
     staleTime: 0,
@@ -309,11 +309,13 @@ function JobBoard() {
           .filter((jobId): jobId is string => typeof jobId === 'string' && jobId.length > 0),
       ));
 
-      const contractJobIds = Array.from(new Set(
+      const activeContractJobIds = Array.from(new Set(
         ((contractResult.data ?? []) as Array<{ job_id: string | null; status: string | null }>)
           .filter((row) => {
-            const normalizedStatus = String(row.status || '').toLowerCase();
-            return normalizedStatus !== 'cancelled' && normalizedStatus !== 'canceled';
+            const s = String(row.status || '').toLowerCase();
+            // Only hide jobs where an ACTIVE contract exists.
+            // Completed / cancelled contracts allow the job to still be visible.
+            return s === 'active' || s === 'in_progress' || s === 'pending_payment';
           })
           .map((row) => row.job_id)
           .filter((jobId): jobId is string => typeof jobId === 'string' && jobId.length > 0),
@@ -321,23 +323,38 @@ function JobBoard() {
 
       return {
         proposalJobIds,
-        contractJobIds,
+        activeContractJobIds,
       };
     },
   });
 
   const proposalJobIds = useMemo(() => new Set(jobEngagementState?.proposalJobIds ?? []), [jobEngagementState]);
-  const contractJobIds = useMemo(() => new Set(jobEngagementState?.contractJobIds ?? []), [jobEngagementState]);
+  const activeContractJobIds = useMemo(() => new Set(jobEngagementState?.activeContractJobIds ?? []), [jobEngagementState]);
 
   const visibleJobs = useMemo(() => {
     if (!isFreelancerViewer) return jobs;
-    // Find Work should only show opportunities the freelancer can still apply to.
-    return jobs.filter((job) => !contractJobIds.has(job.id) && !proposalJobIds.has(job.id));
-  }, [contractJobIds, isFreelancerViewer, jobs, proposalJobIds]);
+    // Hide only jobs where the freelancer has an ACTIVE contract (they're already hired).
+    // Jobs with pending proposals remain visible with an 'Applied' badge.
+    // Jobs with completed/cancelled contracts are shown again (can re-apply or browse).
+    return jobs.filter((job) => !activeContractJobIds.has(job.id));
+  }, [activeContractJobIds, isFreelancerViewer, jobs]);
 
   const totalJobsCount = jobsPages?.pages?.[0]?.count ?? jobs.length;
   const displayedCount = isFreelancerViewer ? visibleJobs.length : totalJobsCount;
-  const isLoading = isFetching && !isFetchingNextPage;
+
+  // isEngagementReady: true when we have the data we need to safely filter jobs.
+  // We gate on jobEngagementState !== undefined (data exists), NOT on !isFetching.
+  // Reason: React Query takes 1 render to set isFetching=true after a query becomes enabled,
+  // creating a window where isFetching=false but data is still undefined — causing a flash.
+  const isEngagementReady =
+    !isFreelancerViewer ||              // clients never need engagement state
+    listedJobIds.length === 0 ||        // no jobs loaded yet, nothing to filter
+    jobEngagementState !== undefined;   // state is loaded (even if stale — refetch is bg)
+
+  // Show skeleton while the primary jobs query is running OR engagement state is not ready yet.
+  const showSkeleton = (isFetching && !isFetchingNextPage) || !isEngagementReady;
+  // Legacy alias used in a few conditions below
+  const isLoading = showSkeleton;
   const selectedSortOption =
     SORT_OPTIONS.find((option) => option.value === filters.sortBy) || SORT_OPTIONS[0];
 
@@ -523,7 +540,13 @@ function JobBoard() {
                               </span>
                             </div>
                             {count > 0 && (
-                              <span className="text-[10px] text-on-surface-subtle tabular-nums">{count}</span>
+                              <span className={`ml-auto shrink-0 min-w-[20px] text-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold tabular-nums transition-colors ${
+                                checked
+                                  ? 'text-white'
+                                  : 'text-on-surface-subtle bg-[var(--color-bg-muted)]'
+                              }`}
+                              style={checked ? { background: 'color-mix(in srgb, var(--workspace-primary,#8b5cf6) 25%, transparent)' } : {}}
+                              >{count}</span>
                             )}
                           </label>
                         );
@@ -652,14 +675,16 @@ function JobBoard() {
               </div>
             </div>
 
-            {/* Count */}
-            <p className="text-xs text-on-surface-subtle flex items-center gap-1.5">
-              <span className="font-semibold text-on-surface tabular-nums">{displayedCount}</span>
-              <span>{tx('pages.jobBoard.filters.showing', { count: displayedCount }, 'jobs')}</span>
-            </p>
+            {/* Count — hidden while loading to avoid flickering numbers */}
+            {!showSkeleton && (
+              <p className="text-xs text-on-surface-subtle flex items-center gap-1.5">
+                <span className="font-semibold text-on-surface tabular-nums">{displayedCount}</span>
+                <span>{tx('pages.jobBoard.filters.showing', { count: displayedCount }, 'jobs')}</span>
+              </p>
+            )}
 
-            {/* Loading skeletons */}
-            {isLoading && jobs.length === 0 && (
+            {/* Loading skeletons — show while jobs OR engagement state are loading */}
+            {showSkeleton && (
               <div className="flex flex-col gap-3">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="rounded-2xl border border-surface surface-card p-6 animate-pulse">
@@ -679,15 +704,15 @@ function JobBoard() {
               </div>
             )}
 
-            {/* Empty */}
-            {!isLoading && !error && visibleJobs.length === 0 && (
+            {/* Empty state — only shown once everything is fully loaded */}
+            {!showSkeleton && !error && isEngagementReady && visibleJobs.length === 0 && (
               <div className="rounded-2xl border border-surface surface-card p-10 text-center">
                 <p className="text-on-surface-muted">{tx('pages.jobBoard.empty.filtered', undefined, 'No jobs found for the selected filters.')}</p>
               </div>
             )}
 
-            {/* Job cards */}
-            {!error && visibleJobs.length > 0 && (
+            {/* Job cards — render only once engagement state is ready for freelancers */}
+            {!error && isEngagementReady && visibleJobs.length > 0 && (
               <div className="flex flex-col gap-3">
                 {visibleJobs.map((job) => {
                   const isSaved = savedJobIds.has(job.id);
@@ -785,6 +810,12 @@ function JobBoard() {
 
                         {/* Right actions */}
                         <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
+                          {/* Applied badge */}
+                          {isAlreadyApplied && (
+                            <span className="inline-flex items-center gap-1 rounded-lg border border-violet-500/25 bg-violet-500/10 px-2 py-1 text-[10px] font-semibold text-violet-300">
+                              ✓ Applied
+                            </span>
+                          )}
                           <div className="flex items-center gap-1 text-xs text-on-surface-subtle">
                             <Star className="w-3 h-3 text-amber-500 fill-amber-400/60" />
                             <span>{clientName} ({ratingValue})</span>
