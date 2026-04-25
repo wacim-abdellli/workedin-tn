@@ -11,6 +11,7 @@ export interface ProposalAttachment {
     name: string;
     size: string;
     url?: string;
+    isImage?: boolean;
 }
 
 /** Freelancer info within a proposal */

@@ -6,6 +6,7 @@ export const ROUTES = {
   jobs: '/jobs',
   jobsNew: '/jobs/new',
   saved: '/saved',
+  myContracts: '/contracts',
   myProposals: '/my-proposals',
   clientJobs: '/client/jobs',
   messages: '/messages',
