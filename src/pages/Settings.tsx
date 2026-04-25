@@ -33,6 +33,7 @@ import {
   getPaymentMethodLabel,
   getPaymentMethodDetails,
 } from '@/services/payments';
+import { PaymentMethodCard } from '@/components/payment/PaymentMethodCard';
 
 type SettingsTab = 'account' | 'notifications' | 'payment' | 'privacy';
 type NotificationKey = 'new_job' | 'messages' | 'payments' | 'reviews' | 'marketing';
@@ -283,15 +284,20 @@ function NotificationSettingsTab({
   );
 }
 
+/* -------------------------------------------------------------------
+   Inline brand marks - never break, always sharp, zero deps */
 function PaymentSettingsTab({
   userId,
   accentColor,
   showToast,
+  activeMode,
 }: {
   userId?: string;
   accentColor: string;
   showToast: (message: string, variant?: 'success' | 'error' | 'info') => void;
+  activeMode: 'freelancer' | 'client';
 }) {
+  const isFreelancer = activeMode === 'freelancer';
   const { tx } = useTranslation();
   const navigate = useNavigate();
   const [methods, setMethods] = useState<PaymentMethodRow[]>([]);
@@ -299,8 +305,51 @@ function PaymentSettingsTab({
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ iban: '', bankName: '', accountName: '', label: '' });
-  const resetForm = () => setForm({ iban: '', bankName: '', accountName: '', label: '' });
-  const formIsValid = form.iban.trim().length > 0;
+  const [touched, setTouched] = useState({ iban: false, accountName: false });
+
+  const resetForm = () => {
+    setForm({ iban: '', bankName: '', accountName: '', label: '' });
+    setTouched({ iban: false, accountName: false });
+  };
+
+  // Tunisian IBAN validation
+  // Format: TN + 2 check digits + 20 alphanumeric chars = 24 chars total
+  const validateIBAN = (raw: string): { valid: boolean; error?: string } => {
+    const clean = raw.replace(/\s/g, '').toUpperCase();
+    if (!clean) return { valid: false, error: 'IBAN is required' };
+    if (!clean.startsWith('TN')) return { valid: false, error: 'Tunisian IBANs must start with TN' };
+    if (clean.length < 24) return { valid: false, error: `Too short - ${24 - clean.length} character(s) missing` };
+    if (clean.length > 24) return { valid: false, error: `Too long - ${clean.length - 24} extra character(s)` };
+    if (!/^TN\d{2}[A-Z0-9]{20}$/.test(clean)) return { valid: false, error: 'Invalid IBAN format (TN + 2 digits + 20 alphanumeric)' };
+    // Mod-97 checksum
+    const rearranged = clean.slice(4) + clean.slice(0, 4);
+    const numeric = rearranged.split('').map((c) => c >= 'A' ? String(c.charCodeAt(0) - 55) : c).join('');
+    let remainder = 0;
+    for (const chunk of numeric.match(/.{1,9}/g) ?? []) {
+      remainder = Number(`${remainder}${chunk}`) % 97;
+    }
+    if (remainder !== 1) return { valid: false, error: 'Invalid IBAN - checksum failed' };
+    return { valid: true };
+  };
+
+  const validateName = (raw: string): { valid: boolean; error?: string } => {
+    const v = raw.trim();
+    if (!v) return { valid: false, error: 'Account holder name is required' };
+    if (v.length < 3) return { valid: false, error: 'Name must be at least 3 characters' };
+    if (!/^[\p{L}\s'.-]+$/u.test(v)) return { valid: false, error: 'Name should only contain letters' };
+    return { valid: true };
+  };
+
+  const ibanResult = validateIBAN(form.iban);
+  const nameResult = validateName(form.accountName);
+  const formIsValid = ibanResult.valid && nameResult.valid;
+
+  // Auto-format IBAN: uppercase, group by 4 chars
+  const handleIBANChange = (raw: string) => {
+    const clean = raw.replace(/\s/g, '').toUpperCase().slice(0, 24);
+    const formatted = clean.match(/.{1,4}/g)?.join(' ') ?? clean;
+    setForm((p) => ({ ...p, iban: formatted }));
+  };
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
@@ -318,6 +367,7 @@ function PaymentSettingsTab({
   }, [userId]);
 
   const addMethod = async () => {
+    setTouched({ iban: true, accountName: true });
     if (!userId || !formIsValid) return;
     setSaving(true);
     try {
@@ -325,7 +375,7 @@ function PaymentSettingsTab({
         type: 'bank_transfer',
         is_default: methods.length === 0,
         details: {
-          iban: form.iban.trim(),
+          iban: form.iban.replace(/\s/g, ''),   // store without spaces
           bank_name: form.bankName.trim(),
           bank_account_name: form.accountName.trim(),
           label: form.label.trim(),
@@ -363,133 +413,286 @@ function PaymentSettingsTab({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
 
-      {/* ── Section 1: Payment Gateway ─────────────────────────── */}
-      <div className="surface-card border rounded-2xl p-6 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-        <h2 className="text-xl font-bold text-on-surface mb-1">Payment Gateway</h2>
-        <p className="text-sm text-on-surface-muted mb-5">How clients fund contracts on WorkedIn.</p>
-
-        {/* Dhmad — live */}
-        <div className="rounded-xl border p-4 flex items-center gap-4" style={{ borderColor: 'color-mix(in srgb,#8B5CF6 35%,var(--color-border-default))', background: 'color-mix(in srgb,#8B5CF6 6%,transparent)' }}>
-          {/* Dhmad logo */}
-          <div className="w-20 h-12 rounded-xl overflow-hidden shrink-0 flex items-center justify-center p-1.5 bg-white">
-            <img src="/logos/dhmad.svg" alt="Dhmad" className="w-full h-full object-contain" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-semibold text-on-surface">Dhmad Escrow</p>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-emerald-500/10 text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live
-              </span>
-            </div>
-            <p className="text-xs text-on-surface-muted mt-0.5">Secure escrow — funds held until work is approved. Used for all contracts.</p>
-          </div>
-          <button type="button" onClick={() => navigate('/wallet')} className="flex items-center gap-1.5 shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg border border-surface hover:bg-surface transition-colors text-on-surface-muted hover:text-on-surface">
-            Wallet <ExternalLink className="w-3 h-3" />
-          </button>
+      {/* Section 1: Payment Providers (shared, different copy per mode) */}
+      <div className="surface-card border rounded-2xl overflow-hidden">
+        <div className="px-6 pt-5 pb-4 border-b border-surface">
+          <h2 className="text-base font-bold text-on-surface tracking-tight">
+            {isFreelancer ? 'Payment Providers' : 'Payment Methods'}
+          </h2>
+          <p className="text-xs text-on-surface-muted mt-0.5">
+            {isFreelancer
+              ? 'How your clients fund contracts - your earnings go through escrow.'
+              : 'How you fund contracts for your projects.'}
+          </p>
         </div>
-
-        {/* Coming soon gateways */}
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            { id: 'flouci', logo: '/logos/flouci.svg', label: 'Flouci', desc: 'Mobile wallet · 250K+ users' },
-            { id: 'd17', logo: '/logos/d17.svg', label: 'D17 — DigiPostBank', desc: 'E-dinar · Government-backed' },
-          ].map((g) => (
-            <div key={g.id} className="rounded-xl border border-dashed border-surface p-3 flex items-center gap-3 opacity-60">
-              {/* Logo */}
-              <div className="w-20 h-11 rounded-lg overflow-hidden shrink-0 flex items-center justify-center p-1.5 bg-white">
-                <img src={g.logo} alt={g.label} className="w-full h-full object-contain" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-semibold text-on-surface-muted">{g.label}</p>
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold uppercase rounded-full bg-amber-500/10 text-amber-500">
-                    <Clock className="w-2.5 h-2.5" />Soon
-                  </span>
-                </div>
-                <p className="text-[11px] text-on-surface-subtle">{g.desc}</p>
-              </div>
-            </div>
-          ))}
+        <div className="p-4 space-y-3">
+          <PaymentMethodCard
+            id="dhmad"
+            name="Dhmad Escrow"
+            description={isFreelancer
+              ? 'Secure escrow - your client funds are held safely until you deliver.'
+              : 'Secure escrow - your funds are held safely until the work is approved.'}
+            status="live"
+            active
+            onWallet={() => navigate('/wallet')}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <PaymentMethodCard
+              id="flouci"
+              name="Flouci"
+              description={isFreelancer
+                ? 'Get paid via Flouci mobile wallet. Coming soon.'
+                : 'Fund contracts via Flouci. Coming soon.'}
+              status="soon"
+              disabled
+            />
+            <PaymentMethodCard
+              id="d17"
+              name="D17"
+              description={isFreelancer
+                ? 'Receive earnings via La Poste e-Dinar. Coming soon.'
+                : 'Fund contracts via La Poste D17. Coming soon.'}
+              status="soon"
+              disabled
+            />
+          </div>
         </div>
       </div>
 
-      {/* ── Section 2: Payout methods ──────────────────────────────── */}
-      <div className="surface-card border rounded-2xl p-6 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-        <div className="flex items-start justify-between mb-2">
-          <div>
-            <h2 className="text-xl font-bold text-on-surface">Payout Methods</h2>
-            <p className="text-sm text-on-surface-muted mt-0.5">Where you receive your earnings when you withdraw from your wallet.</p>
-          </div>
-          {!adding && (
-            <button type="button" onClick={() => setAdding(true)} className="inline-flex items-center gap-1.5 text-white px-3 py-2 rounded-lg text-sm font-medium shrink-0" style={{ background: accentColor }}>
-              <Plus className="w-4 h-4" />Add
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl mb-5 border border-amber-500/15 bg-amber-500/5">
-          <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-300/80 leading-relaxed">
-            Bank transfer (IBAN) is the only available payout channel right now. D17 and Flouci payouts are coming soon.
-          </p>
-        </div>
-
-        {adding && (
-          <div className="mb-5 border border-surface rounded-xl p-4 surface-sunken space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <input value={form.iban} onChange={(e) => setForm((p) => ({ ...p, iban: e.target.value }))} placeholder="IBAN — TN59 …" className="sm:col-span-2 bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none text-sm" />
-              <input value={form.bankName} onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))} placeholder="Bank name" className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none text-sm" />
+      {/* Section 2a: FREELANCER - Payout Accounts */}
+      {isFreelancer && (
+        <div className="surface-card border rounded-2xl overflow-hidden">
+          <div className="px-6 pt-5 pb-4 border-b border-surface flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-base font-bold text-on-surface tracking-tight">Payout Accounts</h2>
+              <p className="text-xs text-on-surface-muted mt-0.5">Where your earnings land when you withdraw.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input value={form.accountName} onChange={(e) => setForm((p) => ({ ...p, accountName: e.target.value }))} placeholder="Account holder name" className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none text-sm" />
-              <input value={form.label} onChange={(e) => setForm((p) => ({ ...p, label: e.target.value }))} placeholder="Friendly label (optional)" className="bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-3 outline-none text-sm" />
-            </div>
-            <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => { setAdding(false); resetForm(); }} className="px-4 py-2 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface text-sm">Cancel</button>
-              <button type="button" onClick={() => void addMethod()} disabled={saving || !formIsValid} className="px-4 py-2 rounded-lg text-white text-sm disabled:opacity-50" style={{ background: accentColor }}>{saving ? 'Saving…' : 'Save'}</button>
-            </div>
+            {!adding && (
+              <button
+                type="button"
+                onClick={() => setAdding(true)}
+                className="inline-flex items-center gap-1.5 text-white text-xs font-semibold px-3 py-2 rounded-lg shrink-0 transition-opacity hover:opacity-90"
+                style={{ background: accentColor }}
+              >
+                <Plus className="w-3.5 h-3.5" />Add account
+              </button>
+            )}
           </div>
-        )}
 
-        {loading ? (
-          <div className="py-10 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin" style={{ color: accentColor }} /></div>
-        ) : methods.length === 0 ? (
-          <div className="text-center py-12 border border-dashed border-surface rounded-xl">
-            <Shield className="w-10 h-10 text-on-surface-subtle mx-auto mb-3" />
-            <p className="text-sm font-semibold text-on-surface">No payout method yet</p>
-            <p className="text-xs text-on-surface-muted mt-1">Add a bank account to receive your earnings.</p>
-          </div>
-        ) : (
-          <div className="space-y-2.5">
-            {methods.map((m) => (
-              <div key={m.id} className="flex items-center gap-3 p-4 rounded-xl border surface-sunken" style={{ borderColor: m.is_default ? `color-mix(in srgb,${accentColor} 50%,var(--color-border-default))` : 'var(--color-border-default)' }}>
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: `color-mix(in srgb,${accentColor} 10%,transparent)` }}>
-                  <CreditCard className="w-4 h-4" style={{ color: accentColor }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-on-surface">{getPaymentMethodLabel(m.type, m.label)}</p>
-                  <p className="text-xs text-on-surface-muted font-mono mt-0.5">{getPaymentMethodDetails(m) || '—'}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {m.is_default ? (
-                    <span className="text-[10px] px-2 py-1 rounded-full font-semibold" style={{ background: `color-mix(in srgb,${accentColor} 14%,transparent)`, color: accentColor }}>Default</span>
-                  ) : (
-                    <button type="button" onClick={() => void setDefault(m.id)} className="text-[11px] px-2.5 py-1 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface">Set default</button>
+          <div className="p-4 space-y-3">
+            <div className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl border border-amber-500/15 bg-amber-500/5">
+              <Info className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-amber-300/80 leading-relaxed">
+                Bank transfer (IBAN) is live now. Flouci and D17 payout options coming soon.
+              </p>
+            </div>
+
+            {adding && (
+              <div className="rounded-xl border border-surface p-4 space-y-3 surface-sunken">
+                <p className="text-xs font-semibold text-on-surface mb-1">New bank account</p>
+
+                <div className="space-y-1">
+                  <div className="relative">
+                    <input
+                      value={form.iban}
+                      onChange={(e) => handleIBANChange(e.target.value)}
+                      onBlur={() => setTouched((p) => ({ ...p, iban: true }))}
+                      placeholder="TN59 XXXX XXXX XXXX XXXX XXXX"
+                      maxLength={29}
+                      className="w-full bg-[var(--input-bg)] border rounded-lg text-[var(--text-primary)] px-3 py-2.5 outline-none text-sm font-mono tracking-wider pr-16 transition-colors"
+                      style={{
+                        borderColor: touched.iban
+                          ? ibanResult.valid ? '#22c55e' : '#ef4444'
+                          : 'var(--input-border)',
+                      }}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-on-surface-muted">
+                      {form.iban.replace(/\s/g, '').length}/24
+                    </span>
+                  </div>
+                  {touched.iban && !ibanResult.valid && (
+                    <p className="text-[11px] text-red-400 flex items-center gap-1">
+                      <span className="w-3 h-3 inline-flex items-center justify-center rounded-full bg-red-500/20 shrink-0" style={{ fontSize: '9px' }}>!</span>
+                      {ibanResult.error}
+                    </p>
                   )}
-                  <button type="button" onClick={() => void removeMethod(m.id)} className="p-1.5 rounded-lg border border-surface text-on-surface-muted hover:text-red-500" aria-label="Remove">
-                    <Trash2 className="w-3.5 h-3.5" />
+                  {touched.iban && ibanResult.valid && (
+                    <p className="text-[11px] text-emerald-400 flex items-center gap-1">
+                      <span className="w-3 h-3 inline-flex items-center justify-center rounded-full bg-emerald-500/20 shrink-0" style={{ fontSize: '9px' }}>OK</span>
+                      Valid Tunisian IBAN
+                    </p>
+                  )}
+                </div>
+
+                <input
+                  value={form.bankName}
+                  onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))}
+                  placeholder="Bank name (e.g. STB, BNA, BIAT)"
+                  className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] px-3 py-2.5 outline-none text-sm placeholder:text-[var(--text-muted)] transition-colors"
+                />
+
+                <div className="space-y-1">
+                  <input
+                    value={form.accountName}
+                    onChange={(e) => setForm((p) => ({ ...p, accountName: e.target.value }))}
+                    onBlur={() => setTouched((p) => ({ ...p, accountName: true }))}
+                    placeholder="Account holder full name *"
+                    className="w-full bg-[var(--input-bg)] border rounded-lg text-[var(--text-primary)] px-3 py-2.5 outline-none text-sm placeholder:text-[var(--text-muted)] transition-colors"
+                    style={{
+                      borderColor: touched.accountName
+                        ? nameResult.valid ? '#22c55e' : '#ef4444'
+                        : 'var(--input-border)',
+                    }}
+                  />
+                  {touched.accountName && !nameResult.valid && (
+                    <p className="text-[11px] text-red-400 flex items-center gap-1">
+                      <span className="w-3 h-3 inline-flex items-center justify-center rounded-full bg-red-500/20 shrink-0" style={{ fontSize: '9px' }}>!</span>
+                      {nameResult.error}
+                    </p>
+                  )}
+                </div>
+
+                <input
+                  value={form.label}
+                  onChange={(e) => setForm((p) => ({ ...p, label: e.target.value }))}
+                  placeholder="Friendly label (optional, e.g. My STB account)"
+                  className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] px-3 py-2.5 outline-none text-sm placeholder:text-[var(--text-muted)] transition-colors"
+                />
+
+                <div className="flex justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setAdding(false); resetForm(); }}
+                    className="px-3 py-2 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface text-xs font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void addMethod()}
+                    disabled={saving || !formIsValid}
+                    className="px-4 py-2 rounded-lg text-white text-xs font-semibold disabled:opacity-40 transition-opacity"
+                    style={{ background: accentColor }}
+                  >
+                    {saving ? 'Saving...' : 'Save account'}
                   </button>
                 </div>
               </div>
-            ))}
+            )}
+
+            {loading ? (
+              <div className="py-10 flex items-center justify-center">
+                <Loader2 className="w-5 h-5 animate-spin" style={{ color: accentColor }} />
+              </div>
+            ) : methods.length === 0 ? (
+              <div className="text-center py-10 rounded-xl border border-dashed border-surface">
+                <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: `color-mix(in srgb,${accentColor} 10%,transparent)` }}>
+                  <Shield className="w-5 h-5" style={{ color: accentColor }} />
+                </div>
+                <p className="text-sm font-semibold text-on-surface">No payout account yet</p>
+                <p className="text-xs text-on-surface-muted mt-1">Add a bank account to receive your earnings.</p>
+                <button
+                  type="button"
+                  onClick={() => setAdding(true)}
+                  className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg text-white"
+                  style={{ background: accentColor }}
+                >
+                  <Plus className="w-3.5 h-3.5" />Add bank account
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {methods.map((m) => (
+                  <PaymentMethodCard
+                    key={m.id}
+                    id="bank"
+                    name={getPaymentMethodLabel(m.type, m.label)}
+                    description={getPaymentMethodDetails(m) || 'No details'}
+                    status={m.is_default ? 'default' : undefined}
+                    active={m.is_default}
+                    onDelete={() => void removeMethod(m.id)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Section 2b: FREELANCER - Wallet Shortcut */}
+      {isFreelancer && (
+        <div className="surface-card border rounded-2xl overflow-hidden">
+          <div className="px-6 pt-5 pb-4 border-b border-surface">
+            <h2 className="text-base font-bold text-on-surface tracking-tight">Your Wallet</h2>
+            <p className="text-xs text-on-surface-muted mt-0.5">View your escrow balance and withdraw earnings.</p>
+          </div>
+          <div className="p-4">
+            <button
+              type="button"
+              onClick={() => navigate('/wallet')}
+              className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl border border-surface hover:border-violet-500/30 bg-white/[0.02] hover:bg-white/[0.04] transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'color-mix(in srgb,#8B5CF6 12%,transparent)' }}>
+                  <Wallet className="w-4 h-4 text-violet-400" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-on-surface">Open Wallet Dashboard</p>
+                  <p className="text-xs text-on-surface-muted">Balance, transactions, withdrawals</p>
+                </div>
+              </div>
+              <ExternalLink className="w-4 h-4 text-on-surface-muted group-hover:text-on-surface transition-colors" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Section 2c: CLIENT - Billing and Top-Up (Coming Soon) */}
+      {!isFreelancer && (
+        <div className="surface-card border rounded-2xl overflow-hidden">
+          <div className="px-6 pt-5 pb-4 border-b border-surface flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-on-surface tracking-tight">Billing Options</h2>
+              <p className="text-xs text-on-surface-muted mt-0.5">Pre-fund your escrow balance for faster checkout.</p>
+            </div>
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 ring-1 ring-amber-400/20">
+              <Clock className="w-2.5 h-2.5" />SOON
+            </span>
+          </div>
+          <div className="p-4 space-y-3">
+            <div className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl border border-blue-500/15 bg-blue-500/5">
+              <Info className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-blue-300/80 leading-relaxed">
+                Today, contracts are funded directly during checkout via Dhmad Escrow. No pre-loading needed - just post a job and pay when you hire.
+              </p>
+            </div>
+            <div className="space-y-2 opacity-55">
+              {[
+                { icon: CreditCard, label: 'Credit / Debit Card', sub: 'Visa, Mastercard, CIB' },
+                { icon: Wallet, label: 'Flouci Top-Up', sub: 'Fund via Flouci mobile wallet' },
+                { icon: Building2, label: 'D17 (La Poste)', sub: 'Fund via e-Dinar account' },
+              ].map(({ icon: Icon, label, sub }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-3 p-3.5 rounded-xl border border-surface cursor-not-allowed"
+                >
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `color-mix(in srgb,${accentColor} 10%,transparent)` }}>
+                    <Icon className="w-4 h-4" style={{ color: accentColor }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-on-surface">{label}</p>
+                    <p className="text-xs text-on-surface-muted">{sub}</p>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 shrink-0">SOON</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
@@ -654,7 +857,7 @@ export default function Settings() {
   const navItems: Array<{ id: SettingsTab; label: string; icon: typeof SettingsIcon }> = [
     { id: 'account', label: 'Account', icon: SettingsIcon },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'payment', label: 'Payment', icon: CreditCard },
+    { id: 'payment', label: activeMode === 'freelancer' ? 'Earnings' : 'Billing', icon: CreditCard },
     { id: 'privacy', label: 'Privacy', icon: Shield },
   ];
 
@@ -705,7 +908,14 @@ export default function Settings() {
     }
 
     if (activeTab === 'payment') {
-      return <PaymentSettingsTab userId={user?.id} accentColor={accentColor} showToast={showToast} />;
+      return (
+        <PaymentSettingsTab
+          userId={user?.id}
+          accentColor={accentColor}
+          showToast={showToast}
+          activeMode={activeMode === 'freelancer' ? 'freelancer' : 'client'}
+        />
+      );
     }
 
     return (

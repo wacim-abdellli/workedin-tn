@@ -16,7 +16,11 @@
   <rect x="4" y="4" width="56" height="56" rx="18" fill="#140F24"/>
   <path d="M10 42C20 17 36 7 58 11v35c-8 12-25 16-48-4Z" fill="url(#dhmad-bg)" opacity=".95"/>
   <circle cx="19" cy="18" r="7" fill="#FFFFFF" opacity=".16"/>
-  <path d="M32 13 47 19v12c0 10-6 18-15 21-9-3-15-11-15-21V19l15-6Z" fill="url(#dhmad-shield)" filter="url(#dhmad-shadow)"/>
+  <path
+    d="M32 13 47 19v12c0 10-6 18-15 21-9-3-15-11-15-21V19l15-6Z"
+    fill="url(#dhmad-shield)"
+    filter="url(#dhmad-shadow)"
+  />
   <path d="M25 32.5 30.2 38 40.5 26.5" fill="none" stroke="#6D28D9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M32 18v27" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round" opacity=".22"/>
 </svg>

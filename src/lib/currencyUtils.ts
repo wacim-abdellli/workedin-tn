@@ -54,11 +54,11 @@ export function millimesToTnd(millimes: number): number {
     return millimes / 1000;
 }
 
-export function calculatePlatformFee(amount: number, feePercentage = 0.10): number {
+export function calculatePlatformFee(amount: number, feePercentage = 0.05): number {
     return Number((amount * feePercentage).toFixed(3));
 }
 
-export function calculateTotalWithFee(amount: number, feePercentage = 0.10): {
+export function calculateTotalWithFee(amount: number, feePercentage = 0.05): {
     originalAmount: number;
     feeAmount: number;
     totalAmount: number;
@@ -71,7 +71,7 @@ export function calculateTotalWithFee(amount: number, feePercentage = 0.10): {
     };
 }
 
-export function calculateNetAfterFee(amount: number, feePercentage = 0.10): number {
+export function calculateNetAfterFee(amount: number, feePercentage = 0.05): number {
     const fee = calculatePlatformFee(amount, feePercentage);
     return Number((amount - fee).toFixed(3));
 }

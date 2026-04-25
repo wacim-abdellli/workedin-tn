@@ -67,7 +67,7 @@ interface ProposalDetailPaneProps {
     isShortlisted?: boolean;
 }
 
-const SERVICE_FEE_RATE = 0.10;
+const SERVICE_FEE_RATE = 0.05;
 
 function Avatar({ name, url, online, size = 'lg' }: { name: string; url: string | null; online: boolean; size?: 'sm' | 'md' | 'lg' }) {
     const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -142,6 +142,7 @@ export default function ProposalDetailPane({
     const [resolvedSuccessRate, setResolvedSuccessRate] = useState(0);
     const [portfolioItems, setPortfolioItems] = useState<PortfolioPreviewItem[]>([]);
     const [reviewItems, setReviewItems] = useState<ReviewPreviewItem[]>([]);
+    const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
     useEffect(() => {
         setActiveTab('proposal');
@@ -446,21 +447,37 @@ export default function ProposalDetailPane({
                                     {tx('jobProposals.modal.attachments', undefined, 'Attachments')}
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                    {proposal.attachments.map((file, idx) => (
-                                        <div key={idx}
-                                            className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer group transition-all hover:brightness-95"
-                                            style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
-                                            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-                                                style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}>
-                                                <FileText className="w-4 h-4" style={{ color: 'var(--workspace-primary-mid)' }} />
+                                    {proposal.attachments.map((file, idx) => {
+                                        const isImg = file.isImage || /\.(jpg|jpeg|png|webp|gif|bmp|avif)(\?.*)?$/i.test(file.name);
+                                        return (
+                                            <div key={idx}
+                                                onClick={() => {
+                                                    if (isImg && file.url) {
+                                                        setLightboxImage(file.url);
+                                                    } else if (file.url) {
+                                                        window.open(file.url, '_blank');
+                                                    }
+                                                }}
+                                                className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer group transition-all hover:brightness-95"
+                                                style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
+                                                {isImg && file.url ? (
+                                                    <div className="h-9 w-9 rounded-xl shrink-0 overflow-hidden border border-[var(--border)]">
+                                                        <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
+                                                        style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}>
+                                                        <FileText className="w-4 h-4" style={{ color: 'var(--workspace-primary-mid)' }} />
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{file.name || 'Attachment'}</p>
+                                                    {file.size && <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{file.size}</p>}
+                                                </div>
+                                                <Download className="w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: 'var(--text-muted)' }} />
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{file.name}</p>
-                                                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{file.size}</p>
-                                            </div>
-                                            <Download className="w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: 'var(--text-muted)' }} />
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -725,6 +742,25 @@ export default function ProposalDetailPane({
                     </div>
                 )}
             </div>
+
+            {lightboxImage && (
+                <div 
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
+                    onClick={() => setLightboxImage(null)}
+                >
+                    <button 
+                        onClick={() => setLightboxImage(null)}
+                        className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+                    <img 
+                        src={lightboxImage} 
+                        alt="Attachment Preview" 
+                        className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" 
+                    />
+                </div>
+            )}
         </div>
     );
 }

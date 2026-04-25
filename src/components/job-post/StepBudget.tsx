@@ -31,7 +31,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
     const today = new Date().toISOString().split('T')[0];
 
     const fieldClass =
-        'w-full rounded-xl border border-[#2d2d2d] bg-[#0f0f0f] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-[#707070] focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/25';
+        'w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3.5 text-sm text-white caret-orange-300 outline-none transition-all duration-300 placeholder:text-gray-400 hover:border-white/20 hover:bg-white/[0.08] focus:bg-white/[0.1] focus:border-orange-400 focus:ring-4 focus:ring-orange-500/20 shadow-inner backdrop-blur-sm';
 
     const durationOptions = [
         {
@@ -84,9 +84,9 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
 
             <section className="grid gap-3 sm:grid-cols-2">
                 <label
-                    className={`cursor-pointer rounded-xl border p-4 transition ${jobType === 'fixed_price'
-                        ? 'border-orange-500/45 bg-orange-500/10'
-                        : 'border-[#2d2d2d] bg-[#101010] hover:border-orange-500/35 hover:bg-orange-500/5'
+                    className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${jobType === 'fixed_price'
+                        ? 'border-orange-500/45 bg-orange-500/10 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.8)]'
+                        : 'border-white/5 bg-white/[0.03] hover:border-orange-500/35 hover:bg-orange-500/5'
                         }`}
                 >
                     <input type="radio" value="fixed_price" {...register('job_type')} className="sr-only" />
@@ -104,9 +104,9 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                 </label>
 
                 <label
-                    className={`cursor-pointer rounded-xl border p-4 transition ${jobType === 'hourly'
-                        ? 'border-orange-500/45 bg-orange-500/10'
-                        : 'border-[#2d2d2d] bg-[#101010] hover:border-orange-500/35 hover:bg-orange-500/5'
+                    className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${jobType === 'hourly'
+                        ? 'border-orange-500/45 bg-orange-500/10 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.8)]'
+                        : 'border-white/5 bg-white/[0.03] hover:border-orange-500/35 hover:bg-orange-500/5'
                         }`}
                 >
                     <input type="radio" value="hourly" {...register('job_type')} className="sr-only" />
@@ -124,7 +124,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                 </label>
             </section>
 
-            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+            <section className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
                 {jobType === 'fixed_price' ? (
                     <div className="space-y-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
@@ -138,7 +138,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                                 <input
                                     type="number"
                                     className={fieldClass}
-                                    placeholder={tx('jobs.new.stepBudget.min', undefined, 'من')}
+                                    placeholder={tx('jobs.new.stepBudget.minPlaceholder', undefined, 'Example: 600')}
                                     {...register('budget_min', { valueAsNumber: true })}
                                 />
                                 {errors.budget_min ? <p className="mt-1 text-xs text-red-400">{errors.budget_min.message as string}</p> : null}
@@ -150,7 +150,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                                 <input
                                     type="number"
                                     className={fieldClass}
-                                    placeholder={tx('jobs.new.stepBudget.max', undefined, 'إلى')}
+                                    placeholder={tx('jobs.new.stepBudget.maxPlaceholder', undefined, 'Example: 1200')}
                                     {...register('budget_max', { valueAsNumber: true })}
                                 />
                                 {errors.budget_max ? <p className="mt-1 text-xs text-red-400">{errors.budget_max.message as string}</p> : null}
@@ -166,7 +166,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                             <input
                                 type="number"
                                 className={fieldClass}
-                                placeholder={tx('jobs.new.stepBudget.hourlyRateExample', undefined, 'مثال: 20')}
+                                placeholder={tx('jobs.new.stepBudget.hourlyRateExample', undefined, 'Example: 35')}
                                 {...register('hourly_rate', { valueAsNumber: true })}
                             />
                             {errors.hourly_rate ? <p className="mt-1 text-xs text-red-400">{errors.hourly_rate.message as string}</p> : null}
@@ -178,7 +178,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                             <input
                                 type="number"
                                 className={fieldClass}
-                                placeholder={tx('jobs.new.stepBudget.weeklyHoursExample', undefined, 'مثال: 20')}
+                                placeholder={tx('jobs.new.stepBudget.weeklyHoursExample', undefined, 'Example: 15')}
                                 {...register('estimated_hours', { valueAsNumber: true })}
                             />
                             {errors.estimated_hours ? <p className="mt-1 text-xs text-red-400">{errors.estimated_hours.message as string}</p> : null}
@@ -188,7 +188,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
             </section>
 
             <section className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
-                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
                     <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Calendar className="h-4 w-4" />
                         {tx('jobs.new.stepBudget.duration', undefined, 'مدة المشروع')}
@@ -199,7 +199,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                             return (
                                 <label
                                     key={option.value}
-                                    className={`cursor-pointer rounded-lg border px-3 py-2.5 text-sm transition ${isSelected
+                                    className={`cursor-pointer rounded-xl border px-3 py-2.5 text-sm transition ${isSelected
                                         ? 'border-orange-500/45 bg-orange-500/10 text-orange-200'
                                         : 'border-[#313131] bg-[#141414] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
                                         }`}
@@ -213,7 +213,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                     {errors.duration ? <p className="mt-2 text-xs text-red-400">{errors.duration.message as string}</p> : null}
                 </div>
 
-                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
                     <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Calendar className="h-4 w-4" />
                         {tx('jobs.new.stepBudget.deadline', undefined, 'الموعد النهائي')}
@@ -223,7 +223,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                 </div>
             </section>
 
-            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+            <section className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
                 <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                     <TrendingUp className="h-4 w-4" />
                     {tx('jobs.new.stepBudget.experienceLevel', undefined, 'مستوى الخبرة المطلوب')}
@@ -235,7 +235,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                         return (
                             <label
                                 key={option.value}
-                                className={`cursor-pointer rounded-lg border px-3 py-2.5 text-sm transition ${isSelected
+                                className={`cursor-pointer rounded-xl border px-3 py-2.5 text-sm transition ${isSelected
                                     ? 'border-orange-500/45 bg-orange-500/10 text-orange-200'
                                     : 'border-[#313131] bg-[#141414] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
                                     }`}

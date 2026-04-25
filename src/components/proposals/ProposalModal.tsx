@@ -43,7 +43,7 @@ const createProposalSchema = (tx: TxFn) => z.object({
         .max(365, tx('proposalModal.validation.deliveryMax', { count: 365 }, 'Maximum delivery is {{count}} days')),
 });
 
-const PLATFORM_FEE_PERCENT = 10;
+const PLATFORM_FEE_PERCENT = 5;
 
 export default function ProposalModal({
     isOpen,

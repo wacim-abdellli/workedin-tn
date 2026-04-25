@@ -74,13 +74,26 @@ const TITLE_TEMPLATES = [
 ] as const;
 
 const DESCRIPTION_SNIPPETS = [
-  'Scope: Build a responsive experience aligned with our brand guidelines.',
-  'Deliverables: Source files, deployment-ready build, and concise documentation.',
-  'Success criteria: Pixel-perfect UI, strong performance, and clean handoff.',
+  {
+    label: 'Scope',
+    text: 'Scope: Build a responsive experience aligned with our brand guidelines.',
+  },
+  {
+    label: 'Deliverables',
+    text: 'Deliverables: Source files, deployment-ready build, and concise documentation.',
+  },
+  {
+    label: 'Success',
+    text: 'Success criteria: Pixel-perfect UI, strong performance, and clean handoff.',
+  },
 ] as const;
 
 const FIELD_CLASS =
-  'bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl focus:border-orange-500 focus:ring-1 focus:ring-orange-500/70 text-[var(--text-primary)] p-3.5 w-full outline-none transition-all placeholder:text-[var(--text-muted)]';
+  'w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3.5 text-[15px] text-white outline-none transition-all duration-300 placeholder:text-gray-400 hover:border-white/20 hover:bg-white/[0.08] focus:bg-white/[0.1] focus:border-orange-400 focus:ring-4 focus:ring-orange-500/20 shadow-inner backdrop-blur-sm';
+
+const LABEL_CLASS = 'text-sm font-semibold text-gray-200 mb-1.5 inline-flex items-center gap-1.5 tracking-wide';
+const CHIP_CLASS =
+  'inline-flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 hover:text-white text-[13px] font-medium px-3.5 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition-all cursor-pointer backdrop-blur-sm';
 
 const JOB_POST_DEFAULT_VALUES: Partial<JobFormData> = {
   job_type: 'fixed_price',
@@ -655,6 +668,7 @@ export default function JobPost() {
       const uploadedUrls: string[] = [];
       if (data.attachments_files && data.attachments_files.length > 0) {
         let hasStorageConfigError = false;
+        let firstUploadErrorMessage = '';
         const failedFiles: string[] = [];
 
         for (const [index, file] of (data.attachments_files as File[]).entries()) {
@@ -667,8 +681,15 @@ export default function JobPost() {
             uploadedUrls.push(await uploadFile('attachments', filePath, file));
           } catch (uploadError) {
             failedFiles.push(file.name);
-            if (uploadError instanceof Error && uploadError.message.toLowerCase().includes('bucket')) {
-              hasStorageConfigError = true;
+            if (uploadError instanceof Error) {
+              if (uploadError.message.toLowerCase().includes('bucket')) {
+                hasStorageConfigError = true;
+              }
+              if (!firstUploadErrorMessage) {
+                firstUploadErrorMessage = uploadError.message;
+              }
+            } else if (!firstUploadErrorMessage) {
+              firstUploadErrorMessage = String(uploadError);
             }
           }
         }
@@ -676,7 +697,7 @@ export default function JobPost() {
         if (failedFiles.length > 0 && uploadedUrls.length === 0) {
           const allFailedMessage = hasStorageConfigError
             ? getStorageConfigErrorMessage('attachments')
-            : tx(
+            : firstUploadErrorMessage || tx(
                 'jobs.new.errors.attachmentsUploadFailed',
                 undefined,
                 'Attachments upload failed. Please retry with smaller or different files.'
@@ -810,14 +831,14 @@ export default function JobPost() {
       <Header />
 
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="min-h-screen w-full page-bg-base p-4 md:p-8 flex justify-center pb-24 md:pb-28">
+        <form onSubmit={methods.handleSubmit(onSubmit)} className="min-h-screen w-full page-bg-base p-4 md:p-8 flex justify-center pb-36 md:pb-40">
           <div className="max-w-4xl w-full flex flex-col gap-6">
             <section className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_18rem] gap-4 items-start">
               <div className="space-y-4">
                 <h1 className="text-3xl font-bold max-w-xl text-on-surface">
                   {tx('jobs.new.heroTitle', undefined, 'Post a project with clarity and attract better-fit freelancers.')}
                 </h1>
-                <p className="text-on-surface-muted max-w-2xl">
+                <p className="text-on-surface-muted max-w-2xl leading-7">
                   {tx(
                     'jobs.new.heroDescription',
                     undefined,
@@ -825,7 +846,7 @@ export default function JobPost() {
                   )}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="surface-card border px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5 text-on-surface-muted">
+                  <span className="surface-card border border-white/15 bg-white/[0.03] px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5 text-on-surface-muted">
                     {autosaveStatus === 'saving' ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
@@ -837,14 +858,14 @@ export default function JobPost() {
                       ? tx('jobs.new.autosave.lastSaved', { time: 'Just now' }, 'Last saved: Just now')
                       : tx('jobs.new.autosave.ready', undefined, 'Autosave ready')}
                   </span>
-                  <span className="surface-card border px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5 text-on-surface-muted">
+                  <span className="surface-card border border-white/15 bg-white/[0.03] px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5 text-on-surface-muted">
                     <ShieldCheck className="w-3.5 h-3.5" />
                     {tx('jobs.new.wizard.metaDraft', undefined, 'Draft-safe flow')}
                   </span>
                 </div>
               </div>
 
-              <aside className="surface-card border rounded-2xl p-5 w-full lg:w-72">
+              <aside className="surface-card border border-white/12 rounded-2xl p-5 w-full lg:w-72 shadow-[0_18px_45px_-36px_rgba(249,115,22,0.65)]">
                 <p className="text-orange-500 text-xs font-semibold tracking-wide">
                   {tx('jobs.new.currentPhase', undefined, 'CURRENT PHASE')}
                 </p>
@@ -856,7 +877,7 @@ export default function JobPost() {
                     <span className="text-on-surface-muted">{tx('jobs.new.progress', undefined, 'Progress')}</span>
                     <span className="text-on-surface">{progress}</span>
                   </div>
-                  <div className="h-1.5 w-full bg-[var(--color-bg-muted)] rounded-full mt-2 overflow-hidden">
+                  <div className="h-2 w-full bg-[var(--color-bg-muted)] rounded-full mt-2 overflow-hidden border border-white/5">
                     <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: progress }} />
                   </div>
                 </div>
@@ -867,7 +888,7 @@ export default function JobPost() {
               </aside>
             </section>
 
-            <section className="surface-card border rounded-2xl p-2">
+            <section className="surface-card border border-white/12 rounded-2xl p-2 shadow-[0_14px_38px_-34px_rgba(249,115,22,0.7)]">
               <ol className="flex items-center justify-between gap-2 overflow-x-auto">
                 {STEP_ITEMS.map((step, index) => {
                   const isCompleted = step.id < currentStep;
@@ -875,11 +896,11 @@ export default function JobPost() {
 
                   return (
                     <li key={step.id} className="flex items-center gap-2 shrink-0">
-                      <div className="flex items-center gap-2 px-2 py-1.5 rounded-xl">
+                      <div className={`flex items-center gap-2 px-2 py-1.5 rounded-xl ${isActive ? 'bg-orange-500/10' : ''}`}>
                         <span
                           className={`w-7 h-7 rounded-full text-xs font-semibold inline-flex items-center justify-center ${
                             isActive || isCompleted
-                              ? 'bg-orange-500 text-white'
+                              ? 'bg-orange-500 text-white shadow-[0_0_18px_rgba(249,115,22,0.35)]'
                               : 'surface-sunken text-on-surface-muted'
                           }`}
                         >
@@ -903,413 +924,416 @@ export default function JobPost() {
             </section>
 
             {currentStep === 1 ? (
-              <section className="surface-card border rounded-2xl p-6 md:p-8 flex flex-col gap-8">
-                <header>
-                  <h2 className="text-xl font-bold">{tx('jobs.new.steps.basics', undefined, 'Job details')}</h2>
-                  <p className="text-gray-400 mt-1">
+              <section className="surface-card border border-white/12 rounded-2xl p-6 md:p-8 flex flex-col gap-8 shadow-sm">
+                <header className="rounded-2xl border border-white/10 bg-gradient-to-r from-white/[0.05] to-white/[0.02] p-5">
+                  <h2 className="text-xl font-bold text-on-surface">{tx('jobs.new.steps.basics', undefined, 'Job details')}</h2>
+                  <p className="text-on-surface-muted mt-1 leading-6 text-sm">
                     {tx('jobs.new.step1.subtitle', undefined, 'Start with a clear title and strong context.')}
                   </p>
                 </header>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    {tx('jobs.new.fields.title', undefined, 'Project title')}
-                  </label>
-                  <input
-                    type="text"
-                    {...methods.register('title')}
-                    name="title"
-                    placeholder={tx(
-                      'jobs.new.fields.titlePlaceholder',
-                      undefined,
-                      'Example: Logo design for a food company'
-                    )}
-                    className={FIELD_CLASS}
-                  />
-                  {methods.formState.errors.title ? (
-                    <p className="text-red-400 text-xs">{methods.formState.errors.title.message as string}</p>
-                  ) : null}
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {TITLE_TEMPLATES.map((template) => (
-                      <button
-                        key={template}
-                        type="button"
-                        onClick={() => applyTitleTemplate(template)}
-                        className="text-xs px-2.5 py-1 rounded-full border border-surface text-on-surface-muted hover:text-on-surface hover:border-orange-500/60 transition-colors"
-                      >
-                        {template}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs tracking-wide text-gray-400 uppercase">
-                      {tx('jobs.new.fields.mainCategory', undefined, 'Main category')}
+                <div className="space-y-8">
+                  <div className="space-y-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 md:p-5 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
+                    <label className={LABEL_CLASS}>
+                      {tx('jobs.new.fields.title', undefined, 'Project title')}
+                      <span className="text-orange-400" aria-hidden="true">*</span>
                     </label>
-                    <select
-                      name="category"
-                      value={selectedCategory}
-                      onChange={(event) => {
-                        methods.setValue('category', event.target.value, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                        methods.setValue('subcategory', '', {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                      className={FIELD_CLASS}
-                    >
-                      <option value="">
-                        {tx('jobs.new.fields.selectCategory', undefined, 'Select category')}
-                      </option>
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
-                    {methods.formState.errors.category ? (
-                      <p className="text-red-400 text-xs">{methods.formState.errors.category.message as string}</p>
-                    ) : null}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs tracking-wide text-gray-400 uppercase">
-                      {tx('jobs.new.fields.subcategory', undefined, 'Subcategory')}
-                    </label>
-                    <select
-                      name="subcategory"
-                      value={selectedSubcategory}
-                      onChange={(event) => {
-                        methods.setValue('subcategory', event.target.value, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                      disabled={!selectedCategory}
-                      className={`${FIELD_CLASS} disabled:opacity-50`}
-                    >
-                      <option value="">
-                        {tx('jobs.new.fields.selectSubcategory', undefined, 'Select subcategory')}
-                      </option>
-                      {availableSubcategories.map((subcategory) => (
-                        <option
-                          key={subcategory.id}
-                          value={subcategory.id}
-                          className="bg-[var(--input-bg)] text-[var(--color-text-primary)]"
-                        >
-                          {subcategory.name}
-                        </option>
-                      ))}
-                    </select>
-                    {methods.formState.errors.subcategory ? (
-                      <p className="text-red-400 text-xs">
-                        {methods.formState.errors.subcategory.message as string}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-xs tracking-wide text-gray-400 uppercase">
-                    {tx('jobs.new.fields.description', undefined, 'Project description')}
-                  </label>
-                  <textarea
-                    rows={6}
-                    maxLength={2000}
-                    {...methods.register('description')}
-                    name="description"
-                    placeholder={tx(
-                      'jobs.new.fields.descriptionPlaceholder',
-                      undefined,
-                      'Describe project details...'
-                    )}
-                    className={`${FIELD_CLASS} resize-y`}
-                  />
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">{description.length} / 2000 characters</span>
-                    {methods.formState.errors.description ? (
-                      <span className="text-red-400 text-xs">
-                        {methods.formState.errors.description.message as string}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {DESCRIPTION_SNIPPETS.map((snippet) => (
-                      <button
-                        key={snippet}
-                        type="button"
-                        onClick={() => addDescriptionSnippet(snippet)}
-                        className="text-xs px-2.5 py-1 rounded-full border border-surface text-on-surface-muted hover:text-on-surface hover:border-orange-500/60 transition-colors"
-                      >
-                        + template
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="bg-orange-500/5 text-orange-400 border border-orange-500/20 rounded-xl p-4 flex gap-3">
-                    <Lightbulb className="w-5 h-5 mt-0.5 shrink-0" />
-                    <ul className="text-sm text-on-surface-muted space-y-1">
-                      <li className="inline-flex items-center gap-2">
-                        <Check className="w-3.5 h-3.5 text-orange-400" />
-                        {tx(
-                          'jobs.new.tips.scope',
-                          undefined,
-                          'Be specific about scope and expected quality.'
-                        )}
-                      </li>
-                      <li className="inline-flex items-center gap-2">
-                        <Check className="w-3.5 h-3.5 text-orange-400" />
-                        {tx(
-                          'jobs.new.tips.success',
-                          undefined,
-                          'Clearly define what success looks like.'
-                        )}
-                      </li>
-                      <li className="inline-flex items-center gap-2">
-                        <Check className="w-3.5 h-3.5 text-orange-400" />
-                        {tx(
-                          'jobs.new.tips.references',
-                          undefined,
-                          'Add links, references, or examples if available.'
-                        )}
-                      </li>
-                      <li className="inline-flex items-center gap-2">
-                        <Check className="w-3.5 h-3.5 text-orange-400" />
-                        {tx(
-                          'jobs.new.tips.handoff',
-                          undefined,
-                          'Clarify what should be delivered at handoff.'
-                        )}
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="space-y-3" data-field="reference_links">
-                  <div className="rounded-2xl border border-surface surface-sunken p-4 sm:p-5">
-                    <JobLinksInput
-                      value={referenceLinks}
-                      onChange={(links) => {
-                        methods.setValue('reference_links', links, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                      maxLinks={MAX_JOB_REFERENCE_LINKS}
-                    />
-                    {methods.formState.errors.reference_links ? (
-                      <p className="mt-2 text-red-500 text-xs">
-                        {methods.formState.errors.reference_links.message as string}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="space-y-3" data-field="required_skills">
-                  <label className="text-sm font-medium text-on-surface">
-                    {tx('jobs.new.fields.requiredSkills', undefined, 'Required skills (max 5)')}
-                  </label>
-
-                  <div className="relative">
-                    <Search className="w-4 h-4 text-on-surface-subtle absolute left-3 top-1/2 -translate-y-1/2" />
+                    <p className="text-xs text-on-surface-subtle -mt-1">Use specific terms so freelancers immediately understand your project.</p>
                     <input
                       type="text"
-                      value={skillQuery}
-                      onChange={(event) => setSkillQuery(event.target.value)}
+                      {...methods.register('title')}
+                      name="title"
                       placeholder={tx(
-                        'jobs.new.fields.skillsPlaceholder',
+                        'jobs.new.fields.titlePlaceholder',
                         undefined,
-                        'Search for skills...'
+                        'Example: Modern bilingual logo system for a Tunisian cafe'
                       )}
-                      className={`${FIELD_CLASS} pl-10`}
+                      className={`${FIELD_CLASS} text-base`}
                     />
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {selectedSkills.map((skill) => {
-                      const label =
-                        language === 'ar'
-                          ? skill.name_ar
-                          : language === 'fr'
-                            ? skill.name_fr
-                            : skill.name_en;
-                      return (
-                        <span
-                          key={skill.id}
-                          className="flex items-center gap-2 surface-sunken border border-surface text-on-surface px-3 py-1.5 rounded-full text-sm"
-                        >
-                          {label}
-                          <button
-                            type="button"
-                            onClick={() => removeSkill(skill.id)}
-                            className="text-on-surface-muted hover:text-on-surface transition-colors"
-                            aria-label={`Remove ${label}`}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="text-on-surface-muted">{tx('jobs.new.fields.suggested', undefined, 'Suggested:')}</span>
-                    {filteredSkillSuggestions.map((skill) => {
-                      const label =
-                        language === 'ar'
-                          ? skill.name_ar
-                          : language === 'fr'
-                            ? skill.name_fr
-                            : skill.name_en;
-
-                      return (
+                    {methods.formState.errors.title ? (
+                      <p className="text-red-400 text-xs">{methods.formState.errors.title.message as string}</p>
+                    ) : null}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {TITLE_TEMPLATES.map((template) => (
                         <button
-                          key={skill.id}
+                          key={template}
                           type="button"
-                          onClick={() => addSkill(skill)}
-                          className="border border-surface text-on-surface-muted px-3 py-1 rounded-full hover:border-orange-500 hover:text-orange-500 cursor-pointer transition-all"
+                          onClick={() => applyTitleTemplate(template)}
+                          className={CHIP_CLASS}
                         >
-                          {label}
+                          <span className="text-orange-400 opacity-60 group-hover:opacity-100">+</span> {template}
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="rounded-xl border border-surface surface-sunken p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs uppercase tracking-wide text-on-surface-muted">{tx('jobs.new.quality.title', undefined, 'Quality Score')}</p>
-                      <p className="text-sm font-semibold text-on-surface">{qualityScore}%</p>
-                    </div>
-                    <div className="h-2 rounded-full bg-[var(--color-bg-muted)] overflow-hidden mb-3">
-                      <div
-                        className="h-full transition-all"
-                        style={{
-                          width: `${qualityScore}%`,
-                          background: qualityScore >= 75 ? '#22c55e' : qualityScore >= 50 ? '#f59e0b' : '#ef4444',
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 md:p-5 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
+                      <label className={LABEL_CLASS}>
+                        {tx('jobs.new.fields.mainCategory', undefined, 'Main category')}
+                        <span className="text-orange-400" aria-hidden="true">*</span>
+                      </label>
+                      <p className="text-xs text-on-surface-subtle -mt-1">Choose the closest category to improve matching quality.</p>
+                      <select
+                        name="category"
+                        value={selectedCategory}
+                        onChange={(event) => {
+                          methods.setValue('category', event.target.value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                          methods.setValue('subcategory', '', {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
                         }}
+                        className={FIELD_CLASS}
+                      >
+                        <option value="">
+                          {tx('jobs.new.fields.selectCategory', undefined, 'Select category')}
+                        </option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                      {methods.formState.errors.category ? (
+                        <p className="text-red-400 text-xs">{methods.formState.errors.category.message as string}</p>
+                      ) : null}
+                    </div>
+
+                    <div className="space-y-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 md:p-5 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
+                      <label className={LABEL_CLASS}>
+                        {tx('jobs.new.fields.subcategory', undefined, 'Subcategory')}
+                        <span className="text-orange-400" aria-hidden="true">*</span>
+                      </label>
+                      <p className="text-xs text-on-surface-subtle -mt-1">Pick the exact specialty so experts can find your project faster.</p>
+                      <select
+                        name="subcategory"
+                        value={selectedSubcategory}
+                        onChange={(event) => {
+                          methods.setValue('subcategory', event.target.value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                        disabled={!selectedCategory}
+                        className={`${FIELD_CLASS} disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-[#13161b] disabled:text-[#6c7485]`}
+                      >
+                          <option value="">
+                          {tx('jobs.new.fields.selectSubcategory', undefined, 'Select subcategory')}
+                        </option>
+                        {availableSubcategories.map((subcategory) => (
+                          <option
+                            key={subcategory.id}
+                            value={subcategory.id}
+                            className="bg-[#1f1b15] text-white"
+                          >
+                            {subcategory.name}
+                          </option>
+                        ))}
+                      </select>
+                      {methods.formState.errors.subcategory ? (
+                        <p className="text-red-400 text-xs">
+                          {methods.formState.errors.subcategory.message as string}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 md:p-5 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
+                    <label className={LABEL_CLASS}>
+                      {tx('jobs.new.fields.description', undefined, 'Project description')}
+                      <span className="text-orange-400" aria-hidden="true">*</span>
+                    </label>
+                    <p className="text-xs text-on-surface-subtle -mt-1">Include scope, deliverables, quality expectations, and constraints.</p>
+                    <textarea
+                      rows={6}
+                      maxLength={2000}
+                      {...methods.register('description')}
+                      name="description"
+                      placeholder={tx(
+                        'jobs.new.fields.descriptionPlaceholder',
+                        undefined,
+                        'Tell freelancers what you need, who it is for, what should be delivered, and what "done" looks like...'
+                      )}
+                      className={`${FIELD_CLASS} min-h-48 resize-y leading-6`}
+                    />
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-on-surface-muted">{description.length} / 2000 characters</span>
+                      {methods.formState.errors.description ? (
+                        <span className="text-red-400 text-xs">
+                          {methods.formState.errors.description.message as string}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {DESCRIPTION_SNIPPETS.map((snippet) => (
+                        <button
+                          key={snippet.label}
+                          type="button"
+                          onClick={() => addDescriptionSnippet(snippet.text)}
+                          className={CHIP_CLASS}
+                        >
+                          <span className="text-orange-400 opacity-60 group-hover:opacity-100">+</span> {snippet.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="bg-orange-500/[0.06] border border-orange-500/20 rounded-xl p-4 md:p-5 flex gap-3.5 mt-4">
+                      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
+                        <Lightbulb className="w-4 h-4" />
+                      </span>
+                      <ul className="grid gap-2.5 text-[13px] text-orange-200/80 sm:grid-cols-2 pt-1.5">
+                        <li className="inline-flex items-center gap-2.5 leading-5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50" />
+                          {tx('jobs.new.tips.scope', undefined, 'Be specific about scope and expected quality.')}
+                        </li>
+                        <li className="inline-flex items-center gap-2.5 leading-5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50" />
+                          {tx('jobs.new.tips.success', undefined, 'Clearly define what success looks like.')}
+                        </li>
+                        <li className="inline-flex items-center gap-2.5 leading-5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50" />
+                          {tx('jobs.new.tips.references', undefined, 'Add links, references, or examples if available.')}
+                        </li>
+                        <li className="inline-flex items-center gap-2.5 leading-5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50" />
+                          {tx('jobs.new.tips.handoff', undefined, 'Clarify what should be delivered at handoff.')}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2" data-field="reference_links">
+                    <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 shadow-sm sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
+                      <JobLinksInput
+                        value={referenceLinks}
+                        onChange={(links) => {
+                          methods.setValue('reference_links', links, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                        maxLinks={MAX_JOB_REFERENCE_LINKS}
+                      />
+                      {methods.formState.errors.reference_links ? (
+                        <p className="mt-2 text-red-500 text-xs">
+                          {methods.formState.errors.reference_links.message as string}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2" data-field="required_skills">
+                    <label className={LABEL_CLASS}>
+                      {tx('jobs.new.fields.requiredSkills', undefined, 'Required skills (max 5)')}
+                    </label>
+
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-on-surface-subtle absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={skillQuery}
+                        onChange={(event) => setSkillQuery(event.target.value)}
+                        placeholder={tx(
+                          'jobs.new.fields.skillsPlaceholder',
+                          undefined,
+                          'Try Graphic Design, React, Motion Design...'
+                        )}
+                        className={`${FIELD_CLASS} pl-10`}
                       />
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {qualityChecks.map((check) => (
-                        <div key={check.id} className="inline-flex items-center gap-2 text-xs">
-                          <span className={`inline-flex w-4 h-4 items-center justify-center rounded-full ${check.pass ? 'bg-emerald-500/20 text-emerald-400' : 'surface-sunken text-on-surface-subtle'}`}>
-                            {check.pass ? <Check className="w-3 h-3" /> : <span>•</span>}
-                          </span>
-                          <span className={check.pass ? 'text-on-surface-muted' : 'text-on-surface-subtle'}>{check.label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {methods.formState.errors.required_skills ? (
-                    <p className="text-red-500 text-xs">
-                      {methods.formState.errors.required_skills.message as string}
-                    </p>
-                  ) : null}
-                </div>
 
-                <div className="space-y-3" data-field="attachments_files">
-                  <label className="text-sm font-medium text-on-surface">
-                    {tx('jobs.new.fields.attachments', undefined, 'Attachments (optional)')}
-                  </label>
-
-                  <label
-                    htmlFor="attachments"
-                    onDrop={handleDrop}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    className={`border-2 border-dashed surface-sunken rounded-2xl py-12 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors ${
-                      isDragging
-                        ? 'border-orange-500/50'
-                        : 'border-surface hover:border-orange-500/50'
-                    }`}
-                  >
-                    <UploadCloud className="size-10 text-on-surface-subtle" />
-                    <p className="text-on-surface font-medium">
-                      {tx('jobs.new.fields.attachmentsDrop', undefined, 'Drag files here or click to browse')}
-                    </p>
-                    <p className="text-xs text-on-surface-subtle">
-                      {tx(
-                        'jobs.new.fields.attachmentsHint',
-                        undefined,
-                        'PDF, DOC, DOCX, TXT, PNG, JPG, WEBP - Max 10MB per file'
-                      )}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border border-surface text-on-surface px-4 py-2 rounded-lg text-sm mt-2 hover-surface transition-colors"
-                    >
-                      {tx('jobs.new.fields.chooseFiles', undefined, 'Choose files')}
-                    </button>
-                    <input
-                      ref={fileInputRef}
-                      id="attachments"
-                      name="attachments_files"
-                      type="file"
-                      className="hidden"
-                      multiple
-                      accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"
-                      onChange={handleFileBrowse}
-                    />
-                  </label>
-
-                  {attachments.length > 0 ? (
-                    <div className="space-y-2">
-                      {attachments.map((file, index) => (
-                        <div
-                          key={`${file.name}-${file.size}-${index}`}
-                          className="surface-sunken border border-surface rounded-xl px-3 py-2.5 flex items-center justify-between"
-                        >
-                          <span className="text-sm text-on-surface truncate">{file.name}</span>
-                          <button
-                            type="button"
-                            className="text-on-surface-muted hover:text-on-surface transition-colors"
-                            onClick={() => removeAttachment(index)}
-                            aria-label={`Remove ${file.name}`}
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {selectedSkills.map((skill) => {
+                        const label =
+                          language === 'ar'
+                            ? skill.name_ar
+                            : language === 'fr'
+                              ? skill.name_fr
+                              : skill.name_en;
+                        return (
+                          <span
+                            key={skill.id}
+                            className="flex items-center gap-1.5 rounded-lg border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 text-sm text-orange-200"
                           >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                            {label}
+                            <button
+                              type="button"
+                              onClick={() => removeSkill(skill.id)}
+                              className="text-orange-200/50 hover:text-orange-100 transition-colors"
+                              aria-label={`Remove ${label}`}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </span>
+                        );
+                      })}
                     </div>
-                  ) : null}
-                  {methods.formState.errors.attachments_files ? (
-                    <p className="text-red-500 text-xs">
-                      {methods.formState.errors.attachments_files.message as string}
-                    </p>
-                  ) : null}
+
+                    <div className="flex flex-wrap items-center gap-2 text-xs pt-1">
+                      <span className="text-on-surface-muted">{tx('jobs.new.fields.suggested', undefined, 'Suggested:')}</span>
+                      {filteredSkillSuggestions.map((skill) => {
+                        const label =
+                          language === 'ar'
+                            ? skill.name_ar
+                            : language === 'fr'
+                              ? skill.name_fr
+                              : skill.name_en;
+
+                        return (
+                          <button
+                            key={skill.id}
+                            type="button"
+                            onClick={() => addSkill(skill)}
+                            className={CHIP_CLASS}
+                          >
+                            <span className="text-orange-400 opacity-60 group-hover:opacity-100">+</span> {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-4 rounded-xl border border-white/5 bg-white/[0.03] p-4 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-muted">{tx('jobs.new.quality.title', undefined, 'Quality Score')}</p>
+                        <p className="text-sm font-bold text-on-surface">{qualityScore}%</p>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-surface overflow-hidden mb-4 border border-white/5">
+                        <div
+                          className="h-full transition-all duration-500"
+                          style={{
+                            width: `${qualityScore}%`,
+                            background: qualityScore >= 75
+                              ? 'linear-gradient(90deg,#22c55e,#86efac)'
+                              : qualityScore >= 50
+                                ? 'linear-gradient(90deg,#f59e0b,#fcd34d)'
+                                : 'linear-gradient(90deg,#f97316,#fb7185)',
+                          }}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {qualityChecks.map((check) => (
+                          <div key={check.id} className="flex items-center gap-2.5 text-[13px]">
+                            <span className={`flex shrink-0 w-4 h-4 items-center justify-center rounded-full transition-colors ${check.pass ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-on-surface-subtle'}`}>
+                              {check.pass ? <Check className="w-2.5 h-2.5" /> : <span className="w-1 h-1 rounded-full bg-current opacity-50" />}
+                            </span>
+                            <span className={check.pass ? 'text-on-surface-muted' : 'text-on-surface-subtle'}>{check.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {methods.formState.errors.required_skills ? (
+                      <p className="text-red-500 text-xs">
+                        {methods.formState.errors.required_skills.message as string}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-2" data-field="attachments_files">
+                    <label className={LABEL_CLASS}>
+                      {tx('jobs.new.fields.attachments', undefined, 'Attachments (optional)')}
+                    </label>
+
+                    <label
+                      htmlFor="attachments"
+                      onDrop={handleDrop}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      className={`border-2 border-dashed rounded-xl bg-[var(--input-bg)] px-5 py-10 flex flex-col items-center justify-center gap-3 cursor-pointer text-center transition-all duration-200 ${
+                        isDragging
+                          ? 'border-[var(--workspace-primary)] bg-[var(--workspace-primary-dim)]'
+                          : 'border-[var(--input-border)] hover:border-white/20'
+                      }`}
+                    >
+                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/5 bg-white/[0.03] text-on-surface-subtle">
+                        <UploadCloud className="w-6 h-6" />
+                      </span>
+                      <div className="space-y-1">
+                        <p className="text-on-surface text-sm font-medium">
+                          {tx('jobs.new.fields.attachmentsDrop', undefined, 'Drag files here or click to browse')}
+                        </p>
+                        <p className="text-xs text-on-surface-subtle">
+                          {tx(
+                            'jobs.new.fields.attachmentsHint',
+                            undefined,
+                            'PDF, DOC, DOCX, TXT, PNG, JPG, WEBP - Max 10MB per file'
+                          )}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="bg-white/5 hover:bg-white/10 text-on-surface border border-transparent hover:border-white/10 px-4 py-2 rounded-lg text-sm mt-1 transition-colors font-medium"
+                      >
+                        {tx('jobs.new.fields.chooseFiles', undefined, 'Choose files')}
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        id="attachments"
+                        name="attachments_files"
+                        type="file"
+                        className="hidden"
+                        multiple
+                        accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"
+                        onChange={handleFileBrowse}
+                      />
+                    </label>
+
+                    {attachments.length > 0 ? (
+                      <div className="space-y-2 mt-3">
+                        {attachments.map((file, index) => (
+                          <div
+                            key={`${file.name}-${file.size}-${index}`}
+                            className="rounded-xl border border-white/5 bg-white/[0.02] px-3.5 py-2.5 flex items-center justify-between"
+                          >
+                            <span className="text-sm text-on-surface truncate pr-4">{file.name}</span>
+                            <button
+                              type="button"
+                              className="text-on-surface-subtle hover:text-red-400 transition-colors p-1"
+                              onClick={() => removeAttachment(index)}
+                              aria-label={`Remove ${file.name}`}
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    {methods.formState.errors.attachments_files ? (
+                      <p className="text-red-500 text-xs mt-1">
+                        {methods.formState.errors.attachments_files.message as string}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </section>
             ) : null}
-
             {currentStep === 2 ? (
-              <section className="surface-card border rounded-2xl p-6 md:p-8">
+              <section className="surface-card border border-white/12 rounded-2xl p-6 md:p-8 shadow-sm">
                 <StepBudget />
               </section>
             ) : null}
 
             {currentStep === 3 ? (
-              <section className="surface-card border rounded-2xl p-6 md:p-8">
+              <section className="surface-card border border-white/12 rounded-2xl p-6 md:p-8 shadow-sm">
                 <StepVisibility />
               </section>
             ) : null}
 
             {currentStep === 4 ? (
-              <section className="surface-card border rounded-2xl p-6 md:p-8">
+              <section className="surface-card border border-white/12 rounded-2xl p-6 md:p-8 shadow-sm">
                 <StepReview />
               </section>
             ) : null}
           </div>
 
           <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-1.5rem)] md:w-[calc(100%-3rem)] md:max-w-4xl">
-            <div className="surface-card border backdrop-blur-md rounded-2xl px-3 py-3 md:px-4 md:py-3 flex items-center justify-between gap-3 shadow-[0_20px_45px_-30px_rgba(0,0,0,0.4)]">
+            <div className="surface-card border border-white/15 backdrop-blur-md rounded-2xl px-3 py-3 md:px-4 md:py-3 flex items-center justify-between gap-3 shadow-[0_20px_45px_-28px_rgba(0,0,0,0.5)]">
               <div className="min-w-0">
                 <p className="text-on-surface-muted text-xs">
                   {tx(
@@ -1317,7 +1341,7 @@ export default function JobPost() {
                     { current: currentStep, total: STEP_ITEMS.length },
                     `Step ${currentStep} of ${STEP_ITEMS.length}`
                   )}{' '}
-                  • {currentStepMeta.label}
+                  - {currentStepMeta.label}
                 </p>
                 <p className="text-on-surface-subtle text-xs mt-0.5 hidden sm:block">
                   {lastSaved
@@ -1343,7 +1367,7 @@ export default function JobPost() {
                   type="button"
                   onClick={handleSaveDraft}
                   disabled={isSubmitting}
-                  className="border border-[#262626] text-gray-300 hover:text-white px-3.5 py-2 rounded-xl inline-flex items-center gap-2 transition-colors text-sm disabled:opacity-60"
+                  className="border border-white/20 text-on-surface-muted hover:text-on-surface px-3.5 py-2 rounded-xl inline-flex items-center gap-2 transition-colors text-sm disabled:opacity-60"
                 >
                   {isSubmitting && submitIntent === 'draft' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

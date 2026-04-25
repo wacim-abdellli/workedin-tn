@@ -78,25 +78,25 @@ export default function StepReview() {
                 </p>
             </header>
 
-            <section className="flex gap-3 rounded-xl border border-orange-500/20 bg-orange-500/5 p-3 text-sm text-[#cfcfcf]">
+            <section className="flex gap-3 rounded-2xl border border-orange-500/20 bg-orange-500/5 p-4 text-sm text-[#cfcfcf]">
                 <FileText className="h-4.5 w-4.5 shrink-0 text-orange-300" />
                 <p className="text-[#b3b3b3]">
                     {tx('jobs.new.stepReview.warning', undefined, 'يرجى مراجعة تفاصيل الوظيفة بدقة قبل النشر. بعد النشر، ستتمكن من تعديل بعض التفاصيل فقط.')}
                 </p>
             </section>
 
-            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+            <section className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
                 <h4 className="text-lg font-semibold text-white">{values.title || '—'}</h4>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#b3b3b3]">
-                    <span className="inline-flex items-center gap-1 rounded-full border border-[#2d2d2d] bg-[#141414] px-2.5 py-1">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.035] px-2.5 py-1">
                         <Briefcase className="h-3.5 w-3.5" />
                         {getCategoryName(values.category, language) || '—'}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-[#2d2d2d] bg-[#141414] px-2.5 py-1">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.035] px-2.5 py-1">
                         <MapPin className="h-3.5 w-3.5" />
                         {getSubcategoryName(values.category, values.subcategory, language) || '—'}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-[#2d2d2d] bg-[#141414] px-2.5 py-1">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.035] px-2.5 py-1">
                         <Clock className="h-3.5 w-3.5" />
                         {values.posted_at
                             ? new Date(values.posted_at).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')
@@ -105,7 +105,7 @@ export default function StepReview() {
                 </div>
             </section>
 
-            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+            <section className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
                 <h4 className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                     {tx('jobs.new.stepReview.projectDescription', undefined, 'وصف المشروع')}
                 </h4>
@@ -113,7 +113,7 @@ export default function StepReview() {
             </section>
 
             <section className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4">
+                <div className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
                     <p className="mb-1 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <DollarSign className="h-4 w-4" />
                         {tx('jobs.new.stepReview.budget', undefined, 'الميزانية')}
@@ -125,7 +125,7 @@ export default function StepReview() {
                     </p>
                 </div>
 
-                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4">
+                <div className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
                     <p className="mb-1 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Briefcase className="h-4 w-4" />
                         {tx('jobs.new.stepReview.experienceLevel', undefined, 'المستوى المطلوب')}
@@ -133,7 +133,7 @@ export default function StepReview() {
                     <p className="text-sm text-white">{values.experience_level ? experienceMap[values.experience_level] : '—'}</p>
                 </div>
 
-                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4">
+                <div className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
                     <p className="mb-1 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Calendar className="h-4 w-4" />
                         {tx('jobs.new.stepReview.projectDuration', undefined, 'مدة المشروع')}
@@ -141,7 +141,7 @@ export default function StepReview() {
                     <p className="text-sm text-white">{values.duration ? durationMap[values.duration] : '—'}</p>
                 </div>
 
-                <div className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4">
+                <div className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
                     <p className="mb-1 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Calendar className="h-4 w-4" />
                         {tx('jobs.new.stepReview.deadline', undefined, 'الموعد النهائي')}
@@ -154,7 +154,7 @@ export default function StepReview() {
                 </div>
             </section>
 
-            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+            <section className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
                 <div className="flex items-center gap-3">
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500/15 text-orange-300">
                         {values.visibility === 'public' ? <Globe className="h-4.5 w-4.5" /> : <Lock className="h-4.5 w-4.5" />}
@@ -173,20 +173,20 @@ export default function StepReview() {
             </section>
 
             {values.job_type === 'hourly' && values.estimated_hours ? (
-                <section className="rounded-xl border border-orange-500/25 bg-orange-500/5 px-3 py-2 text-sm text-orange-200">
+                <section className="rounded-2xl border border-orange-500/25 bg-orange-500/5 px-4 py-3 text-sm text-orange-200">
                     {tx('jobs.new.stepReview.estimatedHours', { hours: values.estimated_hours }, `${values.estimated_hours} estimated hours per week`)}
                 </section>
             ) : null}
 
             {values.attachments_files && values.attachments_files.length > 0 ? (
-                <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <section className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
                     <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Paperclip className="h-4 w-4" />
                         {tx('jobs.new.stepReview.attachments', undefined, 'الملفات المرفقة')}
                     </p>
                     <div className="space-y-2">
                         {values.attachments_files.map((file, index) => (
-                            <div key={`${file.name}-${index}`} className="rounded-lg border border-[#2d2d2d] bg-[#141414] px-3 py-2 text-sm text-[#b3b3b3]">
+                            <div key={`${file.name}-${index}`} className="rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-[#b3b3b3]">
                                 <p className="font-medium text-white">
                                     {tx('jobs.new.stepReview.attachmentLabel', { index: index + 1 }, `Attachment ${index + 1}`)}
                                 </p>
@@ -201,7 +201,7 @@ export default function StepReview() {
             ) : null}
 
             {existingAttachments.length > 0 ? (
-                <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <section className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
                     <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Paperclip className="h-4 w-4" />
                         {tx('jobs.new.stepReview.currentAttachments', undefined, 'Current attachments')}
@@ -211,7 +211,7 @@ export default function StepReview() {
                             const href = /^https?:\/\//i.test(attachment.trim()) ? attachment.trim() : undefined;
 
                             return (
-                                <div key={`${attachment}-${index}`} className="rounded-lg border border-[#2d2d2d] bg-[#141414] px-3 py-2 text-sm text-[#b3b3b3]">
+                                <div key={`${attachment}-${index}`} className="rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-[#b3b3b3]">
                                     <p className="font-medium text-white">
                                         {tx('jobs.new.stepReview.attachmentLabel', { index: index + 1 }, `Attachment ${index + 1}`)}
                                     </p>
@@ -236,7 +236,7 @@ export default function StepReview() {
             ) : null}
 
             {referenceLinks.length > 0 ? (
-                <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+                <section className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
                     <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Globe className="h-4 w-4" />
                         {tx('jobs.new.stepReview.links', undefined, 'Reference links')}
@@ -252,7 +252,7 @@ export default function StepReview() {
                                     href={meta.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="group flex items-center justify-between rounded-lg border border-[#2d2d2d] bg-[#141414] px-3 py-2 text-sm text-[#b3b3b3] transition hover:border-orange-500/35 hover:text-white"
+                                    className="group flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2 text-sm text-[#b3b3b3] transition hover:border-orange-500/35 hover:text-white"
                                 >
                                     <div className="min-w-0">
                                         <p className="truncate font-medium text-white">
@@ -268,7 +268,7 @@ export default function StepReview() {
                 </section>
             ) : null}
 
-            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+            <section className="rounded-2xl border border-white/10 bg-[#101010] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5">
                 <h4 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                     {tx('jobs.new.stepReview.requiredSkills', undefined, 'المهارات المطلوبة')}
                 </h4>

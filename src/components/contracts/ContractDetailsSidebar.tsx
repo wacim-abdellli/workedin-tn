@@ -177,7 +177,7 @@ export default function ContractDetailsSidebar({
                                         ? <img src={otherParty.avatar_url} alt={otherParty.full_name} className="h-full w-full object-cover" />
                                         : <User className="h-6 w-6 text-zinc-500" />}
                                 </div>
-                                <span className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-zinc-900 bg-emerald-500" />
+                                <span className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-zinc-900 bg-zinc-600" />
                             </div>
 
                             {/* Info */}
@@ -395,7 +395,7 @@ export default function ContractDetailsSidebar({
                             {otherParty?.avatar_url
                                 ? <img src={otherParty.avatar_url} alt={otherParty.full_name} className="h-full w-full object-cover" />
                                 : <User className="h-5 w-5 text-zinc-500" />}
-                            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-zinc-900 bg-emerald-500" />
+                            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-zinc-900 bg-zinc-600" />
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
@@ -404,9 +404,9 @@ export default function ContractDetailsSidebar({
                                     {contactRole}
                                 </span>
                             </div>
-                            <p className="mt-0.5 text-xs text-emerald-400 flex items-center gap-1">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                                Online now
+                            <p className="mt-0.5 text-xs text-zinc-500 flex items-center gap-1">
+                                <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
+                                {contactRole}
                             </p>
                         </div>
                     </div>

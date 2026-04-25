@@ -1,60 +1,8 @@
-import { useState } from 'react';
 import { Check, Clock, Info } from 'lucide-react';
 import type { PaymentMethodConfig } from '@/config/paymentMethods';
 import { PAYMENT_METHODS } from '@/config/paymentMethods';
 import { useTranslation } from '@/i18n';
-
-// Hand-crafted SVG logos — crisp at any size, zero CORS
-const REAL_LOGOS: Record<string, { src: string; bg: string; contain?: boolean }> = {
-  dhmad:  { src: '/logos/dhmad.svg',  bg: '#ffffff', contain: true },
-  flouci: { src: '/logos/flouci.svg', bg: '#ffffff', contain: true },
-  d17:    { src: '/logos/d17.svg',    bg: '#ffffff', contain: true },
-};
-
-// Branded SVG fallback for when external image fails to load
-function BrandedFallback({ id }: { id: string }) {
-  const configs: Record<string, { color: string; label: string }> = {
-    dhmad:  { color: 'linear-gradient(135deg,#8B5CF6,#5B21B6)', label: 'D' },
-    flouci: { color: 'linear-gradient(135deg,#38BDF8,#0284C7)', label: 'F' },
-    d17:    { color: 'linear-gradient(135deg,#F97316,#C2410C)', label: 'D17' },
-  };
-  const cfg = configs[id] ?? { color: '#888', label: id.slice(0, 2).toUpperCase() };
-  return (
-    <div
-      className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0"
-      style={{ background: cfg.color }}
-    >
-      {cfg.label}
-    </div>
-  );
-}
-
-function MethodLogo({ id, className }: { id: string; className?: string }) {
-  const logo = REAL_LOGOS[id];
-  const [failed, setFailed] = useState(false);
-
-  if (!logo || failed) {
-    return (
-      <div className={`flex items-center justify-center rounded-xl overflow-hidden ${className}`}>
-        <BrandedFallback id={id} />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`flex items-center justify-center rounded-xl overflow-hidden p-1.5 ${className}`}
-      style={{ background: logo.bg }}
-    >
-      <img
-        src={logo.src}
-        alt={id}
-        className={`w-full h-full ${logo.contain ? 'object-contain' : 'object-cover'}`}
-        onError={() => setFailed(true)}
-      />
-    </div>
-  );
-}
+import { PaymentLogo, type PaymentProviderId } from './PaymentLogo';
 
 // --- Helpers -------------------------------------------------------------
 
@@ -112,7 +60,7 @@ function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps)
             selected ? '' : 'opacity-90',
           ].join(' ')}
         >
-          <MethodLogo id={method.id} className="w-10 h-10" />
+          <PaymentLogo id={method.id as PaymentProviderId} size="sm" />
         </div>
 
         {/* Content */}
@@ -175,12 +123,12 @@ function ComingSoonCard({ method, lang }: ComingSoonCardProps) {
   return (
     <div
       aria-disabled="true"
-      className="w-full text-start rounded-2xl border-2 border-dashed border-border p-4 bg-muted/30 opacity-60 cursor-not-allowed"
+      className="w-full text-start rounded-2xl border-2 border-dashed border-border p-4 bg-muted/30 cursor-not-allowed"
     >
       <div className="flex items-start gap-3">
         {/* Icon circle — muted */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden opacity-50">
-          <MethodLogo id={method.id} className="w-10 h-10" />
+        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden opacity-80 saturate-[.82]">
+          <PaymentLogo id={method.id as PaymentProviderId} size="sm" muted />
         </div>
 
         {/* Content */}

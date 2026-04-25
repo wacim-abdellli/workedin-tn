@@ -37,6 +37,7 @@ import { localizeGovernorate } from '../lib/governorates';
 import { ROUTES } from '@/lib/routes';
 import { logger } from '@/lib/logger';
 import ContactModal from '../components/freelancer/ContactModal';
+import InviteToJobModal from '../components/freelancer/InviteToJobModal';
 import { uploadAvatar } from '@/services/profiles';
 import { getPortfolioImageUrl, resolvePortfolioMediaUrl } from '@/lib/portfolioMedia';
 import { splitPortfolioSkillsAndTools } from '@/lib/portfolioTools';
@@ -1997,6 +1998,7 @@ export default function FreelancerProfile() {
     const [isLoading, setIsLoading] = useState(!freelancer); // skip loading if cache hit
     const [resolvedProfileId, setResolvedProfileId] = useState<string | null>(null);
     const [showContactModal, setShowContactModal] = useState(false);
+    const [showInviteModal, setShowInviteModal] = useState(false);
 
     const saveBio = useCallback(async (bio: string) => {
         if (!user?.id) {
@@ -2517,18 +2519,7 @@ export default function FreelancerProfile() {
             return;
         }
 
-        const inviteFreelancerId = freelancer.id;
-        const inviteFreelancerName = freelancer.full_name || 'this freelancer';
-        navigate(
-            `${ROUTES.jobsNew}?invite=${encodeURIComponent(inviteFreelancerId)}`,
-            {
-                state: {
-                    inviteFreelancerId,
-                    inviteFreelancerName,
-                },
-            },
-        );
-        showToast(`Create a project to hire ${inviteFreelancerName}.`, 'info');
+        setShowInviteModal(true);
     };
 
     if (isLoading && !freelancer) {
@@ -2634,6 +2625,15 @@ export default function FreelancerProfile() {
                     freelancerTitle={freelancer.title}
                     hourlyRate={freelancer.hourly_rate}
                     accentColor="#8B5CF6"
+                />
+            ) : null}
+
+            {freelancer?.id ? (
+                <InviteToJobModal
+                    isOpen={showInviteModal}
+                    onClose={() => setShowInviteModal(false)}
+                    freelancerId={freelancer.id}
+                    freelancerName={freelancer.full_name || freelancer.username || 'this freelancer'}
                 />
             ) : null}
         </div>

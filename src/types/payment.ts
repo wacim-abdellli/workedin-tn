@@ -319,6 +319,6 @@ export interface WithdrawalFormProps {
 // CONSTANTS
 // ============================================
 
-export const PLATFORM_FEE_PERCENTAGE = 0.10;  // 10%
+export const PLATFORM_FEE_PERCENTAGE = 0.05;  // 5%
 export const MIN_WITHDRAWAL_AMOUNT = 20;       // 20 TND minimum
 export const TND_TO_MILLIMES = 1000;           // 1 TND = 1000 millimes

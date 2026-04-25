@@ -203,36 +203,6 @@ export async function getProposalsByFreelancer(freelancerId: string) {
 
 export async function createProposal(data: CreateProposalInput, files: File[] = []) {
     try {
-        // Pre-flight access check (UX guard)
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.freelancer_id)
-            .maybeSingle();
-
-        if (profileError) throw toError(profileError, 'Failed to load profile');
-
-        const { data: fp, error: fpError } = await supabase
-            .from('freelancer_profiles')
-            .select('*')
-            .eq('id', data.freelancer_id)
-            .maybeSingle();
-
-        if (fpError) throw toError(fpError, 'Failed to load freelancer profile');
-
-        const accessDecision = canApplyToJob({
-            isAuthenticated: true,
-            profile: (profile as Profile | null) ?? null,
-            freelancerProfile: (fp as FreelancerProfile | null) ?? null,
-        });
-
-        if (!accessDecision.allowed) {
-            return {
-                data: null,
-                error: new Error(getAccessMessage(accessDecision.reason, accessDecision.completion)),
-            };
-        }
-
         // Upload attachments before creating the proposal atomically.
         const attachmentUrls: string[] = await Promise.all(
             files.map(async (file) => {

@@ -565,6 +565,7 @@ function JobDetail() {
 
       // Close modal immediately for instant feedback
       setShowProposalModal(false);
+      showToast(t.jobDetail.proposalSent, "success");
 
       return { previousProposal };
     },
@@ -576,7 +577,6 @@ function JobDetail() {
       queryClient.invalidateQueries({
         queryKey: ["dailyProposalUsage", user?.id],
       });
-      showToast(t.jobDetail.proposalSent, "success");
 
       // Notify client by email (fire-and-forget)
       if (jobId) {

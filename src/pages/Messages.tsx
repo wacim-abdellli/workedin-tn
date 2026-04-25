@@ -249,6 +249,36 @@ type ThreadMessage = Message & {
     status?: 'sending' | 'failed';
 };
 
+const CollapsibleMessageText = ({ text, isDeleted, isOwnMessage }: { text: string, isDeleted: boolean, isOwnMessage: boolean }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const MAX_LENGTH = 300;
+
+    if (!text || text.length <= MAX_LENGTH) {
+        return (
+            <p className={`whitespace-pre-wrap break-words ${isDeleted ? 'italic leading-tight' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'break-word', wordWrap: 'break-word' }}>
+                {text}
+            </p>
+        );
+    }
+
+    const displayText = isExpanded ? text : `${text.slice(0, MAX_LENGTH)}...`;
+
+    return (
+        <div>
+            <p className={`whitespace-pre-wrap break-words ${isDeleted ? 'italic leading-tight' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'break-word', wordWrap: 'break-word' }}>
+                {displayText}
+            </p>
+            <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className={`mt-1 text-[11px] font-semibold tracking-wide uppercase opacity-70 hover:opacity-100 transition-opacity ${isOwnMessage ? 'text-white' : 'text-amber-500'}`}
+            >
+                {isExpanded ? 'See less' : 'See more'}
+            </button>
+        </div>
+    );
+};
+
 type ContractSessionMeta = {
     id: string;
     status: string | null;
@@ -4119,14 +4149,7 @@ function MessagesComponent() {
     // Filter out messages deleted for the current user
     const displayMessages = messages.filter((message) => !deletedForMeMessageIds.has(message.id));
 
-     const messagesVirtualizer = useVirtualizer({
-        count: displayMessages.length,
-          getItemKey: (index) => displayMessages[index]?.id ?? index,
-        getScrollElement: () => messagesParentRef.current,
-          estimateSize: () => 120,
-          overscan: 12,
-          measureElement: (element) => element?.getBoundingClientRect().height ?? 0,
-    });
+    // messagesVirtualizer removed - using native flex column.
 
     const formatTime = (timestamp: string | null) => {
         if (!timestamp) return '';
@@ -4195,7 +4218,12 @@ function MessagesComponent() {
             return;
         }
 
-        messagesVirtualizer.scrollToIndex(messageIndex, { align: 'center' });
+        // Native DOM scroll
+        const el = document.getElementById(`message-${messageId}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         setHighlightedMessageId(messageId);
         if (replyHighlightTimeoutRef.current) {
             window.clearTimeout(replyHighlightTimeoutRef.current);
@@ -4203,7 +4231,7 @@ function MessagesComponent() {
         replyHighlightTimeoutRef.current = window.setTimeout(() => {
             setHighlightedMessageId(null);
         }, 1800);
-    }, [displayMessages, messagesVirtualizer, showToast, tx]);
+    }, [displayMessages, showToast, tx]);
 
     const handleReplyToMessage = useCallback((message: ThreadMessage) => {
         if (!canReplyInSelectedConversation) return;
@@ -4288,6 +4316,13 @@ function MessagesComponent() {
             cancelled = true;
         };
     }, [conversations, getConversationLastPreviewText, getReplyPreviewTextForMessage, isLoadingConversations]);
+
+    // Auto-scroll to bottom when messages change
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+        }
+    }, [messages.length, pendingQueue.length]);
 
     const renderConversationList = () => (
         <div className={`${showMobileThread ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-[#1b1f24] bg-[#121212] flex-col shrink-0`}>
@@ -4715,6 +4750,7 @@ function MessagesComponent() {
                             </div>
                         ) : (
                             <>
+                                <div className="flex-1" />
                                 <div className="mb-4 flex items-center gap-3">
                                     <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#2a2a2e] to-transparent" />
                                     <span className="rounded-full border border-[#262b31] bg-[#111317] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-on-surface-subtle">
@@ -4723,9 +4759,8 @@ function MessagesComponent() {
                                     <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#2a2a2e] to-transparent" />
                                 </div>
 
-                                <div style={{ height: `${messagesVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
-                                    {messagesVirtualizer.getVirtualItems().map((virtualRow) => {
-                                        const message = displayMessages[virtualRow.index];
+                                <div className="flex w-full flex-col gap-4 relative">
+                                    {displayMessages.map((message) => {
                                         const isOwnMessage = message.sender_id === user?.id;
                                         const contractSystemMessageKind = getMessageContractSystemKind(message);
                                         const isContractSystemMessage = Boolean(contractSystemMessageKind);
@@ -4745,21 +4780,9 @@ function MessagesComponent() {
                                             && imageAttachmentCount === attachments.length;
 
                                         return (
-                                            <div
-                                                key={message.id}
-                                                ref={messagesVirtualizer.measureElement}
-                                                data-index={virtualRow.index}
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    width: '100%',
-                                                    transform: `translateY(${virtualRow.start}px)`,
-                                                    paddingBottom: '18px',
-                                                }}
-                                            >
-                                                <div className={`group/message flex w-full ${isContractSystemMessage ? 'justify-center' : isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                                                    <div className="relative w-full max-w-[85%] md:max-w-[80%]">
+                                            <div key={message.id}>
+                                                <div id={`message-${message.id}`} className={`group/message flex w-full ${isContractSystemMessage ? 'justify-center' : isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                    <div className={`relative max-w-[85%] md:max-w-[75%] flex flex-col ${isContractSystemMessage ? 'items-center' : isOwnMessage ? 'items-end' : 'items-start'}`}>
                                                         {isOwnMessage && !message.status && !message.is_deleted && !isProtectedContractEvidenceMessage(message) ? (
                                                             <button
                                                                 type="button"
@@ -4792,7 +4815,7 @@ function MessagesComponent() {
                                                             ) : null}
 
                                                             <div
-                                                                className={`max-w-[75%] ${
+                                                                className={`min-w-0 break-words ${
                                                                     isDeletedMessage(message)
                                                                         ? 'rounded-full border border-surface surface-sunken text-on-surface-subtle px-3 py-1.5 text-xs'
                                                                         : isContractSystemMessage
@@ -4821,9 +4844,7 @@ function MessagesComponent() {
                                                                 ) : null}
 
                                                                 {shouldRenderStandaloneText ? (
-                                                                    <p className={`break-words ${isDeletedMessage(message) ? 'italic leading-tight' : ''}`}>
-                                                                        {messageText}
-                                                                    </p>
+                                                                    <CollapsibleMessageText text={messageText} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
                                                                 ) : null}
 
                                                                 {!isDeletedMessage(message) && hasAttachments ? (
@@ -4861,9 +4882,9 @@ function MessagesComponent() {
                                                                                             </div>
                                                                                         </div>
                                                                                         {shouldRenderImageCaption && index === firstImageAttachmentIndex ? (
-                                                                                            <p className={`px-3 py-2 text-sm break-words ${isOwnMessage ? accentClasses.ownTextMuted : 'text-zinc-200'}`}>
-                                                                                                {messageText}
-                                                                                            </p>
+                                                                                            <div className={`px-3 py-2 text-sm text-left ${isOwnMessage ? accentClasses.ownTextMuted : 'text-zinc-200'}`}>
+                                                                                                <CollapsibleMessageText text={messageText} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
+                                                                                            </div>
                                                                                         ) : null}
                                                                                     </button>
                                                                                 );
@@ -4986,7 +5007,7 @@ function MessagesComponent() {
                         </div>
                     ) : null}
 
-                    <div className="shrink-0 border-t border-[#191c21] bg-[#0d0d0f]/98 p-4 backdrop-blur-sm">
+                    <div className="shrink-0 border-t border-[#191c21] bg-[#0d0d0f]/98 px-4 py-3 backdrop-blur-sm">
                         {replyTarget ? (
                             <div className="mb-3 rounded-xl border border-[#1f2328] bg-[#111317] px-3 py-2">
                                 <div className="flex items-start gap-2">

@@ -2485,7 +2485,7 @@ export const en: Translations = {
                     "title": "4. Contracts and Payments",
                     "intro": "WorkedIn.tn acts as an intermediary between freelancers and clients. We are not a party to the contracts between them.",
                     "items": {
-                        "fee": "Platform fee: 10% of each contract value",
+                        "fee": "Platform fee: 5% of each contract value",
                         "secureMethods": "Payments are processed via secure approved methods",
                         "holdPeriod": "Payment hold period: 7 days"
                     }
@@ -2991,7 +2991,7 @@ export const en: Translations = {
             "proposalDetails": "Proposal Details",
             "freelancerBid": "Freelancer's bid",
             "delivery": "Delivery",
-            "serviceFee": "Service fee (10%)",
+            "serviceFee": "Service fee (5%)",
             "total": "Total to pay",
             "escrowNote": "Payment is held in escrow until you approve the delivered work.",
             "confirmHire": "Hire this freelancer?",

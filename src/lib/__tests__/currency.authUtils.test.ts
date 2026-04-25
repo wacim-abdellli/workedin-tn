@@ -33,16 +33,16 @@ describe('currencyUtils', () => {
     });
 
     it('calculates fees and totals', () => {
-        expect(calculatePlatformFee(100)).toBe(10);
+        expect(calculatePlatformFee(100)).toBe(5);
         expect(calculatePlatformFee(199.999, 0.15)).toBe(30);
 
         expect(calculateTotalWithFee(100)).toEqual({
             originalAmount: 100,
-            feeAmount: 10,
-            totalAmount: 110,
+            feeAmount: 5,
+            totalAmount: 105,
         });
 
-        expect(calculateNetAfterFee(100)).toBe(90);
+        expect(calculateNetAfterFee(100)).toBe(95);
         expect(calculateNetAfterFee(99.999, 0.2)).toBe(79.999);
     });
 

@@ -2485,7 +2485,7 @@ export const fr: Translations = {
                     "title": "4. Contrats et paiements",
                     "intro": "WorkedIn.tn agit comme intermédiaire entre freelances et clients. Nous ne sommes pas partie aux contrats conclus entre eux.",
                     "items": {
-                        "fee": "Frais de plateforme : 10% de la valeur de chaque contrat",
+                        "fee": "Frais de plateforme : 5% de la valeur de chaque contrat",
                         "secureMethods": "Les paiements sont traités via des moyens sécurisés et approuvés",
                         "holdPeriod": "Période de retenue des paiements : 7 jours"
                     }
@@ -2991,7 +2991,7 @@ export const fr: Translations = {
             "proposalDetails": "Détails de l'offre",
             "freelancerBid": "Offre du freelancer",
             "delivery": "Livraison",
-            "serviceFee": "Frais de service (10%)",
+            "serviceFee": "Frais de service (5%)",
             "total": "Total à payer",
             "escrowNote": "Le paiement est conservé en séquestre jusqu'à votre validation.",
             "confirmHire": "Embaucher ce freelancer ?",

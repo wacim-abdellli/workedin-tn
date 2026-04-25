@@ -24,9 +24,9 @@ export default function StepVisibility() {
 
             <section className="grid gap-3 sm:grid-cols-2">
                 <label
-                    className={`cursor-pointer rounded-xl border p-4 transition ${visibility === 'public'
-                        ? 'border-orange-500/45 bg-orange-500/10'
-                        : 'border-[#2d2d2d] bg-[#101010] hover:border-orange-500/35 hover:bg-orange-500/5'
+                    className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${visibility === 'public'
+                        ? 'border-orange-500/45 bg-orange-500/10 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.8)]'
+                        : 'border-white/5 bg-white/[0.03] hover:border-orange-500/35 hover:bg-orange-500/5'
                         }`}
                 >
                     <input type="radio" value="public" {...register('visibility')} className="sr-only" />
@@ -44,9 +44,9 @@ export default function StepVisibility() {
                 </label>
 
                 <label
-                    className={`cursor-pointer rounded-xl border p-4 transition ${visibility === 'invite_only'
-                        ? 'border-orange-500/45 bg-orange-500/10'
-                        : 'border-[#2d2d2d] bg-[#101010] hover:border-orange-500/35 hover:bg-orange-500/5'
+                    className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${visibility === 'invite_only'
+                        ? 'border-orange-500/45 bg-orange-500/10 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.8)]'
+                        : 'border-white/5 bg-white/[0.03] hover:border-orange-500/35 hover:bg-orange-500/5'
                         }`}
                 >
                     <input type="radio" value="invite_only" {...register('visibility')} className="sr-only" />
@@ -64,7 +64,7 @@ export default function StepVisibility() {
                 </label>
             </section>
 
-            <section className="flex gap-3 rounded-xl border border-orange-500/20 bg-orange-500/5 p-3 text-sm text-[#cfcfcf]">
+            <section className="flex gap-3 rounded-2xl border border-orange-500/20 bg-orange-500/5 p-4 text-sm text-[#cfcfcf]">
                 <Users className="mt-0.5 h-4.5 w-4.5 shrink-0 text-orange-300" />
                 <div className="text-[#b3b3b3]">
                     <p className="mb-1 font-semibold text-orange-200">{tx('jobs.new.stepVisibility.tipTitle', undefined, 'نصيحة:')}</p>

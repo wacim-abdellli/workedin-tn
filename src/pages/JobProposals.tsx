@@ -222,7 +222,15 @@ export default function JobProposals() {
                         duration: p.delivery_time_days as number || 14,
                         created_at: p.created_at as string,
                         status: p.status as ProposalStatus || 'new',
-                        attachments: (p.attachments as Array<{ name: string; size: string }>) || [],
+                        attachments: (Array.isArray(p.attachments) ? p.attachments : []).map((att: any) => {
+                            if (typeof att === 'string') {
+                                const url = att.startsWith('http') ? att : supabase.storage.from('attachments').getPublicUrl(att.replace(/^attachments\//, '')).data.publicUrl;
+                                const isImage = /\.(jpg|jpeg|png|webp|gif|bmp|avif)(\?.*)?$/i.test(att);
+                                const name = att.split('/').pop()?.split('?')[0] || 'Attachment';
+                                return { url, name, size: '', isImage };
+                            }
+                            return att;
+                        }),
                         freelancer: {
                             id: fid,
                             full_name: (profile?.full_name as string) || t.jobProposals.defaultUser,
@@ -458,6 +466,27 @@ export default function JobProposals() {
                     logger.warn('notify_unselected_proposals threw after hire', notifyOthersError);
                 }
             })();
+
+            // Pre-create the contract conversation so Messages page opens it immediately.
+            // We do this synchronously (not fire-and-forget) so the thread exists before we navigate.
+            try {
+                let convoResult = await supabase.rpc('get_or_create_conversation', {
+                    user1: user.id,
+                    user2: proposal.freelancer_id,
+                    p_contract_id: contractId,
+                    p_scope: 'contract',
+                });
+                if (convoResult.error) {
+                    // Fallback for older DB revisions without p_scope
+                    convoResult = await supabase.rpc('get_or_create_conversation', {
+                        user1: user.id,
+                        user2: proposal.freelancer_id,
+                        p_contract_id: contractId,
+                    });
+                }
+            } catch (convoErr) {
+                logger.warn('Pre-creating contract conversation failed; Messages page will retry', convoErr);
+            }
 
             return { id: contractId, freelancerId: proposal.freelancer_id };
         },
