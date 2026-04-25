@@ -35,6 +35,19 @@ interface ContractSharedFile {
     size?: number | string | null;
     uploadedAt?: string | null;
     senderName?: string;
+    storageBucket?: string | null;
+    storagePath?: string | null;
+}
+
+interface ContractDeliveryAsset {
+    id: string;
+    name: string;
+    storagePath: string;
+    storageBucket?: string | null;
+    mimeType?: string | null;
+    sizeBytes?: number | null;
+    assetKind: 'review_asset' | 'final_asset';
+    accessState: 'preview_available' | 'locked' | 'released';
 }
 
 interface ContractSidebarData {
@@ -44,6 +57,8 @@ interface ContractSidebarData {
     fundedAt?: string | null;
     deliverySubmittedAt?: string | null;
     reviewDueAt?: string | null;
+    reviewFiles?: ContractDeliveryAsset[];
+    finalFiles?: ContractDeliveryAsset[];
     job?: { title?: string | null; deadline?: string | null };
     milestones?: ContractMilestone[];
     sharedFiles?: ContractSharedFile[];
@@ -115,6 +130,8 @@ export default function ContractDetailsSidebar({
     const st = ns(currentStatus);
     const milestones = contract.milestones ?? [];
     const sharedFiles = contract.sharedFiles ?? [];
+    const reviewFiles = contract.reviewFiles ?? [];
+    const finalFiles = contract.finalFiles ?? [];
     const otherParty = userRole === 'client' ? contract.freelancer : contract.client;
     const contactRole = userRole === 'client' ? 'Freelancer' : 'Client';
     const cur = 'TND';
@@ -128,6 +145,7 @@ export default function ContractDetailsSidebar({
 
     const contractStatusMeta = useMemo(() => {
         if (st === 'active') return { label: 'In Progress', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25' };
+        if (st === 'delivery_submitted') return { label: 'Under Review', cls: 'bg-sky-500/15 text-sky-300 border-sky-500/25' };
         if (st === 'completed') return { label: 'Completed', cls: 'bg-sky-500/15 text-sky-300 border-sky-500/25' };
         if (st === 'disputed') return { label: 'Disputed', cls: 'bg-red-500/15 text-red-300 border-red-500/25' };
         if (st === 'revision_requested') return { label: 'Revision Requested', cls: 'bg-amber-500/15 text-amber-300 border-amber-500/25' };
@@ -137,20 +155,33 @@ export default function ContractDetailsSidebar({
     }, [st]);
 
     const isActive = st === 'active';
+    const isUnderReview = st === 'delivery_submitted';
     const isRevision = st === 'revision_requested';
     const isPendingPayment = st === 'pending_payment';
     const isCompleted = st === 'completed';
     const isCancelled = st === 'cancelled' || st === 'canceled';
     // canOpenDisputeForStatus: pending_payment | active | revision_requested
-    const canDispute = isActive || isRevision || isPendingPayment;
+    const canDispute = isActive || isUnderReview || isRevision || isPendingPayment;
     // Freelancer delivers when status allows AND no delivery yet submitted
     const showFreelancerDeliver = userRole === 'freelancer' && (isActive || isRevision) && !deliverySubmitted;
-    const showFreelancerWaiting = userRole === 'freelancer' && (isActive || isRevision) && deliverySubmitted;
-    // canClientAcceptForStatus: status === 'active' && hasDeliveryEvidence
-    const showClientActions = userRole === 'client' && isActive && deliverySubmitted;
-    const showClientWaiting = userRole === 'client' && (isActive && !deliverySubmitted);
+    const showFreelancerWaiting = userRole === 'freelancer' && isUnderReview;
+    // canClientAcceptForStatus: status === 'delivery_submitted' && hasDeliveryEvidence
+    const showClientActions = userRole === 'client' && isUnderReview && deliverySubmitted;
+    const showClientWaiting = userRole === 'client' && isActive && !deliverySubmitted;
     const showClientPendingPayment = userRole === 'client' && isPendingPayment;
     const showClientRevisionWaiting = userRole === 'client' && isRevision;
+    const reviewDueLabel = fmtDate(contract.reviewDueAt ?? null, noDue);
+    const reviewDueDate = contract.reviewDueAt ? new Date(contract.reviewDueAt) : null;
+    const isReviewOverdue = Boolean(reviewDueDate && !Number.isNaN(reviewDueDate.getTime()) && reviewDueDate.getTime() < Date.now());
+    const underReviewPolicyMessage = isUnderReview
+        ? (userRole === 'client'
+            ? (isReviewOverdue
+                ? 'Review is overdue. Accept, request changes, or open a dispute now. If you stay inactive, the platform may escalate or auto-resolve the contract according to policy.'
+                : `Review this delivery by ${reviewDueLabel}. If you do nothing, the platform may escalate or auto-resolve the next step according to policy.`)
+            : (isReviewOverdue
+                ? 'Client review is overdue. If the client stays inactive, the platform will follow the contract protection policy next.'
+                : `Client review is due by ${reviewDueLabel}. If the client does nothing, the platform may escalate or auto-resolve the next step according to policy.`))
+        : null;
 
     return (
         <div
@@ -290,15 +321,23 @@ export default function ContractDetailsSidebar({
 
                         {/* Freelancer: waiting */}
                         {showFreelancerWaiting && (
-                            <div className="flex items-center gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-                                <Clock className="h-4 w-4 shrink-0" />
-                                Delivery submitted. Waiting for client review.
+                            <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                                <div className="flex items-center gap-2">
+                                    <Clock className="h-4 w-4 shrink-0" />
+                                    <span>Delivery submitted. Waiting for client review.</span>
+                                </div>
+                                {underReviewPolicyMessage ? (
+                                    <p className="mt-2 text-xs leading-5 text-amber-100/90">{underReviewPolicyMessage}</p>
+                                ) : null}
                             </div>
                         )}
 
                         {/* Client: accept + request changes */}
                         {showClientActions && (
                             <>
+                                <div className={`rounded-xl border px-4 py-3 text-xs leading-5 ${isReviewOverdue ? 'border-red-500/25 bg-red-500/10 text-red-100' : 'border-sky-500/25 bg-sky-500/10 text-sky-100'}`}>
+                                    {underReviewPolicyMessage}
+                                </div>
                                 <button
                                     type="button"
                                     onClick={onAcceptAndPay}
@@ -499,6 +538,91 @@ export default function ContractDetailsSidebar({
                         </div>
                     )}
                 </div>
+
+                {/* ── Delivery Files ── */}
+                {(reviewFiles.length > 0 || finalFiles.length > 0) ? (
+                    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-5 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <FolderOpen className="h-4 w-4 text-amber-400" />
+                            <span className="text-sm font-semibold text-white">Delivery Files</span>
+                        </div>
+
+                        <div>
+                            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500">Review Files</p>
+                            {reviewFiles.length === 0 ? (
+                                <div className="rounded-xl border border-dashed border-zinc-700/60 bg-zinc-800/30 px-4 py-3 text-xs text-zinc-500">
+                                    No review files submitted with this delivery.
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {reviewFiles.slice(0, 4).map((file) => (
+                                        <button
+                                            key={file.id}
+                                            type="button"
+                                            onClick={() => onOpenSharedFile?.({
+                                                id: file.id,
+                                                name: file.name,
+                                                url: '',
+                                                type: file.mimeType ?? null,
+                                                size: file.sizeBytes ?? null,
+                                                storageBucket: file.storageBucket ?? 'contract-files',
+                                                storagePath: file.storagePath,
+                                            })}
+                                            disabled={!onOpenSharedFile}
+                                            className="flex w-full items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-left transition-all hover:border-amber-500/30 hover:bg-zinc-800/60 disabled:cursor-default"
+                                        >
+                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 text-amber-400">
+                                                <FileText className="h-4 w-4" />
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-medium text-white">{file.name}</p>
+                                                <p className="mt-0.5 truncate text-xs text-zinc-500">
+                                                    Review asset{file.sizeBytes ? ` · ${fmtSize(file.sizeBytes)}` : ''}
+                                                </p>
+                                            </div>
+                                            <ChevronRight className="h-4 w-4 shrink-0 text-zinc-600" />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500">Final Files</p>
+                            {finalFiles.length === 0 ? (
+                                <div className="rounded-xl border border-dashed border-zinc-700/60 bg-zinc-800/30 px-4 py-3 text-xs text-zinc-500">
+                                    No final locked files were attached to this delivery.
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {finalFiles.slice(0, 4).map((file) => {
+                                        const isLocked = file.accessState !== 'released';
+                                        return (
+                                            <div
+                                                key={file.id}
+                                                className="flex w-full items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-left"
+                                            >
+                                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 text-amber-400">
+                                                    <FileText className="h-4 w-4" />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="truncate text-sm font-medium text-white">{file.name}</p>
+                                                    <p className="mt-0.5 truncate text-xs text-zinc-500">
+                                                        {isLocked ? 'Locked until acceptance/payment' : 'Released for download'}
+                                                        {file.sizeBytes ? ` · ${fmtSize(file.sizeBytes)}` : ''}
+                                                    </p>
+                                                </div>
+                                                <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${isLocked ? 'border-amber-500/25 bg-amber-500/10 text-amber-300' : 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'}`}>
+                                                    {isLocked ? 'Locked' : 'Released'}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ) : null}
 
             </div>
         </div>

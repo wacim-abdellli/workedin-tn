@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo, type CSSProperties } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import {
     Search,
     Send,
@@ -34,7 +33,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { ReviewForm } from '../components/ui/Reviews';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import { supabase } from '../lib/supabase';
+import { supabase, uploadFileWithMetadata } from '../lib/supabase';
 import {
     getContractConversationInboxPatch,
     repairContractConversationInboxRows,
@@ -297,6 +296,26 @@ type ContractSessionMeta = {
     job_id: string | null;
     proposal_id?: string | null;
     linked_contract_id?: string | null;
+};
+
+type LatestContractDeliveryAsset = {
+    id: string;
+    asset_kind: 'review_asset' | 'final_asset';
+    access_state: 'preview_available' | 'locked' | 'released';
+    name: string;
+    storage_bucket?: string | null;
+    storage_path: string;
+    mime_type?: string | null;
+    size_bytes?: number | null;
+};
+
+type LatestContractDelivery = {
+    id: string;
+    version_number: number;
+    delivery_note?: string | null;
+    review_due_at?: string | null;
+    submitted_at?: string | null;
+    assets?: LatestContractDeliveryAsset[];
 };
 
 type ContractMilestone = {
@@ -957,6 +976,7 @@ function MessagesComponent() {
     const [contractSessionMetaById, setContractSessionMetaById] = useState<Record<string, ContractSessionMeta>>({});
     const [milestonesByContractId, setMilestonesByContractId] = useState<Record<string, ContractMilestone[]>>({});
     const [hasReviewedContractById, setHasReviewedContractById] = useState<Record<string, boolean>>({});
+    const [latestDeliveryByContractId, setLatestDeliveryByContractId] = useState<Record<string, LatestContractDelivery>>({});
 
     // Keep contract status cache in sessionStorage so archived items don't flash on reload
     useEffect(() => {
@@ -981,6 +1001,8 @@ function MessagesComponent() {
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [showUnknownContractBanner, setShowUnknownContractBanner] = useState(false);
     const [deliveryNote, setDeliveryNote] = useState('');
+    const [deliveryReviewFiles, setDeliveryReviewFiles] = useState<File[]>([]);
+    const [deliveryFinalFiles, setDeliveryFinalFiles] = useState<File[]>([]);
     const [deliveryActionError, setDeliveryActionError] = useState<string | null>(null);
     const [disputeReason, setDisputeReason] = useState('');
     const [isDeliveringContractWork, setIsDeliveringContractWork] = useState(false);
@@ -991,6 +1013,8 @@ function MessagesComponent() {
     const [loadingReviewContractId, setLoadingReviewContractId] = useState<string | null>(null);
     const [isContractSidebarVisible, setIsContractSidebarVisible] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const deliveryReviewFileInputRef = useRef<HTMLInputElement>(null);
+    const deliveryFinalFileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const replyHighlightTimeoutRef = useRef<number | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -1116,6 +1140,25 @@ function MessagesComponent() {
     const selectedContractRevisionRemaining = Math.max(selectedContractRevisionLimit - selectedContractRevisionCount, 0);
     const selectedContractDeliverySubmittedAt = selectedContractMeta?.delivery_submitted_at || null;
     const selectedContractReviewDueAt = selectedContractMeta?.review_due_at || null;
+    const selectedContractReviewBanner = useMemo(() => {
+        if (selectedContractStatus !== 'delivery_submitted') return null;
+
+        const dueDate = selectedContractReviewDueAt ? new Date(selectedContractReviewDueAt) : null;
+        const dueLabel = dueDate && !Number.isNaN(dueDate.getTime())
+            ? dueDate.toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')
+            : null;
+        const overdue = Boolean(dueDate && dueDate.getTime() < Date.now());
+
+        if (selectedContractUserRole === 'client') {
+            return overdue
+                ? `Review is overdue. Please accept, request changes, or open a dispute now. If you stay inactive, the platform may escalate or auto-resolve this contract based on policy.`
+                : `This delivery is under review. Review it by ${dueLabel ?? 'the deadline'} and choose Accept and Pay, Request Changes, or Open Dispute. If you do nothing, the platform may escalate or auto-resolve the next step based on policy.`;
+        }
+
+        return overdue
+            ? `Client review is overdue. The platform will follow the contract protection policy next if the client stays inactive.`
+            : `Your delivery is under review until ${dueLabel ?? 'the deadline'}. The client must accept, request changes, or open a dispute. If they do nothing, the platform may escalate or auto-resolve the next step based on policy.`;
+    }, [language, selectedContractReviewDueAt, selectedContractStatus, selectedContractUserRole]);
 
     useEffect(() => {
         if (!selectedContractId || selectedConversationPolicy?.contractStatus !== 'unknown') {
@@ -1328,6 +1371,41 @@ function MessagesComponent() {
         };
     }, [selectedContractId, user?.id]);
 
+    useEffect(() => {
+        if (!selectedContractId) return;
+
+        let cancelled = false;
+
+        const loadLatestDelivery = async () => {
+            try {
+                const { data, error } = await supabase.rpc('get_latest_contract_delivery', {
+                    p_contract_id: selectedContractId,
+                });
+
+                if (cancelled) return;
+                if (error) {
+                    console.warn('[Messages] Failed to load latest contract delivery', error);
+                    return;
+                }
+
+                if (data && typeof data === 'object' && 'id' in data) {
+                    setLatestDeliveryByContractId((prev) => ({
+                        ...prev,
+                        [selectedContractId]: data as LatestContractDelivery,
+                    }));
+                }
+            } catch (caughtError) {
+                console.warn('[Messages] Failed to load latest contract delivery', caughtError);
+            }
+        };
+
+        void loadLatestDelivery();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedContractId]);
+
     const currentUserDisplayName = profile?.full_name || tx('common.you', undefined, 'You');
     const currentUserAvatar = profile?.avatar_url || null;
 
@@ -1435,6 +1513,10 @@ function MessagesComponent() {
             .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())[0];
 
         const otherParticipant = selectedConversation.otherUser;
+        const latestDelivery = selectedContractId ? latestDeliveryByContractId[selectedContractId] : undefined;
+        const latestDeliveryAssets = latestDelivery?.assets ?? [];
+        const reviewFiles = latestDeliveryAssets.filter((asset) => asset.asset_kind === 'review_asset');
+        const finalFiles = latestDeliveryAssets.filter((asset) => asset.asset_kind === 'final_asset');
 
         const clientProfile = selectedContractUserRole === 'client'
             ? {
@@ -1463,6 +1545,26 @@ function MessagesComponent() {
             fundedAt: selectedContractMeta?.funded_at ?? null,
             deliverySubmittedAt: selectedContractDeliverySubmittedAt,
             reviewDueAt: selectedContractReviewDueAt,
+            reviewFiles: reviewFiles.map((asset) => ({
+                id: asset.id,
+                name: asset.name,
+                storagePath: asset.storage_path,
+                storageBucket: asset.storage_bucket ?? 'contract-files',
+                mimeType: asset.mime_type ?? null,
+                sizeBytes: asset.size_bytes ?? null,
+                assetKind: asset.asset_kind,
+                accessState: asset.access_state,
+            })),
+            finalFiles: finalFiles.map((asset) => ({
+                id: asset.id,
+                name: asset.name,
+                storagePath: asset.storage_path,
+                storageBucket: asset.storage_bucket ?? 'contract-files',
+                mimeType: asset.mime_type ?? null,
+                sizeBytes: asset.size_bytes ?? null,
+                assetKind: asset.asset_kind,
+                accessState: asset.access_state,
+            })),
             job: {
                 title,
                 deadline: firstUpcomingDueDate || jobDeadline,
@@ -1484,6 +1586,7 @@ function MessagesComponent() {
         currentUserAvatar,
         currentUserDisplayName,
         isContractSession,
+        latestDeliveryByContractId,
         selectedContractMilestones,
         selectedContractDeliverySubmittedAt,
         selectedContractMeta?.amount,
@@ -1502,7 +1605,7 @@ function MessagesComponent() {
 
     const contractDeliverySubmitted = useMemo(() => {
         if (!isContractSession) return false;
-        if (selectedContractStatus === 'completed') return true;
+        if (selectedContractStatus === 'delivery_submitted' || selectedContractStatus === 'completed') return true;
 
         const freelancerId = selectedContractUserRole === 'client'
             ? selectedConversation?.otherUser.id
@@ -1698,6 +1801,52 @@ function MessagesComponent() {
             }
         }
     }, [showToast, tx]);
+
+    const handleOpenContractSidebarFile = useCallback(async (file: {
+        url?: string;
+        name: string;
+        type?: string | null;
+        size?: number | string | null;
+        storageBucket?: string | null;
+        storagePath?: string | null;
+    }) => {
+        if (file.storageBucket && file.storagePath) {
+            const normalizedType = normalizeMimeType(file.type);
+            const canPreviewInTab = normalizedType.startsWith('image/')
+                || normalizedType.startsWith('audio/')
+                || normalizedType.startsWith('video/')
+                || normalizedType === 'application/pdf';
+
+            try {
+                const { data, error } = await supabase.storage
+                    .from(file.storageBucket)
+                    .download(file.storagePath);
+
+                if (error || !data) {
+                    throw error || new Error('Download failed');
+                }
+
+                openBlobAsPreviewOrDownload(data, file.name || 'attachment', canPreviewInTab);
+                return;
+            } catch (error) {
+                console.error('[Messages] Failed to open contract delivery file:', error);
+                showToast(tx('pages.messages.errors.openAttachment', undefined, 'Failed to open attachment right now'), 'error');
+                return;
+            }
+        }
+
+        if (file.url) {
+            await handleOpenAttachment({
+                url: file.url,
+                name: file.name,
+                type: file.type || 'application/octet-stream',
+                size: file.size ?? 0,
+            });
+            return;
+        }
+
+        showToast(tx('pages.messages.errors.invalidAttachment', undefined, 'Attachment link is not available'), 'error');
+    }, [handleOpenAttachment, showToast, tx]);
 
     // Typing indicators
     const { typingUsers, startTyping, stopTyping } = useTypingIndicator(
@@ -1933,7 +2082,6 @@ function MessagesComponent() {
         if (!parent) return;
 
         window.requestAnimationFrame(() => {
-            messagesVirtualizer.scrollToIndex(Math.max(messages.length - 1, 0), { align: 'end' });
             parent.scrollTo({ top: parent.scrollHeight, behavior });
         });
     };
@@ -3461,9 +3609,37 @@ function MessagesComponent() {
             const messageContent = trimmedNote
                 ? `[[delivery]] ${trimmedNote}`
                 : '[[delivery]] Work delivered and ready for review';
+
+            const uploadDeliveryAssets = async (files: File[], assetKind: 'review' | 'final') => {
+                const uploadedAssets: Array<{ name: string; storage_bucket: string; storage_path: string; mime_type: string; size_bytes: number }> = [];
+
+                for (const file of files) {
+                    const result = await uploadFileWithMetadata(
+                        'contract-files',
+                        `${user.id}/${contractId}/deliveries/${assetKind}`,
+                        file,
+                    );
+
+                    uploadedAssets.push({
+                        name: file.name,
+                        storage_bucket: result.bucket,
+                        storage_path: result.path,
+                        mime_type: file.type,
+                        size_bytes: file.size,
+                    });
+                }
+
+                return uploadedAssets;
+            };
+
+            const reviewAssets = await uploadDeliveryAssets(deliveryReviewFiles, 'review');
+            const finalAssets = await uploadDeliveryAssets(deliveryFinalFiles, 'final');
+
             const { data: deliveryResult, error: deliveryError } = await supabase.rpc('submit_contract_delivery_atomic', {
                 p_contract_id: contractId,
                 p_delivery_note: trimmedNote || 'submitted',
+                p_review_assets: reviewAssets,
+                p_final_assets: finalAssets,
             });
 
             if (deliveryError) throw deliveryError;
@@ -3490,6 +3666,8 @@ function MessagesComponent() {
 
             setIsDeliverModalOpen(false);
             setDeliveryNote('');
+            setDeliveryReviewFiles([]);
+            setDeliveryFinalFiles([]);
             showToast(tx('contract.workDelivered', undefined, 'Work delivered successfully'), 'success');
         } catch (error) {
             const message = getErrorMessage(error, tx('contract.deliverError', undefined, 'Failed to deliver work'));
@@ -3498,7 +3676,7 @@ function MessagesComponent() {
         } finally {
             setIsDeliveringContractWork(false);
         }
-    }, [deliveryNote, selectedConversation, selectedContractStatus, selectedContractUserRole, showToast, syncContractStatusLocally, tx, user?.id]);
+    }, [deliveryFinalFiles, deliveryNote, deliveryReviewFiles, selectedConversation, selectedContractStatus, selectedContractUserRole, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleRequestContractChanges = useCallback(async () => {
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
@@ -4720,17 +4898,17 @@ function MessagesComponent() {
                             ) : null}
                         </div>
 
-                    {selectedConversationPolicy
+                    {(selectedContractReviewBanner || selectedConversationPolicy?.bannerFallback)
+                        && selectedConversationPolicy
                         && selectedConversationPolicy.bannerTone !== 'none'
-                        && selectedConversationPolicy.bannerFallback
                         && (selectedConversationPolicy.contractStatus !== 'unknown' || showUnknownContractBanner) ? (
                         <div className={`mx-4 md:mx-6 mt-4 rounded-xl border px-3 py-2 text-xs flex items-start gap-2 ${getLifecycleBannerClassName(selectedConversationPolicy.bannerTone)}`}>
                             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                             <p>
                                 {tx(
                                     'pages.messages.lifecycleBanner',
-                                    { message: selectedConversationPolicy.bannerFallback },
-                                    selectedConversationPolicy.bannerFallback,
+                                    { message: String(selectedContractReviewBanner || selectedConversationPolicy.bannerFallback || '') },
+                                    selectedContractReviewBanner || selectedConversationPolicy.bannerFallback || '',
                                 )}
                             </p>
                         </div>
@@ -4844,7 +5022,7 @@ function MessagesComponent() {
                                                                 ) : null}
 
                                                                 {shouldRenderStandaloneText ? (
-                                                                    <CollapsibleMessageText text={messageText} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
+                                                                    <CollapsibleMessageText text={messageText ?? ''} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
                                                                 ) : null}
 
                                                                 {!isDeletedMessage(message) && hasAttachments ? (
@@ -4883,7 +5061,7 @@ function MessagesComponent() {
                                                                                         </div>
                                                                                         {shouldRenderImageCaption && index === firstImageAttachmentIndex ? (
                                                                                             <div className={`px-3 py-2 text-sm text-left ${isOwnMessage ? accentClasses.ownTextMuted : 'text-zinc-200'}`}>
-                                                                                                <CollapsibleMessageText text={messageText} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
+                                                                                                <CollapsibleMessageText text={messageText ?? ''} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
                                                                                             </div>
                                                                                         ) : null}
                                                                                     </button>
@@ -5241,13 +5419,8 @@ function MessagesComponent() {
                                         onReview={() => {
                                             setIsReviewModalOpen(true);
                                         }}
-                                        onOpenSharedFile={(file: { url: string; name: string; type?: string | null; size?: number | string | null }) => {
-                                            void handleOpenAttachment({
-                                                url: file.url,
-                                                name: file.name,
-                                                type: file.type || 'application/octet-stream',
-                                                size: file.size ?? 0,
-                                            });
+                                        onOpenSharedFile={(file: { url?: string; name: string; type?: string | null; size?: number | string | null; storageBucket?: string | null; storagePath?: string | null }) => {
+                                            void handleOpenContractSidebarFile(file);
                                         }}
                                         hasLeftReview={selectedContractHasReview}
                                     />
@@ -5318,12 +5491,93 @@ function MessagesComponent() {
                         placeholder={tx('contract.deliverNotePlaceholder', undefined, 'Delivery notes (optional)...')}
                         aria-label={tx('contract.deliverNoteAria', undefined, 'Delivery notes')}
                     />
+                    <div className="space-y-3 rounded-xl border border-[#2f2f2f] bg-[#121212] p-3">
+                        <div>
+                            <p className="text-sm font-medium text-white">Review Files</p>
+                            <p className="mt-1 text-xs text-zinc-400">Files the client can review immediately before accepting.</p>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                <Button variant="outline" onClick={() => deliveryReviewFileInputRef.current?.click()} disabled={isDeliveringContractWork}>
+                                    Add Review Files
+                                </Button>
+                                <input
+                                    ref={deliveryReviewFileInputRef}
+                                    type="file"
+                                    multiple
+                                    className="hidden"
+                                    onChange={(event) => {
+                                        const files = Array.from(event.target.files ?? []);
+                                        if (files.length > 0) {
+                                            setDeliveryReviewFiles((prev) => [...prev, ...files]);
+                                        }
+                                        event.currentTarget.value = '';
+                                    }}
+                                />
+                            </div>
+                            {deliveryReviewFiles.length > 0 ? (
+                                <div className="mt-2 space-y-1 text-xs text-zinc-300">
+                                    {deliveryReviewFiles.map((file, index) => (
+                                        <div key={`${file.name}-${index}`} className="flex items-center justify-between rounded-lg bg-[#0d0d0d] px-2 py-1.5">
+                                            <span className="truncate pr-3">{file.name}</span>
+                                            <button
+                                                type="button"
+                                                className="text-zinc-500 hover:text-white"
+                                                onClick={() => setDeliveryReviewFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index))}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : null}
+                        </div>
+
+                        <div>
+                            <p className="text-sm font-medium text-white">Final Locked Files</p>
+                            <p className="mt-1 text-xs text-zinc-400">Files that stay locked until the client accepts and payment is released.</p>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                <Button variant="outline" onClick={() => deliveryFinalFileInputRef.current?.click()} disabled={isDeliveringContractWork}>
+                                    Add Final Files
+                                </Button>
+                                <input
+                                    ref={deliveryFinalFileInputRef}
+                                    type="file"
+                                    multiple
+                                    className="hidden"
+                                    onChange={(event) => {
+                                        const files = Array.from(event.target.files ?? []);
+                                        if (files.length > 0) {
+                                            setDeliveryFinalFiles((prev) => [...prev, ...files]);
+                                        }
+                                        event.currentTarget.value = '';
+                                    }}
+                                />
+                            </div>
+                            {deliveryFinalFiles.length > 0 ? (
+                                <div className="mt-2 space-y-1 text-xs text-zinc-300">
+                                    {deliveryFinalFiles.map((file, index) => (
+                                        <div key={`${file.name}-${index}`} className="flex items-center justify-between rounded-lg bg-[#0d0d0d] px-2 py-1.5">
+                                            <span className="truncate pr-3">{file.name}</span>
+                                            <button
+                                                type="button"
+                                                className="text-zinc-500 hover:text-white"
+                                                onClick={() => setDeliveryFinalFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index))}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : null}
+                        </div>
+                    </div>
                     <div className="flex items-center justify-end gap-3">
                         <Button
                             variant="ghost"
                             onClick={() => {
                                 setIsDeliverModalOpen(false);
                                 setDeliveryActionError(null);
+                                setDeliveryReviewFiles([]);
+                                setDeliveryFinalFiles([]);
                             }}
                             disabled={isDeliveringContractWork}
                         >

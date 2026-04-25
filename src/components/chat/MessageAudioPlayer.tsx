@@ -242,11 +242,10 @@ export function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, acce
                     }}
                     disabled={hasError}
                     aria-label={`${isPlaying ? tx('pages.messages.pauseAudio', undefined, 'Pause audio') : tx('pages.messages.playAudio', undefined, 'Play audio')} ${displayAudioName}`}
-                    className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center transition-colors disabled:opacity-50 ${
-                        isOwn
+                    className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center transition-colors disabled:opacity-50 ${isOwn
                             ? (isVioletAccent ? 'bg-white text-violet-600 hover:bg-gray-100' : 'bg-white text-amber-600 hover:bg-gray-100')
                             : (isVioletAccent ? 'bg-violet-500 text-white hover:bg-violet-400' : 'bg-amber-500 text-white hover:bg-amber-400')
-                    }`}
+                        }`}
                 >
                     {isLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -263,13 +262,12 @@ export function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, acce
                         return (
                             <div
                                 key={index}
-                                className={`w-1 rounded-full transition-colors ${
-                                    isOwn
+                                className={`w-1 rounded-full transition-colors ${isOwn
                                         ? (isVioletAccent
                                             ? (isActiveBar ? 'bg-violet-200' : 'bg-violet-300')
                                             : (isActiveBar ? 'bg-amber-200' : 'bg-amber-300'))
                                         : (isActiveBar ? 'bg-gray-400' : 'bg-gray-500')
-                                }`}
+                                    }`}
                                 style={{ height: `${barHeight}px` }}
                             />
                         );

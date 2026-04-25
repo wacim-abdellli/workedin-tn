@@ -32,6 +32,7 @@ export const normalizeContractStatus = (value: string | null | undefined): Contr
 
     if (
         normalized === 'active'
+        || normalized === 'delivery_submitted'
         || normalized === 'completed'
         || normalized === 'cancelled'
         || normalized === 'disputed'
@@ -94,6 +95,21 @@ const buildContractPolicy = (status: ContractMessagingStatus): MessagingLifecycl
                 canReply: true,
                 bannerTone: 'info',
                 bannerFallback: 'Payment is still being confirmed for this contract. Messaging remains open.',
+                blockedReasonFallback: null,
+            };
+        case 'delivery_submitted':
+            return {
+                kind: 'contract',
+                contractStatus: status,
+                stateLabelFallback: 'Under review',
+                contextLabelFallback: 'Contract chat • Under review',
+                isReadOnly: false,
+                canSend: true,
+                canAttachFiles: true,
+                canSendVoiceNotes: true,
+                canReply: true,
+                bannerTone: 'info',
+                bannerFallback: 'Delivery submitted. The client is now reviewing the work before approval, changes, or dispute.',
                 blockedReasonFallback: null,
             };
         case 'revision_requested':

@@ -110,6 +110,7 @@ const expectedJobStatusFromContract = (contractStatus: string) => {
     if (normalized === 'completed') return 'completed';
     if (normalized === 'cancelled' || normalized === 'canceled') return 'cancelled';
     if (normalized === 'disputed') return 'disputed';
+    if (normalized === 'delivery_submitted') return 'in_progress';
     return 'in_progress';
 };
 

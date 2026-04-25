@@ -119,6 +119,7 @@ const deriveJobStatus = (
   // Contract state is the strongest signal when a contract exists.
   if (contract) {
     if (normalizedContractStatus === 'pending_payment') return 'needs_attention';
+    if (normalizedContractStatus === 'delivery_submitted') return 'in_progress';
     if (normalizedContractStatus === 'completed') return 'finished_success';
     if (normalizedContractStatus === 'cancelled' || normalizedContractStatus === 'canceled') return 'finished_unsuccessful';
     if (normalizedContractStatus === 'disputed') return 'needs_attention';
