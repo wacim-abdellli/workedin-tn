@@ -74,6 +74,22 @@ async function validateMessageAttachmentScope(adminClient: any, userId: string, 
   return { ok: true }
 }
 
+function validateContractFileScope(userId: string, desiredPath: string) {
+  const segments = getRawStoragePathSegments(desiredPath)
+  const [pathUserId, contractId, deliveriesSegment, assetKind] = segments
+
+  if (
+    pathUserId !== userId
+    || !contractId
+    || deliveriesSegment !== 'deliveries'
+    || !['review', 'final'].includes(assetKind || '')
+  ) {
+    return { ok: false, reason: 'Contract files must stay inside your contract delivery scope.' }
+  }
+
+  return { ok: true }
+}
+
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get('origin'))
 
@@ -92,6 +108,13 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
+
+    if (!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {
+      return new Response(JSON.stringify({ error: 'Upload service is not configured. Missing service role key.' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     const { data: { user }, error: authError } = await authClient.auth.getUser()
     if (authError || !user) {
@@ -161,6 +184,10 @@ serve(async (req) => {
       ? await validateMessageAttachmentScope(adminClient, user.id, desiredPath)
       : { ok: true as const }
 
+    const contractFileScope = bucket === 'contract-files'
+      ? validateContractFileScope(user.id, desiredPath)
+      : { ok: true as const }
+
     const sanitizedPath = sanitizeStoragePath({
       bucket,
       userId: user.id,
@@ -168,8 +195,8 @@ serve(async (req) => {
       fileName: file.name,
     })
 
-    if (!validation.ok || !messageAttachmentScope.ok || !sanitizedPath.ok) {
-      const reason = validation.reason || messageAttachmentScope.reason || sanitizedPath.reason || 'upload_validation_failed'
+    if (!validation.ok || !messageAttachmentScope.ok || !contractFileScope.ok || !sanitizedPath.ok) {
+      const reason = validation.reason || messageAttachmentScope.reason || contractFileScope.reason || sanitizedPath.reason || 'upload_validation_failed'
       await logUploadEvent(adminClient, {
         user_id: user.id,
         bucket,
@@ -249,4 +276,3 @@ serve(async (req) => {
     })
   }
 })
-

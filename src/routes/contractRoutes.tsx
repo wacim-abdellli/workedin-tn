@@ -17,6 +17,7 @@ const LeaveReview = lazy(() => import('@/pages/LeaveReview'));
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const PaymentFailed = lazy(() => import('@/pages/PaymentFailed'));
 const EditJob = lazy(() => import('@/pages/EditJob'));
+const ContractWorkspacePage = lazy(() => import('@/pages/ContractWorkspacePage'));
 
 function ContractSessionRedirect() {
   const { contractId } = useParams<{ contractId: string }>();
@@ -123,5 +124,15 @@ export const contractRoutes: AppRouteDefinition[] = [
       errorBoundary: true,
     },
     withErrorBoundary(withProtected(<PaymentFailed />)),
+  ),
+  defineRoute(
+    {
+      path: '/workspace/:contractId',
+      page: 'ContractWorkspacePage',
+      section: 'contracts',
+      guard: 'protected',
+      errorBoundary: true,
+    },
+    withErrorBoundary(withProtected(<ContractWorkspacePage />)),
   ),
 ];

@@ -63,7 +63,7 @@ import { useReadReceipts } from '../hooks/useReadReceipts';
 import { useTranslation } from '../i18n';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { validateUploadSelection } from '../lib/uploadPolicy';
-import ContractDetailsSidebar from '@/components/contracts/ContractDetailsSidebar';
+import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
 import {
     normalizeContractStatus,
     resolveMessagingLifecyclePolicy,
@@ -80,6 +80,7 @@ import { detectContractChatSafetyRisk } from '../lib/contractChatSafety';
 import { isProtectedContractEvidenceMessage } from '../lib/contractEvidence';
 import { validateUploadPayload } from '../lib/uploadPolicy';
 import { getErrorMessage } from '../lib/errorMessage';
+import { getContractWorkspaceRoute } from '@/lib/routes';
 
 import {
   fileToBase64,
@@ -315,6 +316,7 @@ type LatestContractDelivery = {
     delivery_note?: string | null;
     review_due_at?: string | null;
     submitted_at?: string | null;
+    locked_final_asset_count?: number | null;
     assets?: LatestContractDeliveryAsset[];
 };
 
@@ -1011,7 +1013,8 @@ function MessagesComponent() {
     const [isOpeningContractDispute, setIsOpeningContractDispute] = useState(false);
     const [loadingMilestonesContractId, setLoadingMilestonesContractId] = useState<string | null>(null);
     const [loadingReviewContractId, setLoadingReviewContractId] = useState<string | null>(null);
-    const [isContractSidebarVisible, setIsContractSidebarVisible] = useState(false);
+    const [isContractWorkspaceOpen, setIsContractWorkspaceOpen] = useState(false);
+    const [isBannerExpanded, setIsBannerExpanded] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const deliveryReviewFileInputRef = useRef<HTMLInputElement>(null);
     const deliveryFinalFileInputRef = useRef<HTMLInputElement>(null);
@@ -1105,7 +1108,7 @@ function MessagesComponent() {
 
     useEffect(() => {
         if (!isContractSession) {
-            setIsContractSidebarVisible(false);
+            setIsContractWorkspaceOpen(false);
             setIsReviewModalOpen(false);
             return;
         }
@@ -1371,40 +1374,39 @@ function MessagesComponent() {
         };
     }, [selectedContractId, user?.id]);
 
+    const refreshLatestContractDelivery = useCallback(async (contractId: string) => {
+        try {
+            const { data, error } = await supabase.rpc('get_latest_contract_delivery', {
+                p_contract_id: contractId,
+            });
+
+            if (error) {
+                console.warn('[Messages] Failed to load latest contract delivery', error);
+                return;
+            }
+
+            setLatestDeliveryByContractId((prev) => {
+                if (data && typeof data === 'object' && 'id' in data) {
+                    return {
+                        ...prev,
+                        [contractId]: data as LatestContractDelivery,
+                    };
+                }
+
+                const rest = { ...prev };
+                delete rest[contractId];
+                return rest;
+            });
+        } catch (caughtError) {
+            console.warn('[Messages] Failed to load latest contract delivery', caughtError);
+        }
+    }, []);
+
     useEffect(() => {
         if (!selectedContractId) return;
 
-        let cancelled = false;
-
-        const loadLatestDelivery = async () => {
-            try {
-                const { data, error } = await supabase.rpc('get_latest_contract_delivery', {
-                    p_contract_id: selectedContractId,
-                });
-
-                if (cancelled) return;
-                if (error) {
-                    console.warn('[Messages] Failed to load latest contract delivery', error);
-                    return;
-                }
-
-                if (data && typeof data === 'object' && 'id' in data) {
-                    setLatestDeliveryByContractId((prev) => ({
-                        ...prev,
-                        [selectedContractId]: data as LatestContractDelivery,
-                    }));
-                }
-            } catch (caughtError) {
-                console.warn('[Messages] Failed to load latest contract delivery', caughtError);
-            }
-        };
-
-        void loadLatestDelivery();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [selectedContractId]);
+        void refreshLatestContractDelivery(selectedContractId);
+    }, [refreshLatestContractDelivery, selectedContractId]);
 
     const currentUserDisplayName = profile?.full_name || tx('common.you', undefined, 'You');
     const currentUserAvatar = profile?.avatar_url || null;
@@ -1517,6 +1519,12 @@ function MessagesComponent() {
         const latestDeliveryAssets = latestDelivery?.assets ?? [];
         const reviewFiles = latestDeliveryAssets.filter((asset) => asset.asset_kind === 'review_asset');
         const finalFiles = latestDeliveryAssets.filter((asset) => asset.asset_kind === 'final_asset');
+        const lockedFinalFilesCount = Number(
+            latestDelivery?.locked_final_asset_count ?? finalFiles.filter((asset) => asset.access_state !== 'released').length
+        );
+        const visibleFinalFiles = selectedContractUserRole === 'client'
+            ? finalFiles.filter((asset) => asset.access_state === 'released')
+            : finalFiles;
 
         const clientProfile = selectedContractUserRole === 'client'
             ? {
@@ -1555,7 +1563,7 @@ function MessagesComponent() {
                 assetKind: asset.asset_kind,
                 accessState: asset.access_state,
             })),
-            finalFiles: finalFiles.map((asset) => ({
+            finalFiles: visibleFinalFiles.map((asset) => ({
                 id: asset.id,
                 name: asset.name,
                 storagePath: asset.storage_path,
@@ -1565,6 +1573,7 @@ function MessagesComponent() {
                 assetKind: asset.asset_kind,
                 accessState: asset.access_state,
             })),
+            lockedFinalFilesCount,
             job: {
                 title,
                 deadline: firstUpcomingDueDate || jobDeadline,
@@ -1646,6 +1655,71 @@ function MessagesComponent() {
         milestonesByContractId,
         selectedContractId,
         user?.id,
+    ]);
+
+    const contractCockpit = useMemo(() => {
+        if (!isContractSession || !contractSidebarData) return null;
+
+        const status = String(selectedContractStatus || 'unknown').trim().toLowerCase();
+        const amount = new Intl.NumberFormat(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US', {
+            maximumFractionDigits: 2,
+        }).format(Number(contractSidebarData.amount ?? 0));
+        const formatContractDate = (value: string | null | undefined) => {
+            if (!value) return 'No due date';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return 'No due date';
+            return date.toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US');
+        };
+        const dueLabel = formatContractDate(contractSidebarData.job?.deadline ?? null);
+        const reviewDueLabel = formatContractDate(contractSidebarData.reviewDueAt ?? null);
+        const statusLabel = (() => {
+            if (status === 'active') return 'In progress';
+            if (status === 'delivery_submitted') return 'Under review';
+            if (status === 'revision_requested') return 'Revision requested';
+            if (status === 'completed') return 'Completed';
+            if (status === 'disputed') return 'Disputed';
+            if (status === 'pending_payment') return 'Payment pending';
+            if (status === 'cancelled' || status === 'canceled') return 'Cancelled';
+            return 'Syncing';
+        })();
+        const nextStep = (() => {
+            if (selectedContractUserRole === 'client' && status === 'delivery_submitted') return 'Review delivery, then accept, request changes, or dispute.';
+            if (selectedContractUserRole === 'freelancer' && status === 'delivery_submitted') return 'Waiting for client review. Final files stay protected.';
+            if (selectedContractUserRole === 'freelancer' && (status === 'active' || status === 'revision_requested')) return 'Submit review files and locked final files when ready.';
+            if (selectedContractUserRole === 'client' && status === 'active') return 'Freelancer is working. Delivery will appear here.';
+            if (status === 'completed') return selectedContractHasReview ? 'Contract is complete.' : 'Leave a review to close the trust loop.';
+            if (status === 'pending_payment') return 'Payment must be confirmed before work begins.';
+            if (status === 'disputed') return 'Dispute is open. Evidence is preserved.';
+            return 'Keep the conversation open while the contract syncs.';
+        })();
+        const theme = selectedContractUserRole === 'client'
+            ? {
+                shell: 'border-sky-500/25 bg-sky-500/10',
+                chip: 'border-sky-400/30 bg-sky-400/10 text-sky-100',
+                accent: 'text-sky-200',
+            }
+            : {
+                shell: 'border-violet-500/25 bg-violet-500/10',
+                chip: 'border-violet-400/30 bg-violet-400/10 text-violet-100',
+                accent: 'text-violet-200',
+            };
+
+        return {
+            amount: `${amount} TND`,
+            dueLabel,
+            reviewDueLabel,
+            nextStep,
+            statusLabel,
+            theme,
+            title: contractSidebarData.job?.title || 'Contract workspace',
+        };
+    }, [
+        contractSidebarData,
+        isContractSession,
+        language,
+        selectedContractHasReview,
+        selectedContractStatus,
+        selectedContractUserRole,
     ]);
 
     const deleteModalWorkspaceVars = useMemo(() => {
@@ -3590,6 +3664,7 @@ function MessagesComponent() {
     }, []);
 
     const handleDeliverContractWork = useCallback(async () => {
+        if (isDeliveringContractWork) return;
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
 
         setDeliveryActionError(null);
@@ -3606,6 +3681,28 @@ function MessagesComponent() {
 
             const contractId = selectedConversation.contract_id;
             const trimmedNote = deliveryNote.trim();
+            if (deliveryReviewFiles.length === 0) {
+                setDeliveryActionError('Add at least one review file the client can inspect before accepting.');
+                return;
+            }
+            if (deliveryFinalFiles.length === 0) {
+                setDeliveryActionError('Add at least one final locked file that will unlock after payment release.');
+                return;
+            }
+
+            for (const file of [...deliveryReviewFiles, ...deliveryFinalFiles]) {
+                const validation = validateUploadSelection({
+                    bucket: 'contract-files',
+                    fileName: file.name,
+                    mimeType: normalizeMimeType(file.type),
+                    size: file.size,
+                });
+
+                if (!validation.ok) {
+                    throw new Error(`${file.name}: ${validation.reason || 'Unsupported file type.'}`);
+                }
+            }
+
             const messageContent = trimmedNote
                 ? `[[delivery]] ${trimmedNote}`
                 : '[[delivery]] Work delivered and ready for review';
@@ -3614,11 +3711,25 @@ function MessagesComponent() {
                 const uploadedAssets: Array<{ name: string; storage_bucket: string; storage_path: string; mime_type: string; size_bytes: number }> = [];
 
                 for (const file of files) {
-                    const result = await uploadFileWithMetadata(
-                        'contract-files',
-                        `${user.id}/${contractId}/deliveries/${assetKind}`,
-                        file,
-                    );
+                    const uniqueFileName = `${Date.now()}-${crypto.randomUUID()}-${file.name}`;
+                    let result: Awaited<ReturnType<typeof uploadFileWithMetadata>>;
+                    try {
+                        result = await uploadFileWithMetadata(
+                            'contract-files',
+                            `${user.id}/${contractId}/deliveries/${assetKind}/${uniqueFileName}`,
+                            file,
+                        );
+                    } catch (error) {
+                        const message = getErrorMessage(error, 'Upload was blocked by storage policy');
+                        if (message.toLowerCase().includes('row-level security')) {
+                            throw new Error(
+                                `File upload failed (${assetKind}): protected delivery storage is not configured yet. `
+                                + 'Redeploy the secure-upload Edge Function with SUPABASE_SERVICE_ROLE_KEY, or add an INSERT policy for contract-files.'
+                            );
+                        }
+
+                        throw new Error(`File upload failed (${assetKind}): ${message}`);
+                    }
 
                     uploadedAssets.push({
                         name: file.name,
@@ -3642,7 +3753,9 @@ function MessagesComponent() {
                 p_final_assets: finalAssets,
             });
 
-            if (deliveryError) throw deliveryError;
+            if (deliveryError) {
+                throw new Error(`Delivery record failed: ${getErrorMessage(deliveryError, 'Delivery was blocked by database policy')}`);
+            }
 
             const returnedStatus = normalizeContractStatus(
                 deliveryResult && typeof deliveryResult === 'object' && 'status' in deliveryResult
@@ -3654,6 +3767,8 @@ function MessagesComponent() {
                 syncContractStatusLocally(contractId, returnedStatus);
             }
 
+            await refreshLatestContractDelivery(contractId);
+
             const { error } = await sendContractMessage({
                 contract_id: contractId,
                 sender_id: user.id,
@@ -3662,7 +3777,9 @@ function MessagesComponent() {
                 message_type: 'delivery',
             });
 
-            if (error) throw error;
+            if (error) {
+                throw new Error(`Delivery message failed: ${getErrorMessage(error, 'Message was blocked by database policy')}`);
+            }
 
             setIsDeliverModalOpen(false);
             setDeliveryNote('');
@@ -3676,7 +3793,7 @@ function MessagesComponent() {
         } finally {
             setIsDeliveringContractWork(false);
         }
-    }, [deliveryFinalFiles, deliveryNote, deliveryReviewFiles, selectedConversation, selectedContractStatus, selectedContractUserRole, showToast, syncContractStatusLocally, tx, user?.id]);
+    }, [deliveryFinalFiles, deliveryNote, deliveryReviewFiles, isDeliveringContractWork, refreshLatestContractDelivery, selectedConversation, selectedContractStatus, selectedContractUserRole, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleRequestContractChanges = useCallback(async () => {
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
@@ -3779,6 +3896,7 @@ function MessagesComponent() {
             if (releaseError) throw releaseError;
 
             syncContractStatusLocally(selectedConversation.contract_id, 'completed');
+            await refreshLatestContractDelivery(selectedConversation.contract_id);
 
             const { error: messageError } = await sendContractMessage({
                 contract_id: selectedConversation.contract_id,
@@ -3798,7 +3916,7 @@ function MessagesComponent() {
         } finally {
             setIsAcceptingContractWork(false);
         }
-    }, [contractDeliverySubmitted, selectedContractStatus, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
+    }, [contractDeliverySubmitted, refreshLatestContractDelivery, selectedContractStatus, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleOpenContractDispute = useCallback(async () => {
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
@@ -4273,7 +4391,7 @@ function MessagesComponent() {
         return conversations.filter((c) => {
             const contractStatus = c.contract_id ? contractStatusById[c.contract_id] ?? '' : '';
             const isTerminalAndRead = TERMINAL_STATUSES.has(contractStatus) && c.unread_count === 0
-                && selectedConversation?.id !== c.id;
+                && (showArchived || selectedConversation?.id !== c.id);
             const isManuallyArchived = archivedConversationIds.has(c.id);
             const isArchived = isManuallyArchived || isTerminalAndRead;
 
@@ -4310,6 +4428,71 @@ function MessagesComponent() {
         return sortConversationsByActivity(deduped, contractStatusById);
     }, [filteredConversations, contractStatusById]);
 
+    const contractActionBar = useMemo(() => {
+        if (!isContractSession || !selectedContractStatus) return null;
+
+        const status = String(selectedContractStatus).trim().toLowerCase();
+        const workflowStatus = selectedContractStatus === 'unknown' ? null : selectedContractStatus;
+        const canDeliver = selectedContractUserRole === 'freelancer'
+            && canFreelancerDeliverForStatus(workflowStatus)
+            && !contractDeliverySubmitted;
+        const canClientReview = selectedContractUserRole === 'client'
+            && canClientAcceptForStatus(workflowStatus, contractDeliverySubmitted)
+            && contractDeliverySubmitted;
+        const canRequestChanges = selectedContractUserRole === 'client'
+            && canClientRequestChangesForStatus(workflowStatus, contractDeliverySubmitted)
+            && selectedContractRevisionRemaining > 0;
+        const canDispute = canOpenDisputeForStatus(workflowStatus);
+
+        if (canDeliver) {
+            return {
+                tone: 'border-violet-500/25 bg-violet-500/10 text-violet-100',
+                text: status === 'revision_requested' ? 'Revision requested. Submit the updated delivery when ready.' : 'Ready to hand off work? Submit review files and locked final files.',
+                primary: 'Deliver Work',
+                onPrimary: () => {
+                    setDeliveryActionError(null);
+                    setIsDeliverModalOpen(true);
+                },
+                secondary: null as null | { label: string; onClick: () => void },
+                danger: canDispute ? { label: 'Open Dispute', onClick: () => setIsDisputeModalOpen(true) } : null,
+            };
+        }
+
+        if (canClientReview) {
+            return {
+                tone: 'border-sky-500/25 bg-sky-500/10 text-sky-100',
+                text: selectedContractRevisionRemaining > 0
+                    ? 'Review delivery files before releasing payment. Final files unlock after acceptance.'
+                    : 'Review delivery files before releasing payment. Revision limit has been reached.',
+                primary: 'Accept & Release',
+                onPrimary: () => setIsAcceptModalOpen(true),
+                secondary: canRequestChanges ? { label: 'Request Changes', onClick: () => { void handleRequestContractChanges(); } } : null,
+                danger: canDispute ? { label: 'Open Dispute', onClick: () => setIsDisputeModalOpen(true) } : null,
+            };
+        }
+
+        if (status === 'completed' && !selectedContractHasReview) {
+            return {
+                tone: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-100',
+                text: 'Contract complete. Leave a review to help future trust decisions.',
+                primary: 'Leave Review',
+                onPrimary: () => setIsReviewModalOpen(true),
+                secondary: null,
+                danger: null,
+            };
+        }
+
+        return null;
+    }, [
+        contractDeliverySubmitted,
+        handleRequestContractChanges,
+        isContractSession,
+        selectedContractHasReview,
+        selectedContractRevisionRemaining,
+        selectedContractStatus,
+        selectedContractUserRole,
+    ]);
+
     const conversationSummaryLabel = useMemo(() => {
         if (showArchived) {
             return `${conversationWorkspaceLabel} / ${tx('pages.messages.archivedLabel', undefined, 'ARCHIVED')}`;
@@ -4326,6 +4509,72 @@ function MessagesComponent() {
 
     // Filter out messages deleted for the current user
     const displayMessages = messages.filter((message) => !deletedForMeMessageIds.has(message.id));
+
+    const selectedContractActivityEvents = useMemo<ContractActivityEvent[]>(() => {
+        if (!selectedContractId || !selectedConversation) return [];
+
+        return displayMessages
+            .filter((message) => {
+                if (message.contract_id !== selectedContractId) return false;
+                // Only include contract lifecycle events — NOT plain chat messages.
+                // A message is a lifecycle event if it has a recognized system kind marker.
+                const systemKind = getMessageContractSystemKind(message);
+                return systemKind !== null;
+            })
+            .map((message) => {
+                const systemKind = getMessageContractSystemKind(message);
+                const text = getMessageDisplayText(message, deletedMessageLabel)
+                    || tx('pages.messages.attachmentLabel', undefined, 'Attachment');
+                const isOwnMessage = message.sender_id === user?.id;
+                const actorRole = systemKind === 'contract_completed'
+                    ? 'system'
+                    : isOwnMessage
+                    ? selectedContractUserRole
+                    : selectedContractUserRole === 'client'
+                    ? 'freelancer'
+                    : 'client';
+                const kind = systemKind === 'delivery'
+                    ? 'delivery'
+                    : systemKind === 'contract_completed'
+                    ? 'payment'
+                    : systemKind === 'review_left'
+                    ? 'review'
+                    : systemKind === 'revision_requested'
+                    ? 'revision'
+                    : systemKind === 'dispute_opened'
+                    ? 'dispute'
+                    : 'message';
+
+                return {
+                    id: message.id,
+                    text,
+                    timestamp: message.created_at,
+                    actorName: actorRole === 'system'
+                        ? 'System'
+                        : isOwnMessage
+                        ? currentUserDisplayName
+                        : selectedConversation.otherUser.full_name,
+                    actorRole,
+                    actorAvatarUrl: actorRole === 'system'
+                        ? null
+                        : isOwnMessage
+                        ? currentUserAvatar
+                        : selectedConversation.otherUser.avatar_url,
+                    kind,
+                    system: actorRole === 'system',
+                } satisfies ContractActivityEvent;
+            });
+    }, [
+        currentUserAvatar,
+        currentUserDisplayName,
+        deletedMessageLabel,
+        displayMessages,
+        selectedContractId,
+        selectedContractUserRole,
+        selectedConversation,
+        tx,
+        user?.id,
+    ]);
 
     // messagesVirtualizer removed - using native flex column.
 
@@ -4752,8 +5001,8 @@ function MessagesComponent() {
     const renderMessageThread = () => (
         <div className={`${showMobileThread ? 'flex' : 'hidden md:flex'} flex-1 flex-col page-bg-base relative`}>
             {selectedConversation ? (
-                <div className="flex h-full min-h-0 flex-1">
-                    <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
+                <div className={`flex h-full min-h-0 flex-1 ${isContractSession ? 'bg-[#07080a]' : ''}`}>
+                    <div className={`relative flex min-w-0 flex-1 flex-col overflow-hidden ${isContractSession ? 'border-l border-white/5 bg-[#090a0d]' : ''}`}>
                         <div className={`pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-stops))] ${accentClasses.threadAmbientGlow}`} />
                         <div className="relative z-20 min-h-[84px] border-b border-[#1b1f24] bg-[#151515] px-4 py-4 backdrop-blur-sm md:px-6">
                             <div className="flex items-start justify-between gap-3">
@@ -4819,18 +5068,11 @@ function MessagesComponent() {
                                     {selectedConversation.contract_id ? (
                                         <button
                                             type="button"
-                                            onClick={() => setIsContractSidebarVisible((prev) => !prev)}
-                                            aria-expanded={isContractSidebarVisible}
-                                            aria-controls="contract-workspace-sidebar"
-                                            className={`hidden xl:inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                                                isContractSidebarVisible
-                                                    ? accentClasses.contractToggleActive
-                                                    : accentClasses.contractToggleIdle
-                                            }`}
+                                            onClick={() => navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
+                                            aria-haspopup="false"
+                                            className={`inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${accentClasses.contractToggleIdle}`}
                                         >
-                                            {isContractSidebarVisible
-                                                ? tx('pages.messages.hideContract', undefined, 'Hide Contract')
-                                                : tx('pages.messages.openContract', undefined, 'Open Contract')}
+                                            {tx('pages.messages.openContractWorkspace', undefined, 'Open Workspace')}
                                         </button>
                                     ) : null}
 
@@ -4897,6 +5139,65 @@ function MessagesComponent() {
                                 </div>
                             ) : null}
                         </div>
+
+                        {contractCockpit ? (
+                            <div className={`relative z-10 mx-4 mt-4 md:mx-6 rounded-2xl border overflow-hidden ${contractCockpit.theme.shell}`}>
+                                {/* Collapsed thin bar — always visible */}
+                                <button
+                                    type="button"
+                                    onClick={() => setIsBannerExpanded(prev => !prev)}
+                                    aria-expanded={isBannerExpanded}
+                                    aria-label="Toggle contract details"
+                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left"
+                                >
+                                    <span className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${contractCockpit.theme.chip}`}>
+                                        {contractCockpit.statusLabel}
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate text-sm font-semibold text-on-surface">
+                                        {contractCockpit.title}
+                                    </span>
+                                    <svg
+                                        className={`h-4 w-4 shrink-0 text-on-surface-muted transition-transform duration-200 ${isBannerExpanded ? 'rotate-180' : ''}`}
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                                        strokeLinecap="round" strokeLinejoin="round"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="m6 9 6 6 6-6" />
+                                    </svg>
+                                </button>
+
+                                {/* Expanded details panel */}
+                                {isBannerExpanded ? (
+                                    <div className="border-t border-white/10 px-4 pb-3 pt-3">
+                                        <p className="mb-3 text-sm leading-5 text-on-surface-muted">
+                                            {contractCockpit.nextStep}
+                                        </p>
+                                        <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface-muted">
+                                            <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                                                <span className={contractCockpit.theme.accent}>Amount</span> {contractCockpit.amount}
+                                            </span>
+                                            <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                                                <span className={contractCockpit.theme.accent}>Due</span> {contractCockpit.dueLabel}
+                                            </span>
+                                            {selectedContractStatus === 'delivery_submitted' ? (
+                                                <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                                                    <span className={contractCockpit.theme.accent}>Review</span> {contractCockpit.reviewDueLabel}
+                                                </span>
+                                            ) : null}
+                                            {selectedConversation.contract_id ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
+                                                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 font-semibold text-on-surface transition hover:bg-white/10"
+                                                >
+                                                    Open Workspace ↗
+                                                </button>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                ) : null}
+                            </div>
+                        ) : null}
 
                     {(selectedContractReviewBanner || selectedConversationPolicy?.bannerFallback)
                         && selectedConversationPolicy
@@ -4997,7 +5298,7 @@ function MessagesComponent() {
                                                                     isDeletedMessage(message)
                                                                         ? 'rounded-full border border-surface surface-sunken text-on-surface-subtle px-3 py-1.5 text-xs'
                                                                         : isContractSystemMessage
-                                                                        ? 'rounded-xl border border-sky-500/35 bg-sky-500/10 text-sky-100 px-3 py-2 text-xs font-medium'
+                                                                        ? 'flex items-center gap-2 rounded-full border border-white/[0.07] bg-[#111214] px-4 py-2 text-[12px] font-medium text-[#8A8880] tracking-wide'
                                                                         : (hasImageAttachment && (isImageOnlyMessage || shouldRenderImageCaption))
                                                                         ? (isOwnMessage
                                                                             ? `${accentClasses.ownBubbleBg} p-1 overflow-hidden rounded-2xl rounded-br-sm text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
@@ -5021,7 +5322,12 @@ function MessagesComponent() {
                                                                     </button>
                                                                 ) : null}
 
-                                                                {shouldRenderStandaloneText ? (
+                                                                {isContractSystemMessage ? (
+                                                                    <>
+                                                                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px]">⚡</span>
+                                                                        <span>{messageText}</span>
+                                                                    </>
+                                                                ) : shouldRenderStandaloneText ? (
                                                                     <CollapsibleMessageText text={messageText ?? ''} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
                                                                 ) : null}
 
@@ -5186,6 +5492,50 @@ function MessagesComponent() {
                     ) : null}
 
                     <div className="shrink-0 border-t border-[#191c21] bg-[#0d0d0f]/98 px-4 py-3 backdrop-blur-sm">
+                        {contractActionBar ? (
+                            <div className={`mb-3 rounded-2xl border px-3 py-3 ${contractActionBar.tone}`}>
+                                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                                    <p className="text-sm font-medium leading-5">{contractActionBar.text}</p>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={contractActionBar.onPrimary}
+                                            disabled={isAnyContractActionLoading}
+                                            className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-black transition hover:bg-zinc-200 disabled:opacity-60"
+                                        >
+                                            {contractActionBar.primary}
+                                        </button>
+                                        {contractActionBar.secondary ? (
+                                            <button
+                                                type="button"
+                                                onClick={contractActionBar.secondary.onClick}
+                                                disabled={isAnyContractActionLoading}
+                                                className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs font-bold text-on-surface transition hover:bg-white/10 disabled:opacity-60"
+                                            >
+                                                {contractActionBar.secondary.label}
+                                            </button>
+                                        ) : null}
+                                        {contractActionBar.danger ? (
+                                            <button
+                                                type="button"
+                                                onClick={contractActionBar.danger.onClick}
+                                                disabled={isAnyContractActionLoading}
+                                                className="rounded-xl border border-rose-400/25 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-100 transition hover:bg-rose-500/15 disabled:opacity-60"
+                                            >
+                                                {contractActionBar.danger.label}
+                                            </button>
+                                        ) : null}
+                                        <button
+                                            type="button"
+                                            onClick={() => selectedConversation?.contract_id && navigate(getContractWorkspaceRoute(selectedConversation.contract_id))}
+                                            className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold text-on-surface-muted transition hover:bg-white/5 hover:text-on-surface"
+                                        >
+                                            Workspace ↗
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
                         {replyTarget ? (
                             <div className="mb-3 rounded-xl border border-[#1f2328] bg-[#111317] px-3 py-2">
                                 <div className="flex items-start gap-2">
@@ -5273,179 +5623,145 @@ function MessagesComponent() {
 
                         <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={MESSAGE_ATTACHMENT_ACCEPT} />
 
-                        <div className={`flex items-end rounded-[26px] border p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02),0_20px_45px_-32px_rgba(0,0,0,0.85)] transition-all ${accentClasses.composerShell}`}>
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isSending || !!selectedFile || !canAttachInSelectedConversation}
-                                aria-label={tx('pages.messages.a11y.attachFile', undefined, 'Attach file')}
-                                className="p-2.5 text-zinc-500 hover:text-white hover:bg-[#1e1c22] rounded-xl cursor-pointer transition-all disabled:opacity-50"
-                            >
-                                <Paperclip className="w-4 h-4" />
-                            </button>
+                        {!canSendInSelectedConversation ? (
+                            /* ── Premium Read-Only Lock Panel ── */
+                            <div className="flex items-center gap-3 rounded-[20px] border border-white/[0.07] bg-[#111214] px-4 py-3.5">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-white/[0.07] bg-[#161719] text-[#55534F]">
+                                    <Flag className="h-4 w-4" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[13px] font-medium text-[#8A8880]">
+                                        {selectedConversationPolicy?.blockedReasonFallback || 'This conversation is read-only.'}
+                                    </p>
+                                </div>
+                                {selectedConversation?.contract_id ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
+                                        className="shrink-0 rounded-[10px] border border-white/[0.07] bg-[#161719] px-3 py-1.5 text-[13px] font-medium text-[#8A8880] transition-colors hover:border-white/[0.12] hover:bg-[#1a1b1e] hover:text-[#F0EFE8]"
+                                    >
+                                        View workspace ↗
+                                    </button>
+                                ) : null}
+                            </div>
+                        ) : (
+                            /* ── Normal Composer ── */
+                            <div className={`flex items-end rounded-[26px] border p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02),0_20px_45px_-32px_rgba(0,0,0,0.85)] transition-all ${accentClasses.composerShell}`}>
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isSending || !!selectedFile || !canAttachInSelectedConversation}
+                                    aria-label={tx('pages.messages.a11y.attachFile', undefined, 'Attach file')}
+                                    className="p-2.5 text-zinc-500 hover:text-white hover:bg-[#1e1c22] rounded-xl cursor-pointer transition-all disabled:opacity-50"
+                                >
+                                    <Paperclip className="w-4 h-4" />
+                                </button>
 
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (!canSendVoiceInSelectedConversation) {
-                                        const blockedMessage = selectedConversationPolicy?.blockedReasonFallback
-                                            || 'Voice notes are disabled for this conversation.';
-                                        showToast(
-                                            tx(
-                                                'pages.messages.readOnlyThread',
-                                                { message: blockedMessage },
-                                                blockedMessage,
-                                            ),
-                                            'warning'
-                                        );
-                                        return;
-                                    }
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (!canSendVoiceInSelectedConversation) {
+                                            const blockedMessage = selectedConversationPolicy?.blockedReasonFallback
+                                                || 'Voice notes are disabled for this conversation.';
+                                            showToast(
+                                                tx(
+                                                    'pages.messages.readOnlyThread',
+                                                    { message: blockedMessage },
+                                                    blockedMessage,
+                                                ),
+                                                'warning'
+                                            );
+                                            return;
+                                        }
 
-                                    if (isRecording) {
-                                        stopRecording();
-                                    } else {
-                                        startRecording();
-                                    }
-                                }}
-                                disabled={isSending || !canSendVoiceInSelectedConversation}
-                                aria-label={isRecording
-                                    ? tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')
-                                    : tx('pages.messages.a11y.startRecording', undefined, 'Start recording')}
-                                className={`p-2.5 rounded-xl transition-all ${
-                                    isRecording
-                                        ? 'bg-red-500/20 text-red-300'
-                                        : 'text-zinc-500 hover:text-white hover:bg-[#1e1c22]'
-                                } disabled:opacity-50`}
-                            >
-                                {isRecording ? <Square className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
-                            </button>
+                                        if (isRecording) {
+                                            stopRecording();
+                                        } else {
+                                            startRecording();
+                                        }
+                                    }}
+                                    disabled={isSending || !canSendVoiceInSelectedConversation}
+                                    aria-label={isRecording
+                                        ? tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')
+                                        : tx('pages.messages.a11y.startRecording', undefined, 'Start recording')}
+                                    className={`p-2.5 rounded-xl transition-all ${
+                                        isRecording
+                                            ? 'bg-red-500/20 text-red-300'
+                                            : 'text-zinc-500 hover:text-white hover:bg-[#1e1c22]'
+                                    } disabled:opacity-50`}
+                                >
+                                    {isRecording ? <Square className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
+                                </button>
 
-                            <textarea
-                                id="messages-thread-composer-input"
-                                ref={messageInputRef}
-                                value={newMessage}
-                                onChange={(e) => {
-                                    setNewMessage(e.target.value);
-                                    if (e.target.value.trim()) {
-                                        startTyping();
-                                    } else {
-                                        stopTyping();
-                                    }
+                                <textarea
+                                    id="messages-thread-composer-input"
+                                    ref={messageInputRef}
+                                    value={newMessage}
+                                    onChange={(e) => {
+                                        setNewMessage(e.target.value);
+                                        if (e.target.value.trim()) {
+                                            startTyping();
+                                        } else {
+                                            stopTyping();
+                                        }
 
-                                    e.currentTarget.style.height = '44px';
-                                    e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 128)}px`;
-                                }}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
+                                        e.currentTarget.style.height = '44px';
+                                        e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 128)}px`;
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            stopTyping();
+                                            void handleSendMessage();
+                                        }
+                                    }}
+                                    onBlur={stopTyping}
+                                    placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Type a message...')}
+                                    disabled={isSending || isRecording}
+                                    rows={1}
+                                    className="flex-1 bg-transparent border-0 ring-0 focus:ring-0 focus:border-transparent text-white text-sm px-3 py-2.5 outline-none resize-none max-h-32 min-h-[44px] placeholder:text-zinc-500 disabled:opacity-50"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
                                         stopTyping();
                                         void handleSendMessage();
-                                    }
-                                }}
-                                onBlur={stopTyping}
-                                placeholder={canSendInSelectedConversation
-                                    ? tx('pages.messages.messagePlaceholder', undefined, 'Type a message...')
-                                    : (() => {
-                                        const blockedMessage = selectedConversationPolicy?.blockedReasonFallback
-                                            || 'This conversation is read-only.';
-                                        return tx(
-                                            'pages.messages.readOnlyPlaceholder',
-                                            { message: blockedMessage },
-                                            blockedMessage,
-                                        );
-                                    })()}
-                                disabled={isSending || isRecording || !canSendInSelectedConversation}
-                                rows={1}
-                                className="flex-1 bg-transparent border-0 ring-0 focus:ring-0 focus:border-transparent text-white text-sm px-3 py-2.5 outline-none resize-none max-h-32 min-h-[44px] placeholder:text-zinc-500 disabled:opacity-50"
-                            />
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    stopTyping();
-                                    void handleSendMessage();
-                                }}
-                                disabled={(!newMessage.trim() && !selectedFile && !audioBlob) || isSending || isRecording || !canSendInSelectedConversation}
-                                aria-label={tx('pages.messages.send', undefined, 'Send message')}
-                                className={`${accentClasses.sendButton} text-white p-2.5 rounded-xl cursor-pointer transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
-                            >
-                                {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                            </button>
-                        </div>
+                                    }}
+                                    disabled={(!newMessage.trim() && !selectedFile && !audioBlob) || isSending || isRecording}
+                                    aria-label={tx('pages.messages.send', undefined, 'Send message')}
+                                    className={`${accentClasses.sendButton} text-white p-2.5 rounded-xl cursor-pointer transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                    {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     </div>
 
-                    {isContractSession ? (
-                        <div
-                            className={`hidden xl:block shrink-0 overflow-hidden transition-[width,opacity] duration-300 ease-out ${
-                                isContractSidebarVisible
-                                    ? 'w-[420px] 2xl:w-[460px] opacity-100'
-                                    : 'w-0 opacity-0 pointer-events-none'
-                            }`}
-                            aria-hidden={!isContractSidebarVisible}
-                        >
-                            <aside
-                                id="contract-workspace-sidebar"
-                                className={`h-full w-[420px] 2xl:w-[460px] border-l border-[#18130f] bg-[#090807] transition-transform duration-300 ease-out ${
-                                    isContractSidebarVisible ? 'translate-x-0' : 'translate-x-6'
-                                }`}
-                            >
-                                {isContractSidebarDataLoading ? (
-                                    <div className="flex h-full items-center justify-center px-6 text-center">
-                                        <div className="space-y-3">
-                                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-on-surface-subtle" />
-                                            <p className="text-xs text-on-surface-subtle">
-                                                {tx('pages.messages.loadingContractSidebar', undefined, 'Loading contract details...')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : contractSidebarData ? (
-                                    <ContractDetailsSidebar
-                                        contract={contractSidebarData}
-                                        userRole={selectedContractUserRole}
-                                        currentStatus={selectedContractStatus || 'unknown'}
-                                        deliverySubmitted={contractDeliverySubmitted}
-                                        isActionLoading={isAnyContractActionLoading}
-                                        onDeliver={() => {
-                                            setDeliveryActionError(null);
-                                            setIsDeliverModalOpen(true);
-                                        }}
-                                        onRequestChanges={() => {
-                                            void handleRequestContractChanges();
-                                        }}
-                                        onAcceptAndPay={() => setIsAcceptModalOpen(true)}
-                                        onDispute={() => setIsDisputeModalOpen(true)}
-                                        onReview={() => {
-                                            setIsReviewModalOpen(true);
-                                        }}
-                                        onOpenSharedFile={(file: { url?: string; name: string; type?: string | null; size?: number | string | null; storageBucket?: string | null; storagePath?: string | null }) => {
-                                            void handleOpenContractSidebarFile(file);
-                                        }}
-                                        hasLeftReview={selectedContractHasReview}
-                                    />
-                                ) : (
-                                    <div className="flex h-full items-center justify-center px-6 text-center">
-                                        <p className="text-xs text-on-surface-subtle">
-                                            {tx('pages.messages.contractSidebarUnavailable', undefined, 'Contract details are not available for this conversation yet.')}
-                                        </p>
-                                    </div>
-                                )}
-                            </aside>
-                        </div>
-                    ) : null}
                 </div>
             ) : (
                 <div className="flex-1 flex items-center justify-center px-6">
-                    <div className="text-center">
-                        <Send className="mx-auto h-10 w-10 text-on-surface-subtle" />
-                        <h3 className="mt-3 text-lg font-semibold text-white">{tx('pages.messages.selectConversationTitle', undefined, 'Select a conversation')}</h3>
-                        <p className="mt-1 text-sm text-on-surface-subtle">{tx('pages.messages.selectConversationDescription', undefined, 'Choose a conversation to start messaging')}</p>
+                    <div className="text-center max-w-xs">
+                        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.07] bg-[#111214] text-[#55534F]">
+                            <Mail className="h-7 w-7" />
+                        </div>
+                        <h3 className="text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">
+                            {tx('pages.messages.selectConversationTitle', undefined, 'Your messages')}
+                        </h3>
+                        <p className="mt-2 text-[14px] leading-relaxed text-[#8A8880]">
+                            {tx('pages.messages.selectConversationDescription', undefined, 'Select a conversation from the sidebar to start messaging, or wait for someone to reach out.')}
+                        </p>
                     </div>
                 </div>
             )}
         </div>
     );
+
+    const hasDeliveryReviewFiles = deliveryReviewFiles.length > 0;
+    const hasDeliveryFinalFiles = deliveryFinalFiles.length > 0;
+    const canConfirmDelivery = hasDeliveryReviewFiles && hasDeliveryFinalFiles && !isDeliveringContractWork;
 
     return (
         <>
@@ -5507,6 +5823,7 @@ function MessagesComponent() {
                                     onChange={(event) => {
                                         const files = Array.from(event.target.files ?? []);
                                         if (files.length > 0) {
+                                            setDeliveryActionError(null);
                                             setDeliveryReviewFiles((prev) => [...prev, ...files]);
                                         }
                                         event.currentTarget.value = '';
@@ -5528,7 +5845,9 @@ function MessagesComponent() {
                                         </div>
                                     ))}
                                 </div>
-                            ) : null}
+                            ) : (
+                                <p className="mt-2 text-xs text-amber-300">Required before delivery can be submitted.</p>
+                            )}
                         </div>
 
                         <div>
@@ -5546,6 +5865,7 @@ function MessagesComponent() {
                                     onChange={(event) => {
                                         const files = Array.from(event.target.files ?? []);
                                         if (files.length > 0) {
+                                            setDeliveryActionError(null);
                                             setDeliveryFinalFiles((prev) => [...prev, ...files]);
                                         }
                                         event.currentTarget.value = '';
@@ -5567,9 +5887,16 @@ function MessagesComponent() {
                                         </div>
                                     ))}
                                 </div>
-                            ) : null}
+                            ) : (
+                                <p className="mt-2 text-xs text-amber-300">Required. These files stay hidden from the client until payment is released.</p>
+                            )}
                         </div>
                     </div>
+                    {!canConfirmDelivery ? (
+                        <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+                            Add both a review file and a final locked file to confirm delivery.
+                        </div>
+                    ) : null}
                     <div className="flex items-center justify-end gap-3">
                         <Button
                             variant="ghost"
@@ -5588,6 +5915,7 @@ function MessagesComponent() {
                             onClick={() => {
                                 void handleDeliverContractWork();
                             }}
+                            disabled={!canConfirmDelivery}
                             isLoading={isDeliveringContractWork}
                             leftIcon={<CheckCircle className="h-4 w-4" />}
                         >
@@ -5678,6 +6006,65 @@ function MessagesComponent() {
                     onSubmit={handleSubmitContractReview}
                     onCancel={() => setIsReviewModalOpen(false)}
                 />
+            </Modal>
+
+            <Modal
+                isOpen={isContractWorkspaceOpen}
+                onClose={() => setIsContractWorkspaceOpen(false)}
+                title={tx('pages.messages.contractWorkspaceTitle', undefined, 'Contract Workspace')}
+                size="full"
+            >
+                <div className="mx-auto max-w-5xl overflow-hidden rounded-[10px] bg-[#111214] shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+                    {isContractSidebarDataLoading ? (
+                        <div className="flex min-h-[420px] items-center justify-center px-6 text-center">
+                            <div className="space-y-3">
+                                <Loader2 className="mx-auto h-6 w-6 animate-spin text-on-surface-subtle" />
+                                <p className="text-xs text-on-surface-subtle">
+                                    {tx('pages.messages.loadingContractSidebar', undefined, 'Loading contract details...')}
+                                </p>
+                            </div>
+                        </div>
+                    ) : contractSidebarData ? (
+                        <ContractDetailsSidebar
+                            contract={contractSidebarData}
+                            userRole={selectedContractUserRole}
+                            currentStatus={selectedContractStatus || 'unknown'}
+                            deliverySubmitted={contractDeliverySubmitted}
+                            isActionLoading={isAnyContractActionLoading}
+                            activityEvents={selectedContractActivityEvents}
+                            onDeliver={() => {
+                                setDeliveryActionError(null);
+                                setIsContractWorkspaceOpen(false);
+                                setIsDeliverModalOpen(true);
+                            }}
+                            onRequestChanges={() => {
+                                void handleRequestContractChanges();
+                            }}
+                            onAcceptAndPay={() => {
+                                setIsContractWorkspaceOpen(false);
+                                setIsAcceptModalOpen(true);
+                            }}
+                            onDispute={() => {
+                                setIsContractWorkspaceOpen(false);
+                                setIsDisputeModalOpen(true);
+                            }}
+                            onReview={() => {
+                                setIsContractWorkspaceOpen(false);
+                                setIsReviewModalOpen(true);
+                            }}
+                            onOpenSharedFile={(file: { url?: string; name: string; type?: string | null; size?: number | string | null; storageBucket?: string | null; storagePath?: string | null }) => {
+                                void handleOpenContractSidebarFile(file);
+                            }}
+                            hasLeftReview={selectedContractHasReview}
+                        />
+                    ) : (
+                        <div className="flex min-h-[420px] items-center justify-center px-6 text-center">
+                            <p className="text-xs text-on-surface-subtle">
+                                {tx('pages.messages.contractSidebarUnavailable', undefined, 'Contract details are not available for this conversation yet.')}
+                            </p>
+                        </div>
+                    )}
+                </div>
             </Modal>
 
             {/* Delete Message Modal */}

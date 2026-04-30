@@ -10,6 +10,7 @@ export const ROUTES = {
   myProposals: '/my-proposals',
   clientJobs: '/client/jobs',
   messages: '/messages',
+  contractWorkspace: '/workspace/:contractId',
   settings: '/settings',
   settingsAccount: '/settings?tab=account',
   settingsProfile: '/settings?tab=profile',
@@ -26,4 +27,8 @@ export function getJobDetailRoute(jobId: string) {
 
 export function getJobEditRoute(jobId: string) {
   return `/jobs/${jobId}/edit`;
+}
+
+export function getContractWorkspaceRoute(contractId: string) {
+  return `/workspace/${encodeURIComponent(contractId)}`;
 }

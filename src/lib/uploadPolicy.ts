@@ -91,7 +91,7 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
       'image/png',
       'image/webp',
     ],
-    publicUrl: true,
+    publicUrl: false,
     upsert: false,
     requireUserPrefix: true,
     rateLimit: { maxAttempts: 20, windowMs: 10 * 60 * 1000 },
