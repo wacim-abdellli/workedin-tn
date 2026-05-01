@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, type CSSProperties, type TouchEvent } from 'react';
+﻿import { useState, useEffect, useCallback, useRef, type CSSProperties, type TouchEvent } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
     Search, Filter, Briefcase, Star, MapPin, Clock,
@@ -210,7 +210,7 @@ function FilterPanel({ categoryParam, budgetParam, activeTab, activeFiltersCount
                         const active = categoryParam === c.value;
                         const colors = CATEGORY_COLORS[c.value] || DEFAULT_CAT_COLOR;
                         return (
-                            <label key={c.value} className="flex items-center gap-2.5 cursor-pointer group rounded-lg px-2 py-1.5 transition-colors hover:bg-white/[0.04]">
+                            <label key={c.value} className="flex items-center gap-2.5 cursor-pointer group rounded-lg px-2 py-1.5 transition-colors hover:bg-[var(--color-bg-muted)]">
                                 <div
                                     className="w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 transition-all"
                                     style={{
@@ -241,7 +241,7 @@ function FilterPanel({ categoryParam, budgetParam, activeTab, activeFiltersCount
                         {BUDGETS.map((b) => {
                             const active = budgetParam === b.value;
                             return (
-                                <label key={b.value} className="flex items-center gap-2.5 cursor-pointer group rounded-lg px-2 py-1.5 transition-colors hover:bg-white/[0.04]">
+                                <label key={b.value} className="flex items-center gap-2.5 cursor-pointer group rounded-lg px-2 py-1.5 transition-colors hover:bg-[var(--color-bg-muted)]">
                                     <div
                                         className="w-4 h-4 rounded-[4px] border flex items-center justify-center shrink-0 transition-all"
                                         style={{
@@ -497,11 +497,11 @@ export default function SearchResults() {
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearch(inputValue)}
                                     placeholder={tx('search.placeholder', undefined, 'Search jobs, freelancers, skills...')}
-                                    className="w-full rounded-xl bg-white/[0.05] border border-white/[0.08] pl-11 pr-10 py-3.5 text-sm text-white placeholder-white/30 outline-none focus:border-violet-500/50 focus:bg-white/[0.07] transition-all backdrop-blur-sm"
+                                    className="w-full rounded-xl bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] pl-11 pr-10 py-3.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] outline-none focus:border-[var(--workspace-primary)] transition-all"
                                 />
                                 {inputValue && (
                                     <button onClick={() => { setInputValue(''); handleSearch(''); }}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-md bg-white/[0.08] text-white/50 hover:text-white transition-colors">
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-md bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors">
                                         <X className="w-3.5 h-3.5" />
                                     </button>
                                 )}
@@ -521,7 +521,7 @@ export default function SearchResults() {
                             <button
                                 id="mobile-filter-btn"
                                 onClick={() => setIsMobileFiltersOpen(true)}
-                                className="sm:hidden flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/60 hover:text-white transition-all"
+                                className="sm:hidden flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all"
                             >
                                 <Filter className="w-4 h-4" />
                                 {tx('search.filters', undefined, 'Filters')}
@@ -637,7 +637,7 @@ export default function SearchResults() {
                         {/* ── Empty (no query) ── */}
                         {!query && (
                             <div className="flex flex-col items-center justify-center py-20 text-center" style={{ animation: 'searchFadeIn 0.4s ease-out' }}>
-                                <div className="relative mb-8 h-36 w-72 rounded-3xl border border-white/10 bg-white/[0.02] overflow-hidden">
+                                <div className="relative mb-8 h-36 w-72 rounded-3xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] overflow-hidden">
                                     <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 20% 20%, rgba(139,92,246,0.22), transparent 60%)' }} />
                                     <svg viewBox="0 0 288 144" className="h-full w-full">
                                         <defs>
@@ -665,7 +665,7 @@ export default function SearchResults() {
                                         {tx('search.empty.titleHighlight', undefined, 'Match')}
                                     </span>
                                 </h2>
-                                <p className="text-white/45 text-sm max-w-md mb-10 leading-7">
+                                <p className="text-[var(--color-text-tertiary)] text-sm max-w-md mb-10 leading-7">
                                     {tx('search.empty.subtitle', undefined, 'Discover talented freelancers and amazing projects in just a few clicks.')}
                                 </p>
 
@@ -679,7 +679,7 @@ export default function SearchResults() {
                                             <button
                                                 key={label}
                                                 onClick={() => { setInputValue(label); handleSearch(label); }}
-                                                className="group rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-center hover:border-white/[0.15] hover:bg-white/[0.05] hover:-translate-y-0.5 transition-all"
+                                                className="group rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-4 text-center hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-muted)] hover:-translate-y-0.5 transition-all"
                                             >
                                                 <span className="text-2xl mb-2 block">{emoji}</span>
                                                 <span className="text-xs font-semibold text-white/70 group-hover:text-white transition-colors">{label}</span>
@@ -742,9 +742,9 @@ export default function SearchResults() {
                             <div className="rounded-2xl border border-rose-500/20 bg-rose-500/[0.04] p-10 text-center" style={{ animation: 'searchFadeIn 0.3s ease-out' }}>
                                 <AlertCircle className="w-10 h-10 text-rose-400 mx-auto mb-3" />
                                 <h3 className="text-base font-bold text-white mb-1">{tx('search.error.title', undefined, 'Something went wrong')}</h3>
-                                <p className="text-sm text-white/45 mb-5">{tx('search.error.description', undefined, "We're having trouble searching right now.")}</p>
+                                <p className="text-sm text-[var(--color-text-tertiary)] mb-5">{tx('search.error.description', undefined, "We're having trouble searching right now.")}</p>
                                 <button onClick={() => window.location.reload()}
-                                    className="rounded-xl border border-white/10 bg-white/[0.05] px-5 py-2.5 text-sm text-white/70 hover:text-white transition-all">
+                                    className="rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-5 py-2.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-all">
                                     {tx('search.error.retry', undefined, 'Try Again')}
                                 </button>
                             </div>
@@ -763,7 +763,7 @@ export default function SearchResults() {
                                     {tx('search.noResultsView.title', undefined, 'Nothing found for')}{' '}
                                     <span className="text-amber-400">"{query}"</span>
                                 </h2>
-                                <p className="text-sm text-white/45 max-w-md mx-auto mb-8">
+                                <p className="text-sm text-[var(--color-text-tertiary)] max-w-md mx-auto mb-8">
                                     {tx('search.noResultsView.subtitle', undefined, "Don't worry! Try one of these suggestions:")}
                                 </p>
 
@@ -779,8 +779,8 @@ export default function SearchResults() {
                                         { Icon: TrendingUp,label: tx('search.noResultsView.suggestionCategoriesTitle', undefined, 'Browse Popular Categories'), desc: tx('search.noResultsView.suggestionCategoriesBody', undefined, 'Check out trending skills'), action: () => navigate('/jobs') },
                                     ].map(({ Icon, label, desc, action }) => (
                                         <button key={label} onClick={action}
-                                            className="group w-full flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-left hover:border-white/15 hover:bg-white/[0.04] transition-all">
-                                            <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center shrink-0">
+                                            className="group w-full flex items-center gap-4 rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-4 text-left hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-muted)] transition-all">
+                                            <div className="w-9 h-9 rounded-xl bg-[var(--color-bg-muted)] flex items-center justify-center shrink-0">
                                                 <Icon className="w-4 h-4 text-white/50 group-hover:text-white transition-colors" />
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -818,7 +818,7 @@ export default function SearchResults() {
                                                 style={{ backgroundImage: 'none' }}
                                             >
                                                 {SORT_OPTIONS.map(o => (
-                                                    <option key={o.value} value={o.value} className="bg-[#1a1a2e]">
+                                                    <option key={o.value} value={o.value}>
                                                         {tx(o.labelKey, undefined, o.value)}
                                                     </option>
                                                 ))}
@@ -954,7 +954,7 @@ export default function SearchResults() {
                                                                     </span>
                                                                 )}
                                                             </h3>
-                                                            {fp?.title && <p className="text-xs text-white/45 line-clamp-1">{fp.title}</p>}
+                                                            {fp?.title && <p className="text-xs text-[var(--color-text-tertiary)] line-clamp-1">{fp.title}</p>}
                                                         </div>
                                                         {fp?.hourly_rate && (
                                                             <span className="shrink-0 rounded-xl px-3 py-1 text-xs font-bold border border-violet-500/20 bg-violet-500/10 text-violet-300">
@@ -987,7 +987,7 @@ export default function SearchResults() {
                                 {/* ── Pagination ── */}
                                 {totalPages > 1 && (
                                     <div className="pt-6 space-y-2">
-                                        <p className="sm:hidden text-center text-xs text-white/45">
+                                        <p className="sm:hidden text-center text-xs text-[var(--color-text-tertiary)]">
                                             {tx('search.pagination.pageOf', { page, total: totalPages }, `Page ${page} of ${totalPages}`)}
                                         </p>
 
@@ -1142,4 +1142,5 @@ export default function SearchResults() {
         </div>
     );
 }
+
 

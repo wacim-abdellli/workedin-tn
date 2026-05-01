@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import SEO, { SEO_CONFIG } from "@/components/common/SEO";
 import {
@@ -491,6 +491,7 @@ export default function ClientProfile() {
       let { data: conversationId, error } = await supabase.rpc("get_or_create_conversation", {
         user1: user.id,
         user2: client.id,
+        p_contract_id: null,
         p_scope: preferredScope,
       });
 
@@ -503,6 +504,7 @@ export default function ClientProfile() {
           const legacyResult = await supabase.rpc("get_or_create_conversation", {
             user1: user.id,
             user2: client.id,
+            p_contract_id: null,
           });
           conversationId = legacyResult.data;
           error = legacyResult.error;
@@ -837,7 +839,7 @@ export default function ClientProfile() {
                         onChange={(event) => setBioDraft(event.target.value)}
                         rows={4}
                         placeholder={tx("clientProfile.bioPlaceholder", undefined, "Tell freelancers about your company or hiring needs")}
-                        className="mt-1 w-full bg-[#0a0a0a] border border-white/10 rounded-lg text-white p-3 outline-none resize-y"
+                        className="mt-1 w-full bg-[var(--color-bg-base)] border border-white/10 rounded-lg text-white p-3 outline-none resize-y"
                       />
                     </div>
                   </div>
@@ -1078,7 +1080,7 @@ export default function ClientProfile() {
                   {isOwnProfile ? (
                     <button
                       onClick={() => navigate(ROUTES.clientJobs)}
-                      className="w-full rounded-xl p-3.5 text-left border border-white/10 bg-[linear-gradient(180deg,#1a1a1a_0%,#171717_100%)] transition-all duration-200 hover:border-white/20 hover:bg-[#1f1f1f]"
+                      className="w-full rounded-xl p-3.5 text-left border border-white/10 bg-[linear-gradient(180deg,#1a1a1a_0%,#171717_100%)] transition-all duration-200 hover:border-white/20 hover:bg-[var(--color-bg-muted)]"
                     >
                       <span className="inline-flex items-center gap-2 text-base font-semibold text-white">
                         <Briefcase className="w-4 h-4" style={{ color: accentColor }} />
@@ -1093,7 +1095,7 @@ export default function ClientProfile() {
                   {isOwnProfile ? (
                     <button
                       onClick={() => navigate(ROUTES.settings)}
-                      className="w-full rounded-xl p-3.5 text-left border border-white/10 transition-all duration-200 hover:bg-[#141414] hover:border-white/20"
+                      className="w-full rounded-xl p-3.5 text-left border border-white/10 transition-all duration-200 hover:bg-[var(--color-bg-elevated)] hover:border-white/20"
                     >
                       <span className="inline-flex items-center gap-2 text-base font-semibold text-white/90">
                         <Settings className="w-4 h-4 text-white/75" />
@@ -1160,4 +1162,5 @@ export default function ClientProfile() {
     </>
   );
 }
+
 

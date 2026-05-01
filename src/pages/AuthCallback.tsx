@@ -172,127 +172,42 @@ const AuthCallback = () => {
     }, []);
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '100vh',
-                background: '#0c0c0c',
-                fontFamily: "'Outfit', sans-serif",
-                padding: '20px',
-            }}
-            dir={dir}
-        >
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
-                @keyframes spin { to { transform: rotate(360deg); } }
-            `}</style>
-            
-            <div style={{
-                width: '100%',
-                maxWidth: 440,
-                background: '#111',
-                border: '1px solid #222',
-                borderRadius: 20,
-                padding: '48px 40px',
-                textAlign: 'center',
-            }}>
-                <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'center' }}>
+        <div className="flex items-center justify-center min-h-screen bg-[var(--color-bg-base)] px-5">
+            <div className="w-full max-w-[440px] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-2xl p-12 text-center shadow-xl">
+                <div className="mb-8 flex justify-center">
                     <Logo variant="full" size="md" mode="client" />
                 </div>
 
                 {status === 'loading' ? (
                     <>
-                        <div style={{ 
-                            width: 56, 
-                            height: 56, 
-                            margin: '0 auto 24px',
-                            background: 'rgba(232, 130, 12, 0.1)',
-                            borderRadius: 16,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}>
-                            <Loader2 style={{ 
-                                width: 28, 
-                                height: 28, 
-                                color: '#E8820C',
-                                animation: 'spin 1s linear infinite',
-                            }} />
+                        <div className="w-14 h-14 mx-auto mb-6 rounded-2xl flex items-center justify-center bg-[rgba(232,130,12,0.1)]">
+                            <Loader2 className="w-7 h-7 text-[#E8820C] animate-spin" />
                         </div>
-                        <h1 style={{ 
-                            fontSize: 24, 
-                            fontWeight: 800, 
-                            color: '#fff', 
-                            marginBottom: 12,
-                            letterSpacing: '-0.5px',
-                        }}>
+                        <h1 className="text-2xl font-extrabold tracking-tight text-[var(--color-text-primary)] mb-3">
                             {tx('pages.authCallback.signingIn', undefined, 'Signing you in')}
                         </h1>
-                        <p style={{ 
-                            fontSize: 14, 
-                            color: '#888', 
-                            lineHeight: 1.6,
-                            maxWidth: 320,
-                            margin: '0 auto',
-                        }}>
+                        <p className="text-sm text-[var(--color-text-tertiary)] leading-relaxed max-w-xs mx-auto">
                             {tx('pages.authCallback.signingInDescription', undefined, 'We are finishing your secure login. This should only take a moment.')}
                         </p>
                     </>
                 ) : (
                     <>
-                        <div style={{
-                            width: 56,
-                            height: 56,
-                            margin: '0 auto 24px',
-                            background: 'rgba(239, 68, 68, 0.1)',
-                            borderRadius: 16,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}>
-                            <RefreshCw style={{ width: 28, height: 28, color: '#ef4444' }} />
+                        <div className="w-14 h-14 mx-auto mb-6 rounded-2xl flex items-center justify-center bg-red-500/10">
+                            <RefreshCw className="w-7 h-7 text-red-500" />
                         </div>
-                        <h1 style={{
-                            fontSize: 24,
-                            fontWeight: 800,
-                            color: '#fff',
-                            marginBottom: 12,
-                            letterSpacing: '-0.5px',
-                        }}>
+                        <h1 className="text-2xl font-extrabold tracking-tight text-[var(--color-text-primary)] mb-3">
                             {tx('pages.authCallback.loginIncomplete', undefined, 'Login did not complete')}
                         </h1>
-                        <p style={{
-                            fontSize: 14,
-                            color: '#888',
-                            lineHeight: 1.6,
-                            marginBottom: 24,
-                        }}>
+                        <p className="text-sm text-[var(--color-text-tertiary)] leading-relaxed mb-6">
                             {tx('pages.authCallback.loginIncompleteDescription', undefined, 'We could not confirm your session yet. Try again, or return to login and retry the provider sign-in.')}
                         </p>
-                        {errorDetails ? (
-                            <div style={{
-                                marginBottom: 24,
-                                padding: '14px 16px',
-                                background: 'rgba(239, 68, 68, 0.1)',
-                                border: '1px solid rgba(239, 68, 68, 0.2)',
-                                borderRadius: 12,
-                                textAlign: 'left',
-                                fontSize: 13,
-                                color: '#fca5a5',
-                            }}>
-                                {errorDetails.code ? (
-                                    <p style={{ fontWeight: 700, marginBottom: 4 }}>
-                                        {tx('pages.authCallback.errorCode', { code: errorDetails.code }, `Error code: ${errorDetails.code}`)}
-                                    </p>
-                                ) : null}
-                                {errorDetails.message ? (
-                                    <p>{errorDetails.message}</p>
-                                ) : null}
+                        {errorDetails && (
+                            <div className="mb-6 p-3.5 rounded-xl text-left text-sm bg-red-500/10 border border-red-500/20 text-red-400">
+                                {errorDetails.code && <p className="font-bold mb-1">{tx('pages.authCallback.errorCode', { code: errorDetails.code }, `Error code: ${errorDetails.code}`)}</p>}
+                                {errorDetails.message && <p>{errorDetails.message}</p>}
                             </div>
-                        ) : null}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        )}
+                        <div className="flex flex-col gap-2.5">
                             <Button variant="outline" onClick={() => window.location.reload()}>
                                 {tx('pages.authCallback.tryAgain', undefined, 'Try again')}
                             </Button>

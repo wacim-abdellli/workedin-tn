@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Users, Briefcase, CreditCard, AlertTriangle, Flag,
@@ -60,9 +60,9 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-[#fafafa] dark:bg-[#0a0a0a] overflow-hidden">
+        <div className="h-screen flex flex-col bg-[var(--color-bg-subtle)] overflow-hidden">
             {/* Header */}
-            <header className="shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-[#111]/80 backdrop-blur-xl">
+            <header className="shrink-0 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/80 backdrop-blur-xl">
                 <div className="max-w-[1400px] mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -126,3 +126,4 @@ export default function AdminDashboard() {
         </div>
     );
 }
+

@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+﻿import { logger } from '@/lib/logger';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowLeft,
@@ -1455,3 +1455,4 @@ export default function JobPost() {
     </div>
   );
 }
+

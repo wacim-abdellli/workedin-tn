@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Wallet as WalletIcon, TrendingUp, Clock, ArrowUpRight, ArrowDownLeft, Building, Phone, X, Info, CheckCircle, Plus, AlertCircle, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout';
 import SEO from '@/components/common/SEO';
@@ -850,5 +850,6 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
     </div>
   );
 }
+
 
 

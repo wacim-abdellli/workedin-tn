@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock3, ExternalLink, Trash2 } from "lucide-react";
+﻿import { CheckCircle2, Clock3, ExternalLink, Trash2 } from "lucide-react";
 import { PaymentLogo, type PaymentProviderId } from "./PaymentLogo";
 
 export type PaymentMethodStatus = "live" | "soon" | "default";
@@ -138,7 +138,7 @@ export function PaymentMethodCard({
     <div
       className={[
         "group relative overflow-hidden rounded-2xl border p-4 transition-all duration-200",
-        active ? theme.active : "border-white/10 bg-white/[0.035]",
+        active ? theme.active : "border-white/10 bg-[var(--color-bg-elevated)]",
         selected ? theme.selected : "",
         disabled
           ? theme.disabled
@@ -168,7 +168,7 @@ export function PaymentMethodCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-sm font-semibold text-on-surface">{name}</h3>
+            <h3 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">{name}</h3>
             {cfg && (
               <span className={["inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold", cfg.cls].join(" ")}>
                 <cfg.Icon className="h-3 w-3" />
@@ -176,7 +176,7 @@ export function PaymentMethodCard({
               </span>
             )}
           </div>
-          <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-on-surface-muted">
+          <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[var(--color-text-tertiary)]">
             {description}
           </p>
         </div>
@@ -188,7 +188,7 @@ export function PaymentMethodCard({
               type="button"
               onClick={(e) => { e.stopPropagation(); onWallet(); }}
               className={[
-                "inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-on-surface-muted transition hover:text-on-surface",
+                "inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)] transition hover:text-[var(--color-text-primary)]",
                 theme.walletHover,
               ].join(" ")}
               aria-label={`Open ${name} wallet`}
@@ -201,7 +201,7 @@ export function PaymentMethodCard({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onDelete(); }}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-on-surface-muted transition hover:border-red-400/50 hover:text-red-400"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)] transition hover:border-red-400/50 hover:text-red-400"
               aria-label={`Remove ${name}`}
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -212,3 +212,6 @@ export function PaymentMethodCard({
     </div>
   );
 }
+
+
+

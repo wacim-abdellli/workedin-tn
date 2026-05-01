@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 
 export type ProfileAccentType = 'freelancer' | 'client';
 
@@ -62,7 +62,7 @@ export function ProfileAvatar({
           className={joinClasses(
             avatarBaseClass,
             getAvatarGradientClass(type),
-            'flex items-center justify-center text-3xl font-black text-white select-none',
+            'flex items-center justify-center text-3xl font-black text-[var(--color-text-primary)] select-none',
           )}
         >
           {getInitials(name)}
@@ -123,7 +123,7 @@ export function ProfileSectionHeader({
         <button
           type="button"
           onClick={onEdit}
-          className="flex items-center gap-1.5 text-xs text-white/30 px-2.5 py-1.5 rounded-lg border border-transparent transition-all duration-150"
+          className="flex items-center gap-1.5 text-xs text-[var(--color-text-primary)]/30 px-2.5 py-1.5 rounded-lg border border-transparent transition-all duration-150"
           style={{
             ['--profile-accent' as string]: accentColor,
           }}
@@ -164,18 +164,18 @@ export function ProfileStatCard({
   return (
     <article
       className={joinClasses(
-        'bg-white/[0.03] rounded-xl p-4 border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-200 group',
+        'bg-[var(--color-bg-elevated)] rounded-xl p-4 border border-white/5 hover:bg-[var(--color-bg-muted)] hover:border-white/10 transition-all duration-200 group',
         className,
       )}
     >
       <div className="mb-3" style={{ color: `${accentColor}B3` }}>
         {icon}
       </div>
-      <p className="text-2xl font-black text-white leading-none flex items-center gap-2">
+      <p className="text-2xl font-black text-[var(--color-text-primary)] leading-none flex items-center gap-2">
         {value}
         {suffix}
       </p>
-      <p className="text-xs text-white/40 mt-1.5 font-medium uppercase tracking-wide">{label}</p>
+      <p className="text-xs text-[var(--color-text-primary)]/40 mt-1.5 font-medium uppercase tracking-wide">{label}</p>
     </article>
   );
 }
@@ -196,10 +196,10 @@ export function ProfileEmptyState({
   accentColor: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-white/8 bg-white/[0.02] text-center">
-      <div className="w-10 h-10 mx-auto mb-3 text-white/15">{icon}</div>
-      <p className="text-sm font-semibold text-white/40 mb-1">{title}</p>
-      <p className="text-xs text-white/25 max-w-[200px] mx-auto">{description}</p>
+    <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-white/8 bg-[var(--color-bg-elevated)] text-center">
+      <div className="w-10 h-10 mx-auto mb-3 text-[var(--color-text-primary)]/15">{icon}</div>
+      <p className="text-sm font-semibold text-[var(--color-text-primary)]/40 mb-1">{title}</p>
+      <p className="text-xs text-[var(--color-text-primary)]/25 max-w-[200px] mx-auto">{description}</p>
       {cta && onCta ? (
         <button
           type="button"
@@ -231,7 +231,7 @@ export function ProfileInfoHeader({
       >
         {icon}
       </div>
-      <h3 className="text-base font-semibold text-white">{title}</h3>
+      <h3 className="text-base font-semibold text-[var(--color-text-primary)]">{title}</h3>
     </div>
   );
 }
@@ -247,10 +247,12 @@ export function ProfileInfoRow({
 }) {
   return (
     <div className={joinClasses('py-2.5 border-b border-white/5 last:border-0 flex justify-between items-center gap-3', className)}>
-      <span className="text-xs text-white/40 uppercase tracking-wide">{label}</span>
-      <span className="text-sm font-semibold text-white">{value}</span>
+      <span className="text-xs text-[var(--color-text-primary)]/40 uppercase tracking-wide">{label}</span>
+      <span className="text-sm font-semibold text-[var(--color-text-primary)]">{value}</span>
     </div>
   );
 }
 
 export { getAccentColor };
+
+

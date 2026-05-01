@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -147,7 +147,7 @@ function getStatusBadge(status: ContractStatus) {
   if (status === "completed") {
     return {
       className:
-        "bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5",
+        "bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 uppercase tracking-wider",
       icon: <CheckCircle2 className="w-3.5 h-3.5" />,
       labelKey: "contracts.status.completed",
       fallbackLabel: "Completed",
@@ -157,7 +157,7 @@ function getStatusBadge(status: ContractStatus) {
   if (status === "cancelled") {
     return {
       className:
-        "bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5",
+        "bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 uppercase tracking-wider",
       icon: <XCircle className="w-3.5 h-3.5" />,
       labelKey: "contracts.status.cancelled",
       fallbackLabel: "Cancelled",
@@ -166,7 +166,7 @@ function getStatusBadge(status: ContractStatus) {
 
   return {
     className:
-      "bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5",
+      "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 uppercase tracking-wider",
     icon: <CheckCircle2 className="w-3.5 h-3.5" />,
     labelKey: "contracts.status.active",
     fallbackLabel: "Active",
@@ -370,9 +370,11 @@ export default function ContractsList() {
     <div className="min-h-screen page-bg-base">
       <Header />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold mb-2 text-on-surface">{tx("contracts.title", undefined, "Contracts")}</h1>
-        <p className="text-on-surface-muted mb-6">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <h1 className="text-2xl font-black text-white tracking-tight mb-1">
+          {tx("contracts.title", undefined, "Contracts")}
+        </h1>
+        <p className="text-sm text-white/50 mb-8">
           {tx(
             "contracts.subtitle",
             undefined,
@@ -380,53 +382,60 @@ export default function ContractsList() {
           )}
         </p>
 
-        <section className="bg-purple-900/10 border border-purple-500/20 rounded-xl p-4 flex gap-4 items-start mb-8">
-          <AlertShield className="text-purple-400 shrink-0 mt-0.5 w-5 h-5" />
+        <section className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-4 flex gap-4 items-start mb-8">
+          <AlertShield className="text-violet-400 shrink-0 mt-0.5 w-5 h-5" />
           <div>
-            <p className="text-sm font-bold text-purple-600 dark:text-purple-300">
+            <p className="text-sm font-bold text-violet-300">
               {tx("contracts.paymentProtectionTitle", undefined, "Payment Protection")}
             </p>
-            <p className="text-sm text-purple-700/80 dark:text-purple-200/70 mt-1">
+            <p className="text-sm text-violet-200/60 mt-1">
               Always communicate and request payments through WorkedIn. Contracts paid outside
               the platform are not protected by our secure escrow system.
             </p>
           </div>
         </section>
 
-        <nav className="flex items-center gap-6 border-b border-surface mb-8 pb-px">
-          {tabConfig.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveTab(tab.key)}
-              className={
-                activeTab === tab.key
-                  ? "pb-4 border-b-2 border-purple-500 text-purple-600 dark:text-purple-400 font-semibold text-sm transition-all"
-                  : "pb-4 border-b-2 border-transparent text-on-surface-muted hover:text-on-surface font-medium text-sm transition-all cursor-pointer"
-              }
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
-        </nav>
+        <div className="flex overflow-x-auto scrollbar-hide mb-6 border-b border-white/5">
+          {tabConfig.map((tab) => {
+            const active = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={`relative flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold transition-all shrink-0 ${active ? "text-violet-400" : "text-white/40 hover:text-white/70"}`}
+              >
+                {tab.label}
+                {tab.count > 0 && (
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-black ${active ? "bg-violet-500/20 text-violet-300" : "bg-white/5 text-white/40"}`}>
+                    {tab.count}
+                  </span>
+                )}
+                {active && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-500 rounded-t-full shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-        <section className="surface-card border rounded-2xl overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-surface flex gap-4 surface-sunken">
+        <section className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-white/5 flex gap-4 bg-white/[0.01]">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-on-surface-subtle absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-white/30 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={tx("contracts.searchPlaceholder", undefined, "Search contracts or users...")}
-                className="w-full rounded-xl text-sm pl-9 pr-4 py-2.5 outline-none"
+                className="w-full bg-white/5 border border-white/5 text-white rounded-lg text-sm pl-9 pr-4 py-2.5 outline-none focus:border-violet-500/50 transition-colors"
               />
             </div>
           </div>
 
           {error ? (
-            <div className="p-6 border-b border-surface bg-red-500/5">
-              <p className="text-sm text-red-500">
+            <div className="p-6 border-b border-white/5 bg-rose-500/5">
+              <p className="text-sm text-rose-500">
                 {tx("contracts.loadError", undefined, "Failed to load contracts.")}
               </p>
             </div>
@@ -437,127 +446,130 @@ export default function ContractsList() {
               {Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={index}
-                  className="p-6 border border-surface rounded-xl surface-sunken animate-pulse"
+                  className="p-6 border border-white/5 rounded-xl bg-white/[0.02] animate-pulse"
                 >
-                  <div className="h-5 w-1/3 bg-[var(--color-bg-muted)] rounded mb-3" />
-                  <div className="h-4 w-1/2 bg-[var(--color-bg-muted)] rounded mb-2" />
-                  <div className="h-4 w-1/4 bg-[var(--color-bg-muted)] rounded" />
+                  <div className="h-5 w-1/3 bg-white/10 rounded mb-3" />
+                  <div className="h-4 w-1/2 bg-white/5 rounded mb-2" />
+                  <div className="h-4 w-1/4 bg-white/5 rounded" />
                 </div>
               ))}
             </div>
           ) : error ? (
             <div className="py-20 flex flex-col items-center justify-center text-center">
-              <div className="size-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 mb-6">
-                <AlertShield className="w-7 h-7" />
+              <div className="size-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mb-6">
+                <AlertShield className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-on-surface mb-2">{tx("contracts.loadError", undefined, "Failed to load contracts.")}</h3>
-              <p className="text-sm text-on-surface-muted max-w-md">
+              <h3 className="text-xl font-bold text-white mb-2">{tx("contracts.loadError", undefined, "Failed to load contracts.")}</h3>
+              <p className="text-sm text-white/50 max-w-md">
                 {tx("common.tryAgain", undefined, "Try again in a moment.")}
               </p>
             </div>
           ) : filteredContracts.length > 0 ? (
-            filteredContracts.map((contract) => {
-              const partner = isFreelancerWorkspace ? contract.client : contract.freelancer;
-              const partnerName = partner?.full_name || tx("contracts.unknownUser", undefined, "Unknown User");
-              const badge = getStatusBadge(contract.status);
-              const rate = getRateLabel(contract);
+            <div className="flex flex-col">
+              {filteredContracts.map((contract, index) => {
+                const partner = isFreelancerWorkspace ? contract.client : contract.freelancer;
+                const partnerName = partner?.full_name || tx("contracts.unknownUser", undefined, "Unknown User");
+                const badge = getStatusBadge(contract.status);
+                const rate = getRateLabel(contract);
 
-              return (
-                <article
-                  key={contract.id}
-                  className="p-6 border-b border-surface last:border-b-0 hover-surface transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-6 group"
-                >
-                  <div>
-                    <h3 className="text-lg font-bold text-on-surface group-hover:text-purple-500 transition-colors line-clamp-1 mb-2">
-                      {contract.job?.title || contract.title || tx("contracts.unknownProject", undefined, "Unknown Project")}
-                    </h3>
+                return (
+                  <article
+                    key={contract.id}
+                    className={`p-6 hover:bg-white/[0.02] transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-6 group ${index < filteredContracts.length - 1 ? "border-b border-white/5" : ""}`}
+                  >
+                    <div>
+                      <h3 className="text-base font-bold text-white group-hover:text-violet-400 transition-colors line-clamp-1 mb-2">
+                        {contract.job?.title || contract.title || tx("contracts.unknownProject", undefined, "Unknown Project")}
+                      </h3>
 
-                    <div className="flex items-center gap-4 text-sm text-on-surface-muted flex-wrap">
-                      <span>
-                        {rate.typeLabel}: <span className="text-on-surface">{rate.amountLabel}</span>
-                      </span>
-                      <span>
-                        Started <span className="text-on-surface">{formatHiredDate(contract.createdAt)}</span>
-                      </span>
-                    </div>
+                      <div className="flex items-center gap-4 text-xs text-white/50 flex-wrap">
+                        <span>
+                          {rate.typeLabel}: <span className="text-white font-semibold">{rate.amountLabel}</span>
+                        </span>
+                        <span>
+                          Started <span className="text-white font-medium">{formatHiredDate(contract.createdAt)}</span>
+                        </span>
+                      </div>
 
-                    <div className="mt-3 flex items-center gap-2 text-xs text-on-surface-subtle">
-                      {partner?.avatar_url ? (
-                        <img
-                          src={partner.avatar_url}
-                          alt={partnerName}
-                          className="w-6 h-6 rounded-full object-cover border border-surface"
-                        />
-                      ) : (
-                        <div className="w-6 h-6 surface-sunken border border-surface rounded-full" />
-                      )}
-                      <span>
-                        {isFreelancerWorkspace
-                          ? tx("contracts.role.client", undefined, "Client")
-                          : tx("contracts.role.freelancer", undefined, "Freelancer")}
-                        : {" "}
-                        {partnerName}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start sm:items-center lg:items-end xl:items-center gap-4 shrink-0">
-                    <span className={badge.className}>
-                      {badge.icon}
-                      {tx(badge.labelKey, undefined, badge.fallbackLabel)}
-                    </span>
-
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => navigate(
-                          `/messages?contract=${contract.id}${partner?.id ? `&with=${partner.id}` : ''}`,
-                          { state: { contractId: contract.id, otherUserId: partner?.id || null } }
+                      <div className="mt-4 flex items-center gap-2.5 text-xs text-white/60">
+                        {partner?.avatar_url ? (
+                          <img
+                            src={partner.avatar_url}
+                            alt={partnerName}
+                            className="w-6 h-6 rounded-full object-cover border border-white/10"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 bg-white/5 border border-white/10 rounded-full flex items-center justify-center">
+                            <Briefcase className="w-3 h-3 text-white/30" />
+                          </div>
                         )}
-                        className="border border-surface text-on-surface-muted hover:text-purple-500 hover:border-purple-500 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                        {tx("contracts.message", undefined, "Message")}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/contracts/${contract.id}`, {
-                          state: { otherUserId: partner?.id || null },
-                        })}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
-                      >
-                        <FileSignature className="w-4 h-4" />
-                        {tx("contracts.viewContract", undefined, "View Contract")}
-                      </button>
+                        <span>
+                          {isFreelancerWorkspace
+                            ? tx("contracts.role.client", undefined, "Client")
+                            : tx("contracts.role.freelancer", undefined, "Freelancer")}
+                          : {" "}
+                          <span className="font-semibold text-white/80">{partnerName}</span>
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              );
-            })
+
+                    <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start sm:items-center lg:items-end xl:items-center gap-4 shrink-0">
+                      <span className={badge.className}>
+                        {badge.icon}
+                        {tx(badge.labelKey, undefined, badge.fallbackLabel)}
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => navigate(
+                            `/messages?contract=${contract.id}${partner?.id ? `&with=${partner.id}` : ''}`,
+                            { state: { contractId: contract.id, otherUserId: partner?.id || null } }
+                          )}
+                          className="bg-white/5 hover:bg-white/10 text-white/80 hover:text-white px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                          {tx("contracts.message", undefined, "Message")}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/workspace/${contract.id}`)}
+                          className="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                        >
+                          <FileSignature className="w-4 h-4" />
+                          {tx("contracts.viewContract", undefined, "Workspace")}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           ) : activeTab === "cancelled" ? (
             <div className="py-20 flex flex-col items-center justify-center text-center">
-              <div className="size-16 rounded-full surface-sunken border border-surface flex items-center justify-center text-on-surface-subtle mb-6">
-                <Briefcase className="w-7 h-7" />
+              <div className="size-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 mb-6">
+                <Briefcase className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-on-surface mb-2">{tx("contracts.emptyCancelledTitle", undefined, "No cancelled contracts")}</h3>
-              <p className="text-sm text-on-surface-muted max-w-md">
+              <h3 className="text-lg font-bold text-white mb-2">{tx("contracts.emptyCancelledTitle", undefined, "No cancelled contracts")}</h3>
+              <p className="text-sm text-white/40 max-w-md">
                 {tx("contracts.emptyCancelledDescription", undefined, "You don't have any cancelled contracts.")}
               </p>
             </div>
           ) : (
             <div className="py-20 flex flex-col items-center justify-center text-center">
-              <div className="size-16 rounded-full surface-sunken border border-surface flex items-center justify-center text-on-surface-subtle mb-6">
-                <Briefcase className="w-7 h-7" />
+              <div className="size-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 mb-6">
+                <Briefcase className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-on-surface mb-2">{tx("contracts.emptyTitle", undefined, "No contracts found")}</h3>
-              <p className="text-sm text-on-surface-muted max-w-md">
+              <h3 className="text-lg font-bold text-white mb-2">{tx("contracts.emptyTitle", undefined, "No contracts found")}</h3>
+              <p className="text-sm text-white/40 max-w-md">
                 {tx("contracts.emptyDescription", undefined, "Try another tab or adjust your search to find contracts faster.")}
               </p>
             </div>
           )}
         </section>
-      </div>
+      </main>
     </div>
   );
 }
+

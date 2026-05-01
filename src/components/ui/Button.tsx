@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+﻿import { forwardRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -48,7 +48,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             `,
       accent: `
                 bg-[var(--workspace-secondary,var(--amber-600))]
-                text-white
+                text-[var(--color-text-primary)]
                 hover:bg-[var(--workspace-secondary-hover,var(--amber-700))]
                 shadow-[0_2px_8px_color-mix(in_srgb,var(--workspace-secondary,#d97706)_35%,transparent)]
                 hover:shadow-[0_6px_20px_color-mix(in_srgb,var(--workspace-secondary,#d97706)_40%,transparent)]
@@ -78,7 +78,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             `,
       danger: `
                 bg-[var(--color-status-error,#ef4444)]
-                text-white
+                text-[var(--color-text-primary)]
                 hover:bg-[#dc2626]
                 active:bg-[#b91c1c]
                 shadow-[0_2px_8px_rgba(239,68,68,0.3)]
@@ -127,3 +127,5 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = "Button";
 export default Button;
+
+

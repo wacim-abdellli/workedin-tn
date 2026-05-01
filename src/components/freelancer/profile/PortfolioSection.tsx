@@ -1,4 +1,4 @@
-import { Briefcase, ExternalLink, Plus } from 'lucide-react';
+﻿import { Briefcase, ExternalLink, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { OptimizedImage } from '../../common';
 import type { FreelancerData } from '@/types/freelancer';
@@ -86,3 +86,4 @@ export default function PortfolioSection({ workSamples, onSelectSample }: Portfo
         </section>
     );
 }
+

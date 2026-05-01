@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { ArrowLeft, Award, CheckCircle2, Rocket, Target } from 'lucide-react';
 
 import { useAuth } from '../../contexts/AuthContext';
@@ -64,7 +64,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-300/80">
                                 {tx('components.profileCompletion.readyBadge', undefined, 'Profile ready')}
                             </p>
-                            <h3 className="mt-2 text-xl font-semibold text-[#1a1825] dark:text-white">
+                            <h3 className="mt-2 text-xl font-semibold text-[#1a1825] dark:text-[var(--color-text-primary)]">
                                 {tx('components.profileCompletion.completeTitle', undefined, 'Your freelancer profile is market-ready')}
                             </h3>
                             <p className="mt-2 text-sm leading-6 text-[#5b5870] dark:text-[#aca9bd]">
@@ -79,20 +79,20 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
 
     return (
         <div className={`premium-panel radius-panel overflow-hidden ${className}`}>
-            <div className="rounded-[1.6rem] bg-[radial-gradient(circle_at_top_left,rgba(168,85,247,0.28),transparent_40%)] p-6 text-white shadow-[0_28px_70px_-38px_var(--workspace-primary-shadow)]" style={{ background: 'linear-gradient(145deg, var(--purple-600) 0%, var(--purple-500) 52%, var(--purple-700) 100%)' }}>
+            <div className="rounded-[1.6rem] bg-[radial-gradient(circle_at_top_left,rgba(168,85,247,0.28),transparent_40%)] p-6 text-[var(--color-text-primary)] shadow-[0_28px_70px_-38px_var(--workspace-primary-shadow)]" style={{ background: 'linear-gradient(145deg, var(--purple-600) 0%, var(--purple-500) 52%, var(--purple-700) 100%)' }}>
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-card/14 backdrop-blur-sm">
                             <Target className="h-7 w-7" />
                         </div>
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/65">
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-text-primary)]/65">
                                 {tx('components.profileCompletion.badge', undefined, 'Visibility score')}
                             </p>
-                            <h3 className="mt-2 text-xl font-semibold text-white">
+                            <h3 className="mt-2 text-xl font-semibold text-[var(--color-text-primary)]">
                                 {tx('components.profileCompletion.title', undefined, 'Profile completion')}
                             </h3>
-                            <p className="mt-1 text-sm leading-6 text-white/72">
+                            <p className="mt-1 text-sm leading-6 text-[var(--color-text-primary)]/72">
                                 {tx('components.profileCompletion.subtitle', undefined, 'Complete the strongest remaining items to increase trust and hiring chances.')}
                             </p>
                         </div>
@@ -103,7 +103,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                 </div>
 
                 <div className="mt-6 space-y-3">
-                    <div className="flex items-center justify-between text-sm font-medium text-white/85">
+                    <div className="flex items-center justify-between text-sm font-medium text-[var(--color-text-primary)]/85">
                         <span>{tx('components.profileCompletion.progressLabel', undefined, 'Completion')}</span>
                         <span>{completion.percentage}%</span>
                     </div>
@@ -113,7 +113,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                             style={{ width: `${completion.percentage}%` }}
                         />
                     </div>
-                    <div className="flex items-center justify-between text-xs text-white/70">
+                    <div className="flex items-center justify-between text-xs text-[var(--color-text-primary)]/70">
                         <span>
                             {completion.completedSteps.length}/{completion.steps.length} {tx('components.profileCompletion.stepsCount', undefined, 'steps done')}
                         </span>
@@ -127,7 +127,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
             <div className="p-6">
                 <div className="mb-4 flex items-center justify-between gap-4">
                     <div>
-                        <p className="text-sm font-semibold text-[#1a1825] dark:text-white">
+                        <p className="text-sm font-semibold text-[#1a1825] dark:text-[var(--color-text-primary)]">
                             {tx('components.profileCompletion.nextSteps', undefined, 'Highest-impact next steps')}
                         </p>
                         <p className="mt-1 text-xs text-[#6b6880] dark:text-[#8b8aa0]">
@@ -144,13 +144,13 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                         <Link
                             key={step.id}
                             to={step.link || '/settings?tab=profile'}
-                            className="group flex items-center gap-4 rounded-2xl border border-primary-100/80 bg-card/75 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 border-border dark:bg-white/[0.04] dark:hover:border-primary-400/20 dark:hover:bg-card/[0.06]"
+                            className="group flex items-center gap-4 rounded-2xl border border-primary-100/80 bg-card/75 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:bg-primary-50/60 dark:border-white/10 border-border dark:bg-[var(--color-bg-muted)] dark:hover:border-primary-400/20 dark:hover:bg-card/[0.06]"
                         >
-                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-bold ${index === 0 ? 'bg-primary-600 text-white shadow-[0_16px_30px_-16px_rgba(109,40,217,0.9)]' : 'bg-muted text-[#57536a] dark:bg-white/10 dark:text-[#c6c2d6]'}`}>
+                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-sm font-bold ${index === 0 ? 'bg-primary-600 text-[var(--color-text-primary)] shadow-[0_16px_30px_-16px_rgba(109,40,217,0.9)]' : 'bg-muted text-[#57536a] dark:bg-white/10 dark:text-[#c6c2d6]'}`}>
                                 {index + 1}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold text-[#1a1825] dark:text-white">
+                                <p className="truncate text-sm font-semibold text-[#1a1825] dark:text-[var(--color-text-primary)]">
                                     {getStepLabel(step.id, step.label)}
                                 </p>
                                 <p className="mt-1 text-xs text-[#6b6880] dark:text-[#8b8aa0]">
@@ -159,7 +159,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
                                         : tx('components.profileCompletion.nextPriority', undefined, 'Helpful next improvement')}
                                 </p>
                             </div>
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-[#57536a] transition-all group-hover:bg-primary-600 group-hover:text-white dark:bg-white/10 dark:text-[#c6c2d6]">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-[#57536a] transition-all group-hover:bg-primary-600 group-hover:text-[var(--color-text-primary)] dark:bg-white/10 dark:text-[#c6c2d6]">
                                 <ArrowLeft className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
                             </div>
                         </Link>
@@ -174,7 +174,7 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
 
                 <Link
                     to={stepsToShow[0]?.link || '/settings?tab=profile'}
-                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--workspace-primary)] px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--workspace-primary-hover)]"
+                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--workspace-primary)] px-5 py-3.5 text-sm font-semibold text-[var(--color-text-primary)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--workspace-primary-hover)]"
                 >
                     <CheckCircle2 className="h-4 w-4" />
                     {tx('components.profileCompletion.cta', undefined, 'Improve profile now')}
@@ -185,3 +185,5 @@ const ProfileCompletionCard = ({ className = '', maxStepsToShow = 4 }: ProfileCo
 };
 
 export default ProfileCompletionCard;
+
+

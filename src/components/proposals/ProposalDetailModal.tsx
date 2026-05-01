@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
     MessageSquare, Star, MapPin, Clock, Briefcase,
     Archive, CheckCircle, Loader2, User,
@@ -76,21 +76,14 @@ function Avatar({ name, url, online, size = 'lg' }: { name: string; url: string 
     return (
         <div className="relative shrink-0">
             {url ? (
-                <img src={url} alt={name} className={`${s} rounded-2xl object-cover`}
-                    style={{ border: '2px solid color-mix(in srgb, var(--border) 50%, transparent)' }} />
+                <img src={url} alt={name} className={`${s} rounded-2xl object-cover border-2 border-white/10`} />
             ) : (
-                <div className={`${s} rounded-2xl flex items-center justify-center font-black`}
-                    style={{
-                        background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 22%, var(--card-bg)), color-mix(in srgb, var(--workspace-primary) 8%, var(--card-bg)))',
-                        border: '2px solid color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
-                        color: 'var(--workspace-primary-mid)',
-                    }}>
+                <div className={`${s} rounded-2xl flex items-center justify-center font-black bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/20 text-amber-400`}>
                     {initials || <User className="w-4 h-4" />}
                 </div>
             )}
             {online && (
-                <span className={`absolute ${dot} rounded-full`}
-                    style={{ background: '#22c55e', borderColor: 'var(--card-bg)' }} />
+                <span className={`absolute ${dot} rounded-full bg-emerald-500 border-[#0a0a0a]`} />
             )}
         </div>
     );
@@ -99,17 +92,16 @@ function Avatar({ name, url, online, size = 'lg' }: { name: string; url: string 
 function StatusPill({ status }: { status: string }) {
     const s = status === 'pending' ? 'new' : status;
     const map: Record<string, { label: string; color: string; bg: string }> = {
-        new: { label: 'New', color: '#818cf8', bg: 'rgba(99,102,241,0.14)' },
-        shortlisted: { label: 'Shortlisted', color: '#fbbf24', bg: 'rgba(245,158,11,0.14)' },
-        archived: { label: 'Archived', color: '#94a3b8', bg: 'rgba(100,116,139,0.14)' },
-        accepted: { label: 'Accepted', color: '#4ade80', bg: 'rgba(34,197,94,0.14)' },
-        rejected: { label: 'Declined', color: '#f87171', bg: 'rgba(239,68,68,0.14)' },
+        new: { label: 'New', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+        shortlisted: { label: 'Shortlisted', color: 'text-amber-400', bg: 'bg-amber-500/10' },
+        archived: { label: 'Archived', color: 'text-slate-400', bg: 'bg-white/5' },
+        accepted: { label: 'Accepted', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+        rejected: { label: 'Declined', color: 'text-rose-400', bg: 'bg-rose-500/10' },
     };
-    const b = map[s] ?? { label: s, color: '#94a3b8', bg: 'rgba(100,116,139,0.14)' };
+    const b = map[s] ?? { label: s, color: 'text-slate-400', bg: 'bg-white/5' };
     return (
-        <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold"
-            style={{ background: b.bg, color: b.color }}>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: b.color }} />
+        <span className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${b.bg} ${b.color}`}>
+            <span className={`w-1.5 h-1.5 rounded-full bg-current opacity-80`} />
             {b.label}
         </span>
     );
@@ -305,20 +297,20 @@ export default function ProposalDetailPane({
     };
 
     return (
-        <div className="flex flex-col h-full min-h-0 overflow-hidden relative shadow-2xl" style={{ background: 'var(--page-bg)' }}>
+        <div className="flex flex-col h-full min-h-0 overflow-hidden relative shadow-2xl bg-[var(--color-bg-base)]">
             
             {/* ── COMPACT TOP HEADER ── */}
-            <div className="flex items-center justify-between px-5 py-3 border-b shrink-0 z-20" style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 shrink-0 z-20 bg-[var(--color-bg-base)]">
                 <div className="flex items-center gap-3">
                     <Avatar name={freelancer.full_name} url={freelancer.avatar_url} online={freelancer.is_online} size="sm" />
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{freelancer.full_name}</h2>
+                            <h2 className="text-sm font-bold truncate text-[var(--color-text-primary)]">{freelancer.full_name}</h2>
                             <StatusPill status={proposal.status} />
                         </div>
                     </div>
                 </div>
-                <button onClick={onClose} className="p-1.5 rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5" style={{ color: 'var(--text-muted)' }}>
+                <button onClick={onClose} className="p-1.5 rounded-lg transition-colors hover:bg-white/5 text-[var(--color-text-primary)]/50">
                     <X className="w-5 h-5" />
                 </button>
             </div>
@@ -327,17 +319,16 @@ export default function ProposalDetailPane({
             <div className="flex-1 overflow-y-auto overflow-x-hidden relative" style={{ minWidth: 0 }}>
                 
                 {/* HERO INFO (Scrolls with page) */}
-                <div className="relative px-5 pt-6 pb-6 lg:pt-8 lg:pb-8 overflow-hidden border-b" style={{ background: 'linear-gradient(170deg, color-mix(in srgb, var(--workspace-primary) 6%, transparent) 0%, transparent 100%)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
-                    <div aria-hidden className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full blur-[100px] opacity-20"
-                         style={{ background: 'var(--workspace-primary)' }} />
+                <div className="relative px-5 pt-6 pb-6 lg:pt-8 lg:pb-8 overflow-hidden border-b border-white/5 bg-gradient-to-b from-amber-500/5 to-transparent">
+                    <div aria-hidden className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full blur-[100px] opacity-20 bg-amber-500" />
                          
                     <div className="relative flex flex-col xl:flex-row xl:items-center justify-between gap-6 z-10 w-full">
                         {/* Left: Info */}
                         <div className="flex-1 min-w-0 w-full">
-                            <h1 className="text-2xl sm:text-3xl font-black mb-3 leading-tight" style={{ color: 'var(--text-primary)' }}>
+                            <h1 className="text-2xl sm:text-3xl font-black mb-3 leading-tight text-[var(--color-text-primary)]">
                                 {freelancer.title || 'Freelancer'}
                             </h1>
-                            <div className="flex flex-wrap gap-x-5 gap-y-3 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                            <div className="flex flex-wrap gap-x-5 gap-y-3 text-sm font-medium text-[var(--color-text-primary)]/70">
                                 {freelancer.country && (
                                     <span className="flex items-center gap-1.5">
                                         <MapPin className="w-4 h-4 opacity-70" /> {freelancer.country}
@@ -345,95 +336,85 @@ export default function ProposalDetailPane({
                                 )}
                                 {resolvedRating > 0 && (
                                     <span className="flex items-center gap-1.5">
-                                        <Star className="w-4 h-4" style={{ color: '#f59e0b', fill: '#f59e0b' }} />
-                                        <strong style={{ color: 'var(--text-primary)' }}>{resolvedRating.toFixed(1)}</strong>
+                                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                        <strong className="text-[var(--color-text-primary)]">{resolvedRating.toFixed(1)}</strong>
                                         <span className="opacity-70">({resolvedReviewCount})</span>
                                     </span>
                                 )}
                                 {resolvedJobsCompleted > 0 && (
                                     <span className="flex items-center gap-1.5">
                                         <Briefcase className="w-4 h-4 opacity-70" />
-                                        <strong style={{ color: 'var(--text-primary)' }}>{resolvedJobsCompleted}</strong> <span className="opacity-70">jobs</span>
+                                        <strong className="text-[var(--color-text-primary)]">{resolvedJobsCompleted}</strong> <span className="opacity-70">jobs</span>
                                     </span>
                                 )}
                                 {resolvedSuccessRate > 0 && (
                                     <span className="flex items-center gap-1.5">
                                         <TrendingUp className="w-4 h-4 opacity-70" />
-                                        <strong style={{ color: 'var(--text-primary)' }}>{resolvedSuccessRate}%</strong> <span className="opacity-70">success</span>
+                                        <strong className="text-[var(--color-text-primary)]">{resolvedSuccessRate}%</strong> <span className="opacity-70">success</span>
                                     </span>
                                 )}
                             </div>
                         </div>
 
                         {/* Right: Bid Strip */}
-                        <div className="shrink-0 rounded-2xl border px-6 py-5 shadow-lg w-full xl:w-auto min-w-[240px]"
-                             style={{ background: 'color-mix(in srgb, var(--card-bg) 90%, transparent)', borderColor: 'color-mix(in srgb, var(--workspace-primary) 30%, transparent)' }}>
-                            <p className="text-[11px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--workspace-primary-mid)' }}>Proposed Terms</p>
+                        <div className="shrink-0 rounded-2xl border border-amber-500/20 px-6 py-5 shadow-lg w-full xl:w-auto min-w-[240px] bg-[var(--color-bg-elevated)] backdrop-blur-sm">
+                            <p className="text-[10px] font-black uppercase tracking-widest mb-2 text-amber-500">Proposed Terms</p>
                             <div className="flex items-baseline gap-1.5 mb-2">
-                                <DollarSign className="w-5 h-5" style={{ color: 'var(--workspace-primary-mid)' }} />
-                                <span className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{proposal.bid_amount}</span>
-                                <span className="text-sm font-bold opacity-70" style={{ color: 'var(--text-muted)' }}>TND</span>
+                                <DollarSign className="w-5 h-5 text-amber-500" />
+                                <span className="text-4xl font-black tracking-tight text-[var(--color-text-primary)]">{proposal.bid_amount}</span>
+                                <span className="text-sm font-bold opacity-70 text-[var(--color-text-primary)]/50">TND</span>
                             </div>
                             {proposal.duration > 0 && (
-                                <div className="flex items-center gap-1.5 text-sm font-medium mb-3" style={{ color: 'var(--text-secondary)' }}>
-                                    <Clock className="w-4 h-4" style={{ color: '#22c55e' }} />
-                                    Delivery in <strong style={{ color: 'var(--text-primary)' }}>{proposal.duration} days</strong>
+                                <div className="flex items-center gap-1.5 text-sm font-medium mb-3 text-[var(--color-text-primary)]/70">
+                                    <Clock className="w-4 h-4 text-emerald-400" />
+                                    Delivery in <strong className="text-[var(--color-text-primary)]">{proposal.duration} days</strong>
                                 </div>
                             )}
-                            <div className="pt-3 border-t text-[11px] font-semibold tracking-wide" style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)', color: 'var(--text-muted)' }}>
-                                +{fee} TND fee → <strong style={{ color: 'var(--text-primary)' }}>{total} TND total</strong>
+                            <div className="pt-3 border-t border-white/10 text-[11px] font-semibold tracking-wide text-[var(--color-text-primary)]/50">
+                                +{fee} TND fee → <strong className="text-[var(--color-text-primary)]">{total} TND total</strong>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* ── TABS (Sticky inside scroll) ── */}
-                <div className="sticky top-0 z-10 flex border-b px-5 gap-6 backdrop-blur-2xl"
-                     style={{ background: 'color-mix(in srgb, var(--card-bg) 85%, transparent)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
+                <div className="sticky top-0 z-10 flex border-b border-white/5 px-5 gap-6 backdrop-blur-2xl bg-[var(--color-bg-base)]/80">
                     {TABS.map(tab => (
                         <button
                             key={tab}
                             type="button"
                             onClick={() => setActiveTab(tab)}
-                            className="relative py-4 px-1 text-sm font-bold transition-all border-b-[3px]"
-                            style={{
-                                borderBottomColor: activeTab === tab ? 'var(--workspace-primary)' : 'transparent',
-                                color: activeTab === tab ? 'var(--workspace-primary-mid)' : 'var(--text-muted)',
-                                marginBottom: '-2px',
-                            }}
+                            className={`relative py-4 px-1 text-[11px] uppercase tracking-wider font-bold transition-all ${
+                                activeTab === tab ? 'text-amber-400' : 'text-[var(--color-text-primary)]/40 hover:text-[var(--color-text-primary)]/70'
+                            }`}
                         >
                             {tabLabels[tab]}
+                            {activeTab === tab && (
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500 rounded-t-full shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                            )}
                         </button>
                     ))}
                 </div>
 
             {/* ── CONTENT ── */}
-            <div className="p-4 sm:p-5 md:p-6 pb-28 md:pb-32 w-full min-w-0" style={{ background: 'var(--page-bg)', minWidth: 0 }}>
+            <div className="p-4 sm:p-5 md:p-6 pb-28 md:pb-32 w-full min-w-0 bg-[var(--color-bg-base)]">
 
                 {/* PROPOSAL */}
                 {activeTab === 'proposal' && (
                     <div className="space-y-5 animate-in fade-in duration-200 max-w-2xl w-full min-w-0 flex flex-col min-h-0">
-                        <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                        <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider font-bold text-[var(--color-text-primary)]/40">
                             <Clock className="w-3.5 h-3.5" />
                             Submitted {new Date(proposal.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
                         </div>
 
                         {/* Cover letter */}
                         <div className="w-full min-w-0">
-                            <h3 className="text-sm font-bold mb-2.5" style={{ color: 'var(--text-primary)' }}>
+                            <h3 className="text-xs uppercase tracking-wider font-black mb-2.5 text-[var(--color-text-primary)]/70">
                                 {tx('jobProposals.modal.coverLetter', undefined, 'Cover Letter')}
                             </h3>
-                            <div
-                                className="rounded-2xl border p-4 sm:p-5 text-sm leading-relaxed whitespace-pre-wrap break-all w-full overflow-hidden"
-                                style={{
-                                    background: 'var(--card-bg)',
-                                    borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)',
-                                    color: 'var(--text-secondary)',
-                                    overflowWrap: 'anywhere',
-                                }}
-                            >
+                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] p-4 sm:p-5 text-sm leading-relaxed whitespace-pre-wrap break-all w-full overflow-hidden text-[var(--color-text-primary)]/70">
                                 {proposal.cover_letter || (
-                                    <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                    <span className="text-[var(--color-text-primary)]/40 italic">
                                         {tx('jobProposals.noCoverLetter', undefined, 'No cover letter provided.')}
                                     </span>
                                 )}
@@ -443,7 +424,7 @@ export default function ProposalDetailPane({
                         {/* Attachments */}
                         {proposal.attachments && proposal.attachments.length > 0 && (
                             <div>
-                                <h3 className="text-sm font-bold mb-2.5" style={{ color: 'var(--text-primary)' }}>
+                                <h3 className="text-xs uppercase tracking-wider font-black mb-2.5 text-[var(--color-text-primary)]/70">
                                     {tx('jobProposals.modal.attachments', undefined, 'Attachments')}
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -458,23 +439,21 @@ export default function ProposalDetailPane({
                                                         window.open(file.url, '_blank');
                                                     }
                                                 }}
-                                                className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer group transition-all hover:brightness-95"
-                                                style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
+                                                className="flex items-center gap-3 p-3 rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] cursor-pointer group transition-all hover:bg-white/5">
                                                 {isImg && file.url ? (
-                                                    <div className="h-9 w-9 rounded-xl shrink-0 overflow-hidden border border-[var(--border)]">
+                                                    <div className="h-9 w-9 rounded-xl shrink-0 overflow-hidden border border-white/10">
                                                         <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
                                                     </div>
                                                 ) : (
-                                                    <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-                                                        style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}>
-                                                        <FileText className="w-4 h-4" style={{ color: 'var(--workspace-primary-mid)' }} />
+                                                    <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-amber-500/10">
+                                                        <FileText className="w-4 h-4 text-amber-500" />
                                                     </div>
                                                 )}
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{file.name || 'Attachment'}</p>
-                                                    {file.size && <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{file.size}</p>}
+                                                    <p className="text-xs font-bold truncate text-[var(--color-text-primary)]">{file.name || 'Attachment'}</p>
+                                                    {file.size && <p className="text-[10px] text-[var(--color-text-primary)]/50 uppercase tracking-wider font-semibold">{file.size}</p>}
                                                 </div>
-                                                <Download className="w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: 'var(--text-muted)' }} />
+                                                <Download className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-[var(--color-text-primary)]/50" />
                                             </div>
                                         );
                                     })}
@@ -488,17 +467,17 @@ export default function ProposalDetailPane({
                 {activeTab === 'profile' && (
                     <div className="space-y-5 animate-in fade-in duration-200 max-w-2xl">
                         {isLoadingInsights ? (
-                            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                            <div className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]/50">
+                                <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
                                 Loading freelancer profile details...
                             </div>
                         ) : resolvedBio ? (
                             <div>
-                                <h3 className="text-sm font-bold mb-2" style={{ color: 'var(--text-primary)' }}>About</h3>
-                                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)', wordBreak: 'break-word' }}>{resolvedBio}</p>
+                                <h3 className="text-xs uppercase tracking-wider font-black mb-2 text-[var(--color-text-primary)]/70">About</h3>
+                                <p className="text-sm leading-relaxed text-[var(--color-text-primary)]/70 break-words">{resolvedBio}</p>
                             </div>
                         ) : (
-                            <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
+                            <div className="text-center py-12 text-[var(--color-text-primary)]/40">
                                 <User className="w-10 h-10 mx-auto mb-3 opacity-20" />
                                 <p className="text-sm">No profile info available.</p>
                             </div>
@@ -510,11 +489,10 @@ export default function ProposalDetailPane({
                                 { label: 'Rating', value: resolvedRating > 0 ? `${resolvedRating.toFixed(1)} ★` : '—', icon: Star },
                                 { label: 'Reviews', value: resolvedReviewCount, icon: Shield },
                             ].map(({ label, value, icon: Icon }) => (
-                                <div key={label} className="rounded-2xl border p-4"
-                                    style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
-                                    <Icon className="w-4 h-4 mb-2" style={{ color: 'var(--workspace-primary-mid)' }} />
-                                    <p className="text-xl font-black mb-0.5" style={{ color: 'var(--text-primary)' }}>{String(value)}</p>
-                                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+                                <div key={label} className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] p-4">
+                                    <Icon className="w-4 h-4 mb-2 text-amber-500" />
+                                    <p className="text-xl font-black mb-0.5 text-[var(--color-text-primary)]">{String(value)}</p>
+                                    <p className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-text-primary)]/40">{label}</p>
                                 </div>
                             ))}
                         </div>
@@ -525,33 +503,32 @@ export default function ProposalDetailPane({
                 {activeTab === 'portfolio' && (
                     <div className="animate-in fade-in duration-200">
                         {isLoadingInsights ? (
-                            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                            <div className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]/50">
+                                <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
                                 Loading portfolio...
                             </div>
                         ) : portfolioItems.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {portfolioItems.map((item) => (
-                                    <article key={item.id} className="rounded-2xl border overflow-hidden"
-                                        style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
-                                        <div className="h-32 overflow-hidden" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 6%, transparent)' }}>
+                                    <article key={item.id} className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] overflow-hidden">
+                                        <div className="h-32 overflow-hidden bg-amber-500/5">
                                             {item.thumbnail_url ? (
                                                 <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+                                                <div className="w-full h-full flex items-center justify-center text-[var(--color-text-primary)]/40">
                                                     <Briefcase className="w-6 h-6 opacity-40" />
                                                 </div>
                                             )}
                                         </div>
                                         <div className="p-3 space-y-1.5">
-                                            <h4 className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{item.title}</h4>
+                                            <h4 className="text-sm font-bold truncate text-[var(--color-text-primary)]">{item.title}</h4>
                                             {item.description && (
-                                                <p className="text-xs line-clamp-3" style={{ color: 'var(--text-secondary)' }}>{item.description}</p>
+                                                <p className="text-xs line-clamp-3 text-[var(--color-text-primary)]/60">{item.description}</p>
                                             )}
-                                            <div className="flex items-center justify-between text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                                            <div className="flex items-center justify-between text-[10px] uppercase tracking-wider font-bold text-[var(--color-text-primary)]/40">
                                                 <span>{item.completion_date ? new Date(item.completion_date).toLocaleDateString() : 'Recent work'}</span>
                                                 {item.project_url && (
-                                                    <a href={item.project_url} target="_blank" rel="noreferrer" className="font-semibold" style={{ color: 'var(--workspace-primary-mid)' }}>
+                                                    <a href={item.project_url} target="_blank" rel="noreferrer" className="text-amber-500 hover:text-amber-400 transition-colors">
                                                         Open
                                                     </a>
                                                 )}
@@ -561,12 +538,11 @@ export default function ProposalDetailPane({
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
-                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                                    style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}>
-                                    <Briefcase className="w-6 h-6" style={{ color: 'var(--workspace-primary-mid)', opacity: 0.6 }} />
+                            <div className="text-center py-16 text-[var(--color-text-primary)]/40">
+                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-amber-500/10">
+                                    <Briefcase className="w-6 h-6 text-amber-500 opacity-60" />
                                 </div>
-                                <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>No portfolio items</p>
+                                <p className="text-sm font-bold mb-1 text-[var(--color-text-primary)]">No portfolio items</p>
                                 <p className="text-xs">The freelancer hasn't added portfolio items yet.</p>
                             </div>
                         )}
@@ -577,15 +553,14 @@ export default function ProposalDetailPane({
                 {activeTab === 'reviews' && (
                     <div className="animate-in fade-in duration-200">
                         {isLoadingInsights ? (
-                            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                            <div className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]/50">
+                                <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
                                 Loading reviews...
                             </div>
                         ) : reviewItems.length > 0 ? (
                             <div className="space-y-3 max-w-2xl">
                                 {reviewItems.map((review) => (
-                                    <article key={review.id} className="rounded-2xl border p-4"
-                                        style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
+                                    <article key={review.id} className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] p-4">
                                         <div className="flex items-start gap-3">
                                             <Avatar
                                                 name={review.reviewer_name}
@@ -595,21 +570,20 @@ export default function ProposalDetailPane({
                                             />
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between gap-2 mb-1">
-                                                    <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{review.reviewer_name}</p>
-                                                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                                                    <p className="text-sm font-bold truncate text-[var(--color-text-primary)]">{review.reviewer_name}</p>
+                                                    <span className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-text-primary)]/40">
                                                         {new Date(review.created_at).toLocaleDateString()}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center gap-1 mb-2" style={{ color: '#f59e0b' }}>
+                                                <div className="flex items-center gap-1 mb-2 text-amber-500">
                                                     {Array.from({ length: 5 }).map((_, index) => (
                                                         <Star
                                                             key={`${review.id}-${index}`}
-                                                            className="w-3.5 h-3.5"
-                                                            style={{ fill: index < review.rating ? '#f59e0b' : 'transparent' }}
+                                                            className={`w-3.5 h-3.5 ${index < review.rating ? 'fill-current' : 'text-[var(--color-text-primary)]/10'}`}
                                                         />
                                                     ))}
                                                 </div>
-                                                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)', wordBreak: 'break-word' }}>
+                                                <p className="text-sm leading-relaxed text-[var(--color-text-primary)]/70 break-words">
                                                     {review.comment || 'Great collaboration experience.'}
                                                 </p>
                                             </div>
@@ -618,12 +592,11 @@ export default function ProposalDetailPane({
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
-                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                                    style={{ background: 'rgba(245,158,11,0.10)' }}>
-                                    <Star className="w-6 h-6" style={{ color: '#fbbf24', opacity: 0.6 }} />
+                            <div className="text-center py-16 text-[var(--color-text-primary)]/40">
+                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-amber-500/10">
+                                    <Star className="w-6 h-6 text-amber-500 opacity-60" />
                                 </div>
-                                <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>No reviews yet</p>
+                                <p className="text-sm font-bold mb-1 text-[var(--color-text-primary)]">No reviews yet</p>
                                 <p className="text-xs">Reviews appear after completed contracts.</p>
                             </div>
                         )}
@@ -633,26 +606,23 @@ export default function ProposalDetailPane({
             </div>
 
             {/* ── STICKY BOTTOM ACTION BAR ── */}
-            <div className="absolute bottom-0 left-0 right-0 border-t px-5 py-4 flex items-center justify-between gap-3 z-30 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] backdrop-blur-xl"
-                 style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)', background: 'color-mix(in srgb, var(--card-bg) 85%, transparent)' }}>
+            <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 px-5 py-4 flex items-center justify-between gap-3 z-30 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] backdrop-blur-xl bg-[var(--color-bg-base)]/80">
                  
                 {hireConfirm ? (
                     <div className="flex items-center gap-2 flex-1 flex-wrap">
-                        <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                        <span className="text-sm font-bold text-[var(--color-text-primary)]">
                             Confirm hire?
                         </span>
-                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        <span className="text-xs text-[var(--color-text-primary)]/50">
                             A contract will be created.
                         </span>
                         <button type="button" onClick={() => setHireConfirm(false)}
-                            className="rounded-xl border px-3 py-2 text-xs font-semibold transition-all hover:opacity-80 ml-auto"
-                            style={{ borderColor: 'color-mix(in srgb, var(--border) 70%, transparent)', color: 'var(--text-secondary)' }}>
+                            className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-[var(--color-text-primary)]/70 hover:bg-white/5 transition-colors ml-auto">
                             Cancel
                         </button>
                         <button type="button" onClick={() => { setHireConfirm(false); onHire(); }}
                             disabled={isHiring}
-                            className="flex items-center gap-1.5 rounded-xl px-5 py-2 text-sm font-bold transition-all hover:brightness-110 disabled:opacity-60"
-                            style={{ background: '#22c55e', color: '#fff' }}>
+                            className="flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-bold transition-all hover:bg-emerald-400 disabled:opacity-60 bg-emerald-500 text-[#0a0a0a] shadow-[0_4px_16px_-4px_rgba(34,197,94,0.5)]">
                             {isHiring ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                             Yes, Hire!
                         </button>
@@ -661,12 +631,7 @@ export default function ProposalDetailPane({
                     <div className="flex flex-1 items-center gap-3 overflow-x-auto scrollbar-hide py-1">
                         <button type="button" onClick={() => setHireConfirm(true)}
                             disabled={isHiring || !canHire}
-                            className="flex items-center justify-center gap-2 rounded-xl px-8 py-2.5 text-sm font-bold transition-all hover:scale-[1.03] active:scale-95 disabled:opacity-60 shrink-0"
-                            style={{
-                                background: 'linear-gradient(135deg, var(--workspace-primary), color-mix(in srgb, var(--workspace-primary) 80%, black))',
-                                color: '#fff',
-                                boxShadow: '0 8px 24px -8px color-mix(in srgb, var(--workspace-primary) 60%, transparent)',
-                            }}>
+                            className="flex items-center justify-center gap-2 rounded-lg px-8 py-2.5 text-sm font-bold transition-all hover:bg-amber-400 disabled:opacity-60 shrink-0 bg-amber-500 text-[#0a0a0a] shadow-[0_4px_16px_-4px_rgba(245,158,11,0.5)]">
                             {isHiring ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                             {canHire
                                 ? tx('jobProposals.hire', undefined, 'Hire Now')
@@ -674,19 +639,13 @@ export default function ProposalDetailPane({
                         </button>
 
                         <button type="button" onClick={onMessage}
-                            className="flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all hover:bg-black/5 dark:hover:bg-white/5 shrink-0"
-                            style={{ borderColor: 'color-mix(in srgb, var(--border) 70%, transparent)', color: 'var(--text-secondary)' }}>
+                            className="flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)]/70 hover:bg-white/5 transition-colors shrink-0">
                             <MessageSquare className="w-4 h-4" />
                             {tx('jobProposals.message', undefined, 'Chat')}
                         </button>
 
                         <button type="button" onClick={onShortlist}
-                            className="flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-105 shrink-0"
-                            style={{
-                                borderColor: isShortlisted ? 'color-mix(in srgb, #f59e0b 40%, transparent)' : 'color-mix(in srgb, var(--border) 70%, transparent)',
-                                color: isShortlisted ? '#fbbf24' : 'var(--text-secondary)',
-                                background: isShortlisted ? 'rgba(245,158,11,0.1)' : 'transparent',
-                            }}>
+                            className={`flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-all hover:bg-white/5 shrink-0 ${isShortlisted ? 'border-amber-500/50 text-amber-400 bg-amber-500/10' : 'border-white/10 text-[var(--color-text-primary)]/70'}`}>
                             <Star className={`w-4 h-4 ${isShortlisted ? 'fill-current' : ''}`} />
                             {isShortlisted ? tx('jobProposals.saved', undefined, 'Saved') : tx('jobProposals.save', undefined, 'Save')}
                         </button>
@@ -695,12 +654,7 @@ export default function ProposalDetailPane({
                             <button
                                 type="button"
                                 onClick={onReject}
-                                className="flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-85 shrink-0"
-                                style={{
-                                    borderColor: 'rgba(239,68,68,0.35)',
-                                    color: '#f87171',
-                                    background: 'rgba(239,68,68,0.08)',
-                                }}
+                                className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 px-4 py-2.5 text-sm font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition-colors shrink-0"
                             >
                                 <X className="w-4 h-4" />
                                 {tx('jobProposals.modal.reject', undefined, 'Decline')}
@@ -710,27 +664,22 @@ export default function ProposalDetailPane({
                         {/* Archive dropdown */}
                         <div className="relative ms-auto shrink-0">
                             <button type="button" onClick={() => setArchiveOpen(v => !v)}
-                                className="flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all hover:opacity-70"
-                                style={{ borderColor: 'color-mix(in srgb, var(--border) 70%, transparent)', color: 'var(--text-muted)' }}>
+                                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)]/80 transition-colors">
                                 <Archive className="w-4 h-4" />
                                 More
                                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${archiveOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {archiveOpen && (
-                                <div
-                                    className="absolute bottom-full right-0 mb-3 rounded-xl border shadow-2xl z-40 py-2 w-48 backdrop-blur-3xl"
-                                    style={{ background: 'color-mix(in srgb, var(--card-bg) 95%, transparent)', borderColor: 'color-mix(in srgb, var(--border) 60%, transparent)' }}>
+                                <div className="absolute bottom-full right-0 mb-3 rounded-xl border border-white/10 bg-[var(--color-bg-base)] shadow-[0_8px_32px_rgba(0,0,0,0.8)] z-40 py-2 w-48">
                                     {canReject && (
                                         <button type="button" onClick={() => { setArchiveOpen(false); onReject(); }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold hover:opacity-80 transition-opacity"
-                                            style={{ color: '#f87171' }}>
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-rose-400 hover:bg-white/5 transition-colors">
                                             <X className="w-4 h-4" />
                                             {tx('jobProposals.modal.reject', undefined, 'Decline Proposal')}
                                         </button>
                                     )}
                                     <button type="button" onClick={() => { setArchiveOpen(false); if (isArchived) onUnarchive(); else onArchive(); }}
-                                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold hover:opacity-80 transition-opacity"
-                                        style={{ color: isArchived ? 'var(--workspace-primary-mid)' : '#f87171' }}>
+                                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold hover:bg-white/5 transition-colors ${isArchived ? 'text-amber-400' : 'text-[var(--color-text-primary)]/70'}`}>
                                         <Archive className="w-4 h-4" />
                                         {isArchived
                                             ? tx('jobProposals.modal.unarchive', undefined, 'Unarchive Proposal')
@@ -750,7 +699,7 @@ export default function ProposalDetailPane({
                 >
                     <button 
                         onClick={() => setLightboxImage(null)}
-                        className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                        className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-[var(--color-text-primary)] transition-colors"
                     >
                         <X className="w-6 h-6" />
                     </button>
@@ -764,3 +713,5 @@ export default function ProposalDetailPane({
         </div>
     );
 }
+
+

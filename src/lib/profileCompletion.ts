@@ -49,7 +49,7 @@ export function calculateFreelancerProfileCompletion(
         {
             id: 'phone',
             label: 'إضافة رقم الهاتف',
-            completed: !!profile?.phone,
+            completed: !!profile?.phone_verified,
             weight: 4,
             link: '/settings?tab=profile',
         },
@@ -191,7 +191,7 @@ export function calculateClientProfileCompletion(profile: Profile | null): Profi
         {
             id: 'phone',
             label: 'إضافة رقم الهاتف',
-            completed: !!profile?.phone,
+            completed: !!profile?.phone_verified,
             weight: 15,
             link: '/settings?tab=profile',
         },

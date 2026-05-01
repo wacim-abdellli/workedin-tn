@@ -9,6 +9,7 @@ import { Header } from "@/components/layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useTranslation } from "@/i18n";
+import SEO, { SEO_CONFIG } from "@/components/common/SEO";
 
 type ProposalTab = "all" | "pending" | "accepted" | "rejected";
 
@@ -57,7 +58,7 @@ type Tx = (key: string, params?: Record<string, string | number>, fallback?: str
 const buildContractThreadPath = (contractId: string, otherUserId?: string | null) => {
   const encodedContractId = encodeURIComponent(contractId);
   const encodedOtherUserId = otherUserId ? encodeURIComponent(otherUserId) : null;
-  return `/messages?contract=${encodedContractId}${encodedOtherUserId ? `&with=${encodedOtherUserId}` : ''}`;
+  return `/workspace/${encodedContractId}`;
 };
 
 const getStatusLabel = (status: string, tx: Tx) => {
@@ -68,29 +69,29 @@ const getStatusLabel = (status: string, tx: Tx) => {
 
 const StatusDot = ({ status }: { status: string }) => {
   const tab = normalizeToTab(status);
-  if (tab === "accepted") return <CheckCircle2 className="w-4 h-4" style={{ color: "var(--color-status-success)" }} />;
-  if (tab === "rejected") return <XCircle className="w-4 h-4" style={{ color: "var(--color-status-error)" }} />;
-  return <Circle className="w-4 h-4" style={{ color: "var(--color-status-warning)" }} />;
+  if (tab === "accepted") return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />;
+  if (tab === "rejected") return <XCircle className="w-3.5 h-3.5 text-rose-400" />;
+  return <Circle className="w-3.5 h-3.5 text-amber-400" />;
 };
 
-const pillStyle = (status: string): React.CSSProperties => {
+const pillStyle = (status: string) => {
   const tab = normalizeToTab(status);
-  if (tab === "accepted") return { background: "color-mix(in srgb, var(--color-status-success) 14%, transparent)", color: "var(--color-status-success)", border: "1px solid color-mix(in srgb, var(--color-status-success) 28%, transparent)" };
-  if (tab === "rejected") return { background: "color-mix(in srgb, var(--color-status-error) 14%, transparent)", color: "var(--color-status-error)", border: "1px solid color-mix(in srgb, var(--color-status-error) 28%, transparent)" };
-  return { background: "color-mix(in srgb, var(--color-status-warning) 14%, transparent)", color: "var(--color-status-warning)", border: "1px solid color-mix(in srgb, var(--color-status-warning) 28%, transparent)" };
+  if (tab === "accepted") return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
+  if (tab === "rejected") return "bg-rose-500/10 text-rose-300 border-rose-500/20";
+  return "bg-amber-500/10 text-amber-300 border-amber-500/20";
 };
 
 function CardSkeleton() {
   return (
-    <div className="rounded-2xl border p-5 animate-pulse" style={{ background: "var(--card-bg)", borderColor: "color-mix(in srgb, var(--border) 60%, transparent)" }}>
+    <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-5 animate-pulse">
       <div className="flex items-center justify-between gap-4 mb-3">
-        <div className="h-4 w-52 rounded-full" style={{ background: "color-mix(in srgb, var(--border) 80%, transparent)" }} />
-        <div className="h-6 w-24 rounded-full" style={{ background: "color-mix(in srgb, var(--border) 70%, transparent)" }} />
+        <div className="h-4 w-52 rounded-full bg-[var(--color-bg-muted)]" />
+        <div className="h-6 w-24 rounded-full bg-white/10" />
       </div>
-      <div className="h-3.5 w-36 rounded-full mb-3" style={{ background: "color-mix(in srgb, var(--border) 55%, transparent)" }} />
+      <div className="h-3.5 w-36 rounded-full mb-3 bg-white/5" />
       <div className="flex gap-4">
-        <div className="h-3 w-24 rounded-full" style={{ background: "color-mix(in srgb, var(--border) 45%, transparent)" }} />
-        <div className="h-3 w-20 rounded-full" style={{ background: "color-mix(in srgb, var(--border) 45%, transparent)" }} />
+        <div className="h-3 w-24 rounded-full bg-white/5" />
+        <div className="h-3 w-20 rounded-full bg-white/5" />
       </div>
     </div>
   );
@@ -107,7 +108,6 @@ export default function MyProposals() {
     queryFn: async () => {
       if (!user?.id) return [];
 
-      // ── SAFE query: only columns that definitely exist in the schema ──
       const { data: rows, error: rowsError } = await supabase
         .from("proposals")
         .select("id, job_id, bid_amount, created_at, status")
@@ -118,7 +118,6 @@ export default function MyProposals() {
       if (rowsError) throw rowsError;
       if (!rows || rows.length === 0) return [];
 
-      // Hydrate job titles in parallel
       const jobIds = [...new Set(rows.map((r: ProposalRow) => r.job_id).filter(Boolean))] as string[];
       const jobsById = new Map<string, { id: string; title: string | null; category: string | null }>();
       const contractsByProposalId = new Map<string, ContractLinkRow>();
@@ -263,42 +262,40 @@ export default function MyProposals() {
   const TABS: ProposalTab[] = ["all", "pending", "accepted", "rejected"];
 
   return (
-    <div className="min-h-screen pb-20" style={{ background: "var(--page-bg)" }}>
+    <div className="min-h-screen page-bg-base">
+      <SEO title={tx("pages.myProposals.title", undefined, "My Proposals")} url="/my-proposals" />
       <Header />
 
-      <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 py-5">
-
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* ── Page Header ── */}
-        <div className="mb-5">
-          <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>
+        <div className="mb-6">
+          <h1 className="text-2xl font-black text-white tracking-tight">
             {tx("pages.myProposals.title", undefined, "My Proposals")}
           </h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          <p className="text-sm text-white/50 mt-1">
             {tx("pages.myProposals.subtitle", undefined, "Track every proposal you've sent")}
           </p>
         </div>
 
         {/* ── Stats Row ── */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {[
-            { label: tx("pages.myProposals.sent", undefined, "Sent"), value: stats.sent, icon: Send, color: "var(--workspace-primary-mid)", bg: "color-mix(in srgb, var(--workspace-primary) 12%, transparent)" },
-            { label: tx("pages.myProposals.pending", undefined, "Pending"), value: stats.pending, icon: Clock, color: "var(--color-status-warning)", bg: "color-mix(in srgb, var(--color-status-warning) 12%, transparent)" },
-            { label: tx("pages.myProposals.accepted", undefined, "Accepted"), value: stats.accepted, icon: CheckCircle2, color: "var(--color-status-success)", bg: "color-mix(in srgb, var(--color-status-success) 12%, transparent)" },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
+            { label: tx("pages.myProposals.sent", undefined, "Sent"), value: stats.sent, icon: Send, text: "text-violet-400", bg: "bg-violet-500/10" },
+            { label: tx("pages.myProposals.pending", undefined, "Pending"), value: stats.pending, icon: Clock, text: "text-amber-400", bg: "bg-amber-500/10" },
+            { label: tx("pages.myProposals.accepted", undefined, "Accepted"), value: stats.accepted, icon: CheckCircle2, text: "text-emerald-400", bg: "bg-emerald-500/10" },
+          ].map(({ label, value, icon: Icon, text, bg }) => (
             <div
               key={label}
-              className="rounded-xl border px-4 py-3 flex items-center gap-3"
-              style={{ background: "var(--card-bg)", borderColor: "color-mix(in srgb, var(--border) 70%, transparent)" }}
+              className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-5 py-4 flex items-center gap-4"
             >
-              <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: bg }}
-              >
-                <Icon className="w-4 h-4" style={{ color }} />
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${bg}`}>
+                <Icon className={`w-5 h-5 ${text}`} />
               </div>
               <div>
-                <p className="text-xl font-bold leading-none" style={{ color: isLoading ? "var(--text-muted)" : color }}>
+                <p className={`text-2xl font-black leading-none ${isLoading ? "text-white/20" : "text-white"}`}>
                   {isLoading ? "—" : value}
                 </p>
-                <p className="text-[11px] mt-0.5 font-medium" style={{ color: "var(--text-muted)" }}>{label}</p>
+                <p className="text-xs mt-1 font-semibold text-white/50 uppercase tracking-wider">{label}</p>
               </div>
             </div>
           ))}
@@ -306,35 +303,34 @@ export default function MyProposals() {
 
         {/* ── DB Error Debug Banner ── */}
         {error && (
-          <div className="rounded-xl border px-4 py-3 mb-5 flex items-start gap-3"
-            style={{ background: "color-mix(in srgb, var(--color-status-error) 8%, transparent)", borderColor: "color-mix(in srgb, var(--color-status-error) 25%, transparent)" }}>
-            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--color-status-error)" }} />
-            <p className="text-xs font-mono" style={{ color: "var(--color-status-error)" }}>
+          <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 mb-6 flex items-start gap-3">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-rose-400" />
+            <p className="text-xs font-mono text-rose-300">
               {String((error as Error).message || error)}
             </p>
           </div>
         )}
 
         {/* ── Tabs ── */}
-        <div className="flex rounded-xl border p-1 mb-4 gap-1"
-          style={{ background: "var(--card-bg)", borderColor: "color-mix(in srgb, var(--border) 70%, transparent)" }}>
+        <div className="flex overflow-x-auto scrollbar-hide mb-6 border-b border-white/5">
           {TABS.map(tab => {
             const active = activeTab === tab;
             const count = tab === "all" ? stats.sent : tab === "pending" ? stats.pending : tab === "accepted" ? stats.accepted : stats.rejected;
             return (
-              <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all"
-                style={{
-                  background: active ? "var(--workspace-primary)" : "transparent",
-                  color: active ? "#fff" : "var(--text-secondary)",
-                  boxShadow: active ? "0 2px 12px -2px color-mix(in srgb, var(--workspace-primary) 50%, transparent)" : "none",
-                }}>
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={`relative flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold transition-all shrink-0 ${active ? "text-violet-400" : "text-white/40 hover:text-white/70"}`}
+              >
                 {tabLabel(tab)}
                 {!isLoading && count > 0 && (
-                  <span className="rounded-full px-2 text-xs font-bold min-w-[20px] text-center leading-[20px]"
-                    style={{ background: active ? "rgba(255,255,255,0.22)" : "color-mix(in srgb, var(--workspace-primary) 12%, transparent)", color: active ? "#fff" : "var(--workspace-primary-mid)" }}>
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-black ${active ? "bg-violet-500/20 text-violet-300" : "bg-white/5 text-white/40"}`}>
                     {count}
                   </span>
+                )}
+                {active && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-500 rounded-t-full shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
                 )}
               </button>
             );
@@ -347,38 +343,37 @@ export default function MyProposals() {
             {[1, 2, 3].map(i => <CardSkeleton key={i} />)}
           </div>
         ) : proposals.length === 0 ? (
-          <div className="rounded-2xl border flex flex-col items-center text-center py-14 px-8"
-            style={{ background: "var(--card-bg)", borderColor: "color-mix(in srgb, var(--border) 70%, transparent)" }}>
-            <div className="h-14 w-14 rounded-2xl flex items-center justify-center mb-4"
-              style={{ background: "color-mix(in srgb, var(--workspace-primary) 12%, transparent)" }}>
-              <FileText className="w-7 h-7" style={{ color: "var(--workspace-primary-mid)" }} />
+          <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] flex flex-col items-center text-center py-16 px-8">
+            <div className="h-16 w-16 rounded-2xl flex items-center justify-center mb-5 bg-violet-500/10">
+              <FileText className="w-8 h-8 text-violet-400" />
             </div>
-            <h3 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+            <h3 className="text-lg font-bold text-white mb-2">
               {activeTab === "all"
                 ? tx("pages.myProposals.emptyTitle", undefined, "You haven't applied to any jobs yet")
                 : tx("pages.myProposals.emptyTabTitle", { tab: tabLabel(activeTab) }, `No ${tabLabel(activeTab)} proposals`)}
             </h3>
-            <p className="text-sm mb-6 max-w-sm" style={{ color: "var(--text-muted)" }}>
+            <p className="text-sm text-white/40 mb-6 max-w-sm">
               {tx("pages.myProposals.emptyDescription", undefined, "Browse open projects and send your first proposal to start working.")}
             </p>
-            <button type="button" onClick={() => navigate("/jobs")}
-              className="flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all hover:brightness-110"
-              style={{ background: "var(--workspace-primary)", color: "#fff", boxShadow: "0 4px 16px -4px color-mix(in srgb, var(--workspace-primary) 50%, transparent)" }}>
+            <button
+              type="button"
+              onClick={() => navigate("/jobs")}
+              className="flex items-center gap-2 rounded-lg bg-violet-600 hover:bg-violet-500 px-5 py-2.5 text-sm font-bold text-white transition-colors"
+            >
               <Briefcase className="w-4 h-4" />
               {tx("pages.myProposals.browseJobs", undefined, "Browse Jobs")}
             </button>
             {activeTab !== "all" && stats.sent > 0 && (
-              <div className="mt-5 flex items-start gap-2.5 rounded-xl border px-4 py-3 text-left max-w-sm"
-                style={{ background: "color-mix(in srgb, var(--color-status-warning) 8%, transparent)", borderColor: "color-mix(in srgb, var(--color-status-warning) 25%, transparent)" }}>
-                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "var(--color-status-warning)" }} />
-                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              <div className="mt-6 flex items-start gap-2.5 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-left max-w-sm">
+                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
+                <p className="text-xs text-amber-200/60">
                   {tx("pages.myProposals.emptyTabHint", { tab: tabLabel(activeTab) }, `Try the All tab.`)}
                 </p>
               </div>
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {proposals.map(proposal => {
               const isAccepted = normalizeToTab(proposal.status) === "accepted";
               const contractId = proposal.linked_contract?.id ?? null;
@@ -395,123 +390,93 @@ export default function MyProposals() {
                 ?? tx("pages.myProposals.archivedProject", undefined, "Archived Project");
 
               const cardActionLabel = contractId
-                ? tx("pages.myProposals.viewContract", undefined, "View Contract")
+                ? tx("pages.myProposals.viewContract", undefined, "Workspace")
                 : tx("pages.myProposals.viewJob", undefined, "View Job");
 
               return (
-                <div key={proposal.id}
-                  className="group rounded-2xl border overflow-hidden transition-all duration-200 hover:shadow-lg cursor-pointer"
-                  style={{
-                    background: "var(--card-bg)",
-                    borderColor: isAccepted
-                      ? "color-mix(in srgb, var(--color-status-success) 35%, transparent)"
-                      : "color-mix(in srgb, var(--border) 70%, transparent)",
-                  }}
+                <div
+                  key={proposal.id}
+                  className="group relative rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] overflow-hidden transition-all hover:bg-[var(--color-bg-muted)]"
                   onClick={() => {
                     if (isAccepted && !contractId) {
                       void openAcceptedProposalContract(proposal);
                       return;
                     }
-
                     if (targetPath) navigate(targetPath);
                   }}
-                  role="button" tabIndex={0}
+                  role="button"
+                  tabIndex={0}
                   onKeyDown={e => {
                     if (e.key !== 'Enter') return;
-
                     if (isAccepted && !contractId) {
                       void openAcceptedProposalContract(proposal);
                       return;
                     }
-
                     if (targetPath) navigate(targetPath);
-                  }}>
+                  }}
+                >
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${isAccepted ? "bg-emerald-500" : normalizeToTab(proposal.status) === "rejected" ? "bg-rose-500" : "bg-violet-500"}`} />
 
-                  {/* Accent bar */}
-                  <div className="h-1 w-full" style={{
-                    background: isAccepted ? "var(--color-status-success)"
-                      : normalizeToTab(proposal.status) === "rejected" ? "var(--color-status-error)"
-                      : "var(--workspace-primary)",
-                  }} />
-
-                  <div className="px-5 py-4">
-                    {/* Title + badge */}
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-base leading-tight truncate" style={{ color: "var(--text-primary)" }}>
+                  <div className="pl-6 pr-5 py-5 flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-3 flex-wrap mb-1">
+                        <h3 className="font-bold text-white text-base truncate">
                           {title}
                         </h3>
-                        {proposal.jobs?.category && (
-                          <p className="text-xs mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>{proposal.jobs.category}</p>
-                        )}
-                        {!proposal.jobs?.id && contractId && (
-                          <p className="text-[11px] mt-1" style={{ color: "var(--text-muted)" }}>
-                            {tx("pages.myProposals.originalJobArchived", undefined, "Original job post is archived")}
-                          </p>
-                        )}
+                        <span className={`flex items-center gap-1.5 whitespace-nowrap rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${pillStyle(proposal.status)}`}>
+                          <StatusDot status={proposal.status} />
+                          {getStatusLabel(proposal.status, tx)}
+                        </span>
                       </div>
-                      <span className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold shrink-0" style={pillStyle(proposal.status)}>
-                        <StatusDot status={proposal.status} />
-                        {getStatusLabel(proposal.status, tx)}
-                      </span>
+                      
+                      {proposal.jobs?.category && (
+                        <p className="text-xs text-white/50 truncate mb-3">{proposal.jobs.category}</p>
+                      )}
+                      
+                      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-violet-300">
+                          <TrendingUp className="w-3.5 h-3.5 opacity-70" />
+                          {tx("pages.myProposals.yourBid", { amount: proposal.bid_amount }, `Bid: ${proposal.bid_amount} TND`)}
+                        </span>
+                        <span className="flex items-center gap-1.5 text-xs text-white/40 font-medium">
+                          <Clock className="w-3.5 h-3.5 opacity-70" />
+                          {formatTimeAgo(proposal.created_at)}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Meta row */}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                      <span className="flex items-center gap-1.5 text-sm font-bold" style={{ color: "var(--workspace-primary-mid)" }}>
-                        <TrendingUp className="w-4 h-4" />
-                        {tx("pages.myProposals.yourBid", { amount: proposal.bid_amount }, `Bid: ${proposal.bid_amount} TND`)}
-                      </span>
-                      <span className="text-xs ms-auto" style={{ color: "var(--text-muted)" }}>
-                        {formatTimeAgo(proposal.created_at)}
-                      </span>
-                    </div>
-
-                    {/* Accepted CTA */}
-                    {isAccepted && (
-                      <div className="flex items-center justify-between rounded-xl border px-4 py-3 mt-3"
-                        style={{ background: "color-mix(in srgb, var(--color-status-success) 6%, transparent)", borderColor: "color-mix(in srgb, var(--color-status-success) 22%, transparent)" }}>
-                        <p className="text-sm font-semibold" style={{ color: "var(--color-status-success)" }}>
-                          🎉 {tx("pages.myProposals.proposalAccepted", undefined, "Your proposal was accepted!")}
-                        </p>
-                        <button type="button"
+                    {/* Action Button & Accepted State */}
+                    <div className="shrink-0 flex flex-col items-start md:items-end gap-3 mt-2 md:mt-0">
+                      {isAccepted ? (
+                        <button
+                          type="button"
                           onClick={e => {
                             e.stopPropagation();
                             if (contractId) {
                               navigate(buildContractThreadPath(contractId, contractOtherUserId));
                               return;
                             }
-
                             void openAcceptedProposalContract(proposal);
                           }}
-                          className="flex items-center gap-1 text-sm font-bold hover:opacity-80"
-                          style={{ color: "var(--color-status-success)" }}>
-                          {tx("pages.myProposals.viewContract", undefined, "View Contract")}
-                          <ArrowRight className="w-4 h-4" />
+                          className="flex items-center gap-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 px-4 py-2 text-xs font-bold text-emerald-400 transition-colors"
+                        >
+                          {tx("pages.myProposals.viewContract", undefined, "Workspace")}
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Hover indicator */}
-                  <div className="flex items-center justify-end px-5 pb-3 -mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--workspace-primary-mid)" }}>
-                      {cardActionLabel}
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-white/30 group-hover:text-violet-400 transition-colors">
+                          {cardActionLabel}
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
             })}
 
             {hiddenOrphanCount > 0 && (
-              <div className="rounded-xl border px-4 py-3 text-sm"
-                style={{
-                  background: "color-mix(in srgb, var(--color-status-warning) 8%, transparent)",
-                  borderColor: "color-mix(in srgb, var(--color-status-warning) 22%, transparent)",
-                  color: "var(--text-secondary)",
-                }}
-              >
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-xs text-amber-200/60 mt-4 text-center">
                 {tx(
                   "pages.myProposals.orphanedHiddenHint",
                   { count: hiddenOrphanCount },
@@ -521,7 +486,7 @@ export default function MyProposals() {
             )}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

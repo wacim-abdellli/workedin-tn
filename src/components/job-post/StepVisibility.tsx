@@ -1,4 +1,4 @@
-import { useFormContext } from 'react-hook-form';
+﻿import { useFormContext } from 'react-hook-form';
 import { Eye, Lock, Globe, Users } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 
@@ -14,7 +14,7 @@ export default function StepVisibility() {
                     <Eye className="h-3.5 w-3.5" />
                     {tx('jobs.new.stepVisibility.badge', undefined, 'Audience control')}
                 </div>
-                <h3 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                <h3 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-2xl">
                     {tx('jobs.new.stepVisibility.title', undefined, 'من يمكنه رؤية وظيفتك؟')}
                 </h3>
                 <p className="text-sm leading-6 text-[#b3b3b3]">
@@ -26,16 +26,16 @@ export default function StepVisibility() {
                 <label
                     className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${visibility === 'public'
                         ? 'border-orange-500/45 bg-orange-500/10 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.8)]'
-                        : 'border-white/5 bg-white/[0.03] hover:border-orange-500/35 hover:bg-orange-500/5'
+                        : 'border-white/5 bg-[var(--color-bg-elevated)] hover:border-orange-500/35 hover:bg-orange-500/5'
                         }`}
                 >
                     <input type="radio" value="public" {...register('visibility')} className="sr-only" />
                     <div className="flex items-start gap-3">
-                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${visibility === 'public' ? 'bg-orange-500 text-white' : 'bg-[#222] text-[#8f8f8f]'}`}>
+                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${visibility === 'public' ? 'bg-orange-500 text-[var(--color-text-primary)]' : 'bg-[var(--color-bg-muted)] text-[#8f8f8f]'}`}>
                             <Globe className="h-4.5 w-4.5" />
                         </span>
                         <div className="space-y-1">
-                            <p className="text-sm font-semibold text-white">{tx('jobs.new.stepVisibility.publicTitle', undefined, 'عام للجميع')}</p>
+                            <p className="text-sm font-semibold text-[var(--color-text-primary)]">{tx('jobs.new.stepVisibility.publicTitle', undefined, 'عام للجميع')}</p>
                             <p className="text-xs leading-5 text-[#9a9a9a]">
                                 {tx('jobs.new.stepVisibility.publicDescription', undefined, 'يمكن لجميع المستقلين رؤية الوظيفة وتقديم عروضهم. الخيار الأفضل للحصول على أكبر عدد من العروض.')}
                             </p>
@@ -46,16 +46,16 @@ export default function StepVisibility() {
                 <label
                     className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${visibility === 'invite_only'
                         ? 'border-orange-500/45 bg-orange-500/10 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.8)]'
-                        : 'border-white/5 bg-white/[0.03] hover:border-orange-500/35 hover:bg-orange-500/5'
+                        : 'border-white/5 bg-[var(--color-bg-elevated)] hover:border-orange-500/35 hover:bg-orange-500/5'
                         }`}
                 >
                     <input type="radio" value="invite_only" {...register('visibility')} className="sr-only" />
                     <div className="flex items-start gap-3">
-                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${visibility === 'invite_only' ? 'bg-orange-500 text-white' : 'bg-[#222] text-[#8f8f8f]'}`}>
+                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${visibility === 'invite_only' ? 'bg-orange-500 text-[var(--color-text-primary)]' : 'bg-[var(--color-bg-muted)] text-[#8f8f8f]'}`}>
                             <Lock className="h-4.5 w-4.5" />
                         </span>
                         <div className="space-y-1">
-                            <p className="text-sm font-semibold text-white">{tx('jobs.new.stepVisibility.inviteOnlyTitle', undefined, 'دعوة فقط')}</p>
+                            <p className="text-sm font-semibold text-[var(--color-text-primary)]">{tx('jobs.new.stepVisibility.inviteOnlyTitle', undefined, 'دعوة فقط')}</p>
                             <p className="text-xs leading-5 text-[#9a9a9a]">
                                 {tx('jobs.new.stepVisibility.inviteOnlyDescription', undefined, 'لن تظهر الوظيفة في البحث. فقط المستقلون الذين تقوم بدعوتهم يمكنهم تقديم العروض.')}
                             </p>
@@ -76,3 +76,5 @@ export default function StepVisibility() {
         </div>
     );
 }
+
+

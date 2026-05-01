@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 
@@ -59,10 +59,10 @@ export default function OnboardingShell({
         };
 
     return (
-        <main className="min-h-screen bg-[#0c0c0c] px-6 py-8">
+        <main className="min-h-screen bg-[var(--color-bg-base)] px-6 py-8">
             <div className="max-w-[1400px] mx-auto space-y-6">
                 {/* Hero Section */}
-                <section className="bg-[#111] border border-gray-800 rounded-2xl p-8 shadow-xl">
+                <section className="bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-2xl p-8 shadow-xl">
                     <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
                         <div className="space-y-4">
                             <div className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${colors.badge} rounded-full text-xs font-semibold uppercase tracking-wider`}>
@@ -71,35 +71,35 @@ export default function OnboardingShell({
                             </div>
 
                             <div>
-                                <h1 className="text-4xl font-bold text-white">
+                                <h1 className="text-4xl font-bold text-[var(--color-text-primary)]">
                                     {title}
                                 </h1>
-                                <p className="mt-3 text-on-surface-muted leading-relaxed text-lg">
+                                <p className="mt-3 text-[var(--color-text-tertiary)] leading-relaxed text-lg">
                                     {description}
                                 </p>
                             </div>
                         </div>
 
                         {/* Progress Card */}
-                        <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-gray-800 rounded-2xl p-6 shadow-lg">
+                        <div className="relative bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-2xl p-6 shadow-lg">
                             <div className={`absolute top-0 right-0 w-24 h-24 ${colors.progressGlow} rounded-full blur-2xl -z-10`} />
                             
-                            <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-muted">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
                                 {tx('onboarding.currentStep', undefined, 'Current step')}
                             </p>
-                            <h2 className="mt-3 text-xl font-semibold text-white">
+                            <h2 className="mt-3 text-xl font-semibold text-[var(--color-text-primary)]">
                                 {steps[currentStep - 1]?.title}
                             </h2>
-                            <p className="mt-2 text-sm text-on-surface-muted">
+                            <p className="mt-2 text-sm text-[var(--color-text-tertiary)]">
                                 {steps[currentStep - 1]?.description || `Step ${currentStep} of ${totalSteps}`}
                             </p>
 
                             <div className="mt-6 space-y-2">
-                                <div className="flex items-center justify-between text-sm font-medium text-on-surface-muted">
+                                <div className="flex items-center justify-between text-sm font-medium text-[var(--color-text-tertiary)]">
                                     <span>Progress</span>
                                     <span className={colors.progressText}>{completion}%</span>
                                 </div>
-                                <div className="h-2.5 bg-[#1a1a1a] rounded-full overflow-hidden border border-gray-800">
+                                <div className="h-2.5 bg-[var(--color-bg-muted)] rounded-full overflow-hidden border border-[var(--color-border-subtle)]">
                                     <div 
                                         className={`h-full bg-gradient-to-r ${colors.progress} rounded-full transition-all duration-500`}
                                         style={{ width: `${completion}%` }} 
@@ -112,7 +112,7 @@ export default function OnboardingShell({
 
                 {/* Steps Overview */}
                 {steps.length > 1 && (
-                <section className="bg-[#111] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                <section className="bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-2xl p-6 shadow-xl">
                     <div className={stepGridClass}>
                         {steps.map((step, index) => {
                             const isCompleted = step.id < currentStep;
@@ -127,7 +127,7 @@ export default function OnboardingShell({
                                             ? colors.currentStep
                                             : isCompleted
                                             ? colors.completedStep
-                                            : 'border-gray-800 bg-[#0f0f0f]'
+                                            : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]'
                                     }`}
                                 >
                                     <div className="flex items-start gap-4">
@@ -136,16 +136,16 @@ export default function OnboardingShell({
                                                 ? colors.stepIcon
                                                 : isCompleted
                                                 ? colors.stepIconCompleted
-                                                : 'bg-[#1a1a1a] text-on-surface-subtle border border-gray-800'
+                                                : 'bg-[var(--color-bg-muted)] text-[var(--color-text-primary)]-subtle border border-[var(--color-border-subtle)]'
                                         }`}>
                                             {step.id}
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-base font-semibold text-white">
+                                            <p className="text-base font-semibold text-[var(--color-text-primary)]">
                                                 {step.title}
                                             </p>
                                             {step.description && (
-                                                <p className="mt-1 text-sm text-on-surface-muted">
+                                                <p className="mt-1 text-sm text-[var(--color-text-tertiary)]">
                                                     {step.description}
                                                 </p>
                                             )}
@@ -160,12 +160,12 @@ export default function OnboardingShell({
 
                 {/* Main Content */}
                 <div className={`grid gap-6 ${aside ? 'xl:grid-cols-[1fr_320px]' : ''}`}>
-                    <section className="bg-[#111] border border-gray-800 rounded-2xl p-8 shadow-xl">
+                    <section className="bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-2xl p-8 shadow-xl">
                         {main}
                     </section>
 
                     {aside && (
-                        <aside className="bg-[#111] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                        <aside className="bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-2xl p-6 shadow-xl">
                             {aside}
                         </aside>
                     )}
@@ -174,4 +174,10 @@ export default function OnboardingShell({
         </main>
     );
 }
+
+
+
+
+
+
 

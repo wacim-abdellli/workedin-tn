@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+﻿import { useQuery } from '@tanstack/react-query';
 import { Users, Briefcase, DollarSign, FileText, Activity, UserPlus, Shield, Flag, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
@@ -52,14 +52,14 @@ interface OverviewStats {
 function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number | string; color?: string }) {
     const bgColor = color || 'bg-violet-500';
     return (
-        <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:shadow-lg transition-shadow">
+        <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 rounded-lg ${bgColor} flex items-center justify-center`}>
                     <Icon className="w-6 h-6 text-white" />
                 </div>
             </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{value}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+            <p className="text-3xl font-bold text-[var(--color-text-primary)] mb-1">{value}</p>
+            <p className="text-sm text-[var(--color-text-tertiary)]">{label}</p>
         </div>
     );
 }
@@ -212,20 +212,20 @@ export default function OverviewTab() {
             {/* Today Activity & Verifications */}
             <div className="grid lg:grid-cols-2 gap-6">
                 {/* Today Activity */}
-                <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-                    <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                    <h3 className="font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-blue-500" />
                         Today's Activity
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <UserPlus className="w-5 h-5 text-green-600 dark:text-green-400" />
                                 <span className="text-sm font-medium text-green-600 dark:text-green-400">New signups</span>
                             </div>
                             <p className="text-2xl font-bold text-green-600 dark:text-green-400">{s.todaySignups}</p>
                         </div>
-                        <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                 <span className="text-sm font-medium text-blue-600 dark:text-blue-400">New contracts</span>
@@ -236,23 +236,23 @@ export default function OverviewTab() {
                 </div>
 
                 {/* Pending Verifications */}
-                <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-                    <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                    <h3 className="font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
                         <Shield className="w-5 h-5 text-amber-500" />
                         Pending Verifications
                     </h3>
                     {s.pendingVerifications === 0 ? (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No pending requests</p>
+                        <p className="text-sm text-[var(--color-text-tertiary)] text-center py-4">No pending requests</p>
                     ) : (
                         <div className="space-y-3">
-                            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 flex items-center justify-between">
+                            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3 flex items-center justify-between">
                                 <span className="text-sm font-medium text-amber-600 dark:text-amber-400">Pending requests</span>
                                 <span className="text-lg font-bold text-amber-600 dark:text-amber-400">{s.pendingVerifications}</span>
                             </div>
                             {s.recentVerificationRequests.map((request) => (
-                                <div key={request.id} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3">
-                                    <p className="font-medium text-gray-900 dark:text-white">{request.profile?.full_name || 'User'}</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">{request.profile?.email || ''}</p>
+                                <div key={request.id} className="bg-[var(--color-bg-muted)] border border-[var(--color-border-subtle)] rounded-lg px-4 py-3">
+                                    <p className="font-medium text-[var(--color-text-primary)]">{request.profile?.full_name || 'User'}</p>
+                                    <p className="text-sm text-[var(--color-text-tertiary)]">{request.profile?.email || ''}</p>
                                     <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                                         {new Date(request.submitted_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}
                                     </p>
@@ -264,30 +264,30 @@ export default function OverviewTab() {
             </div>
 
             {/* Reports */}
-            <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-                <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                <h3 className="font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
                     <Flag className="w-5 h-5 text-red-500" />
                     Reports
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">No reports for now</p>
+                <p className="text-sm text-[var(--color-text-tertiary)] text-center py-6">No reports for now</p>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-                    <h3 className="font-bold text-gray-900 dark:text-white mb-4">Risky Contracts</h3>
+                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                    <h3 className="font-bold text-[var(--color-text-primary)] mb-4">Risky Contracts</h3>
                     {s.riskyContracts.length === 0 ? (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">No medium/high-risk contracts right now.</p>
+                        <p className="text-sm text-[var(--color-text-tertiary)]">No medium/high-risk contracts right now.</p>
                     ) : (
                         <div className="space-y-3">
                             {s.riskyContracts.map((contract) => (
-                                <div key={contract.id} className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 px-4 py-3">
+                                <div key={contract.id} className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
                                     <div className="flex items-center justify-between gap-2">
-                                        <p className="font-medium text-gray-900 dark:text-white truncate">{contract.title || 'Contract'}</p>
+                                        <p className="font-medium text-[var(--color-text-primary)] truncate">{contract.title || 'Contract'}</p>
                                         <span className={`rounded-full px-2 py-0.5 text-xs ${contract.risk_level === 'high' ? 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'}`}>
                                             {contract.risk_level}
                                         </span>
                                     </div>
-                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">#{contract.id.slice(0, 8)}</p>
+                                    <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">#{contract.id.slice(0, 8)}</p>
                                     {contract.risk_flags.length > 0 ? (
                                         <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">{contract.risk_flags.join(' • ')}</p>
                                     ) : null}
@@ -297,16 +297,16 @@ export default function OverviewTab() {
                     )}
                 </div>
 
-                <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-                    <h3 className="font-bold text-gray-900 dark:text-white mb-4">Overdue Reviews</h3>
+                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                    <h3 className="font-bold text-[var(--color-text-primary)] mb-4">Overdue Reviews</h3>
                     {s.overdueReviews.length === 0 ? (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">No overdue contract review windows.</p>
+                        <p className="text-sm text-[var(--color-text-tertiary)]">No overdue contract review windows.</p>
                     ) : (
                         <div className="space-y-3">
                             {s.overdueReviews.map((contract) => (
                                 <div key={contract.id} className="rounded-lg border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/10 px-4 py-3">
-                                    <p className="font-medium text-gray-900 dark:text-white truncate">{contract.title || 'Contract'}</p>
-                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">#{contract.id.slice(0, 8)}</p>
+                                    <p className="font-medium text-[var(--color-text-primary)] truncate">{contract.title || 'Contract'}</p>
+                                    <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">#{contract.id.slice(0, 8)}</p>
                                     <p className="mt-2 text-xs text-orange-700 dark:text-orange-300">
                                         Review due {new Date(contract.review_due_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}
                                     </p>
@@ -316,16 +316,16 @@ export default function OverviewTab() {
                     )}
                 </div>
 
-                <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-                    <h3 className="font-bold text-gray-900 dark:text-white mb-4">Disputes Missing Evidence</h3>
+                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                    <h3 className="font-bold text-[var(--color-text-primary)] mb-4">Disputes Missing Evidence</h3>
                     {s.disputesMissingEvidence.length === 0 ? (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">All open disputes have captured evidence.</p>
+                        <p className="text-sm text-[var(--color-text-tertiary)]">All open disputes have captured evidence.</p>
                     ) : (
                         <div className="space-y-3">
                             {s.disputesMissingEvidence.map((dispute) => (
-                                <div key={dispute.id} className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10 px-4 py-3">
-                                    <p className="font-medium text-gray-900 dark:text-white truncate">#{dispute.id.slice(0, 8)}</p>
-                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                <div key={dispute.id} className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
+                                    <p className="font-medium text-[var(--color-text-primary)] truncate">#{dispute.id.slice(0, 8)}</p>
+                                    <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
                                         Opened {new Date(dispute.opened_at).toLocaleString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}
                                     </p>
                                     <p className="mt-2 text-xs text-red-700 dark:text-red-300 line-clamp-2">{dispute.reason}</p>
@@ -338,3 +338,6 @@ export default function OverviewTab() {
         </div>
     );
 }
+
+
+

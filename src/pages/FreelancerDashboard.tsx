@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, FileText, Sparkles, User } from "lucide-react";
+import { Briefcase, FileText, Sparkles, User, Search, MessageSquare } from "lucide-react";
 
 import { Header } from "../components/layout";
 import SEO, { SEO_CONFIG } from "../components/common/SEO";
@@ -121,7 +121,7 @@ function proposalStatusClass(status: string) {
   if (status === "rejected") {
     return "border border-rose-500/30 bg-rose-500/10 text-rose-300";
   }
-  return "border border-purple-500/30 bg-purple-500/10 text-purple-300";
+  return "border border-violet-500/30 bg-violet-500/10 text-violet-300";
 }
 
 function formatJobBudget(
@@ -453,20 +453,20 @@ function FreelancerDashboardPage() {
 
   if (isAuthLoading || !isFullyReady) {
     return (
-      <div className="min-h-screen page-bg-base">
+      <div className="min-h-screen bg-[var(--color-bg-base)]">
         <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
         <Header />
-        <main className="min-h-screen page-bg-base pt-10 pb-12">
+        <main className="min-h-screen bg-[var(--color-bg-base)] pt-10 pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-            <div className="animate-pulse rounded-2xl border border-surface surface-card h-36" />
+            <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-36" />
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               <div className="lg:col-span-8 space-y-8">
-                <div className="animate-pulse rounded-2xl border border-surface surface-card h-72" />
-                <div className="animate-pulse rounded-2xl border border-surface surface-card h-64" />
+                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-72" />
+                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-64" />
               </div>
               <div className="lg:col-span-4 space-y-6">
-                <div className="animate-pulse rounded-2xl border border-surface surface-card h-48" />
-                <div className="animate-pulse rounded-2xl border border-surface surface-card h-64" />
+                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-48" />
+                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-64" />
               </div>
             </div>
           </div>
@@ -477,10 +477,10 @@ function FreelancerDashboardPage() {
 
   if (!profile?.id) {
     return (
-      <div className="min-h-screen page-bg-base">
+      <div className="min-h-screen bg-[var(--color-bg-base)]">
         <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
         <Header />
-        <main className="min-h-screen page-bg-base pt-10 pb-12">
+        <main className="min-h-screen bg-[var(--color-bg-base)] pt-10 pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <EmptyState
               icon={User}
@@ -502,197 +502,165 @@ function FreelancerDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen page-bg-base">
+    <div className="min-h-screen bg-[var(--color-bg-base)]">
       <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
       <Header />
 
-      <main className="min-h-screen page-bg-base pt-10 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-          <section className="relative overflow-hidden border border-surface rounded-2xl bg-[var(--color-bg-elevated)] p-5 sm:p-6 lg:p-7">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_160%_at_0%_0%,rgba(168,85,247,0.22)_0%,transparent_48%),radial-gradient(75%_140%_at_100%_0%,rgba(88,28,135,0.28)_0%,transparent_52%)]" />
-            <div className="pointer-events-none absolute -top-10 right-8 h-28 w-28 rounded-full bg-purple-500/20 blur-3xl" />
+      <main className="min-h-screen bg-[var(--color-bg-base)] pt-6 pb-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-5">
+          {/* ── COMMAND CENTER BANNER ── */}
+          <section className="relative overflow-hidden border rounded-xl bg-[radial-gradient(90%_160%_at_0%_0%,rgba(139,92,246,0.12)_0%,transparent_48%),#0a0a0a]" style={{ borderColor: 'rgba(139,92,246,0.15)' }}>
+            <div className="pointer-events-none absolute -top-8 right-8 h-20 w-20 rounded-full bg-violet-500/10 blur-3xl" />
 
-            <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div className="min-w-0">
-                <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/25 bg-purple-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-purple-200">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {tx("dashboard.freelancer.commandCenter", undefined, "Freelancer Command Center")}
-                </div>
-
-                <div className="mt-4 flex items-center gap-4 min-w-0">
-                  {profile.avatar_url ? (
-                    <img
-                      src={profile.avatar_url}
-                      alt={firstName}
-                      className="h-14 w-14 rounded-full border border-[#383838] object-cover ring-2 ring-purple-500/30"
-                    />
-                  ) : (
-                    <div className="h-14 w-14 rounded-full border border-[#383838] bg-[#161616] flex items-center justify-center ring-2 ring-purple-500/30">
-                      <User className="h-6 w-6 text-purple-300" />
-                    </div>
-                  )}
-
-                  <div className="min-w-0">
-                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight truncate text-white">
-                      {tx("dashboard.freelancer.welcomeBack", undefined, "Welcome back")}, {firstName}
-                    </h1>
-                    <p className="text-purple-200/80 text-sm mt-1">
-                      {tx(
-                        "dashboard.freelancer.commandCenterSubtitle",
-                        undefined,
-                        "Here is what's happening with your freelance business today.",
-                      )}
-                    </p>
-                    <p className="text-xs text-purple-200/60 mt-1">
-                      {tx(
-                        "dashboard.freelancer.matchingHint",
-                        { count: jobs.length },
-                        `${jobs.length} fresh job matches are currently visible for you.`,
-                      )}
-                    </p>
+            <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 p-5">
+              <div className="min-w-0 flex items-center gap-4">
+                {profile.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={firstName}
+                    className="h-12 w-12 rounded-full border border-white/10 object-cover ring-2 ring-violet-500/20"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-full border border-white/10 bg-[var(--color-bg-elevated)] flex items-center justify-center ring-2 ring-violet-500/20">
+                    <User className="h-5 w-5 text-violet-300" />
                   </div>
-                </div>
-              </div>
+                )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full lg:w-auto lg:min-w-[440px]">
-                <div className="rounded-xl border border-[#2f2f2f] bg-[#101010]/90 px-4 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-purple-200/60">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-violet-300/80">
+                      {tx("dashboard.freelancer.commandCenter", undefined, "Freelancer Dashboard")}
+                    </span>
+                  </div>
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight truncate text-white leading-none">
+                    {tx("dashboard.freelancer.welcomeBack", undefined, "Welcome back")}, {firstName}
+                  </h1>
+                  <p className="text-xs text-white/50 mt-1.5 truncate">
                     {tx(
-                      "dashboard.freelancer.dailyApplicationsRemaining",
-                      undefined,
-                      "Applications left today",
+                      "dashboard.freelancer.matchingHint",
+                      { count: jobs.length },
+                      `${jobs.length} fresh job matches are currently visible for you.`,
                     )}
                   </p>
-                  <p className="mt-1 text-2xl font-bold text-white">{dailyProposalUsage.remaining}</p>
-                </div>
-
-                <div className="rounded-xl border border-[#2f2f2f] bg-[#101010]/90 px-4 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-purple-200/60">
-                    {tx("dashboard.freelancer.activeContracts", undefined, "Active Contracts")}
-                  </p>
-                  <p className="mt-1 text-2xl font-bold text-white">{activeContractsCount}</p>
-                </div>
-
-                <div className="rounded-xl border border-[#2f2f2f] bg-[#101010]/90 px-4 py-3 col-span-2 sm:col-span-1">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-purple-200/60">
-                    {tx("dashboard.freelancer.pendingProposals", undefined, "Pending Proposals")}
-                  </p>
-                  <p className="mt-1 text-2xl font-bold text-white">{pendingProposalsCount}</p>
                 </div>
               </div>
-            </div>
 
-            <div className="relative mt-4 flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center rounded-full border border-purple-500/25 bg-purple-500/10 px-3 py-1 text-xs text-purple-200/90">
-                {tx("dashboard.freelancer.profileViews", undefined, "Profile Views")}: {profileViewsCount}
-              </span>
-              <button
-                type="button"
-                onClick={() => navigate(ROUTES.jobs)}
-                className="inline-flex items-center rounded-full border border-[#323232] bg-[#111111] px-3 py-1 text-xs font-medium text-purple-200 hover:border-purple-500/40 hover:text-purple-100 transition-colors"
-              >
-                {tx("dashboard.freelancer.browseJobs", undefined, "Browse Jobs")}
-              </button>
+              <div className="flex flex-row items-center gap-3 overflow-x-auto pb-1 lg:pb-0 scrollbar-hide shrink-0">
+                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[120px]">
+                  <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                    {tx("dashboard.freelancer.dailyApplicationsRemaining", undefined, "Applications")}
+                  </p>
+                  <p className="text-lg font-black text-white">{dailyProposalUsage.remaining}</p>
+                </div>
+
+                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[120px]">
+                  <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                    {tx("dashboard.freelancer.activeContracts", undefined, "Contracts")}
+                  </p>
+                  <p className="text-lg font-black text-white">{activeContractsCount}</p>
+                </div>
+
+                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[120px]">
+                  <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                    {tx("dashboard.freelancer.pendingProposals", undefined, "Pending")}
+                  </p>
+                  <p className="text-lg font-black text-white">{pendingProposalsCount}</p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <section className="lg:col-span-8">
-              <section className="surface-card border border-surface rounded-2xl flex flex-col overflow-hidden mb-8">
-                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+          {/* ── MAIN CONTENT GRID ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            {/* Left Column - Primary Content */}
+            <section className="lg:col-span-8 flex flex-col gap-5">
+              
+              {/* Active Contracts */}
+              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
+                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-violet-300">
                     {tx("dashboard.freelancer.activeContracts", undefined, "Active Contracts")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => navigate("/contracts")}
-                    className="text-sm text-purple-500 hover:text-purple-400 transition-colors"
+                    className="text-[11px] font-semibold text-violet-400 hover:text-violet-300 transition-colors"
                   >
                     {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
                   </button>
                 </header>
 
                 {isLoading ? (
-                  <div className="p-6 space-y-3">
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                  <div className="p-5 space-y-2">
+                    <div className="animate-pulse h-12 rounded-lg bg-white/5" />
+                    <div className="animate-pulse h-12 rounded-lg bg-white/5" />
                   </div>
                 ) : activeContractRows.length === 0 ? (
-                  <div className="px-6 py-8 text-sm text-purple-200/70">
-                    {tx(
-                      "dashboard.freelancer.noActiveContracts",
-                      undefined,
-                      "No active contracts yet.",
-                    )}
+                  <div className="px-5 py-6 text-sm text-white/40 text-center">
+                    {tx("dashboard.freelancer.noActiveContracts", undefined, "No active contracts yet.")}
                   </div>
                 ) : (
-                  <div>
+                  <div className="flex flex-col">
                     {activeContractRows.map((row, index) => (
                       <div
                         key={row.id}
-                        className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${index < activeContractRows.length - 1 ? "border-b border-surface" : ""}`}
+                        className={`px-5 py-3.5 hover:bg-white/[0.02] transition-colors flex items-center justify-between gap-3 ${index < activeContractRows.length - 1 ? "border-b border-white/5" : ""}`}
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-white truncate">{row.jobTitle}</p>
-                          <p className="text-xs text-purple-300/70 mt-1 truncate">{row.clientName}</p>
+                          <p className="text-xs text-white/50 truncate mt-0.5">{row.clientName}</p>
                         </div>
-
                         <button
                           type="button"
                           onClick={() => navigate(row.submitPath)}
-                          className="rounded-xl bg-purple-600 hover:bg-purple-500 px-4 py-2 text-xs font-semibold text-white transition-colors"
+                          className="shrink-0 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
                         >
-                          {tx("dashboard.freelancer.submitWork", undefined, "Submit Work")}
+                          {tx("dashboard.freelancer.submitWork", undefined, "Workspace")}
                         </button>
                       </div>
                     ))}
                   </div>
                 )}
-              </section>
+              </div>
 
-              <section className="surface-card border border-surface rounded-2xl flex flex-col overflow-hidden">
-                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+              {/* Recent Proposals */}
+              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
+                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-violet-300">
                     {tx("dashboard.freelancer.recentProposals", undefined, "Recent Proposals")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => navigate("/my-proposals")}
-                    className="text-sm text-purple-500 hover:text-purple-400 transition-colors"
+                    className="text-[11px] font-semibold text-violet-400 hover:text-violet-300 transition-colors"
                   >
                     {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
                   </button>
                 </header>
 
                 {isLoading ? (
-                  <div className="p-6 space-y-3">
-                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-surface" />
-                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-surface" />
-                    <div className="animate-pulse h-12 rounded-lg bg-[#1b1b1b] border border-surface" />
+                  <div className="p-5 space-y-2">
+                    <div className="animate-pulse h-10 rounded-lg bg-white/5" />
+                    <div className="animate-pulse h-10 rounded-lg bg-white/5" />
                   </div>
                 ) : proposalRows.length === 0 ? (
-                  <div className="px-6 py-8 text-sm text-purple-200/70">
-                    {tx(
-                      "dashboard.freelancer.noProposalsYet",
-                      undefined,
-                      "No proposals yet.",
-                    )}
+                  <div className="px-5 py-6 text-sm text-white/40 text-center">
+                    {tx("dashboard.freelancer.noProposalsYet", undefined, "No proposals yet.")}
                   </div>
                 ) : (
-                  <div>
+                  <div className="flex flex-col">
                     {proposalRows.map((row, index) => (
                       <div
                         key={row.id}
-                        className={`px-6 py-3 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < proposalRows.length - 1 ? "border-b border-surface" : ""}`}
+                        className={`px-5 py-3 hover:bg-white/[0.02] transition-colors flex items-center justify-between gap-3 ${index < proposalRows.length - 1 ? "border-b border-white/5" : ""}`}
                       >
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-white truncate">{row.jobTitle}</p>
-                          <p className="text-xs text-purple-300/70 mt-1">{row.proposedRate}</p>
+                          <p className="text-sm font-medium text-white/90 truncate">{row.jobTitle}</p>
+                          <p className="text-[11px] text-white/50 mt-0.5">{row.proposedRate}</p>
                         </div>
-
                         <span
-                          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${proposalStatusClass(row.status)}`}
+                          className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${proposalStatusClass(row.status)}`}
                         >
                           {proposalStatusLabel(row.status, tx)}
                         </span>
@@ -700,197 +668,181 @@ function FreelancerDashboardPage() {
                     ))}
                   </div>
                 )}
-              </section>
+              </div>
 
-              <section className="surface-card border border-surface rounded-2xl flex flex-col overflow-hidden mt-8">
-                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+              {/* Matched Jobs */}
+              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
+                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-violet-300">
                     {tx("dashboard.freelancer.matchedForYou", undefined, "Matched Jobs")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => navigate(ROUTES.jobs)}
-                    className="text-sm text-purple-500 hover:text-purple-400 transition-colors"
+                    className="text-[11px] font-semibold text-violet-400 hover:text-violet-300 transition-colors"
                   >
-                    {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
+                    {tx("dashboard.freelancer.browseJobs", undefined, "Browse")} -&gt;
                   </button>
                 </header>
 
                 {isLoadingJobs ? (
-                  <div className="p-6 space-y-3">
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
-                    <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                  <div className="p-5 space-y-2">
+                    <div className="animate-pulse h-12 rounded-lg bg-white/5" />
+                    <div className="animate-pulse h-12 rounded-lg bg-white/5" />
                   </div>
                 ) : jobs.length === 0 ? (
-                  <div className="px-6 py-8 text-sm text-purple-200/70">
-                    {tx(
-                      "dashboard.freelancer.noMatchesYet",
-                      undefined,
-                      "No new job matches right now.",
-                    )}
+                  <div className="px-5 py-6 text-sm text-white/40 text-center">
+                    {tx("dashboard.freelancer.noMatchesYet", undefined, "No new job matches right now.")}
                   </div>
                 ) : (
-                  <div>
+                  <div className="flex flex-col">
                     {jobs.map((job, index) => (
                       <button
                         key={job.id}
                         type="button"
                         onClick={() => navigate(`/jobs/${job.id}`)}
-                        className={`w-full text-left px-6 py-4 hover:bg-[#262626]/30 transition-colors ${index < jobs.length - 1 ? "border-b border-surface" : ""}`}
+                        className={`w-full text-left px-5 py-3.5 hover:bg-white/[0.02] transition-colors ${index < jobs.length - 1 ? "border-b border-white/5" : ""}`}
                       >
-                        <p className="text-sm font-semibold text-white truncate">{job.title}</p>
-                        <div className="mt-1 flex items-center gap-2 text-xs text-purple-300/70">
+                        <p className="text-sm font-semibold text-white/90 truncate">{job.title}</p>
+                        <div className="mt-1 flex items-center gap-2 text-xs text-white/50">
                           <span>
                             {job.category
                               ? tx(`categories.${job.category}`, undefined, job.category)
                               : tx("common.general", undefined, "General")}
                           </span>
-                          <span className="text-purple-400/50">•</span>
-                          <span>{formatJobBudget(job, language)}</span>
+                          <span className="text-white/20">•</span>
+                          <span className="font-medium text-white/70">{formatJobBudget(job, language)}</span>
                         </div>
                       </button>
                     ))}
                   </div>
                 )}
-              </section>
-
-              <section className="surface-card border border-surface rounded-2xl p-6 mt-8">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
-                  {tx("dashboard.freelancer.performanceSnapshot", undefined, "Performance Snapshot")}
-                </h2>
-
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="rounded-xl border border-surface bg-[#101010] p-3">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-purple-300/60">
-                      {tx("dashboard.freelancer.pendingProposals", undefined, "Pending Proposals")}
-                    </p>
-                    <p className="mt-2 text-xl font-bold text-white">{stats?.pendingProposals ?? 0}</p>
-                  </div>
-
-                  <div className="rounded-xl border border-surface bg-[#101010] p-3">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-purple-300/60">
-                      {tx("dashboard.freelancer.profileViews", undefined, "Profile Views")}
-                    </p>
-                    <p className="mt-2 text-xl font-bold text-white">{stats?.profileViews ?? 0}</p>
-                  </div>
-
-                  <div className="rounded-xl border border-surface bg-[#101010] p-3">
-                    <p className="text-[11px] uppercase tracking-[0.14em] text-purple-300/60">
-                      {tx("dashboard.freelancer.walletBalance", undefined, "Wallet Balance")}
-                    </p>
-                    <p className="mt-2 text-xl font-bold text-white">
-                      {formatCurrency(stats?.walletBalance ?? 0, true, language)}
-                    </p>
-                  </div>
-                </div>
-              </section>
+              </div>
             </section>
 
-            <aside className="lg:col-span-4">
-              <div className="flex flex-col gap-6 sticky top-28">
-                <section className="surface-card border border-surface rounded-2xl p-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
-                    {tx("dashboard.freelancer.earningsThisMonth", undefined, "Earnings this month")}
-                  </p>
-                  <p className="text-3xl font-black text-white mt-2">{monthlyEarningsLabel}</p>
+            {/* Right Column - Secondary Content & Widgets */}
+            <aside className="lg:col-span-4 flex flex-col gap-5 sticky top-20">
+              
+              {/* Earnings Widget */}
+              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">
+                  {tx("dashboard.freelancer.earningsThisMonth", undefined, "Earnings this month")}
+                </p>
+                <p className="text-2xl font-black text-white mt-1 leading-none">{monthlyEarningsLabel}</p>
 
-                  <p className="text-xs text-purple-300/70 mt-2">
-                    {tx(
-                      "dashboard.freelancer.lastMonthReference",
-                      { value: formatCurrency(lastMonthEarnings, true, language) },
-                      `Last month: ${formatCurrency(lastMonthEarnings, true, language)}`,
-                    )}
-                  </p>
+                <p className="text-[11px] text-white/40 mt-2">
+                  {tx(
+                    "dashboard.freelancer.lastMonthReference",
+                    { value: formatCurrency(lastMonthEarnings, true, language) },
+                    `Last month: ${formatCurrency(lastMonthEarnings, true, language)}`,
+                  )}
+                  <br />
+                  {tx(
+                    "dashboard.freelancer.pendingBalanceReference",
+                    { value: formatCurrency(stats?.pendingBalance ?? 0, true, language) },
+                    `Pending: ${formatCurrency(stats?.pendingBalance ?? 0, true, language)}`,
+                  )}
+                </p>
 
-                  <p className="text-xs text-purple-300/70 mt-1">
-                    {tx(
-                      "dashboard.freelancer.pendingBalance",
-                      { value: formatCurrency(stats?.pendingBalance ?? 0, true, language) },
-                      `Pending balance: ${formatCurrency(stats?.pendingBalance ?? 0, true, language)}`,
-                    )}
-                  </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/wallet")}
+                  className="w-full mt-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-lg text-xs font-bold transition-colors"
+                >
+                  {tx("dashboard.freelancer.withdrawFunds", undefined, "Withdraw Funds")}
+                </button>
+              </div>
 
-                  <button
-                    type="button"
-                    onClick={() => navigate("/wallet")}
-                    className="w-full mt-4 bg-[#262626] hover:bg-[#333] text-white py-2.5 rounded-xl text-sm font-medium transition-colors"
-                  >
-                    {tx("dashboard.freelancer.withdrawFunds", undefined, "Withdraw Funds")}
-                  </button>
-                </section>
-
-                <section className="surface-card border border-surface rounded-2xl p-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
+              {/* Profile Completion Widget */}
+              {profileCompletion < 100 && (
+                <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50 mb-4">
                     {tx("dashboard.freelancer.profileCompletion", undefined, "Profile Completion")}
                   </p>
-
-                  <div className="mt-5 flex items-center justify-center">
-                    <div
-                      className="h-32 w-32 rounded-full flex items-center justify-center"
-                      style={{
-                        background: `conic-gradient(rgb(168 85 247) ${completionValue}%, #262626 ${completionValue}% 100%)`,
-                      }}
-                    >
-                      <div className="h-24 w-24 rounded-full border border-surface bg-[#141414] flex items-center justify-center">
-                        <span className="text-lg font-bold text-white">{completionValue}%</span>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-12 w-12 shrink-0">
+                      <svg className="h-12 w-12 -rotate-90 transform" viewBox="0 0 100 100">
+                        <circle
+                          className="text-white/5 stroke-current"
+                          strokeWidth="8"
+                          cx="50"
+                          cy="50"
+                          r="40"
+                          fill="transparent"
+                        />
+                        <circle
+                          className="text-violet-500 stroke-current transition-all duration-1000 ease-out"
+                          strokeWidth="8"
+                          strokeLinecap="round"
+                          cx="50"
+                          cy="50"
+                          r="40"
+                          fill="transparent"
+                          strokeDasharray={`${2 * Math.PI * 40}`}
+                          strokeDashoffset={`${2 * Math.PI * 40 * (1 - profileCompletion / 100)}`}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-white">{profileCompletion}%</span>
                       </div>
                     </div>
-                  </div>
-
-                  <p className="mt-4 text-sm font-semibold text-white">{completionValue}% Complete</p>
-                  <p className="mt-2 text-sm text-purple-300/70">
-                    {tx(
-                      "dashboard.freelancer.profilePrompt",
-                      undefined,
-                      "Add portfolio items to reach 100% and boost your visibility.",
-                    )}
-                  </p>
-
-                  {completionValue < 100 ? (
-                    <button
-                      type="button"
-                      onClick={() => navigate(nextProfileFixPath)}
-                      className="w-full mt-4 bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl text-sm font-medium transition-colors"
-                    >
-                      {tx(
-                        "dashboard.freelancer.profileStrength.completeProfile",
-                        undefined,
-                        "Complete Profile",
-                      )}
-                    </button>
-                  ) : null}
-                </section>
-
-                <section className="surface-card border border-surface rounded-2xl p-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.14em] text-purple-300">
-                    {tx("dashboard.freelancer.quickActions", undefined, "Quick Actions")}
-                  </p>
-
-                  <div className="mt-4 flex flex-col gap-2">
-                    {[
-                      {
-                        label: tx("dashboard.freelancer.browseJobs", undefined, "Browse Jobs"),
-                        icon: Briefcase,
-                        path: ROUTES.jobs,
-                      },
-                      {
-                        label: tx("nav.myProposals", undefined, "My Proposals"),
-                        icon: FileText,
-                        path: ROUTES.myProposals,
-                      },
-                    ].map((action) => (
+                    
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-white/90">
+                        {tx("dashboard.freelancer.completeProfileLabel", undefined, "Complete your profile")}
+                      </p>
                       <button
-                        key={action.label}
                         type="button"
-                        onClick={() => navigate(action.path)}
-                        className="w-full rounded-xl border border-surface bg-[#101010] hover:bg-[#262626]/40 text-white px-3 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
+                        onClick={() => navigate("/profile")}
+                        className="mt-1 text-[11px] text-violet-400 hover:text-violet-300 font-medium transition-colors"
                       >
-                        <span>{action.label}</span>
-                        <action.icon className="h-4 w-4 text-purple-400" />
+                        {tx("dashboard.freelancer.editProfileLink", undefined, "Edit profile")} -&gt;
                       </button>
-                    ))}
+                    </div>
                   </div>
-                </section>
+                </div>
+              )}
+
+              {/* Quick Actions */}
+              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden">
+                <p className="px-5 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-white/50">
+                  {tx("dashboard.freelancer.quickActions", undefined, "Quick Actions")}
+                </p>
+                <div className="flex flex-col p-2 pt-0">
+                  {[
+                    {
+                      label: tx("nav.findWork", undefined, "Find Work"),
+                      icon: Search,
+                      path: ROUTES.jobs,
+                    },
+                    {
+                      label: tx("nav.contracts", undefined, "Contracts"),
+                      icon: Briefcase,
+                      path: ROUTES.contracts,
+                    },
+                    {
+                      label: tx("nav.messages", undefined, "Messages"),
+                      icon: MessageSquare,
+                      path: ROUTES.messages,
+                    },
+                    {
+                      label: tx("dashboard.freelancer.myProposals", undefined, "My Proposals"),
+                      icon: FileText,
+                      path: ROUTES.myProposals,
+                    },
+                  ].map((action) => (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => navigate(action.path)}
+                      className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
+                    >
+                      <span className="text-xs font-semibold text-white/80">{action.label}</span>
+                      <action.icon className="h-3.5 w-3.5 text-white/30" />
+                    </button>
+                  ))}
+                </div>
               </div>
             </aside>
           </div>
@@ -901,4 +853,5 @@ function FreelancerDashboardPage() {
 }
 
 export default FreelancerDashboardPage;
+
 

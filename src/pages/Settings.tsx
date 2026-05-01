@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Settings as SettingsIcon,
@@ -108,7 +108,7 @@ function AccountSettings({
       <button
         type="button"
         onClick={goToPublicProfile}
-        className="w-full flex justify-between items-center p-4 border border-surface rounded-xl mb-3 hover-surface cursor-pointer transition-all"
+        className="w-full flex justify-between items-center p-4 border border-[var(--color-border-subtle)] rounded-xl mb-3 hover-surface cursor-pointer transition-all"
         style={{ borderColor: tokens.accentBorder }}
       >
         <span className="text-sm text-on-surface">{tx('pages.settings.account.openPublicProfileEditor', undefined, 'Open public profile editor')}</span>
@@ -118,7 +118,7 @@ function AccountSettings({
       <button
         type="button"
         onClick={goToDashboard}
-        className="w-full flex justify-between items-center p-4 border border-surface rounded-xl mb-3 hover-surface cursor-pointer transition-all"
+        className="w-full flex justify-between items-center p-4 border border-[var(--color-border-subtle)] rounded-xl mb-3 hover-surface cursor-pointer transition-all"
         style={{ borderColor: tokens.accentBorder }}
       >
         <span className="text-sm text-on-surface">{tx('pages.settings.account.goToDashboard', undefined, 'Go to dashboard')}</span>
@@ -128,7 +128,7 @@ function AccountSettings({
       <button
         type="button"
         onClick={goToNotifications}
-        className="w-full flex justify-between items-center p-4 border border-surface rounded-xl hover-surface cursor-pointer transition-all"
+        className="w-full flex justify-between items-center p-4 border border-[var(--color-border-subtle)] rounded-xl hover-surface cursor-pointer transition-all"
         style={{ borderColor: tokens.accentBorder }}
       >
         <span className="text-sm text-on-surface">{tx('pages.settings.account.manageNotifications', undefined, 'Manage notifications')}</span>
@@ -490,7 +490,7 @@ function PaymentSettingsTab({
             </div>
 
             {adding && (
-              <div className="rounded-xl border border-surface p-4 space-y-3 surface-sunken">
+              <div className="rounded-xl border border-[var(--color-border-subtle)] p-4 space-y-3 surface-sunken">
                 <p className="text-xs font-semibold text-on-surface mb-1">New bank account</p>
 
                 <div className="space-y-1">
@@ -565,7 +565,7 @@ function PaymentSettingsTab({
                   <button
                     type="button"
                     onClick={() => { setAdding(false); resetForm(); }}
-                    className="px-3 py-2 rounded-lg border border-surface text-on-surface-muted hover:text-on-surface text-xs font-medium transition-colors"
+                    className="px-3 py-2 rounded-lg border border-[var(--color-border-subtle)] text-on-surface-muted hover:text-on-surface text-xs font-medium transition-colors"
                   >
                     Cancel
                   </button>
@@ -632,7 +632,7 @@ function PaymentSettingsTab({
             <button
               type="button"
               onClick={() => navigate('/wallet')}
-              className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl border border-surface hover:border-violet-500/30 bg-white/[0.02] hover:bg-white/[0.04] transition-all group"
+              className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl border border-[var(--color-border-subtle)] hover:border-violet-500/30 bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-muted)] transition-all group"
             >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'color-mix(in srgb,#8B5CF6 12%,transparent)' }}>
@@ -676,7 +676,7 @@ function PaymentSettingsTab({
               ].map(({ icon: Icon, label, sub }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-3 p-3.5 rounded-xl border border-surface cursor-not-allowed"
+                  className="flex items-center gap-3 p-3.5 rounded-xl border border-[var(--color-border-subtle)] cursor-not-allowed"
                 >
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `color-mix(in srgb,${accentColor} 10%,transparent)` }}>
                     <Icon className="w-4 h-4" style={{ color: accentColor }} />
@@ -767,20 +767,20 @@ function PrivacySettingsTab({
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
       <h2 className="text-xl font-bold mb-6 text-on-surface">{tx('pages.settings.privacy.title', undefined, 'Security & Privacy')}</h2>
 
-      <div className="border border-surface rounded-xl p-4 mb-4 surface-sunken">
+      <div className="border border-[var(--color-border-subtle)] rounded-xl p-4 mb-4 surface-sunken">
         <p className="text-sm font-semibold text-on-surface mb-1">{tx('pages.settings.privacy.changePassword', undefined, 'Change password')}</p>
         <p className="text-sm text-on-surface-muted">
           You signed in with {authProvider}. Password management is handled by your identity provider.
         </p>
       </div>
 
-      <div className="border border-surface rounded-xl p-4 surface-sunken">
+      <div className="border border-[var(--color-border-subtle)] rounded-xl p-4 surface-sunken">
         <p className="text-sm font-semibold text-on-surface mb-1">{tx('pages.settings.privacy.activeSessions', undefined, 'Active sessions')}</p>
         <p className="text-sm text-on-surface-muted">{tx('pages.settings.privacy.currentSession', undefined, 'This device is your current session.')}</p>
         <button
           type="button"
           onClick={() => void onSignOutAll()}
-          className="inline-flex items-center gap-2 border border-surface text-on-surface px-4 py-2 rounded-lg mt-3 transition-colors hover-surface"
+          className="inline-flex items-center gap-2 border border-[var(--color-border-subtle)] text-on-surface px-4 py-2 rounded-lg mt-3 transition-colors hover-surface"
           style={{ borderColor: `color-mix(in srgb, ${accentColor} 45%, var(--color-border-default))` }}
         >
           <RefreshCw className="w-4 h-4" />
@@ -1022,3 +1022,5 @@ export default function Settings() {
     </div>
   );
 }
+
+

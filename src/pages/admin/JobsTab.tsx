@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { AlertTriangle, Briefcase, Eye, Loader2, Search, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
@@ -607,3 +607,6 @@ export default function JobsTab() {
         </ErrorBoundary>
     );
 }
+
+
+

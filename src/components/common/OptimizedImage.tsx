@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -56,7 +56,7 @@ export default function OptimizedImage({
     return (
         <div
             ref={containerRef}
-            className={`relative overflow-hidden bg-[#111111] ${className}`}
+            className={`relative overflow-hidden bg-[var(--color-bg-subtle)] ${className}`}
         >
             {/* Loading Skeleton */}
             {isLoading && !hasError && hasSource && (
@@ -65,7 +65,7 @@ export default function OptimizedImage({
 
             {/* Error Placeholder */}
             {hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#101010] text-white/30 z-20">
+                <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-bg-base)] text-[var(--color-text-primary)]/30 z-20">
                     <ImageIcon className="w-7 h-7" />
                 </div>
             )}
@@ -93,3 +93,6 @@ export default function OptimizedImage({
         </div>
     );
 }
+
+
+

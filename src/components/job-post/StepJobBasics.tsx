@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
 import { ExternalLink, FileText, Grid, Lightbulb, Trash2 } from 'lucide-react';
 import Input from '../ui/Input';
@@ -110,7 +110,7 @@ export default function StepJobBasics() {
                     <FileText className="h-3.5 w-3.5" />
                     {tx('jobs.new.stepBasics.badge', undefined, 'Project brief')}
                 </div>
-                <h3 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                <h3 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-2xl">
                     {tx('jobs.new.stepBasics.title', undefined, 'تفاصيل المهمة')}
                 </h3>
                 <p className="text-sm leading-6 text-[#b3b3b3]">
@@ -118,14 +118,14 @@ export default function StepJobBasics() {
                 </p>
             </header>
 
-            <section className="space-y-4 rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+            <section className="space-y-4 rounded-xl border border-[#2d2d2d] bg-[var(--color-bg-base)] p-4 sm:p-5">
                 <Input
                     label={tx('jobs.new.stepBasics.projectTitle', undefined, 'عنوان المشروع')}
                     placeholder={tx('jobs.new.stepBasics.projectTitlePlaceholder', undefined, 'مثال: تصميم شعار لشركة مواد غذائية')}
                     error={errors.title?.message as string}
                     {...register('title')}
                     leftIcon={<FileText className="h-4.5 w-4.5 text-[#8f8f8f]" />}
-                    className="!rounded-xl !border-[#2d2d2d] !bg-[#0f0f0f] !text-white placeholder:!text-[#707070] focus:!border-orange-500/70 focus:!ring-orange-500/25"
+                    className="!rounded-xl !border-[#2d2d2d] !bg-[var(--color-bg-base)] !text-[var(--color-text-primary)] placeholder:!text-[#707070] focus:!border-orange-500/70 focus:!ring-orange-500/25"
                 />
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -182,7 +182,7 @@ export default function StepJobBasics() {
                     <textarea
                         {...register('description')}
                         rows={6}
-                        className="w-full resize-y rounded-xl border border-[#2d2d2d] bg-[#0f0f0f] px-3 py-2.5 text-sm text-white outline-none transition placeholder:text-[#707070] focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/25"
+                        className="w-full resize-y rounded-xl border border-[#2d2d2d] bg-[var(--color-bg-base)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] outline-none transition placeholder:text-[#707070] focus:border-orange-500/70 focus:ring-2 focus:ring-orange-500/25"
                         placeholder={tx('jobs.new.stepBasics.projectDescriptionPlaceholder', undefined, 'اشرح تفاصيل المشروع، المخرجات المتوقعة، وأي متطلبات خاصة...')}
                     />
                     <div className="mt-2 flex items-center justify-between gap-2">
@@ -204,8 +204,8 @@ export default function StepJobBasics() {
                 </div>
             </section>
 
-            <section className="space-y-3 rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
-                <label className="block text-sm font-medium text-white">
+            <section className="space-y-3 rounded-xl border border-[#2d2d2d] bg-[var(--color-bg-base)] p-4 sm:p-5">
+                <label className="block text-sm font-medium text-[var(--color-text-primary)]">
                     {tx('jobs.new.stepBasics.requiredSkills', undefined, 'المهارات المطلوبة (بحد أقصى 5)')}
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -218,7 +218,7 @@ export default function StepJobBasics() {
                                 onClick={() => toggleSkill(skill)}
                                 className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${isSelected
                                     ? 'border-orange-500/45 bg-orange-500/10 text-orange-200'
-                                    : 'border-[#313131] bg-[#141414] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
+                                    : 'border-[#313131] bg-[var(--color-bg-elevated)] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
                                     }`}
                             >
                                 {language === 'ar' ? skill.name_ar : language === 'fr' ? skill.name_fr : skill.name_en}
@@ -229,7 +229,7 @@ export default function StepJobBasics() {
                 {errors.required_skills ? <p className="text-xs text-red-400">{errors.required_skills.message as string}</p> : null}
             </section>
 
-            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+            <section className="rounded-xl border border-[#2d2d2d] bg-[var(--color-bg-base)] p-4 sm:p-5">
                 <Controller
                     name="reference_links"
                     control={control}
@@ -246,9 +246,9 @@ export default function StepJobBasics() {
                 ) : null}
             </section>
 
-            <section className="rounded-xl border border-[#2d2d2d] bg-[#101010] p-4 sm:p-5">
+            <section className="rounded-xl border border-[#2d2d2d] bg-[var(--color-bg-base)] p-4 sm:p-5">
                 {existingAttachments.length > 0 ? (
-                    <div className="mb-4 space-y-2 rounded-xl border border-[#2d2d2d] bg-[#141414] p-3.5">
+                    <div className="mb-4 space-y-2 rounded-xl border border-[#2d2d2d] bg-[var(--color-bg-elevated)] p-3.5">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9a9a9a]">
                             {tx('jobs.new.stepBasics.currentAttachments', undefined, 'Current attachments')}
                         </p>
@@ -259,10 +259,10 @@ export default function StepJobBasics() {
                             return (
                                 <div
                                     key={`${attachment}-${index}`}
-                                    className="flex items-center justify-between gap-3 rounded-lg border border-[#2d2d2d] bg-[#101010] px-3 py-2"
+                                    className="flex items-center justify-between gap-3 rounded-lg border border-[#2d2d2d] bg-[var(--color-bg-base)] px-3 py-2"
                                 >
                                     <div className="min-w-0">
-                                        <p className="text-sm font-medium text-white">
+                                        <p className="text-sm font-medium text-[var(--color-text-primary)]">
                                             {tx('jobs.new.stepBasics.attachmentLabel', { index: index + 1 }, `Attachment ${index + 1}`)}
                                         </p>
                                         <a
@@ -309,3 +309,7 @@ export default function StepJobBasics() {
         </div>
     );
 }
+
+
+
+

@@ -1,4 +1,4 @@
-import { useFormContext } from 'react-hook-form';
+﻿import { useFormContext } from 'react-hook-form';
 import { DollarSign, Clock, Calendar, TrendingUp } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 
@@ -31,7 +31,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
     const today = new Date().toISOString().split('T')[0];
 
     const fieldClass =
-        'w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3.5 text-sm text-white caret-orange-300 outline-none transition-all duration-300 placeholder:text-gray-400 hover:border-white/20 hover:bg-white/[0.08] focus:bg-white/[0.1] focus:border-orange-400 focus:ring-4 focus:ring-orange-500/20 shadow-inner backdrop-blur-sm';
+        'w-full rounded-xl border border-white/10 bg-[var(--color-bg-muted)] px-4 py-3.5 text-sm text-[var(--color-text-primary)] caret-orange-300 outline-none transition-all duration-300 placeholder:text-gray-400 hover:border-white/20 hover:bg-[var(--color-bg-muted)] focus:bg-[var(--color-bg-muted)] focus:border-orange-400 focus:ring-4 focus:ring-orange-500/20 shadow-inner backdrop-blur-sm';
 
     const durationOptions = [
         {
@@ -74,7 +74,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                     <DollarSign className="h-3.5 w-3.5" />
                     {tx('jobs.new.stepBudget.badge', undefined, 'Pricing setup')}
                 </div>
-                <h3 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                <h3 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)] sm:text-2xl">
                     {tx('jobs.new.stepBudget.title', undefined, 'الميزانية والمدة')}
                 </h3>
                 <p className="text-sm leading-6 text-[#b3b3b3]">
@@ -86,16 +86,16 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                 <label
                     className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${jobType === 'fixed_price'
                         ? 'border-orange-500/45 bg-orange-500/10 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.8)]'
-                        : 'border-white/5 bg-white/[0.03] hover:border-orange-500/35 hover:bg-orange-500/5'
+                        : 'border-white/5 bg-[var(--color-bg-elevated)] hover:border-orange-500/35 hover:bg-orange-500/5'
                         }`}
                 >
                     <input type="radio" value="fixed_price" {...register('job_type')} className="sr-only" />
                     <div className="flex items-start gap-3">
-                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${jobType === 'fixed_price' ? 'bg-orange-500 text-white' : 'bg-[#222] text-[#8f8f8f]'}`}>
+                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${jobType === 'fixed_price' ? 'bg-orange-500 text-[var(--color-text-primary)]' : 'bg-[var(--color-bg-muted)] text-[#8f8f8f]'}`}>
                             <DollarSign className="h-4.5 w-4.5" />
                         </span>
                         <div className="space-y-1">
-                            <p className="text-sm font-semibold text-white">{tx('jobs.new.stepBudget.fixedPrice', undefined, 'سعر ثابت')}</p>
+                            <p className="text-sm font-semibold text-[var(--color-text-primary)]">{tx('jobs.new.stepBudget.fixedPrice', undefined, 'سعر ثابت')}</p>
                             <p className="text-xs leading-5 text-[#9a9a9a]">
                                 {tx('jobs.new.stepBudget.fixedPriceDescription', undefined, 'ادفع مبلغاً ثابتاً للمشروع بالكامل عند اكتماله.')}
                             </p>
@@ -106,16 +106,16 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                 <label
                     className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${jobType === 'hourly'
                         ? 'border-orange-500/45 bg-orange-500/10 shadow-[0_18px_50px_-42px_rgba(249,115,22,0.8)]'
-                        : 'border-white/5 bg-white/[0.03] hover:border-orange-500/35 hover:bg-orange-500/5'
+                        : 'border-white/5 bg-[var(--color-bg-elevated)] hover:border-orange-500/35 hover:bg-orange-500/5'
                         }`}
                 >
                     <input type="radio" value="hourly" {...register('job_type')} className="sr-only" />
                     <div className="flex items-start gap-3">
-                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${jobType === 'hourly' ? 'bg-orange-500 text-white' : 'bg-[#222] text-[#8f8f8f]'}`}>
+                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${jobType === 'hourly' ? 'bg-orange-500 text-[var(--color-text-primary)]' : 'bg-[var(--color-bg-muted)] text-[#8f8f8f]'}`}>
                             <Clock className="h-4.5 w-4.5" />
                         </span>
                         <div className="space-y-1">
-                            <p className="text-sm font-semibold text-white">{tx('jobs.new.stepBudget.hourly', undefined, 'بالساعة')}</p>
+                            <p className="text-sm font-semibold text-[var(--color-text-primary)]">{tx('jobs.new.stepBudget.hourly', undefined, 'بالساعة')}</p>
                             <p className="text-xs leading-5 text-[#9a9a9a]">
                                 {tx('jobs.new.stepBudget.hourlyDescription', undefined, 'ادفع للمستقل بناءً على عدد ساعات العمل.')}
                             </p>
@@ -124,7 +124,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                 </label>
             </section>
 
-            <section className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
+            <section className="rounded-2xl border border-white/5 bg-[var(--color-bg-elevated)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-[var(--color-bg-muted)] hover:border-white/10">
                 {jobType === 'fixed_price' ? (
                     <div className="space-y-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
@@ -188,7 +188,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
             </section>
 
             <section className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
-                <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
+                <div className="rounded-2xl border border-white/5 bg-[var(--color-bg-elevated)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-[var(--color-bg-muted)] hover:border-white/10">
                     <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Calendar className="h-4 w-4" />
                         {tx('jobs.new.stepBudget.duration', undefined, 'مدة المشروع')}
@@ -201,7 +201,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                                     key={option.value}
                                     className={`cursor-pointer rounded-xl border px-3 py-2.5 text-sm transition ${isSelected
                                         ? 'border-orange-500/45 bg-orange-500/10 text-orange-200'
-                                        : 'border-[#313131] bg-[#141414] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
+                                        : 'border-[#313131] bg-[var(--color-bg-elevated)] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
                                         }`}
                                 >
                                     <input type="radio" value={option.value} {...register('duration')} className="sr-only" />
@@ -213,7 +213,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                     {errors.duration ? <p className="mt-2 text-xs text-red-400">{errors.duration.message as string}</p> : null}
                 </div>
 
-                <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
+                <div className="rounded-2xl border border-white/5 bg-[var(--color-bg-elevated)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-[var(--color-bg-muted)] hover:border-white/10">
                     <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                         <Calendar className="h-4 w-4" />
                         {tx('jobs.new.stepBudget.deadline', undefined, 'الموعد النهائي')}
@@ -223,7 +223,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                 </div>
             </section>
 
-            <section className="rounded-2xl border border-white/5 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
+            <section className="rounded-2xl border border-white/5 bg-[var(--color-bg-elevated)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-5 transition-colors hover:bg-[var(--color-bg-muted)] hover:border-white/10">
                 <label className="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#7d7d7d]">
                     <TrendingUp className="h-4 w-4" />
                     {tx('jobs.new.stepBudget.experienceLevel', undefined, 'مستوى الخبرة المطلوب')}
@@ -237,7 +237,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                                 key={option.value}
                                 className={`cursor-pointer rounded-xl border px-3 py-2.5 text-sm transition ${isSelected
                                     ? 'border-orange-500/45 bg-orange-500/10 text-orange-200'
-                                    : 'border-[#313131] bg-[#141414] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
+                                    : 'border-[#313131] bg-[var(--color-bg-elevated)] text-[#b3b3b3] hover:border-orange-500/35 hover:bg-orange-500/5'
                                     }`}
                             >
                                 <input type="radio" value={option.value} {...register('experience_level')} className="sr-only" />
@@ -251,3 +251,6 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
         </div>
     );
 }
+
+
+

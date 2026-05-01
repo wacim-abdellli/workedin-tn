@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { useToast } from '../components/ui/Toast';
 import { Logo } from '../components/ui/Logo';
 import SignupForm from '../components/auth/SignupForm';
+import { cn } from '../lib/utils';
 
 function Signup() {
     const navigate = useNavigate();
@@ -118,12 +119,7 @@ function Signup() {
         return (
             <>
                 <SEO {...SEO_CONFIG.signup} url="/signup?step=select-type" noIndex />
-                <div
-                    className="min-h-screen flex items-center justify-center px-4"
-                    style={{
-                        background: 'radial-gradient(circle at 20% 20%, rgba(232,130,12,0.08), transparent 45%), #0c0c0c',
-                    }}
-                >
+                <div className="min-h-screen flex items-center justify-center px-4 bg-[var(--color-bg-base)]">
                     <SignupForm />
                 </div>
             </>
@@ -133,118 +129,44 @@ function Signup() {
     return (
         <>
             <SEO {...SEO_CONFIG.signup} url="/signup" />
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
-                @media (max-width: 768px) {
-                    .signup-container { grid-template-columns: 1fr !important; }
-                    .signup-left-panel { display: none !important; }
-                    .signup-right-panel { border-left: none !important; }
-                    .mobile-logo { display: flex !important; }
-                }
-                .mobile-logo { display: none; }
-            `}</style>
-            <div className="signup-container" style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                minHeight: '100vh',
-                background: '#0c0c0c',
-                fontFamily: "'Outfit', sans-serif",
-            }}>
+            <div className="grid lg:grid-cols-2 min-h-screen bg-[var(--color-bg-base)]">
                 {/* LEFT PANEL */}
-                <div className="signup-left-panel" style={{
-                    padding: '52px 48px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    background: '#0c0c0c',
-                    position: 'relative',
-                }}>
-                    <div style={{
-                        position: 'absolute', inset: 0, pointerEvents: 'none',
-                        background: 'radial-gradient(circle at 20% 80%, rgba(232,130,12,0.08) 0%, transparent 60%)',
-                    }} />
+                <div className="hidden lg:flex flex-col justify-between p-12 xl:p-16 bg-[var(--color-bg-subtle)] border-r border-[var(--color-border-subtle)] relative overflow-hidden">
+                    <div className="pointer-events-none absolute inset-0"
+                        style={{ background: 'radial-gradient(circle at 20% 80%, rgba(232,130,12,0.07) 0%, transparent 60%)' }} />
 
-                    <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div className="relative z-10">
                         <Logo variant="full" size="sm" mode="client" />
                     </div>
 
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px 0', position: 'relative', zIndex: 1 }}>
-                        <p style={{
-                            fontSize: 11, fontWeight: 700, letterSpacing: '0.2em',
-                            textTransform: 'uppercase', color: '#E8820C', marginBottom: 20,
-                        }}>
+                    <div className="relative z-10 flex-1 flex flex-col justify-center py-10">
+                        <p className="text-xs font-bold tracking-[0.2em] uppercase text-[#E8820C] mb-5">
                             {tx('authPages.signup.badge', undefined, 'Join WorkedIn')}
                         </p>
 
-                        <h1 style={{
-                            fontSize: 'clamp(36px, 4vw, 52px)',
-                            fontWeight: 800, lineHeight: 1.05,
-                            letterSpacing: '-1.5px', color: '#fff', marginBottom: 20,
-                        }}>
-                            {tx('authPages.signup.heroTitleTop', undefined, 'Ready for your')}
-                            <br />
-                            <span style={{ color: '#E8820C' }}>
-                                {tx('authPages.signup.heroTitleAccent', undefined, 'next big project?')}
-                            </span>
+                        <h1 className="text-[clamp(36px,4vw,52px)] font-extrabold leading-[1.05] tracking-[-1.5px] text-[var(--color-text-primary)] mb-5">
+                            {tx('authPages.signup.heroTitleTop', undefined, 'Ready for your')}<br />
+                            <span className="text-[#E8820C]">{tx('authPages.signup.heroTitleAccent', undefined, 'next big project?')}</span>
                         </h1>
 
-                        <p style={{ fontSize: 15, color: '#888', lineHeight: 1.6, maxWidth: 340, marginBottom: 40 }}>
-                            {tx(
-                                'authPages.signup.heroDescription',
-                                undefined,
-                                'Join thousands of professionals across Tunisia. Set up your workspace and start working in minutes.',
-                            )}
+                        <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed max-w-[340px] mb-10">
+                            {tx('authPages.signup.heroDescription', undefined, 'Join thousands of professionals across Tunisia. Set up your workspace and start working in minutes.')}
                         </p>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                        <div className="grid grid-cols-3 gap-3">
                             {[
-                                { 
-                                    title: tx('authPages.signup.featureCards.verified.title', undefined, 'Verified profiles'),
-                                    sub: tx('authPages.signup.featureCards.verified.sub', undefined, 'Every identity confirmed'),
-                                    icon: ShieldCheck,
-                                    color: '#10b981',
-                                    bgColor: 'rgba(16, 185, 129, 0.1)'
-                                },
-                                { 
-                                    title: tx('authPages.signup.featureCards.escrow.title', undefined, 'Escrow payments'),
-                                    sub: tx('authPages.signup.featureCards.escrow.sub', undefined, 'Funds held until delivery'),
-                                    icon: Lock,
-                                    color: '#E8820C',
-                                    bgColor: 'rgba(232, 130, 12, 0.1)'
-                                },
-                                { 
-                                    title: tx('authPages.signup.featureCards.local.title', undefined, 'Local & global'),
-                                    sub: tx('authPages.signup.featureCards.local.sub', undefined, 'Optimised for Tunisia'),
-                                    icon: Globe2,
-                                    color: '#3b82f6',
-                                    bgColor: 'rgba(59, 130, 246, 0.1)'
-                                },
+                                { title: tx('authPages.signup.featureCards.verified.title', undefined, 'Verified profiles'), sub: tx('authPages.signup.featureCards.verified.sub', undefined, 'Every identity confirmed'), icon: ShieldCheck, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+                                { title: tx('authPages.signup.featureCards.escrow.title', undefined, 'Escrow payments'), sub: tx('authPages.signup.featureCards.escrow.sub', undefined, 'Funds held until delivery'), icon: Lock, color: '#E8820C', bg: 'rgba(232,130,12,0.1)' },
+                                { title: tx('authPages.signup.featureCards.local.title', undefined, 'Local & global'), sub: tx('authPages.signup.featureCards.local.sub', undefined, 'Optimised for Tunisia'), icon: Globe2, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
                             ].map((f) => {
-                                const IconComponent = f.icon;
+                                const Icon = f.icon;
                                 return (
-                                    <div key={f.title} style={{
-                                        background: '#161616', border: '1px solid #222',
-                                        borderRadius: 12, padding: '18px 16px',
-                                        transition: 'all 0.2s ease',
-                                    }}
-                                    onMouseEnter={e => {
-                                        e.currentTarget.style.borderColor = f.color;
-                                        e.currentTarget.style.background = '#181818';
-                                    }}
-                                    onMouseLeave={e => {
-                                        e.currentTarget.style.borderColor = '#222';
-                                        e.currentTarget.style.background = '#161616';
-                                    }}
-                                    >
-                                        <div style={{
-                                            width: 36, height: 36, background: f.bgColor,
-                                            borderRadius: 8, marginBottom: 14,
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        }}>
-                                            <IconComponent style={{ width: 18, height: 18, color: f.color, strokeWidth: 2.5 }} />
+                                    <div key={f.title} className="rounded-xl p-4 border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] transition-all duration-200 hover:border-[var(--color-border-strong)] hover:shadow-md">
+                                        <div className="w-9 h-9 rounded-lg mb-3.5 flex items-center justify-center" style={{ background: f.bg }}>
+                                            <Icon className="w-[18px] h-[18px]" style={{ color: f.color }} strokeWidth={2.5} />
                                         </div>
-                                        <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 5, lineHeight: 1.3 }}>{f.title}</p>
-                                        <p style={{ fontSize: 11, color: '#777', lineHeight: 1.5 }}>{f.sub}</p>
+                                        <p className="text-[13px] font-bold text-[var(--color-text-primary)] mb-1 leading-snug">{f.title}</p>
+                                        <p className="text-[11px] text-[var(--color-text-tertiary)] leading-relaxed">{f.sub}</p>
                                     </div>
                                 );
                             })}
@@ -253,160 +175,116 @@ function Signup() {
                 </div>
 
                 {/* RIGHT PANEL */}
-                <div className="signup-right-panel" style={{
-                    background: '#111',
-                    padding: '52px 48px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    borderLeft: '1px solid #1a1a1a',
-                    maxHeight: '100vh',
-                    overflowY: 'auto',
-                }}>
-                    <div style={{ maxWidth: 420, margin: '0 auto', width: '100%' }}>
-                        <div className="mobile-logo" style={{ marginBottom: 32 }}>
+                <div className="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 bg-[var(--color-bg-base)] border-l border-[var(--color-border-subtle)] overflow-y-auto max-h-screen">
+                    <div className="w-full max-w-[420px] mx-auto">
+                        <div className="flex lg:hidden mb-8">
                             <Logo variant="full" size="sm" mode="client" />
                         </div>
 
-                        <div style={{ marginBottom: 28 }}>
-                            <h2 style={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 6 }}>
+                        <div className="mb-7">
+                            <h2 className="text-[26px] font-extrabold tracking-tight text-[var(--color-text-primary)] mb-1.5">
                                 {tx('authPages.signup.formTitle', undefined, 'Create your account')}
                             </h2>
-                            <p style={{ fontSize: 14, color: '#666' }}>
+                            <p className="text-sm text-[var(--color-text-tertiary)]">
                                 {tx('authPages.signup.formSubtitle', undefined, 'Join 2,500+ professionals building their career on WorkedIn')}
                             </p>
                         </div>
 
+                        {/* Google */}
                         <button
                             onClick={handleGoogle}
                             disabled={isLoading}
-                            style={{
-                                width: '100%', padding: '12px', background: '#1a1a1a',
-                                border: '1px solid #2a2a2a', borderRadius: 10,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                gap: 10, cursor: isLoading ? 'not-allowed' : 'pointer', marginBottom: 20,
-                                fontFamily: "'Outfit', sans-serif", opacity: isLoading ? 0.5 : 1,
-                            }}
-                            onMouseEnter={e => { if (!isLoading) (e.target as HTMLElement).style.background = '#222'; }}
-                            onMouseLeave={e => { if (!isLoading) (e.target as HTMLElement).style.background = '#1a1a1a'; }}
+                            className={cn(
+                                'w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border text-sm font-semibold transition-all duration-200 mb-5',
+                                'bg-[var(--color-bg-elevated)] border-[var(--color-border-default)] text-[var(--color-text-primary)]',
+                                'hover:bg-[var(--color-bg-muted)] hover:border-[var(--color-border-strong)]',
+                                'disabled:opacity-50 disabled:cursor-not-allowed',
+                            )}
                         >
-                            <svg style={{ width: 16, height: 16, flexShrink: 0 }} viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                             </svg>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>
-                                {tx('authPages.signup.continueWithGoogle', undefined, 'Continue with Google')}
-                            </span>
+                            {tx('authPages.signup.continueWithGoogle', undefined, 'Continue with Google')}
                         </button>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                            <div style={{ flex: 1, height: 1, background: '#1e1e1e' }} />
-                            <span style={{ fontSize: 11, color: '#444', fontWeight: 600 }}>
+                        {/* Divider */}
+                        <div className="flex items-center gap-3 mb-5">
+                            <div className="flex-1 h-px bg-[var(--color-border-subtle)]" />
+                            <span className="text-[11px] font-semibold text-[var(--color-text-tertiary)]">
                                 {tx('authPages.signup.orSignUpWithEmail', undefined, 'or sign up with email')}
                             </span>
-                            <div style={{ flex: 1, height: 1, background: '#1e1e1e' }} />
+                            <div className="flex-1 h-px bg-[var(--color-border-subtle)]" />
                         </div>
 
-                        <form onSubmit={handleSubmit(onSubmit)}>
-                            <div style={{ marginBottom: 14 }}>
-                                <label style={{
-                                    fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
-                                    textTransform: 'uppercase', color: '#555', marginBottom: 7, display: 'block',
-                                }}>{tx('authPages.signup.emailLabel', undefined, 'Email')}</label>
+                        {/* Form */}
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+                            <div>
+                                <label className="block text-[11px] font-bold tracking-[0.1em] uppercase text-[var(--color-text-tertiary)] mb-1.5">
+                                    {tx('authPages.signup.emailLabel', undefined, 'Email')}
+                                </label>
                                 <input
                                     type="email"
                                     placeholder={tx('authPages.signup.emailPlaceholder', undefined, 'you@example.com')}
                                     autoComplete="email"
                                     {...register('email')}
-                                    style={{
-                                        width: '100%', padding: '11px 14px',
-                                        background: '#161616', border: '1px solid #222',
-                                        borderRadius: 10, fontSize: 14, color: '#fff',
-                                        fontFamily: "'Outfit', sans-serif", outline: 'none',
-                                    }}
-                                    onFocus={e => { e.target.style.borderColor = '#E8820C'; e.target.style.background = '#181818'; }}
-                                    onBlur={e => { e.target.style.borderColor = '#222'; e.target.style.background = '#161616'; }}
+                                    className="w-full px-4 py-3 rounded-xl text-sm bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E8820C] focus:ring-2 focus:ring-[rgba(232,130,12,0.2)] transition-all"
                                 />
-                                {errors.email && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 5 }}>{errors.email.message}</p>}
+                                {errors.email && <p className="text-[11px] text-red-500 mt-1">{errors.email.message}</p>}
                             </div>
 
-                            <div style={{ marginBottom: 14 }}>
-                                <label style={{
-                                    fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
-                                    textTransform: 'uppercase', color: '#555', marginBottom: 7, display: 'block',
-                                }}>{tx('authPages.signup.passwordLabel', undefined, 'Password')}</label>
+                            <div>
+                                <label className="block text-[11px] font-bold tracking-[0.1em] uppercase text-[var(--color-text-tertiary)] mb-1.5">
+                                    {tx('authPages.signup.passwordLabel', undefined, 'Password')}
+                                </label>
                                 <input
                                     type="password"
                                     placeholder="••••••••"
                                     autoComplete="new-password"
                                     {...register('password')}
-                                    style={{
-                                        width: '100%', padding: '11px 14px',
-                                        background: '#161616', border: '1px solid #222',
-                                        borderRadius: 10, fontSize: 14, color: '#fff',
-                                        fontFamily: "'Outfit', sans-serif", outline: 'none',
-                                    }}
-                                    onFocus={e => { e.target.style.borderColor = '#E8820C'; e.target.style.background = '#181818'; }}
-                                    onBlur={e => { e.target.style.borderColor = '#222'; e.target.style.background = '#161616'; }}
+                                    className="w-full px-4 py-3 rounded-xl text-sm bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E8820C] focus:ring-2 focus:ring-[rgba(232,130,12,0.2)] transition-all"
                                 />
-                                {errors.password && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 5 }}>{errors.password.message}</p>}
+                                {errors.password && <p className="text-[11px] text-red-500 mt-1">{errors.password.message}</p>}
                             </div>
 
-                            <div style={{ marginBottom: 6 }}>
-                                <label style={{
-                                    fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
-                                    textTransform: 'uppercase', color: '#555', marginBottom: 7, display: 'block',
-                                }}>{tx('authPages.signup.confirmPasswordLabel', undefined, 'Confirm Password')}</label>
+                            <div>
+                                <label className="block text-[11px] font-bold tracking-[0.1em] uppercase text-[var(--color-text-tertiary)] mb-1.5">
+                                    {tx('authPages.signup.confirmPasswordLabel', undefined, 'Confirm Password')}
+                                </label>
                                 <input
                                     type="password"
                                     placeholder="••••••••"
                                     autoComplete="new-password"
                                     {...register('confirmPassword')}
-                                    style={{
-                                        width: '100%', padding: '11px 14px',
-                                        background: '#161616', border: '1px solid #222',
-                                        borderRadius: 10, fontSize: 14, color: '#fff',
-                                        fontFamily: "'Outfit', sans-serif", outline: 'none',
-                                    }}
-                                    onFocus={e => { e.target.style.borderColor = '#E8820C'; e.target.style.background = '#181818'; }}
-                                    onBlur={e => { e.target.style.borderColor = '#222'; e.target.style.background = '#161616'; }}
+                                    className="w-full px-4 py-3 rounded-xl text-sm bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:border-[#E8820C] focus:ring-2 focus:ring-[rgba(232,130,12,0.2)] transition-all"
                                 />
-                                {errors.confirmPassword && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 5 }}>{errors.confirmPassword.message}</p>}
+                                {errors.confirmPassword && <p className="text-[11px] text-red-500 mt-1">{errors.confirmPassword.message}</p>}
                             </div>
 
                             {error && (
-                                <p style={{ fontSize: 12, color: '#ef4444', marginTop: 10, marginBottom: 10, textAlign: 'center' }}>{error}</p>
+                                <p className="text-xs text-red-500 text-center py-1">{error}</p>
                             )}
 
                             <button
                                 type="submit"
                                 disabled={isLoading || (lockoutUntil ? Date.now() < lockoutUntil : false)}
-                                style={{
-                                    width: '100%', padding: 13,
-                                    background: (isLoading || (lockoutUntil && Date.now() < lockoutUntil)) ? '#9a5608' : '#E8820C',
-                                    border: 'none', borderRadius: 10,
-                                    fontSize: 15, fontWeight: 800, color: '#fff',
-                                    cursor: (isLoading || (lockoutUntil && Date.now() < lockoutUntil)) ? 'not-allowed' : 'pointer',
-                                    fontFamily: "'Outfit', sans-serif",
-                                    marginTop: 6, letterSpacing: '-0.3px',
-                                }}
-                                onMouseEnter={e => { if (!isLoading && !(lockoutUntil && Date.now() < lockoutUntil)) (e.target as HTMLElement).style.background = '#d4750a'; }}
-                                onMouseLeave={e => { if (!isLoading && !(lockoutUntil && Date.now() < lockoutUntil)) (e.target as HTMLElement).style.background = '#E8820C'; }}
+                                className="w-full py-3.5 rounded-xl text-[15px] font-extrabold text-white tracking-tight transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.98] mt-1"
+                                style={{ background: '#E8820C' }}
                             >
-                                {isLoading 
+                                {isLoading
                                     ? tx('authPages.signup.creatingAccount', undefined, 'Creating account…')
                                     : tx('authPages.signup.createAccountButton', undefined, 'Create account →')
                                 }
                             </button>
                         </form>
 
-                        <p style={{ textAlign: 'center', marginTop: 16, fontSize: 13, color: '#555' }}>
+                        <p className="text-center mt-4 text-sm text-[var(--color-text-tertiary)]">
                             {tx('authPages.signup.alreadyHaveAccount', undefined, 'Already have an account?')}{' '}
                             <button
                                 onClick={() => navigate('/login', { state: location.state })}
-                                style={{ color: '#E8820C', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Outfit', sans-serif", fontSize: 13 }}
+                                className="text-[#E8820C] font-bold hover:text-[#d4750a] transition-colors"
                             >
                                 {tx('authPages.signup.signInLink', undefined, 'Sign in')}
                             </button>

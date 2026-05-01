@@ -1,4 +1,4 @@
-import { Star, MapPin, CheckCircle, Pause, Volume2, User, Wallet, Clock3, BriefcaseBusiness, Sparkles, Send, Pencil, Settings, Upload } from 'lucide-react';
+﻿import { Star, MapPin, CheckCircle, Pause, Volume2, User, Wallet, Clock3, BriefcaseBusiness, Sparkles, Send, Pencil, Settings, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { OptimizedImage } from '../../common';
 import Button from '../../ui/Button';
@@ -16,7 +16,7 @@ interface ProfileHeaderProps {
 }
 
 function RatingStars({ rating }: { rating: number }) {
-    const roundedRating = Math.round(rating);
+    const roundedRating = Math.round(Number(rating) || 0);
 
     return (
         <div className="flex items-center gap-0.5" aria-hidden>
@@ -278,3 +278,4 @@ export default function ProfileHeader({ freelancer, onContact, onMessage, onPlay
         </div>
     );
 }
+

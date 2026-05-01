@@ -37,8 +37,12 @@ const PROFILE_ALLOWED_FIELDS = [
     'onboarding_completed',
     'client_onboarding_completed',
     'freelancer_onboarding_completed',
+    'is_online_for_messages',
+    'cin_verified',
+    'phone_verified',
+    'username',
     'created_at',
-    'updated_at'
+    'updated_at',
 ] as const;
 
 // Freelancer profile allowed fields
@@ -66,7 +70,7 @@ const FREELANCER_PROFILE_ALLOWED_FIELDS = [
     'revision_policy',
     'project_preferences',
     'created_at',
-    'updated_at'
+    'updated_at',
 ] as const;
 
 // Fields that should NEVER be in profiles table (managed by Supabase Auth)

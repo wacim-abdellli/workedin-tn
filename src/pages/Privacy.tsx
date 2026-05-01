@@ -6,21 +6,21 @@ export default function Privacy() {
     const { tx } = useTranslation();
 
     return (
-        <div className="min-h-screen" style={{ background: "var(--page-bg)" }}>
+        <div className="min-h-screen bg-[var(--color-bg-subtle)]">
             <SEO {...SEO_CONFIG.privacy} url="/privacy" />
             <Header />
 
             <div className="container-custom py-12">
                 <div className="max-w-3xl mx-auto">
-                    <h1 className="text-3xl font-bold text-foreground mb-8">{tx('legalPages.privacy.title')}</h1>
+                    <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-8">{tx('legalPages.privacy.title')}</h1>
 
                     <div className="card prose prose-lg max-w-none">
-                        <p className="text-muted mb-6">{tx('legalPages.privacy.lastUpdated')}</p>
+                        <p className="text-[var(--color-text-tertiary)] mb-6">{tx('legalPages.privacy.lastUpdated')}</p>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.dataCollection.title')}</h2>
-                            <p className="text-foreground/80 mb-4">{tx('legalPages.privacy.sections.dataCollection.intro')}</p>
-                            <ul className="list-disc list-inside text-foreground/80 space-y-2">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.privacy.sections.dataCollection.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)] mb-4">{tx('legalPages.privacy.sections.dataCollection.intro')}</p>
+                            <ul className="list-disc list-inside text-[var(--color-text-secondary)] space-y-2">
                                 <li>{tx('legalPages.privacy.sections.dataCollection.items.account')}</li>
                                 <li>{tx('legalPages.privacy.sections.dataCollection.items.profile')}</li>
                                 <li>{tx('legalPages.privacy.sections.dataCollection.items.usage')}</li>
@@ -29,8 +29,8 @@ export default function Privacy() {
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.usage.title')}</h2>
-                            <ul className="list-disc list-inside text-foreground/80 space-y-2">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.privacy.sections.usage.title')}</h2>
+                            <ul className="list-disc list-inside text-[var(--color-text-secondary)] space-y-2">
                                 <li>{tx('legalPages.privacy.sections.usage.items.improve')}</li>
                                 <li>{tx('legalPages.privacy.sections.usage.items.transactions')}</li>
                                 <li>{tx('legalPages.privacy.sections.usage.items.notifications')}</li>
@@ -40,9 +40,9 @@ export default function Privacy() {
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.sharing.title')}</h2>
-                            <p className="text-foreground/80 mb-4">{tx('legalPages.privacy.sections.sharing.intro')}</p>
-                            <ul className="list-disc list-inside text-foreground/80 space-y-2">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.privacy.sections.sharing.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)] mb-4">{tx('legalPages.privacy.sections.sharing.intro')}</p>
+                            <ul className="list-disc list-inside text-[var(--color-text-secondary)] space-y-2">
                                 <li>{tx('legalPages.privacy.sections.sharing.items.paymentProviders')}</li>
                                 <li>{tx('legalPages.privacy.sections.sharing.items.legalAuthorities')}</li>
                                 <li>{tx('legalPages.privacy.sections.sharing.items.publicProfile')}</li>
@@ -50,9 +50,9 @@ export default function Privacy() {
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.protection.title')}</h2>
-                            <p className="text-foreground/80 mb-4">{tx('legalPages.privacy.sections.protection.intro')}</p>
-                            <ul className="list-disc list-inside text-foreground/80 space-y-2">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.privacy.sections.protection.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)] mb-4">{tx('legalPages.privacy.sections.protection.intro')}</p>
+                            <ul className="list-disc list-inside text-[var(--color-text-secondary)] space-y-2">
                                 <li>{tx('legalPages.privacy.sections.protection.items.ssl')}</li>
                                 <li>{tx('legalPages.privacy.sections.protection.items.database')}</li>
                                 <li>{tx('legalPages.privacy.sections.protection.items.audits')}</li>
@@ -60,8 +60,8 @@ export default function Privacy() {
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.rights.title')}</h2>
-                            <ul className="list-disc list-inside text-foreground/80 space-y-2">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.privacy.sections.rights.title')}</h2>
+                            <ul className="list-disc list-inside text-[var(--color-text-secondary)] space-y-2">
                                 <li>{tx('legalPages.privacy.sections.rights.items.access')}</li>
                                 <li>{tx('legalPages.privacy.sections.rights.items.correction')}</li>
                                 <li>{tx('legalPages.privacy.sections.rights.items.deletion')}</li>
@@ -70,16 +70,17 @@ export default function Privacy() {
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.cookies.title')}</h2>
-                            <p className="text-foreground/80 mb-4">{tx('legalPages.privacy.sections.cookies.text')}</p>
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.privacy.sections.cookies.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)] mb-4">{tx('legalPages.privacy.sections.cookies.text')}</p>
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.privacy.sections.contact.title')}</h2>
-                            <p className="text-foreground/80">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.privacy.sections.contact.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)]">
                                 {tx('legalPages.privacy.sections.contact.intro')}
                                 <br />
-                                {tx('legalPages.privacy.sections.contact.emailLabel')} {tx('ui.privacy_workedin_tn')}</p>
+                                {tx('legalPages.privacy.sections.contact.emailLabel')} {tx('ui.privacy_workedin_tn')}
+                            </p>
                         </section>
                     </div>
                 </div>

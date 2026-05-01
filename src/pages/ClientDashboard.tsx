@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -251,20 +251,20 @@ function ClientDashboardPage() {
 
     if (isAuthLoading || !isFullyReady) {
         return (
-            <div className="min-h-screen page-bg-base">
+            <div className="min-h-screen bg-[var(--color-bg-base)]">
                 <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
                 <Header />
-                <main className="min-h-screen page-bg-base pt-10 pb-12">
+                <main className="min-h-screen bg-[var(--color-bg-base)] pt-10 pb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-                        <div className="animate-pulse rounded-2xl border border-surface surface-card h-40" />
+                        <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-40" />
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                             <div className="lg:col-span-8 space-y-8">
-                                <div className="animate-pulse rounded-2xl border border-surface surface-card h-72" />
-                                <div className="animate-pulse rounded-2xl border border-surface surface-card h-64" />
+                                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-72" />
+                                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-64" />
                             </div>
                             <div className="lg:col-span-4 space-y-6">
-                                <div className="animate-pulse rounded-2xl border border-surface surface-card h-52" />
-                                <div className="animate-pulse rounded-2xl border border-surface surface-card h-64" />
+                                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-52" />
+                                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-64" />
                             </div>
                         </div>
                     </div>
@@ -275,10 +275,10 @@ function ClientDashboardPage() {
 
     if (!profile?.id) {
         return (
-            <div className="min-h-screen page-bg-base">
+            <div className="min-h-screen bg-[var(--color-bg-base)]">
                 <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
                 <Header />
-                <main className="min-h-screen page-bg-base pt-10 pb-12">
+                <main className="min-h-screen bg-[var(--color-bg-base)] pt-10 pb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <EmptyState
                             icon={Users}
@@ -304,324 +304,186 @@ function ClientDashboardPage() {
     }
 
     return (
-        <div className="min-h-screen page-bg-base">
+        <div className="min-h-screen bg-[var(--color-bg-base)]">
             <SEO {...SEO_CONFIG.dashboard} url="/client/dashboard" noIndex />
             <Header />
 
-            <main className="min-h-screen page-bg-base pt-10 pb-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-                    <section className="relative overflow-hidden border border-surface rounded-2xl bg-[var(--color-bg-elevated)] p-5 sm:p-6 lg:p-7">
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_160%_at_0%_0%,rgba(249,115,22,0.16)_0%,transparent_48%),radial-gradient(75%_140%_at_100%_0%,rgba(154,52,18,0.2)_0%,transparent_52%)]" />
-                        <div className="pointer-events-none absolute -top-10 right-8 h-28 w-28 rounded-full bg-orange-500/20 blur-3xl" />
+            <main className="min-h-screen bg-[var(--color-bg-base)] pt-6 pb-12">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-5">
+                    {/* ── COMMAND CENTER BANNER ── */}
+                    <section className="relative overflow-hidden border rounded-xl bg-[radial-gradient(90%_160%_at_0%_0%,rgba(245,158,11,0.12)_0%,transparent_48%),#0a0a0a]" style={{ borderColor: 'rgba(245,158,11,0.15)' }}>
+                        <div className="pointer-events-none absolute -top-8 right-8 h-20 w-20 rounded-full bg-orange-500/10 blur-3xl" />
 
-                        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                            <div className="min-w-0">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-200">
-                                    <Sparkles className="h-3.5 w-3.5" />
-                                    {tx(
-                                        'dashboard.client.commandCenter',
-                                        undefined,
-                                        'Client Command Center',
-                                    )}
-                                </div>
-
-                                <div className="mt-4 flex items-center gap-4 min-w-0">
-                                    {profile.avatar_url ? (
-                                        <img
-                                            src={profile.avatar_url}
-                                            alt={firstName}
-                                            className="h-14 w-14 rounded-full border border-[#3a3a3a] object-cover ring-2 ring-orange-500/30"
-                                        />
-                                    ) : (
-                                        <div className="h-14 w-14 rounded-full border border-[#3a3a3a] bg-[#161616] flex items-center justify-center ring-2 ring-orange-500/30">
-                                            <Users className="h-6 w-6 text-orange-300" />
-                                        </div>
-                                    )}
-
-                                    <div className="min-w-0">
-                                        <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight truncate text-white">
-                                            {tx(
-                                                'dashboard.client.welcomeBack',
-                                                undefined,
-                                                'Welcome back',
-                                            )}
-                                            , {firstName}
-                                        </h1>
-                                        <p className="text-orange-100/80 text-sm mt-1">
-                                            {tx(
-                                                'dashboard.client.commandCenterSubtitle',
-                                                undefined,
-                                                'Track projects, proposals, and spending from one place.',
-                                            )}
-                                        </p>
-                                        <p className="text-xs text-orange-100/60 mt-1">
-                                            {getTimeGreeting(tx)}
-                                        </p>
+                        <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 p-5">
+                            <div className="min-w-0 flex items-center gap-4">
+                                {profile.avatar_url ? (
+                                    <img
+                                        src={profile.avatar_url}
+                                        alt={firstName}
+                                        className="h-12 w-12 rounded-full border border-white/10 object-cover ring-2 ring-orange-500/20"
+                                    />
+                                ) : (
+                                    <div className="h-12 w-12 rounded-full border border-white/10 bg-[var(--color-bg-elevated)] flex items-center justify-center ring-2 ring-orange-500/20">
+                                        <Users className="h-5 w-5 text-orange-300" />
                                     </div>
+                                )}
+
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Sparkles className="h-3.5 w-3.5 text-orange-400" />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-orange-300/80">
+                                            {tx('dashboard.client.commandCenter', undefined, 'Client Dashboard')}
+                                        </span>
+                                    </div>
+                                    <h1 className="text-xl sm:text-2xl font-black tracking-tight truncate text-white leading-none">
+                                        {tx('dashboard.client.welcomeBack', undefined, 'Welcome back')}, {firstName}
+                                    </h1>
+                                    <p className="text-xs text-white/50 mt-1.5 truncate">
+                                        {tx('dashboard.client.commandCenterSubtitle', undefined, 'Track projects, proposals, and spending.')}
+                                    </p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 w-full lg:w-auto lg:min-w-[440px]">
-                                {[
-                                    {
-                                        label: tx(
-                                            'dashboard.client.projectsLabel',
-                                            undefined,
-                                            'Projects',
-                                        ),
-                                        value: statsData.totalJobs,
-                                    },
-                                    {
-                                        label: tx(
-                                            'dashboard.client.activeLabel',
-                                            undefined,
-                                            'Active',
-                                        ),
-                                        value: statsData.activeJobs,
-                                    },
-                                    {
-                                        label: tx(
-                                            'dashboard.client.proposalsLabel',
-                                            undefined,
-                                            'Proposals',
-                                        ),
-                                        value: statsData.totalProposals,
-                                    },
-                                    {
-                                        label: tx(
-                                            'dashboard.client.spentLabel',
-                                            undefined,
-                                            'Spent',
-                                        ),
-                                        value: formatCurrency(
-                                            statsData.totalSpent,
-                                            true,
-                                            language,
-                                        ),
-                                    },
-                                ].map((stat) => (
-                                    <div
-                                        key={stat.label}
-                                        className="rounded-xl border border-[#333] bg-[#101010]/90 px-4 py-3"
-                                    >
-                                        <p className="text-[10px] uppercase tracking-[0.18em] text-orange-100/65">
-                                            {stat.label}
-                                        </p>
-                                        <p className="mt-1 text-2xl font-bold text-white">
-                                            {stat.value}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                            <div className="flex flex-row items-center gap-3 overflow-x-auto pb-1 lg:pb-0 scrollbar-hide shrink-0">
+                                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[100px]">
+                                    <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                                        {tx('dashboard.client.projectsLabel', undefined, 'Projects')}
+                                    </p>
+                                    <p className="text-lg font-black text-white">{statsData.totalJobs}</p>
+                                </div>
 
-                        <div className="relative mt-4 flex flex-wrap items-center gap-3">
-                            <span className="inline-flex items-center rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs text-orange-200/90">
-                                {tx(
-                                    'dashboard.client.reviewQueue',
-                                    undefined,
-                                    'Review Queue',
-                                )}
-                                : {proposalsWaitingReview}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={() => navigate('/jobs/new')}
-                                className="inline-flex items-center rounded-full border border-[#373737] bg-[#111111] px-3 py-1 text-xs font-medium text-orange-200 hover:border-orange-500/40 hover:text-orange-100 transition-colors"
-                            >
-                                {tx(
-                                    'dashboard.client.postAProject',
-                                    undefined,
-                                    'Post a Project',
-                                )}
-                            </button>
+                                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[100px]">
+                                    <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                                        {tx('dashboard.client.activeLabel', undefined, 'Active')}
+                                    </p>
+                                    <p className="text-lg font-black text-white">{statsData.activeJobs}</p>
+                                </div>
+
+                                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[100px]">
+                                    <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                                        {tx('dashboard.client.proposalsLabel', undefined, 'Proposals')}
+                                    </p>
+                                    <p className="text-lg font-black text-white">{statsData.totalProposals}</p>
+                                </div>
+
+                                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[100px]">
+                                    <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                                        {tx('dashboard.client.spentLabel', undefined, 'Spent')}
+                                    </p>
+                                    <p className="text-lg font-black text-white">{formatCurrency(statsData.totalSpent, true, language)}</p>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
-                    <div className="flex flex-col gap-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                            <section className="lg:col-span-8 h-full surface-card border border-surface rounded-2xl flex flex-col overflow-hidden">
-                                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
-                                    <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
-                                        {tx(
-                                            'dashboard.client.activeProjects',
-                                            undefined,
-                                            'Active Projects',
-                                        )}
+                    {/* ── MAIN CONTENT GRID ── */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                        {/* Left Column - Primary Content */}
+                        <section className="lg:col-span-8 flex flex-col gap-5">
+                            
+                            {/* Active Projects */}
+                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
+                                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                                    <h2 className="text-xs font-bold uppercase tracking-wider text-orange-300">
+                                        {tx('dashboard.client.activeProjects', undefined, 'Active Projects')}
                                     </h2>
                                     <button
                                         type="button"
                                         onClick={() => navigate('/client/jobs')}
-                                        className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
+                                        className="text-[11px] font-semibold text-orange-400 hover:text-orange-300 transition-colors"
                                     >
-                                        {tx(
-                                            'dashboard.client.viewAll',
-                                            undefined,
-                                            'View All',
-                                        )}{' '}
-                                        -&gt;
+                                        {tx('dashboard.client.viewAll', undefined, 'View All')} -&gt;
                                     </button>
                                 </header>
 
                                 {isStatsLoading ? (
-                                    <div className="p-6 space-y-3">
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                                    <div className="p-5 space-y-2">
+                                        <div className="animate-pulse h-12 rounded-lg bg-white/5" />
+                                        <div className="animate-pulse h-12 rounded-lg bg-white/5" />
                                     </div>
                                 ) : jobs.length === 0 ? (
-                                    <div className="px-6 py-8">
-                                        <p className="text-sm text-orange-100/70">
-                                            {tx(
-                                                'dashboard.client.noActiveProjects',
-                                                undefined,
-                                                'No active projects yet.',
-                                            )}
+                                    <div className="px-5 py-6 flex items-center justify-between gap-4">
+                                        <p className="text-sm text-white/40">
+                                            {tx('dashboard.client.noActiveProjects', undefined, 'No active projects yet.')}
                                         </p>
                                         <button
                                             type="button"
                                             onClick={() => navigate('/jobs/new')}
-                                            className="mt-4 rounded-xl bg-orange-600 hover:bg-orange-500 px-4 py-2 text-xs font-semibold text-white transition-colors"
+                                            className="shrink-0 rounded-lg bg-orange-600 hover:bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
                                         >
-                                            {tx(
-                                                'dashboard.client.postAProject',
-                                                undefined,
-                                                'Post a Project',
-                                            )}
+                                            {tx('dashboard.client.postAProject', undefined, 'Post a Project')}
                                         </button>
                                     </div>
                                 ) : (
-                                    <div>
+                                    <div className="flex flex-col">
                                         {jobs.slice(0, 3).map((job, index) => (
                                             <button
                                                 key={job.id}
                                                 type="button"
                                                 onClick={() => navigate(`/jobs/${job.id}`)}
-                                                className={`w-full text-left px-6 py-4 hover:bg-[#262626]/30 transition-colors ${index < Math.min(jobs.length, 3) - 1 ? 'border-b border-surface' : ''}`}
+                                                className={`w-full text-left px-5 py-3.5 hover:bg-white/[0.02] transition-colors flex items-start justify-between gap-4 ${index < Math.min(jobs.length, 3) - 1 ? 'border-b border-white/5' : ''}`}
                                             >
-                                                <div className="flex items-start justify-between gap-4">
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-white truncate">
-                                                            {job.title}
-                                                        </p>
-                                                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-orange-100/70">
-                                                            <span>
-                                                                {job.proposals_count}{' '}
-                                                                {tx(
-                                                                    'dashboard.client.proposalsCountText',
-                                                                    undefined,
-                                                                    'proposals',
-                                                                )}
-                                                            </span>
-                                                            <span className="text-orange-300/50">•</span>
-                                                            <span>
-                                                                {formatDate(new Date(job.created_at).toISOString())}
-                                                            </span>
-                                                            <span className="text-orange-300/50">•</span>
-                                                            <span>
-                                                                {formatBudgetRange(job, language)}
-                                                            </span>
-                                                        </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-white/90 truncate">
+                                                        {job.title}
+                                                    </p>
+                                                    <div className="mt-1 flex items-center gap-2 text-xs text-white/50">
+                                                        <span>{job.proposals_count} {tx('dashboard.client.proposalsCountText', undefined, 'proposals')}</span>
+                                                        <span className="text-white/20">•</span>
+                                                        <span>{formatDate(new Date(job.created_at).toISOString())}</span>
+                                                        <span className="text-white/20">•</span>
+                                                        <span className="font-medium text-white/70">{formatBudgetRange(job, language)}</span>
                                                     </div>
-                                                    <span
-                                                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${jobStatusClass(job.status)}`}
-                                                    >
-                                                        {tx(
-                                                            `status.${job.status}`,
-                                                            undefined,
-                                                            job.status,
-                                                        )}
-                                                    </span>
                                                 </div>
+                                                <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${jobStatusClass(job.status)}`}>
+                                                    {tx(`status.${job.status}`, undefined, job.status)}
+                                                </span>
                                             </button>
                                         ))}
                                     </div>
                                 )}
-                            </section>
+                            </div>
 
-                            <section className="lg:col-span-4 h-full relative overflow-hidden rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/15 via-[#181818] to-[#121212] p-6">
-                                <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-orange-500/25 blur-2xl" />
-
-                                <div className="relative">
-                                    <div className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-orange-400/40 bg-orange-500/20 text-orange-200">
-                                        <Plus className="h-5 w-5" />
+                            {/* Recent Proposals */}
+                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
+                                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                                    <div className="flex items-center gap-3">
+                                        <h2 className="text-xs font-bold uppercase tracking-wider text-orange-300">
+                                            {tx('dashboard.client.recentProposals', undefined, 'Recent Proposals')}
+                                        </h2>
+                                        {proposalsWaitingReview > 0 && (
+                                            <span className="px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 text-[10px] font-bold">
+                                                {proposalsWaitingReview} {tx('dashboard.client.reviewQueue', undefined, 'in queue')}
+                                            </span>
+                                        )}
                                     </div>
-                                    <h3 className="mt-4 text-xl font-bold text-white leading-tight">
-                                        {tx(
-                                            'dashboard.client.needSomethingDone',
-                                            undefined,
-                                            'Need something done?',
-                                        )}
-                                    </h3>
-                                    <p className="mt-2 text-sm text-orange-100/75">
-                                        {tx(
-                                            'dashboard.client.postProjectFree',
-                                            undefined,
-                                            'Post a project free. Get proposals from verified Tunisian talent.',
-                                        )}
-                                    </p>
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate('/jobs/new')}
-                                        className="mt-4 w-full rounded-xl bg-orange-600 hover:bg-orange-500 py-2.5 text-sm font-semibold text-white transition-colors"
-                                    >
-                                        {tx(
-                                            'dashboard.client.postProjectFreeCta',
-                                            undefined,
-                                            "Post a project - it's free",
-                                        )}
-                                    </button>
-                                </div>
-                            </section>
-                        </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                            <section className="lg:col-span-8 h-full surface-card border border-surface rounded-2xl flex flex-col overflow-hidden">
-                                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
-                                    <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
-                                        {tx(
-                                            'dashboard.client.recentProposals',
-                                            undefined,
-                                            'Recent Proposals',
-                                        )}
-                                    </h2>
                                     <button
                                         type="button"
                                         onClick={() => navigate('/client/jobs')}
-                                        className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
+                                        className="text-[11px] font-semibold text-orange-400 hover:text-orange-300 transition-colors"
                                     >
-                                        {tx(
-                                            'dashboard.client.viewAll',
-                                            undefined,
-                                            'View All',
-                                        )}{' '}
-                                        -&gt;
+                                        {tx('dashboard.client.viewAll', undefined, 'View All')} -&gt;
                                     </button>
                                 </header>
 
                                 {isStatsLoading ? (
-                                    <div className="p-6 space-y-3">
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
+                                    <div className="p-5 space-y-2">
+                                        <div className="animate-pulse h-10 rounded-lg bg-white/5" />
+                                        <div className="animate-pulse h-10 rounded-lg bg-white/5" />
                                     </div>
                                 ) : proposals.length === 0 ? (
-                                    <div className="px-6 py-8 text-sm text-orange-100/70">
-                                        {tx(
-                                            'dashboard.client.noProposalsYet',
-                                            undefined,
-                                            'No proposals yet.',
-                                        )}
+                                    <div className="px-5 py-6 text-sm text-white/40 text-center">
+                                        {tx('dashboard.client.noProposalsYet', undefined, 'No proposals yet.')}
                                     </div>
                                 ) : (
-                                    <div>
+                                    <div className="flex flex-col">
                                         {proposals.slice(0, 4).map((proposal, index) => (
                                             <div
                                                 key={proposal.id}
-                                                className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < Math.min(proposals.length, 4) - 1 ? 'border-b border-surface' : ''}`}
+                                                className={`px-5 py-3 hover:bg-white/[0.02] transition-colors flex items-center justify-between gap-3 ${index < Math.min(proposals.length, 4) - 1 ? 'border-b border-white/5' : ''}`}
                                             >
                                                 <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="relative h-10 w-10 rounded-full overflow-hidden border border-[#3a3a3a] shrink-0">
+                                                    <div className="relative h-9 w-9 rounded-full overflow-hidden border border-white/10 shrink-0">
                                                         {proposal.freelancer?.avatar_url ? (
                                                             <img
                                                                 src={proposal.freelancer.avatar_url}
@@ -629,228 +491,171 @@ function ClientDashboardPage() {
                                                                 className="h-full w-full object-cover"
                                                             />
                                                         ) : (
-                                                            <div className="h-full w-full bg-orange-500/20 text-orange-200 flex items-center justify-center text-xs font-bold uppercase">
+                                                            <div className="h-full w-full bg-orange-500/10 text-orange-300 flex items-center justify-center text-[10px] font-bold uppercase">
                                                                 {proposal.freelancer?.full_name?.[0] || 'F'}
                                                             </div>
                                                         )}
                                                     </div>
 
                                                     <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-white truncate">
-                                                            {proposal.freelancer?.full_name ||
-                                                                tx(
-                                                                    'dashboard.client.freelancerFallback',
-                                                                    undefined,
-                                                                    'Freelancer',
-                                                                )}
+                                                        <p className="text-sm font-semibold text-white/90 truncate">
+                                                            {proposal.freelancer?.full_name || tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
                                                         </p>
-                                                        <p className="text-xs text-orange-100/70 truncate mt-1">
-                                                            {proposal.job?.title ||
-                                                                tx(
-                                                                    'dashboard.client.untitledJob',
-                                                                    undefined,
-                                                                    'Untitled job',
-                                                                )}
+                                                        <p className="text-[11px] text-white/50 truncate mt-0.5">
+                                                            {proposal.job?.title || tx('dashboard.client.untitledJob', undefined, 'Untitled job')}
                                                         </p>
                                                     </div>
                                                 </div>
 
-                                                <div className="text-right shrink-0">
-                                                    <p className="text-sm font-semibold text-white">
-                                                        {formatCurrency(
-                                                            proposal.bid_amount ?? 0,
-                                                            true,
-                                                            language,
-                                                        )}
+                                                <div className="text-right shrink-0 flex items-center gap-3">
+                                                    <p className="text-xs font-bold text-white">
+                                                        {formatCurrency(proposal.bid_amount ?? 0, true, language)}
                                                     </p>
                                                     <button
                                                         type="button"
-                                                        onClick={() =>
-                                                            navigate(
-                                                                `/client/jobs/${proposal.job_id}/proposals`,
-                                                            )
-                                                        }
-                                                        className="mt-1 text-xs text-orange-300 hover:text-orange-200 transition-colors"
+                                                        onClick={() => navigate(`/client/jobs/${proposal.job_id}/proposals`)}
+                                                        className="rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
                                                     >
-                                                        {tx(
-                                                            'dashboard.client.reviewBadge',
-                                                            undefined,
-                                                            'Review',
-                                                        )}
+                                                        {tx('dashboard.client.reviewBadge', undefined, 'Review')}
                                                     </button>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 )}
-                            </section>
+                            </div>
 
-                            <section className="lg:col-span-4 h-full surface-card border border-surface rounded-2xl p-6">
-                                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
+                            {/* Active Contracts */}
+                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
+                                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                                    <h2 className="text-xs font-bold uppercase tracking-wider text-orange-300">
+                                        {tx('dashboard.client.activeContracts', undefined, 'Active Contracts')}
+                                    </h2>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/contracts')}
+                                        className="text-[11px] font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+                                    >
+                                        {tx('dashboard.client.viewAll', undefined, 'View All')} -&gt;
+                                    </button>
+                                </header>
+
+                                {isStatsLoading ? (
+                                    <div className="p-5 space-y-2">
+                                        <div className="animate-pulse h-12 rounded-lg bg-white/5" />
+                                    </div>
+                                ) : activeContracts.length === 0 ? (
+                                    <div className="px-5 py-6 text-sm text-white/40 text-center">
+                                        {tx('dashboard.client.noActiveContracts', undefined, 'No active contracts yet.')}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col">
+                                        {activeContracts.slice(0, 3).map((contract, index) => (
+                                            <div
+                                                key={contract.id}
+                                                className={`px-5 py-3.5 hover:bg-white/[0.02] transition-colors flex items-center justify-between gap-3 ${index < Math.min(activeContracts.length, 3) - 1 ? 'border-b border-white/5' : ''}`}
+                                            >
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-white/90 truncate">
+                                                        {contract.title}
+                                                    </p>
+                                                    <p className="text-xs text-white/50 truncate mt-0.5">
+                                                        {contract.freelancer?.full_name || tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
+                                                    </p>
+                                                </div>
+
+                                                <div className="text-right shrink-0 flex items-center gap-3">
+                                                    <p className="text-xs font-bold text-white">
+                                                        {formatCurrency(contract.total_amount ?? 0, true, language)}
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => navigate(`/contracts/${contract.id}`)}
+                                                        className="rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
+                                                    >
+                                                        {tx('dashboard.client.openContract', undefined, 'Workspace')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+
+                        {/* Right Column - Secondary Content & Widgets */}
+                        <aside className="lg:col-span-4 flex flex-col gap-5 sticky top-20">
+                            
+                            {/* CTA Widget */}
+                            <div className="relative overflow-hidden rounded-xl border border-orange-500/20 bg-gradient-to-br from-orange-500/10 via-[#0f0f0f] to-[#0a0a0a] p-5">
+                                <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-orange-500/20 blur-2xl" />
+
+                                <div className="relative">
+                                    <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-orange-500/30 bg-orange-500/20 text-orange-300">
+                                        <Plus className="h-4 w-4" />
+                                    </div>
+                                    <h3 className="mt-3 text-lg font-bold text-white leading-tight">
+                                        {tx('dashboard.client.needSomethingDone', undefined, 'Need something done?')}
+                                    </h3>
+                                    <p className="mt-1.5 text-xs text-orange-200/60">
+                                        {tx('dashboard.client.postProjectFree', undefined, 'Post a project free. Get proposals from verified Tunisian talent.')}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/jobs/new')}
+                                        className="mt-4 w-full rounded-lg bg-orange-600 hover:bg-orange-500 py-2 text-xs font-bold text-white transition-colors"
+                                    >
+                                        {tx('dashboard.client.postProjectFreeCta', undefined, "Post a project - it's free")}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Monthly Summary Widget */}
+                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">
                                     {tx('dashboard.client.thisMonth', undefined, 'This Month')}
                                 </p>
-                                <p className="text-3xl font-black text-white mt-2">
-                                    {formatCurrency(
-                                        statsData.monthlySpending,
-                                        true,
-                                        language,
-                                    )}
+                                <p className="text-2xl font-black text-white mt-1 leading-none">
+                                    {formatCurrency(statsData.monthlySpending, true, language)}
                                 </p>
 
-                                <p className="text-xs text-orange-100/70 mt-2">
-                                    {tx(
-                                        'dashboard.client.acrossActiveContracts',
-                                        { count: statsData.activeContracts },
-                                        `Across ${statsData.activeContracts} active contracts`,
-                                    )}
+                                <p className="text-[11px] text-white/40 mt-2">
+                                    {tx('dashboard.client.acrossActiveContracts', { count: statsData.activeContracts }, `Across ${statsData.activeContracts} active contracts`)}
                                 </p>
 
                                 <button
                                     type="button"
                                     onClick={() => navigate('/wallet')}
-                                    className="w-full mt-4 bg-[#262626] hover:bg-[#333] text-white py-2.5 rounded-xl text-sm font-medium transition-colors"
+                                    className="w-full mt-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-lg text-xs font-bold transition-colors"
                                 >
-                                    {tx(
-                                        'dashboard.client.viewWallet',
-                                        undefined,
-                                        'View Wallet',
-                                    )}
+                                    {tx('dashboard.client.viewWallet', undefined, 'View Wallet')}
                                 </button>
-                            </section>
-                        </div>
+                            </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                            <section className="lg:col-span-8 h-full surface-card border border-surface rounded-2xl flex flex-col overflow-hidden">
-                                <header className="px-6 py-4 border-b border-surface flex justify-between items-center">
-                                    <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
-                                        {tx(
-                                            'dashboard.client.activeContracts',
-                                            undefined,
-                                            'Active Contracts',
-                                        )}
-                                    </h2>
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate('/contracts')}
-                                        className="text-sm text-orange-400 hover:text-orange-300 transition-colors"
-                                    >
-                                        {tx(
-                                            'dashboard.client.viewAll',
-                                            undefined,
-                                            'View All',
-                                        )}{' '}
-                                        -&gt;
-                                    </button>
-                                </header>
-
-                                {isStatsLoading ? (
-                                    <div className="p-6 space-y-3">
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
-                                        <div className="animate-pulse h-14 rounded-lg bg-[#1b1b1b] border border-surface" />
-                                    </div>
-                                ) : activeContracts.length === 0 ? (
-                                    <div className="px-6 py-8 text-sm text-orange-100/70">
-                                        {tx(
-                                            'dashboard.client.noActiveContracts',
-                                            undefined,
-                                            'No active contracts yet.',
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div>
-                                        {activeContracts
-                                            .slice(0, 3)
-                                            .map((contract, index) => (
-                                                <div
-                                                    key={contract.id}
-                                                    className={`px-6 py-4 hover:bg-[#262626]/30 transition-colors flex items-center justify-between gap-3 ${index < Math.min(activeContracts.length, 3) - 1 ? 'border-b border-surface' : ''}`}
-                                                >
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-white truncate">
-                                                            {contract.title}
-                                                        </p>
-                                                        <p className="text-xs text-orange-100/70 truncate mt-1">
-                                                            {contract.freelancer?.full_name ||
-                                                                tx(
-                                                                    'dashboard.client.freelancerFallback',
-                                                                    undefined,
-                                                                    'Freelancer',
-                                                                )}
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="text-right shrink-0">
-                                                        <p className="text-sm font-semibold text-white">
-                                                            {formatCurrency(
-                                                                contract.total_amount ?? 0,
-                                                                true,
-                                                                language,
-                                                            )}
-                                                        </p>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                navigate(`/contracts/${contract.id}`)
-                                                            }
-                                                            className="mt-1 text-xs text-orange-300 hover:text-orange-200 transition-colors"
-                                                        >
-                                                            {tx(
-                                                                'dashboard.client.openContract',
-                                                                undefined,
-                                                                'Open',
-                                                            )}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </div>
-                                )}
-                            </section>
-
-                            <section className="lg:col-span-4 h-full surface-card border border-surface rounded-2xl p-6">
-                                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-300">
-                                    {tx(
-                                        'dashboard.client.quickActions',
-                                        undefined,
-                                        'Quick Actions',
-                                    )}
+                            {/* Quick Actions */}
+                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden">
+                                <p className="px-5 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-white/50">
+                                    {tx('dashboard.client.quickActions', undefined, 'Quick Actions')}
                                 </p>
-
-                                <div className="mt-4 flex flex-col gap-2">
+                                <div className="flex flex-col p-2 pt-0">
                                     {[
                                         {
-                                            label: tx(
-                                                'nav.findFreelancers',
-                                                undefined,
-                                                'Find Freelancers',
-                                            ),
+                                            label: tx('nav.findFreelancers', undefined, 'Find Freelancers'),
                                             icon: Users,
                                             path: '/find-freelancers',
                                         },
                                         {
-                                            label: tx(
-                                                'nav.myProjects',
-                                                undefined,
-                                                'My Projects',
-                                            ),
+                                            label: tx('nav.myProjects', undefined, 'My Projects'),
                                             icon: FolderOpen,
                                             path: '/client/jobs',
                                         },
                                         {
-                                            label: tx(
-                                                'nav.contracts',
-                                                undefined,
-                                                'Contracts',
-                                            ),
+                                            label: tx('nav.contracts', undefined, 'Contracts'),
                                             icon: Briefcase,
                                             path: '/contracts',
                                         },
                                         {
-                                            label: tx(
-                                                'nav.messages',
-                                                undefined,
-                                                'Messages',
-                                            ),
+                                            label: tx('nav.messages', undefined, 'Messages'),
                                             icon: MessageSquare,
                                             path: '/messages',
                                         },
@@ -859,15 +664,15 @@ function ClientDashboardPage() {
                                             key={action.label}
                                             type="button"
                                             onClick={() => navigate(action.path)}
-                                            className="w-full rounded-xl border border-surface bg-[#101010] hover:bg-[#262626]/40 text-white px-3 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
+                                            className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
                                         >
-                                            <span>{action.label}</span>
-                                            <action.icon className="h-4 w-4 text-orange-300" />
+                                            <span className="text-xs font-semibold text-white/80">{action.label}</span>
+                                            <action.icon className="h-3.5 w-3.5 text-white/30" />
                                         </button>
                                     ))}
                                 </div>
-                            </section>
-                        </div>
+                            </div>
+                        </aside>
                     </div>
                 </div>
             </main>
@@ -876,3 +681,4 @@ function ClientDashboardPage() {
 }
 
 export default ClientDashboardPage;
+

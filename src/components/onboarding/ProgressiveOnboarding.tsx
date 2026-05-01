@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, ReactNode } from "react";
 import { CheckCircle2, Lightbulb, Upload, UserCircle2, X } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -89,10 +89,10 @@ interface SearchableTagInputProps {
 }
 
 const INPUT_CLASS =
-  "bg-[#0a0a0a] border border-surface rounded-xl focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-white p-3.5 w-full outline-none transition-all";
+  "bg-[var(--color-bg-base)] border border-surface rounded-xl focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-[var(--color-text-primary)] p-3.5 w-full outline-none transition-all";
 
 const CLIENT_INPUT_CLASS =
-  "bg-[#0a0a0a] border border-surface rounded-xl focus:border-[#E8820C] focus:ring-1 focus:ring-[#E8820C] text-white p-3.5 w-full outline-none transition-all";
+  "bg-[var(--color-bg-base)] border border-surface rounded-xl focus:border-[#E8820C] focus:ring-1 focus:ring-[#E8820C] text-[var(--color-text-primary)] p-3.5 w-full outline-none transition-all";
 
 function scrollToStepAnchor() {
   if (typeof window === "undefined") return;
@@ -409,13 +409,13 @@ function SearchableTagInput({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-4">
-        <label className="text-sm font-medium text-white">{label}</label>
-        <span className="text-xs text-on-surface-muted">
+        <label className="text-sm font-medium text-[var(--color-text-primary)]">{label}</label>
+        <span className="text-xs text-[var(--color-text-tertiary)]">
           {tags.length}/{maxTags}
         </span>
       </div>
 
-      {hint ? <p className="text-xs text-on-surface-muted -mt-1">{hint}</p> : null}
+      {hint ? <p className="text-xs text-[var(--color-text-tertiary)] -mt-1">{hint}</p> : null}
 
       <input
         value={query}
@@ -437,7 +437,7 @@ function SearchableTagInput({
               key={item}
               type="button"
               onClick={() => addTag(item)}
-              className="px-3 py-1.5 rounded-full border border-surface text-xs text-on-surface-muted hover:text-white hover:border-purple-500/50 transition-colors"
+              className="px-3 py-1.5 rounded-full border border-surface text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:border-purple-500/50 transition-colors"
             >
               {item}
             </button>
@@ -456,7 +456,7 @@ function SearchableTagInput({
               <button
                 type="button"
                 onClick={() => removeTag(item)}
-                className="text-purple-200 hover:text-white transition-colors"
+                className="text-purple-200 hover:text-[var(--color-text-primary)] transition-colors"
                 aria-label={tx(
                   "onboarding.progressive.common.removeTagAria",
                   { item },
@@ -527,8 +527,8 @@ function OnboardingLayout({
                       `Step ${currentStep} of ${stepLabels.length}`,
                     )}
                   </p>
-                  <h1 className="text-2xl md:text-3xl font-semibold text-white">{title}</h1>
-                  <p className="text-sm md:text-base text-on-surface-muted mt-2">{subtitle}</p>
+                  <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-text-primary)]">{title}</h1>
+                  <p className="text-sm md:text-base text-[var(--color-text-tertiary)] mt-2">{subtitle}</p>
                 </div>
 
                 <button
@@ -563,7 +563,7 @@ function OnboardingLayout({
                       type="button"
                       onClick={onBack}
                       disabled={isBackDisabled}
-                      className="px-5 py-3 rounded-xl border border-surface text-gray-200 hover:text-white transition-colors"
+                      className="px-5 py-3 rounded-xl border border-surface text-gray-200 hover:text-[var(--color-text-primary)] transition-colors"
                       style={{
                         borderColor: "#262626",
                         opacity: isBackDisabled ? 0.65 : 1,
@@ -579,7 +579,7 @@ function OnboardingLayout({
                   type="button"
                   onClick={onPrimaryAction}
                   disabled={isPrimaryActionDisabled}
-                  className={`text-white px-8 py-3 rounded-xl font-medium transition-colors ${accentHoverClass} disabled:cursor-not-allowed disabled:opacity-70`}
+                  className={`text-[var(--color-text-primary)] px-8 py-3 rounded-xl font-medium transition-colors ${accentHoverClass} disabled:cursor-not-allowed disabled:opacity-70`}
                   style={{
                     backgroundColor: accentColor,
                     cursor: isPrimaryActionDisabled ? "not-allowed" : "pointer",
@@ -1080,7 +1080,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
       {!isCompleted && currentStep === 1 ? (
         <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-white block mb-3">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-3">
               {tx(
                 "onboarding.progressive.freelancer.fields.avatarUpload",
                 undefined,
@@ -1091,7 +1091,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="w-24 h-24 rounded-2xl border border-surface bg-[#0a0a0a] flex items-center justify-center overflow-hidden hover:border-purple-500/60 transition-colors"
+                className="w-24 h-24 rounded-2xl border border-surface bg-[var(--color-bg-base)] flex items-center justify-center overflow-hidden hover:border-purple-500/60 transition-colors"
               >
                 {formData.avatarPreviewUrl ? (
                   <img
@@ -1100,7 +1100,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <UserCircle2 className="w-10 h-10 text-on-surface-subtle" />
+                  <UserCircle2 className="w-10 h-10 text-[var(--color-text-primary)]-subtle" />
                 )}
               </button>
 
@@ -1108,12 +1108,12 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-surface bg-[#0a0a0a] text-sm text-gray-200 hover:border-purple-500/60 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-surface bg-[var(--color-bg-base)] text-sm text-gray-200 hover:border-purple-500/60 transition-colors"
                 >
                   <Upload className="w-4 h-4" />
                   {tx("onboarding.progressive.freelancer.fields.chooseAvatar", undefined, "Choose avatar")}
                 </button>
-                <p className="text-xs text-on-surface-subtle mt-2">
+                <p className="text-xs text-[var(--color-text-primary)]-subtle mt-2">
                   {tx("onboarding.progressive.freelancer.fields.avatarHint", undefined, "PNG, JPG, WEBP")}
                 </p>
                 <input
@@ -1130,7 +1130,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-white block mb-2">
+              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
                 {tx("onboarding.progressive.common.fields.fullName", undefined, "Full Name")}
               </label>
               <input
@@ -1149,7 +1149,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white block mb-2">
+              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
                 {tx("onboarding.progressive.common.fields.location", undefined, "Location")}
               </label>
               <CustomSelect
@@ -1168,7 +1168,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
           </div>
 
           <div>
-            <label className="text-sm font-medium text-white block mb-2">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
               {tx(
                 "onboarding.progressive.freelancer.fields.professionalTitle",
                 undefined,
@@ -1193,7 +1193,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
           </div>
 
           <div>
-            <label className="text-sm font-medium text-white block mb-2">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
               {tx("onboarding.progressive.freelancer.fields.bioSummary", undefined, "Bio/Summary")}
             </label>
             <textarea
@@ -1209,7 +1209,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
               )}
             />
             <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-on-surface-subtle">{formData.bio.length}/500</p>
+              <p className="text-xs text-[var(--color-text-primary)]-subtle">{formData.bio.length}/500</p>
               {errors.bio ? <p className="text-xs text-red-400">{errors.bio}</p> : null}
             </div>
           </div>
@@ -1219,7 +1219,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
       {!isCompleted && currentStep === 2 ? (
         <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-white block mb-2">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
               {tx("onboarding.progressive.freelancer.fields.mainCategory", undefined, "Main Category")}
             </label>
             <CustomSelect
@@ -1285,11 +1285,11 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
       {!isCompleted && currentStep === 3 ? (
         <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-white block mb-2">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
               {tx("onboarding.progressive.freelancer.fields.hourlyRate", undefined, "Hourly Rate")}
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-on-surface-muted">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-tertiary)]">
                 {tx("onboarding.progressive.freelancer.currency", undefined, "TND")}
               </span>
               <input
@@ -1308,7 +1308,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-white block mb-2">
+              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
                 {tx(
                   "onboarding.progressive.freelancer.fields.yearsOfExperience",
                   undefined,
@@ -1334,7 +1334,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white block mb-2">
+              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
                 {tx("onboarding.progressive.freelancer.fields.availability", undefined, "Availability")}
               </label>
               <CustomSelect
@@ -1361,7 +1361,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
       {!isCompleted && currentStep === 4 ? (
         <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-white block mb-2">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
               {tx("onboarding.progressive.freelancer.fields.portfolioLink", undefined, "Portfolio Link")}
             </label>
             <input
@@ -1383,7 +1383,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
           </div>
 
           <div>
-            <label className="text-sm font-medium text-white block mb-2">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
               {tx("onboarding.progressive.common.fields.phoneNumber", undefined, "Phone Number")}
             </label>
             <input
@@ -1406,7 +1406,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
                 "For security and verified badge",
               )}
             />
-            <p className="text-xs text-on-surface-subtle mt-2">
+            <p className="text-xs text-[var(--color-text-primary)]-subtle mt-2">
               {tx(
                 "onboarding.progressive.freelancer.hints.phoneNumber",
                 undefined,
@@ -1723,7 +1723,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
       {!isCompleted && currentStep === 1 ? (
         <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-white block mb-2">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
               {tx("onboarding.progressive.common.fields.fullName", undefined, "Full Name")}
             </label>
             <input
@@ -1742,7 +1742,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
           </div>
 
           <div>
-            <label className="text-sm font-medium text-white block mb-2">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
               {tx("onboarding.progressive.common.fields.location", undefined, "Location")}
             </label>
             <CustomSelect
@@ -1760,7 +1760,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
           </div>
 
           <div>
-            <label className="text-sm font-medium text-white block mb-2">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
               {tx("onboarding.progressive.common.fields.phoneNumber", undefined, "Phone Number")}
             </label>
             <input
@@ -1792,7 +1792,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
       {!isCompleted && currentStep === 2 ? (
         <div className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-white block mb-3">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-3">
               {tx("onboarding.progressive.client.fields.accountType", undefined, "Account Type")}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1815,7 +1815,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
                       backgroundColor: isActive ? "rgba(232, 130, 12, 0.12)" : "#0a0a0a",
                     }}
                   >
-                    <span className="text-sm text-white font-medium">{option.label}</span>
+                    <span className="text-sm text-[var(--color-text-primary)] font-medium">{option.label}</span>
                   </button>
                 );
               })}
@@ -1827,7 +1827,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
 
           {formData.accountType === "Company" ? (
             <div>
-              <label className="text-sm font-medium text-white block mb-2">
+              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
                 {tx("onboarding.progressive.client.fields.companyName", undefined, "Company Name")}
               </label>
               <input
@@ -1849,7 +1849,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
           ) : null}
 
           <div>
-            <label className="text-sm font-medium text-white block mb-3">
+            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-3">
               {tx("onboarding.progressive.client.fields.primaryGoal", undefined, "Primary Goal")}
             </label>
             <div className="space-y-3">
@@ -1868,7 +1868,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
                       backgroundColor: isActive ? "rgba(232, 130, 12, 0.12)" : "#0a0a0a",
                     }}
                   >
-                    <span className="text-sm text-white font-medium">{option.label}</span>
+                    <span className="text-sm text-[var(--color-text-primary)] font-medium">{option.label}</span>
                   </button>
                 );
               })}
@@ -1934,4 +1934,6 @@ export default function ProgressiveOnboarding({
     <ClientOnboarding onSaveExit={handleSaveExit} onComplete={onComplete} />
   );
 }
+
+
 

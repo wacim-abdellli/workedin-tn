@@ -21,13 +21,14 @@ import { resolveActiveWorkspace } from "@/lib/workspaceRoutes";
 import { getInitials, resolveAccountAvatarUrl } from "@/lib/avatar";
 import { hasAdminAccess } from "@/lib/adminAccess";
 import { useToast } from "@/components/ui/Toast";
+import { usePresence } from "@/hooks/usePresence";
 
 interface UserMenuProps {
   isDesktopCondensed?: boolean;
 }
 
 export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
-  const { user, profile, freelancerProfile, signOut } = useAuth();
+  const { user, profile, freelancerProfile, signOut, updateProfile } = useAuth();
   const { activeWorkspace, isSwitching } = useWorkspaceStore();
   const { t, tx } = useTranslation();
   const { showToast } = useToast();
@@ -35,6 +36,7 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const [isTogglingOnline, setIsTogglingOnline] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -129,6 +131,24 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
   const switchActionLabel = t.auth?.accountPanel?.switchAction || "Switch";
   const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`;
 
+  // Derive the online-for-messages value from profile; default to true
+  const isOnlineForMessages = profile?.is_online_for_messages !== false;
+
+  // Boot this user's presence broadcast so others can see the green dot
+  usePresence({ userId: user?.id, isOnlineForMessages });
+
+  const handleToggleOnline = async () => {
+    if (isTogglingOnline) return;
+    setIsTogglingOnline(true);
+    try {
+      await updateProfile({ is_online_for_messages: !isOnlineForMessages });
+    } catch {
+      showToast('Could not update online status.', 'error');
+    } finally {
+      setIsTogglingOnline(false);
+    }
+  };
+
   const triggerWorkspaceBadge = {
     label: isFreelancer
       ? t.auth?.accountPanel?.freelancerLabel || "Freelancer"
@@ -220,22 +240,29 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
           aria-expanded={userMenuOpen}
           aria-haspopup="menu"
         >
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={firstName}
-              className="h-7 w-7 rounded-full object-cover"
-              onError={() => setAvatarFailed(true)}
-            />
-          ) : (
-            <div
-              className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
-              style={{ background: "linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)" }}
-            >
-              {avatarInitials}
-            </div>
-          )}
-
+          <div className="relative flex-shrink-0">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={firstName}
+                className="h-7 w-7 rounded-full object-cover"
+                onError={() => setAvatarFailed(true)}
+              />
+            ) : (
+              <div
+                className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                style={{ background: "linear-gradient(135deg, var(--workspace-primary) 0%, var(--workspace-primary-hover) 100%)" }}
+              >
+                {avatarInitials}
+              </div>
+            )}
+            {isOnlineForMessages && (
+              <span
+                className="absolute -bottom-[2px] -right-[2px] h-[10px] w-[10px] rounded-full border-[2px] bg-[#14a800]"
+                style={{ borderColor: "var(--color-bg-base, #0a0a0a)" }}
+              />
+            )}
+          </div>
           {!isDesktopCondensed ? (
             <>
               <span
@@ -308,13 +335,15 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
                       {avatarInitials}
                     </div>
                   )}
-                  <span
-                    className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full border-[2.5px]"
-                    style={{
-                      background: "var(--color-status-success)",
-                      borderColor: "var(--color-background-elevated)",
-                    }}
-                  />
+                  {isOnlineForMessages && (
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-[2.5px]"
+                      style={{
+                        background: "#14a800",
+                        borderColor: "var(--color-background-elevated)",
+                      }}
+                    />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[13px] font-semibold leading-tight" style={{ color: "var(--color-text-primary)" }}>
@@ -340,7 +369,43 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
 
             <div className="mx-3.5 h-px" style={{ background: "var(--color-border-subtle)" }} />
 
+            {/* ── Online for Messages toggle + nav items in one block ── */}
             <div className="p-1.5">
+              {/* Online toggle row — fully clickable button matching other menu items */}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isOnlineForMessages}
+                onClick={() => void handleToggleOnline()}
+                disabled={isTogglingOnline}
+                className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors duration-100 focus:outline-none hover:bg-[var(--color-background-subtle)] disabled:opacity-60"
+              >
+                <div className="flex h-7 w-7 items-center justify-center shrink-0">
+                  {/* Just the green status dot aligned with icons below */}
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full transition-colors duration-200 ${isOnlineForMessages ? "bg-[#14a800]" : "bg-[var(--color-text-tertiary)] opacity-40"}`}
+                  />
+                </div>
+                <span
+                  className="flex-1 text-[13px] font-medium"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  Online for messages
+                </span>
+                {/* Toggle pill */}
+                <div
+                  className="relative shrink-0 h-[20px] w-[36px] rounded-full transition-colors duration-200"
+                  style={{
+                    background: isOnlineForMessages ? "#14a800" : "var(--color-border-default, #3a3a3a)",
+                  }}
+                >
+                  <span
+                    className={`absolute top-[2px] h-[16px] w-[16px] rounded-full bg-white shadow-sm transition-transform duration-200 ${isOnlineForMessages ? "translate-x-[18px]" : "translate-x-[2px]"}`}
+                  />
+                </div>
+              </button>
+
+              {/* Nav items */}
               {[
                 { icon: ExternalLink, label: t.nav?.profile || "My Profile", path: "/profile" },
                 { icon: Bookmark, label: t.nav?.saved || "Saved", path: "/saved" },

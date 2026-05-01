@@ -1,4 +1,4 @@
-
+﻿
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -185,10 +185,10 @@ function SignupForm({ onComplete }: SignupFormProps) {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {/* Header */}
                     <div className="mb-7">
-                        <h2 className="text-2xl font-bold text-white tracking-tight">
+                        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] tracking-tight">
                             {t.auth.signupTitle}
                         </h2>
-                        <p className="mt-1 text-sm text-white/40">
+                        <p className="mt-1 text-sm text-[var(--color-text-primary)]/40">
                             {t.auth.signupSubtitle}
                         </p>
                     </div>
@@ -212,7 +212,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 showToast(t.auth.googleLoginError, 'error');
                             }
                         }}
-                        className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.98]"
+                        className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-[var(--color-text-primary)] transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.98]"
                     >
                         <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -229,13 +229,13 @@ function SignupForm({ onComplete }: SignupFormProps) {
                             <div className="w-full border-t border-white/8" />
                         </div>
                         <div className="relative flex justify-center">
-                            <span className="px-3 bg-zinc-950 text-xs text-white/25 uppercase tracking-widest">{t.auth.or}</span>
+                            <span className="px-3 bg-[var(--color-bg-base)] text-xs text-[var(--color-text-primary)]/25 uppercase tracking-widest">{t.auth.or}</span>
                         </div>
                     </div>
 
                     {/* Email */}
                     <div className="space-y-1.5">
-                        <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                        <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]/60">
                             <Mail className="w-3.5 h-3.5" />
                             {t.auth.email}
                         </label>
@@ -244,7 +244,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                             placeholder={t.auth.emailPlaceholder}
                             dir="ltr"
                             autoComplete="email"
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
                             {...register('email')}
                         />
                         {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>}
@@ -252,7 +252,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
 
                     {/* Password */}
                     <div className="space-y-1.5">
-                        <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                        <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]/60">
                             <Lock className="w-3.5 h-3.5" />
                             {t.auth.password.label}
                         </label>
@@ -262,11 +262,11 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                 placeholder={t.auth.passwordPlaceholder}
                                 dir="ltr"
                                 autoComplete="new-password"
-                                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-12 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
+                                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-12 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
                                 {...register('password')}
                             />
                             <button type="button" onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-white/30 hover:text-white/60 transition-colors">
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)]/60 transition-colors">
                                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
                         </div>
@@ -275,7 +275,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
 
                     {/* Confirm Password */}
                     <div className="space-y-1.5">
-                        <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                        <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]/60">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {t.auth.confirmPassword}
                         </label>
@@ -284,7 +284,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                             placeholder={t.auth.confirmPasswordPlaceholder}
                             dir="ltr"
                             autoComplete="new-password"
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
                             {...register('confirmPassword')}
                         />
                         {errors.confirmPassword && <p className="mt-1 text-xs text-red-400">{errors.confirmPassword.message}</p>}
@@ -299,7 +299,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                     <button
                         type="submit"
                         disabled={isLoading || (lockoutUntil ? Date.now() < lockoutUntil : false)}
-                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--workspace-primary)] px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 mt-1"
+                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--workspace-primary)] px-4 py-3 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 mt-1"
                     >
                         {isLoading ? (
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -311,10 +311,10 @@ function SignupForm({ onComplete }: SignupFormProps) {
                         )}
                     </button>
 
-                    <p className="text-center text-sm text-white/30">
+                    <p className="text-center text-sm text-[var(--color-text-primary)]/30">
                         {t.auth.hasAccount}{' '}
                         <button type="button" onClick={() => navigate('/login')}
-                            className="text-white/70 font-semibold hover:text-white transition-colors">
+                            className="text-[var(--color-text-primary)]/70 font-semibold hover:text-[var(--color-text-primary)] transition-colors">
                             {t.nav.login}
                         </button>
                     </p>
@@ -323,7 +323,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                 <div className="animate-fade-in space-y-6">
                     <div className="mb-8 text-center">
                         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--purple-600)] shadow-lg shadow-[var(--color-brand-primary)]/30">
-                            <Briefcase className="h-8 w-8 text-white" />
+                            <Briefcase className="h-8 w-8 text-[var(--color-text-primary)]" />
                         </div>
                         <h2 className="mb-2 text-2xl font-bold text-[var(--color-text-primary)]">
                             {t.auth.selectUserType}
@@ -344,7 +344,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                     isLoading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
                                 }`}
                                 style={{
-                                    background: '#111',
+                                    background: 'var(--color-bg-subtle)',
                                     borderColor: '#2a2a2a',
                                 }}
                                 onMouseEnter={e => {
@@ -366,7 +366,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
                                         {item.icon}
                                     </div>
                                     <div className="flex-1">
-                                        <h3 className="mb-1 text-lg font-bold text-white">
+                                        <h3 className="mb-1 text-lg font-bold text-[var(--color-text-primary)]">
                                             {item.title}
                                         </h3>
                                         <p className="text-sm" style={{ color: '#888' }}>
@@ -400,4 +400,7 @@ function SignupForm({ onComplete }: SignupFormProps) {
 }
 
 export default SignupForm;
+
+
+
 

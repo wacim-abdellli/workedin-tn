@@ -1,4 +1,4 @@
-import { forwardRef, useState, useRef, useEffect } from 'react';
+﻿import { forwardRef, useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
 interface SelectOption {
@@ -209,3 +209,4 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
 CustomSelect.displayName = 'CustomSelect';
 
 export default CustomSelect;
+

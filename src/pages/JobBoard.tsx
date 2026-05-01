@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   BadgeCheck,
@@ -463,7 +463,7 @@ function JobBoard() {
             type="checkbox"
             checked={checked}
             onChange={onChange}
-            className="accent-purple-500 w-4 h-4 bg-[#0a0a0a] border-[#262626] rounded"
+            className="accent-purple-500 w-4 h-4 bg-[var(--color-bg-base)] border-[#262626] rounded"
           />
           <span className="text-sm text-gray-300 ml-3 cursor-pointer break-words">{label}</span>
         </div>
@@ -881,3 +881,4 @@ function JobBoard() {
 }
 
 export default JobBoard;
+

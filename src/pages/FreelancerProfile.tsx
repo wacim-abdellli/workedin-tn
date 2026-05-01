@@ -1,4 +1,4 @@
-import {
+﻿import {
     MapPin,
     Star,
     Target,
@@ -363,7 +363,7 @@ function CompactMultiSelectEditor({
     }, [activeCategory, options, searchQuery]);
 
     return (
-        <div className="mt-3 rounded-xl border border-surface bg-[#0a0a0a] p-3 space-y-3">
+        <div className="mt-3 rounded-xl border border-surface bg-[var(--color-bg-base)] p-3 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <input
                     type="text"
@@ -410,7 +410,7 @@ function CompactMultiSelectEditor({
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_220px] gap-3">
-                <div className="border border-surface rounded-xl p-2 bg-[#111111] max-h-56 overflow-y-auto">
+                <div className="border border-surface rounded-xl p-2 bg-[var(--color-bg-subtle)] max-h-56 overflow-y-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {filteredOptions.map((option) => {
                             const isSelected = selectedValues.includes(option.name);
@@ -439,7 +439,7 @@ function CompactMultiSelectEditor({
                     </div>
                 </div>
 
-                <div className="border border-surface rounded-xl p-2 bg-[#111111] max-h-56 overflow-y-auto">
+                <div className="border border-surface rounded-xl p-2 bg-[var(--color-bg-subtle)] max-h-56 overflow-y-auto">
                     <p className="text-xs font-semibold text-on-surface-muted mb-2">Selected {title}</p>
                     <div className="flex flex-wrap gap-1.5">
                         {selectedValues.length === 0 ? (
@@ -972,7 +972,7 @@ function ProfileView({
                                         type="button"
                                         onClick={() => avatarInputRef.current?.click()}
                                         disabled={isSavingAnySection}
-                                        className="absolute -bottom-1 -left-1 h-9 w-9 rounded-full border border-white/15 bg-[#111111] text-gray-200 inline-flex items-center justify-center hover:text-white transition-colors"
+                                        className="absolute -bottom-1 -left-1 h-9 w-9 rounded-full border border-white/15 bg-[var(--color-bg-subtle)] text-gray-200 inline-flex items-center justify-center hover:text-white transition-colors"
                                         title={tx('pages.freelancerProfile.actions.changeProfilePicture', undefined, 'Change profile picture')}
                                     >
                                         <Camera className="w-4 h-4" />
@@ -1682,7 +1682,7 @@ function ProfileView({
                         />
 
                         <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 items-start">
-                            <div className="rounded-xl border border-white/10 bg-[#0d0d0d] p-4 text-center">
+                            <div className="rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-4 text-center">
                                 <p className="text-5xl leading-none font-black text-white">
                                     {freelancer.stats.rating.toFixed(1)}
                                 </p>
@@ -1777,7 +1777,7 @@ function ProfileView({
                             {isOwner ? (
                                 <button
                                     onClick={() => navigate(ROUTES.freelancerPortfolio)}
-                                    className="w-full rounded-xl p-3.5 text-left border border-white/10 bg-[linear-gradient(180deg,#1a1a1a_0%,#171717_100%)] transition-all duration-200 hover:border-white/20 hover:bg-[#1f1f1f]"
+                                    className="w-full rounded-xl p-3.5 text-left border border-white/10 bg-[linear-gradient(180deg,#1a1a1a_0%,#171717_100%)] transition-all duration-200 hover:border-white/20 hover:bg-[var(--color-bg-muted)]"
                                     disabled={isSavingAnySection}
                                 >
                                     <span className="inline-flex items-center gap-2 text-base font-semibold text-white">
@@ -1791,7 +1791,7 @@ function ProfileView({
                             {isOwner ? (
                                 <button
                                     onClick={() => navigate(ROUTES.myProposals)}
-                                    className="w-full rounded-xl p-3.5 text-left border border-white/10 bg-[linear-gradient(180deg,#1a1a1a_0%,#171717_100%)] transition-all duration-200 hover:border-white/20 hover:bg-[#1f1f1f]"
+                                    className="w-full rounded-xl p-3.5 text-left border border-white/10 bg-[linear-gradient(180deg,#1a1a1a_0%,#171717_100%)] transition-all duration-200 hover:border-white/20 hover:bg-[var(--color-bg-muted)]"
                                     disabled={isSavingAnySection}
                                 >
                                     <span className="inline-flex items-center gap-2 text-base font-semibold text-white">
@@ -1805,7 +1805,7 @@ function ProfileView({
                             {isOwner ? (
                                 <button
                                     onClick={() => navigate(ROUTES.settings)}
-                                    className="w-full rounded-xl p-3.5 text-left border border-white/10 transition-all duration-200 hover:bg-[#141414] hover:border-white/20"
+                                    className="w-full rounded-xl p-3.5 text-left border border-white/10 transition-all duration-200 hover:bg-[var(--color-bg-elevated)] hover:border-white/20"
                                     disabled={isSavingAnySection}
                                 >
                                     <span className="inline-flex items-center gap-2 text-base font-semibold text-white/90">
@@ -2303,9 +2303,13 @@ export default function FreelancerProfile() {
                 const portfolioRows = (portfolioItems ?? []) as PortfolioItemRow[];
                 const reviewRows = (reviews ?? []) as FreelancerReviewRow[];
 
+                const totalWeight = reviewRows.reduce((sum, r) => sum + Number((r as any).trust_weight ?? 1), 0);
+                const weightedRating = reviewRows.reduce((sum, r) => sum + Number(r.rating) * Number((r as any).trust_weight ?? 1), 0);
+                const computedRating = totalWeight > 0 ? Math.round((weightedRating / totalWeight) * 10) / 10 : 0;
+
                 const stats = {
                     jobs_completed: profileRow.jobs_completed || 0,
-                    rating: profileRow.success_rate ? profileRow.success_rate / 20 : 0,
+                    rating: computedRating,
                     reviews_count: reviewRows.length,
                     response_time_hours: profileRow.response_time_hours || 24,
                     completion_rate: 100,
@@ -2639,4 +2643,5 @@ export default function FreelancerProfile() {
         </div>
     );
 }
+
 

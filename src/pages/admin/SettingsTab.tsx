@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 import { adminInsetClass, adminPanelClass, adminPillClass, adminSelectClass } from './adminTheme';
@@ -54,3 +54,6 @@ export default function SettingsTab() {
         </div>
     );
 }
+
+
+

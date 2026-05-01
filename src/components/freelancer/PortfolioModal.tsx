@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent } from 'react';
+﻿import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -191,7 +191,7 @@ const fieldThemeVars = {
 } as CSSProperties;
 
 const inputClassName =
-    'bg-[#101010] border-white/15 text-white placeholder:text-white/35 focus:border-[#8B5CF6]/70 focus:ring-[#8B5CF6]/25';
+    'bg-[var(--color-bg-base)] border-white/15 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:border-[#8B5CF6]/70 focus:ring-[#8B5CF6]/25';
 
 export default function PortfolioModal({
     isOpen,
@@ -811,7 +811,7 @@ export default function PortfolioModal({
         >
             <div className="space-y-4" style={fieldThemeVars}>
                 <div className="rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_85%_18%,rgba(139,92,246,0.14),transparent_48%),#151515] px-4 py-3">
-                    <p className="text-sm text-white/75">
+                    <p className="text-sm text-[var(--color-text-primary)]/75">
                         {tx('portfolio.form.imageHint')}
                     </p>
                 </div>
@@ -826,11 +826,11 @@ export default function PortfolioModal({
                     />
 
                     <div className="space-y-1.5">
-                        <label className="block text-sm font-medium text-white/85">{tx('portfolio.form.fields.description.label')}</label>
+                        <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">{tx('portfolio.form.fields.description.label')}</label>
                         <textarea
                             {...register('description')}
                             rows={4}
-                            className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[#101010] text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all resize-none"
+                            className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all resize-none"
                             placeholder={tx('portfolio.form.fields.description.placeholder')}
                         />
                         {errors.description && (
@@ -867,18 +867,18 @@ export default function PortfolioModal({
 
                     <div className="space-y-2">
                         <div className="flex items-center justify-between gap-2">
-                            <label className="block text-sm font-medium text-white/85">
+                            <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">
                                 {tx('portfolio.form.fields.skills.label')}
                             </label>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-xs text-white/45">
+                                <span className="text-xs text-[var(--color-text-primary)]/45">
                                     {selectedSkills.length}/{MAX_SKILLS}
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => skillsInputRef.current?.focus()}
-                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-white/65 hover:text-white hover:border-white/30 transition-colors"
+                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
                                 >
                                     {tx('portfolio.form.skills.edit', undefined, 'Edit')}
                                 </button>
@@ -886,7 +886,7 @@ export default function PortfolioModal({
                                     type="button"
                                     onClick={clearAllSkills}
                                     disabled={selectedSkills.length === 0}
-                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-white/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                     {tx('portfolio.form.skills.clearAll', undefined, 'Delete all')}
                                 </button>
@@ -903,31 +903,31 @@ export default function PortfolioModal({
                                 undefined,
                                 'Search and select skills...',
                             )}
-                            className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[#101010] text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all"
+                            className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all"
                         />
 
                         {selectedSkills.length > 0 ? (
-                            <div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-[#111111] p-2.5">
+                            <div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-[var(--color-bg-subtle)] p-2.5">
                                 {selectedSkills.map((skill) => (
                                     <button
                                         key={skill}
                                         type="button"
                                         onClick={() => toggleSkill(skill)}
-                                        className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#8B5CF6]/35 bg-[#8B5CF6]/12 px-2.5 py-1 text-xs text-[#c4b5fd] hover:border-[#8B5CF6]/60 hover:text-white transition-colors"
+                                        className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#8B5CF6]/35 bg-[#8B5CF6]/12 px-2.5 py-1 text-xs text-[#c4b5fd] hover:border-[#8B5CF6]/60 hover:text-[var(--color-text-primary)] transition-colors"
                                         title={tx('portfolio.form.skills.remove', undefined, 'Remove skill')}
                                     >
                                         <span className="truncate">{getSkillLabel(skill)}</span>
-                                        <span className="text-white/60">×</span>
+                                        <span className="text-[var(--color-text-primary)]/60">×</span>
                                     </button>
                                 ))}
                             </div>
                         ) : (
-                            <div className="rounded-xl border border-dashed border-white/15 bg-[#101010] px-3 py-2 text-xs text-white/45">
+                            <div className="rounded-xl border border-dashed border-white/15 bg-[var(--color-bg-base)] px-3 py-2 text-xs text-[var(--color-text-primary)]/45">
                                 {tx('portfolio.form.skills.noneSelected', undefined, 'No skills selected yet.')}
                             </div>
                         )}
 
-                        <div className="max-h-52 overflow-y-auto rounded-xl border border-white/10 bg-[#101010] p-2.5 space-y-2">
+                        <div className="max-h-52 overflow-y-auto rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-2.5 space-y-2">
                             {hasFilteredSkillOptions ? (
                                 SKILL_CATEGORY_ORDER.map((category) => {
                                     const categoryOptions = filteredSkillsByCategory[category];
@@ -936,7 +936,7 @@ export default function PortfolioModal({
                                     }
 
                                     return (
-                                        <div key={category} className="rounded-lg border border-white/10 bg-[#0d0d0d] p-2">
+                                        <div key={category} className="rounded-lg border border-white/10 bg-[var(--color-bg-base)] p-2">
                                             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8B5CF6] mb-1.5">
                                                 {getSkillCategoryLabel(category)}
                                             </p>
@@ -947,7 +947,7 @@ export default function PortfolioModal({
                                                         key={option.value}
                                                         type="button"
                                                         onClick={() => toggleSkill(option.value)}
-                                                        className="rounded-full border border-white/15 px-2.5 py-1 text-xs text-white/75 hover:border-[#8B5CF6]/50 hover:text-white transition-colors"
+                                                        className="rounded-full border border-white/15 px-2.5 py-1 text-xs text-[var(--color-text-primary)]/75 hover:border-[#8B5CF6]/50 hover:text-[var(--color-text-primary)] transition-colors"
                                                         title={option.label}
                                                     >
                                                         {option.label}
@@ -958,7 +958,7 @@ export default function PortfolioModal({
                                     );
                                 })
                             ) : (
-                                <p className="px-1 py-1 text-xs text-white/45">
+                                <p className="px-1 py-1 text-xs text-[var(--color-text-primary)]/45">
                                     {tx('portfolio.form.skills.noResults', undefined, 'No matching skills found.')}
                                 </p>
                             )}
@@ -971,18 +971,18 @@ export default function PortfolioModal({
 
                     <div className="space-y-2">
                         <div className="flex items-center justify-between gap-2">
-                            <label className="block text-sm font-medium text-white/85">
+                            <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">
                                 {tx('portfolio.form.fields.tools.label', undefined, 'Tools used (optional)')}
                             </label>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-xs text-white/45">
+                                <span className="text-xs text-[var(--color-text-primary)]/45">
                                     {selectedTools.length}/{MAX_TOOLS}
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => toolsInputRef.current?.focus()}
-                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-white/65 hover:text-white hover:border-white/30 transition-colors"
+                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
                                 >
                                     {tx('portfolio.form.tools.edit', undefined, 'Edit')}
                                 </button>
@@ -990,7 +990,7 @@ export default function PortfolioModal({
                                     type="button"
                                     onClick={clearAllTools}
                                     disabled={selectedTools.length === 0}
-                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-white/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                     {tx('portfolio.form.tools.clearAll', undefined, 'Delete all')}
                                 </button>
@@ -1007,31 +1007,31 @@ export default function PortfolioModal({
                                 undefined,
                                 'Search and select tools...',
                             )}
-                            className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[#101010] text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/25 focus:border-[#f59e0b]/70 transition-all"
+                            className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/25 focus:border-[#f59e0b]/70 transition-all"
                         />
 
                         {selectedTools.length > 0 ? (
-                            <div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-[#111111] p-2.5">
+                            <div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-[var(--color-bg-subtle)] p-2.5">
                                 {selectedTools.map((tool) => (
                                     <button
                                         key={tool}
                                         type="button"
                                         onClick={() => toggleTool(tool)}
-                                        className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#f59e0b]/35 bg-[#f59e0b]/12 px-2.5 py-1 text-xs text-[#fcd34d] hover:border-[#f59e0b]/60 hover:text-white transition-colors"
+                                        className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#f59e0b]/35 bg-[#f59e0b]/12 px-2.5 py-1 text-xs text-[#fcd34d] hover:border-[#f59e0b]/60 hover:text-[var(--color-text-primary)] transition-colors"
                                         title={tx('portfolio.form.tools.remove', undefined, 'Remove tool')}
                                     >
                                         <span className="truncate">{getToolLabel(tool)}</span>
-                                        <span className="text-white/60">×</span>
+                                        <span className="text-[var(--color-text-primary)]/60">×</span>
                                     </button>
                                 ))}
                             </div>
                         ) : (
-                            <div className="rounded-xl border border-dashed border-white/15 bg-[#101010] px-3 py-2 text-xs text-white/45">
+                            <div className="rounded-xl border border-dashed border-white/15 bg-[var(--color-bg-base)] px-3 py-2 text-xs text-[var(--color-text-primary)]/45">
                                 {tx('portfolio.form.tools.noneSelected', undefined, 'No tools selected yet.')}
                             </div>
                         )}
 
-                        <div className="max-h-52 overflow-y-auto rounded-xl border border-white/10 bg-[#101010] p-2.5 space-y-2">
+                        <div className="max-h-52 overflow-y-auto rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-2.5 space-y-2">
                             {hasFilteredToolOptions ? (
                                 TOOL_CATEGORY_ORDER.map((category) => {
                                     const categoryOptions = filteredToolsByCategory[category];
@@ -1040,7 +1040,7 @@ export default function PortfolioModal({
                                     }
 
                                     return (
-                                        <div key={category} className="rounded-lg border border-white/10 bg-[#0d0d0d] p-2">
+                                        <div key={category} className="rounded-lg border border-white/10 bg-[var(--color-bg-base)] p-2">
                                             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#f59e0b] mb-1.5">
                                                 {getToolCategoryLabel(category)}
                                             </p>
@@ -1051,7 +1051,7 @@ export default function PortfolioModal({
                                                         key={option.value}
                                                         type="button"
                                                         onClick={() => toggleTool(option.value)}
-                                                        className="rounded-full border border-white/15 px-2.5 py-1 text-xs text-white/75 hover:border-[#f59e0b]/50 hover:text-white transition-colors"
+                                                        className="rounded-full border border-white/15 px-2.5 py-1 text-xs text-[var(--color-text-primary)]/75 hover:border-[#f59e0b]/50 hover:text-[var(--color-text-primary)] transition-colors"
                                                         title={option.label}
                                                     >
                                                         {option.label}
@@ -1062,7 +1062,7 @@ export default function PortfolioModal({
                                     );
                                 })
                             ) : (
-                                <p className="px-1 py-1 text-xs text-white/45">
+                                <p className="px-1 py-1 text-xs text-[var(--color-text-primary)]/45">
                                     {tx('portfolio.form.tools.noResults', undefined, 'No matching tools found.')}
                                 </p>
                             )}
@@ -1089,7 +1089,7 @@ export default function PortfolioModal({
                             onChange={handleAdditionalImageUpload}
                         />
 
-                        <label className="block text-sm font-medium text-white/85">
+                        <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">
                             {tx('portfolio.form.fields.imageUpload.label', undefined, 'Upload preview image')}
                         </label>
 
@@ -1099,7 +1099,7 @@ export default function PortfolioModal({
                                 variant="ghost"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isSubmitting || isUploading}
-                                className="!rounded-xl !border !border-white/15 !bg-white/5 !text-white/80 hover:!bg-white/10"
+                                className="!rounded-xl !border !border-white/15 !bg-white/5 !text-[var(--color-text-primary)]/80 hover:!bg-white/10"
                             >
                                 {isUploading ? (
                                     <span className="inline-flex items-center gap-2">
@@ -1121,7 +1121,7 @@ export default function PortfolioModal({
                                 variant="ghost"
                                 onClick={() => additionalImageInputRef.current?.click()}
                                 disabled={isSubmitting || isUploading}
-                                className="!rounded-xl !border !border-white/15 !bg-white/5 !text-white/80 hover:!bg-white/10"
+                                className="!rounded-xl !border !border-white/15 !bg-white/5 !text-[var(--color-text-primary)]/80 hover:!bg-white/10"
                             >
                                 <span className="inline-flex items-center gap-2">
                                     <Upload className="w-4 h-4" />
@@ -1133,7 +1133,7 @@ export default function PortfolioModal({
                                 type="button"
                                 onClick={clearSelectedImage}
                                 disabled={!resolvedPreviewUrl}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border border-white/15 text-white/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border border-white/15 text-[var(--color-text-primary)]/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 {tx('portfolio.form.upload.delete', undefined, 'Delete image')}
@@ -1146,20 +1146,20 @@ export default function PortfolioModal({
                                 value={extraImageUrlInput}
                                 onChange={(event) => setExtraImageUrlInput(event.target.value)}
                                 placeholder={tx('portfolio.form.upload.extraUrlPlaceholder', undefined, 'https://image-url.com/preview.jpg')}
-                                className="flex-1 px-4 py-2.5 rounded-xl border border-white/15 bg-[#101010] text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all"
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all"
                                 dir="ltr"
                             />
                             <button
                                 type="button"
                                 onClick={handleAddExtraImageUrl}
-                                className="px-3 py-2.5 rounded-xl border border-white/15 text-xs text-white/75 hover:text-white hover:border-white/30 transition-colors"
+                                className="px-3 py-2.5 rounded-xl border border-white/15 text-xs text-[var(--color-text-primary)]/75 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
                             >
                                 {tx('portfolio.form.upload.addUrl', undefined, 'Add URL')}
                             </button>
                         </div>
 
                         {resolvedPreviewUrl ? (
-                            <div className="rounded-xl border border-white/10 overflow-hidden bg-[#101010] h-40">
+                            <div className="rounded-xl border border-white/10 overflow-hidden bg-[var(--color-bg-base)] h-40">
                                 <OptimizedImage
                                     src={resolvedPreviewUrl}
                                     alt={tx('portfolio.form.upload.previewAlt', undefined, 'Portfolio preview image')}
@@ -1170,13 +1170,13 @@ export default function PortfolioModal({
                         ) : null}
 
                         {extraMediaUrls.length > 0 ? (
-                            <div className="rounded-xl border border-white/10 bg-[#101010] p-2.5 space-y-2">
-                                <p className="text-xs text-white/65">
+                            <div className="rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-2.5 space-y-2">
+                                <p className="text-xs text-[var(--color-text-primary)]/65">
                                     {tx('portfolio.form.upload.galleryLabel', undefined, 'Additional images')}
                                 </p>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                     {extraMediaUrls.map((url, index) => (
-                                        <div key={`${url}-${index}`} className="relative rounded-lg overflow-hidden border border-white/10 bg-[#0b0b0b] h-24">
+                                        <div key={`${url}-${index}`} className="relative rounded-lg overflow-hidden border border-white/10 bg-[var(--color-bg-base)] h-24">
                                             <OptimizedImage
                                                 src={url}
                                                 alt={tx('portfolio.form.upload.previewAlt', undefined, 'Portfolio preview image')}
@@ -1186,7 +1186,7 @@ export default function PortfolioModal({
                                             <button
                                                 type="button"
                                                 onClick={() => removeExtraMediaUrl(index)}
-                                                className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/70 border border-white/20 text-white/80 hover:text-red-300 transition-colors inline-flex items-center justify-center"
+                                                className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/70 border border-white/20 text-[var(--color-text-primary)]/80 hover:text-red-300 transition-colors inline-flex items-center justify-center"
                                                 title={tx('portfolio.form.upload.remove', undefined, 'Remove')}
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1215,7 +1215,7 @@ export default function PortfolioModal({
                             variant="ghost"
                             onClick={onClose}
                             disabled={isSubmitting || isUploading}
-                            className="!rounded-xl !border !border-white/15 !bg-transparent !text-white/75 hover:!bg-white/10 hover:!text-white"
+                            className="!rounded-xl !border !border-white/15 !bg-transparent !text-[var(--color-text-primary)]/75 hover:!bg-white/10 hover:!text-[var(--color-text-primary)]"
                         >
                             {tx('portfolio.form.actions.cancel')}
                         </Button>
@@ -1234,3 +1234,6 @@ export default function PortfolioModal({
         </Modal>
     );
 }
+
+
+

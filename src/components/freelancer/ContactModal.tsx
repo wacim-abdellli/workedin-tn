@@ -87,6 +87,7 @@ export default function ContactModal({
             let { data: conversationId, error } = await supabase.rpc('get_or_create_conversation', {
                 user1: user.id,
                 user2: freelancerId,
+                p_contract_id: null,
                 p_scope: activeMode === 'freelancer' ? 'freelancer' : 'client',
             });
 
@@ -99,6 +100,7 @@ export default function ContactModal({
                     const legacyResult = await supabase.rpc('get_or_create_conversation', {
                         user1: user.id,
                         user2: freelancerId,
+                        p_contract_id: null,
                     });
                     conversationId = legacyResult.data;
                     error = legacyResult.error;

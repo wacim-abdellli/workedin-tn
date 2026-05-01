@@ -1,4 +1,4 @@
- import { useCallback, useMemo, useState } from 'react';
+﻿ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bookmark, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, UserCircle2, X } from 'lucide-react';
@@ -670,5 +670,6 @@ export default function FindFreelancers() {
         </div>
     );
 }
+
 
 

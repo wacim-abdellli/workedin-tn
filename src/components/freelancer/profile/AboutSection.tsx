@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Pencil, X, Check, Loader2 } from 'lucide-react';
 import { useTranslation } from '../../../i18n';
 import { supabase } from '@/lib/supabase';
@@ -109,3 +109,4 @@ export default function AboutSection({ bio, isOwner, onUpdate }: Props) {
         </section>
     );
 }
+

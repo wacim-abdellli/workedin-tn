@@ -687,32 +687,32 @@ function JobDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[var(--page-bg)]">
+      <div className="min-h-screen bg-[var(--color-bg-base)]">
         <Header />
-        <div className="container-custom py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
-              <Skeleton className="h-9 w-3/4" />
+              <Skeleton className="h-9 w-3/4 bg-white/5" />
               <div className="flex gap-3">
-                <Skeleton className="h-6 w-24 rounded-full" />
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-6 w-28 rounded-full" />
+                <Skeleton className="h-6 w-24 rounded-full bg-white/5" />
+                <Skeleton className="h-6 w-20 rounded-full bg-white/5" />
+                <Skeleton className="h-6 w-28 rounded-full bg-white/5" />
               </div>
-              <Skeleton className="h-48 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl bg-white/5" />
               <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-4 w-full bg-white/5" />
+                <Skeleton className="h-4 w-full bg-white/5" />
+                <Skeleton className="h-4 w-2/3 bg-white/5" />
               </div>
               <div className="flex gap-2 flex-wrap">
                 {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-7 w-20 rounded-full" />
+                  <Skeleton key={i} className="h-7 w-20 rounded-full bg-white/5" />
                 ))}
               </div>
             </div>
             <div className="space-y-4">
-              <Skeleton className="h-48 w-full rounded-2xl" />
-              <Skeleton className="h-32 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl bg-white/5" />
+              <Skeleton className="h-32 w-full rounded-2xl bg-white/5" />
             </div>
           </div>
         </div>
@@ -722,14 +722,14 @@ function JobDetail() {
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-[var(--page-bg)]">
+      <div className="min-h-screen bg-[var(--color-bg-base)]">
         <Header />
-        <div className="container-custom py-16 text-center">
-          <Briefcase className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 text-center">
+          <Briefcase className="w-16 h-16 text-white/40 mx-auto mb-4" />
+          <h2 className="text-xl font-bold mb-2 text-white">
             {tx("jobDetail.jobNotFound", undefined, "Job not found")}
           </h2>
-          <Button variant="primary" onClick={() => navigate("/jobs")}>
+          <Button variant="primary" onClick={() => navigate("/jobs")} className="mt-4">
             {tx("jobDetail.browseJobs", undefined, "Browse Jobs")}
           </Button>
         </div>
@@ -738,7 +738,7 @@ function JobDetail() {
   }
 
   return (
-    <div className="page-enter min-h-screen page-bg-base transition-colors duration-300">
+    <div className="page-enter min-h-screen bg-[var(--color-bg-base)] transition-colors duration-300">
       <SEO
         title={job ? `${job.title} | ${t.seo.jobDetail.titleSuffix}` : t.seo.jobDetail.titleSuffix}
         description={job?.description?.slice(0, 160) || t.seo.jobDetail.descriptionFallback}
@@ -762,17 +762,8 @@ function JobDetail() {
           <div className="flex-1 min-w-0 space-y-5">
 
             {/* Hero Header Card */}
-            <div
-              className="relative overflow-hidden rounded-2xl border border-white/8"
-              style={{
-                background: 'linear-gradient(145deg,#141420 0%,#0f0f1a 60%,#0c0c16 100%)',
-                boxShadow: '0 0 0 1px rgba(255,255,255,0.04),0 24px 60px -20px rgba(0,0,0,0.6)',
-              }}
-            >
-              <div
-                className="pointer-events-none absolute -top-24 -right-24 h-56 w-56 rounded-full opacity-20 blur-3xl"
-                style={{ background: 'var(--workspace-primary,#8b5cf6)' }}
-              />
+            <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-b from-violet-500/5 to-transparent">
+              <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 h-56 w-56 rounded-full opacity-20 blur-3xl bg-violet-500" />
               <div className="relative p-6 sm:p-8">
                 <div className="flex items-start justify-between gap-4 mb-5">
                   <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight break-words [overflow-wrap:anywhere]">
@@ -785,7 +776,7 @@ function JobDetail() {
                         'group flex h-9 w-9 items-center justify-center rounded-xl border transition-all',
                         isSaved
                           ? 'border-rose-500/40 bg-rose-500/10'
-                          : 'border-white/10 bg-white/5 hover:border-rose-500/40 hover:bg-rose-500/10',
+                          : 'border-white/5 bg-white/[0.02] hover:border-rose-500/40 hover:bg-rose-500/10',
                       )}
                       title={isSaved ? tx('jobDetail.removeFromSaves', undefined, 'Remove from saves') : tx('jobDetail.saveJob', undefined, 'Save this job')}
                     >
@@ -793,7 +784,7 @@ function JobDetail() {
                     </button>
                     <button
                       onClick={shareJob}
-                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/50 transition-all hover:border-white/20 hover:text-white"
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/5 bg-white/[0.02] text-white/50 transition-all hover:border-white/10 hover:bg-white/5 hover:text-white"
                       title={tx('jobDetail.shareJob', undefined, 'Share this job')}
                     >
                       <Share2 className="w-4 h-4" />
@@ -801,35 +792,23 @@ function JobDetail() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-white/45 mb-5">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] uppercase tracking-wider font-bold text-white/40 mb-5">
                   <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{tx('jobDetail.postedLabel', undefined, 'Posted')} {timeAgo(job.posted_at, tx)}</span>
                   <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{job.proposals_count} {t.jobDetail.proposals}</span>
                   <span className="flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" />{job.views_count} {t.jobDetail.views}</span>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-white/8">
-                  <span
-                    className="inline-flex items-center rounded-full px-3.5 py-1 text-xs font-semibold"
-                    style={{
-                      background: job.job_type === 'fixed_price' ? 'rgba(59,130,246,0.12)' : 'rgba(16,185,129,0.12)',
-                      color: job.job_type === 'fixed_price' ? '#60a5fa' : '#34d399',
-                      border: `1px solid ${job.job_type === 'fixed_price' ? 'rgba(59,130,246,0.25)' : 'rgba(16,185,129,0.25)'}`,
-                    }}
-                  >
+                <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-white/5">
+                  <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                      job.job_type === 'fixed_price' ? 'bg-sky-500/10 text-sky-400' : 'bg-emerald-500/10 text-emerald-400'
+                    }`}>
                     {job.job_type === 'fixed_price' ? t.jobDetail.fixedPrice : t.jobDetail.hourly}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3.5 py-1 text-xs font-semibold text-white/70 capitalize">
+                  <span className="inline-flex items-center rounded-md border border-white/5 bg-white/[0.02] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/70">
                     {t.jobDetail.experience[EXPERIENCE_LABELS[job.experience_level] as keyof typeof t.jobDetail.experience] || job.experience_level}
                   </span>
                   {job.duration && (
-                    <span
-                      className="inline-flex items-center rounded-full px-3.5 py-1 text-xs font-semibold"
-                      style={{
-                        background: 'var(--workspace-primary-dim,rgba(139,92,246,0.12))',
-                        color: 'var(--workspace-primary,#8b5cf6)',
-                        border: '1px solid color-mix(in srgb,var(--workspace-primary,#8b5cf6) 28%,transparent)',
-                      }}
-                    >
+                    <span className="inline-flex items-center rounded-md bg-violet-500/10 text-violet-400 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
                       {(() => {
                         const durationKeyMap: Record<string, string> = {
                           less_than_1_month: 'jobs.new.stepBudget.durationLessThan1Month',
@@ -845,24 +824,12 @@ function JobDetail() {
                 </div>
 
                 {/* Budget */}
-                <div
-                  className="rounded-xl p-4 flex items-center gap-4"
-                  style={{
-                    background: 'linear-gradient(135deg,color-mix(in srgb,var(--workspace-primary,#8b5cf6) 10%,transparent) 0%,rgba(255,255,255,0.02) 100%)',
-                    border: '1px solid color-mix(in srgb,var(--workspace-primary,#8b5cf6) 22%,transparent)',
-                  }}
-                >
-                  <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-black"
-                    style={{
-                      background: 'color-mix(in srgb,var(--workspace-primary,#8b5cf6) 20%,transparent)',
-                      color: 'var(--workspace-primary,#8b5cf6)',
-                    }}
-                  >
+                <div className="rounded-xl p-4 flex items-center gap-4 bg-gradient-to-br from-violet-500/10 to-transparent border border-violet-500/20">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-black bg-violet-500/20 text-violet-400">
                     TND
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-0.5">{t.jobDetail.budget}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-violet-400/80 mb-0.5">{t.jobDetail.budget}</p>
                     <p className="text-2xl font-black text-white leading-none">
                       {job.job_type === 'fixed_price' ? (
                         job.budget_min === job.budget_max || !job.budget_max
@@ -876,7 +843,7 @@ function JobDetail() {
                       )}
                     </p>
                     {job.job_type === 'hourly' && job.estimated_hours && (
-                      <p className="text-xs text-white/40 mt-0.5">{t.jobDetail.approxHours.replace('{{count}}', String(job.estimated_hours))}</p>
+                      <p className="text-xs text-white/50 mt-0.5 font-medium">{t.jobDetail.approxHours.replace('{{count}}', String(job.estimated_hours))}</p>
                     )}
                   </div>
                 </div>
@@ -884,9 +851,9 @@ function JobDetail() {
             </div>
 
             {/* Description */}
-            <div className="rounded-2xl border border-white/8 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.025)' }}>
-              <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-                <FileText className="w-4 h-4 opacity-60" />
+            <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4 flex items-center gap-2">
+                <FileText className="w-4 h-4 opacity-60 text-violet-400" />
                 {t.jobDetail.description}
               </h2>
               <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-white/70 leading-7">
@@ -896,9 +863,9 @@ function JobDetail() {
 
             {/* Reference Links */}
             {referenceLinkItems.length > 0 && (
-              <div className="rounded-2xl border border-white/8 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.025)' }}>
-                <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-                  <Globe className="w-4 h-4 opacity-60" />
+              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4 flex items-center gap-2">
+                  <Globe className="w-4 h-4 opacity-60 text-violet-400" />
                   {tx('jobDetail.referenceLinks', undefined, 'Reference links')}
                 </h2>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -908,7 +875,7 @@ function JobDetail() {
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group rounded-xl border border-white/10 bg-white/4 p-3.5 transition-colors hover:bg-white/8"
+                      className="group rounded-xl border border-white/5 bg-white/[0.02] p-3.5 transition-colors hover:bg-white/5"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex items-start gap-3">
@@ -916,13 +883,13 @@ function JobDetail() {
                             <JobLinkPlatformIcon platform={item.platform} />
                           </span>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-white">
+                            <p className="truncate text-sm font-semibold text-white group-hover:text-violet-300 transition-colors">
                               {item.platformLabel}
                             </p>
-                            <p className="truncate text-xs text-white/45">{item.hostname}</p>
+                            <p className="truncate text-[11px] text-white/40">{item.hostname}</p>
                           </div>
                         </div>
-                        <ExternalLink className="h-4 w-4 shrink-0 text-white/35 transition group-hover:text-white/70" />
+                        <ExternalLink className="h-4 w-4 shrink-0 text-white/30 transition group-hover:text-white/60" />
                       </div>
                     </a>
                   ))}
@@ -932,9 +899,9 @@ function JobDetail() {
 
             {/* Skills */}
             {job.required_skills && job.required_skills.length > 0 && (
-              <div className="rounded-2xl border border-white/8 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.025)' }}>
-                <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 opacity-60" />
+              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4 flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 opacity-60 text-violet-400" />
                   {t.jobDetail.requiredSkills}
                 </h2>
                 <div className="flex flex-wrap gap-2">
@@ -948,14 +915,11 @@ function JobDetail() {
                     return (
                       <span
                         key={index}
-                        className="inline-flex items-center gap-1.5 break-words [overflow-wrap:anywhere] px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors"
-                        style={
-                          isMatch
-                            ? { background: 'rgba(16,185,129,0.12)', color: '#34d399', borderColor: 'rgba(16,185,129,0.28)' }
-                            : { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.1)' }
-                        }
+                        className={`inline-flex items-center gap-1.5 break-words [overflow-wrap:anywhere] px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-colors ${
+                          isMatch ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-white/5 text-white/60 border-white/10'
+                        }`}
                       >
-                        {isMatch && <CheckCircle className="w-3.5 h-3.5 shrink-0" />}
+                        {isMatch && <CheckCircle className="w-3 h-3 shrink-0" />}
                         {skillLabel}
                       </span>
                     );
@@ -966,8 +930,8 @@ function JobDetail() {
 
             {/* Attachments */}
             {attachmentItems.length > 0 && (
-              <div className="rounded-2xl border border-white/8 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.025)' }}>
-                <h2 className="text-base font-bold text-white mb-4">{t.jobDetail.attachments}</h2>
+              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4">{t.jobDetail.attachments}</h2>
 
                 {imageAttachments.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -977,21 +941,21 @@ function JobDetail() {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group overflow-hidden rounded-xl border border-white/10 bg-white/4 hover:bg-white/8 transition-colors"
+                        className="group overflow-hidden rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-colors"
                       >
-                        <div className="aspect-[4/3] bg-black/30">
+                        <div className="aspect-[4/3] bg-black/40">
                           <img
                             src={item.url}
                             alt={tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
                             loading="lazy"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
-                        <div className="px-3 py-2 flex items-center justify-between">
-                          <span className="text-sm text-white/85">
+                        <div className="px-3 py-2 flex items-center justify-between border-t border-white/5">
+                          <span className="text-xs font-bold text-white group-hover:text-violet-300 transition-colors">
                             {tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
                           </span>
-                          <span className="text-[11px] text-white/45 uppercase">{item.extension || 'IMG'}</span>
+                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">{item.extension || 'IMG'}</span>
                         </div>
                       </a>
                     ))}
@@ -1003,17 +967,17 @@ function JobDetail() {
                     {pdfAttachments.map((item) => (
                       <div
                         key={`${item.url}-${item.displayIndex}`}
-                        className="rounded-xl border border-white/10 bg-white/4 overflow-hidden"
+                        className="rounded-xl border border-white/5 bg-white/[0.02] overflow-hidden"
                       >
-                        <div className="px-3 py-2 flex items-center justify-between border-b border-white/10">
-                          <span className="text-sm text-white/85">
+                        <div className="px-3 py-2 flex items-center justify-between border-b border-white/5">
+                          <span className="text-xs font-bold text-white">
                             {tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
                           </span>
                           <a
                             href={item.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] text-white/60 hover:text-white/90 transition-colors"
+                            className="text-[10px] uppercase tracking-wider font-bold text-violet-400 hover:text-violet-300 transition-colors"
                           >
                             {tx('jobDetail.openFile', undefined, 'Open file')}
                           </a>
@@ -1021,7 +985,7 @@ function JobDetail() {
                         <iframe
                           src={item.url}
                           title={tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
-                          className="w-full h-72 bg-black/20"
+                          className="w-full h-72 bg-black/40"
                           loading="lazy"
                         />
                       </div>
@@ -1037,17 +1001,17 @@ function JobDetail() {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between p-3.5 rounded-xl border border-white/8 bg-white/4 hover:bg-white/8 transition-colors group"
+                        className="flex items-center justify-between p-3.5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-colors group"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/15 text-violet-400">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400">
                             <FileText className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm text-white/85">
+                            <p className="text-xs font-bold text-white group-hover:text-violet-300 transition-colors">
                               {tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
                             </p>
-                            <p className="text-[11px] text-white/45 uppercase">{item.extension || tx('jobDetail.fileType', undefined, 'FILE')}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">{item.extension || tx('jobDetail.fileType', undefined, 'FILE')}</p>
                           </div>
                         </div>
                         <Download className="w-4 h-4 text-white/30 group-hover:text-white/60 transition-colors" />
@@ -1060,8 +1024,8 @@ function JobDetail() {
 
             {/* Similar Jobs */}
             {similarJobs.length > 0 && (
-              <div className="rounded-2xl border border-white/8 p-6 sm:p-8" style={{ background: 'rgba(255,255,255,0.025)' }}>
-                <h2 className="text-base font-bold text-white mb-4">{tx('jobDetail.similarJobs', undefined, 'Similar jobs')}</h2>
+              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4">{tx('jobDetail.similarJobs', undefined, 'Similar jobs')}</h2>
                 <div className="grid gap-3 md:grid-cols-2">
                   {similarJobs.map((j) => (
                     <SimilarJobCard key={j.id} job={j} onClick={() => navigate(`/jobs/${j.id}`)} />
@@ -1075,13 +1039,7 @@ function JobDetail() {
           <div className="lg:w-[300px] shrink-0 space-y-4 lg:sticky lg:top-24 lg:self-start">
 
             {/* Action Card */}
-            <div
-              className="rounded-2xl border border-white/8 p-5 space-y-4"
-              style={{
-                background: 'linear-gradient(145deg,#141420 0%,#0f0f1a 100%)',
-                boxShadow: '0 0 0 1px rgba(255,255,255,0.04)',
-              }}
-            >
+            <div className="rounded-2xl border border-white/5 bg-gradient-to-b from-white/[0.04] to-transparent p-5 space-y-4 shadow-xl">
               {myProposal ? (
                 <div className="text-center py-2">
                   <div className={cn(
@@ -1180,11 +1138,7 @@ function JobDetail() {
                   <button
                     onClick={openProposalFlow}
                     disabled={!canSubmitToday}
-                    className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-2xl font-bold text-on-surface text-sm transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      background: 'linear-gradient(135deg,var(--workspace-primary,#8b5cf6) 0%,color-mix(in srgb,var(--workspace-primary,#8b5cf6) 70%,#6d28d9) 100%)',
-                      boxShadow: '0 10px 30px -15px color-mix(in srgb,var(--workspace-primary,#8b5cf6) 60%,transparent)',
-                    }}
+                    className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-xl font-bold text-white text-sm transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_14px_0_rgba(139,92,246,0.39)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.23)] hover:bg-violet-500 bg-violet-600"
                   >
                     <Send className="w-4 h-4" />
                     {tx('jobDetail.submitProposal', undefined, 'Submit Proposal')}
@@ -1275,9 +1229,9 @@ function JobDetail() {
               hireRate="75%"
               totalSpent={clientStats.totalSpent > 0 ? `${clientStats.totalSpent.toLocaleString()} TND` : '15k+ TND'}
               avgHourlyPaid="45 TND/hr"
-              paymentVerified
-              phoneVerified={false}
-              emailVerified={false}
+              paymentVerified={!!job.client?.payment_verified}
+              phoneVerified={!!job.client?.phone_verified}
+              emailVerified={true} // Usually true since Auth requires it
               memberSince={job.client?.created_at ? new Date(job.client.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Mar 2026'}
               onViewProfile={
                 canViewClientProfile ? () => navigate(`/client/${job.client_id}`) : undefined
@@ -1285,8 +1239,8 @@ function JobDetail() {
             />
 
             {/* Job Stats */}
-            <div className="rounded-2xl border border-white/8 p-5" style={{ background: 'rgba(255,255,255,0.025)' }}>
-              <h3 className="text-sm font-bold text-white/80 mb-3">{tx('jobDetail.jobStats', undefined, 'Job Stats')}</h3>
+            <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+              <h3 className="text-xs uppercase tracking-wider font-bold text-white/70 mb-3">{tx('jobDetail.jobStats', undefined, 'Job Stats')}</h3>
               <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between items-center">
                   <span className="text-white/45 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{tx('jobDetail.proposals', undefined, 'Proposals')}</span>
@@ -1323,20 +1277,10 @@ function JobDetail() {
 
       {/* Mobile sticky CTA */}
       {!myProposal && user?.id !== job.client_id && applyDecision.allowed && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-40 lg:hidden px-4 pt-3"
-          style={{
-            background: 'rgba(10,10,15,0.88)',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            paddingBottom: 'max(env(safe-area-inset-bottom),1rem)',
-          }}
-        >
+        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] bg-[var(--color-bg-base)]/90 backdrop-blur-xl border-t border-white/5">
           <button
             onClick={openProposalFlow}
-            className="w-full h-12 rounded-2xl font-bold text-on-surface text-sm transition-all hover:brightness-110 active:scale-[0.98]"
-            style={{ background: 'linear-gradient(135deg,var(--workspace-primary,#8b5cf6) 0%,color-mix(in srgb,var(--workspace-primary,#8b5cf6) 70%,#6d28d9) 100%)' }}
+            className="w-full h-12 rounded-xl font-bold text-white text-sm transition-all hover:bg-violet-500 bg-violet-600 shadow-[0_4px_14px_0_rgba(139,92,246,0.39)]"
           >
             {tx('jobDetail.submitProposal', undefined, 'Submit Proposal')}
           </button>
@@ -1355,7 +1299,7 @@ function JobDetail() {
 
       <Modal isOpen={isWithdrawModalOpen} onClose={() => setIsWithdrawModalOpen(false)} title={tx('jobDetail.confirmWithdrawal', undefined, 'Confirm Withdrawal')} size="md">
         <div className="space-y-6 pt-4">
-          <p style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-white/60 text-sm">
             {tx('jobDetail.withdrawConfirmDesc', undefined, 'Are you sure you want to withdraw this proposal? This action cannot be undone.')}
           </p>
           <div className="flex gap-3 justify-end">
@@ -1369,21 +1313,19 @@ function JobDetail() {
 
       <Modal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} title={tx('jobDetail.reportJobTitle', undefined, 'Report Job')} size="sm">
         <div className="space-y-4 pt-2">
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-xs text-white/50">
             {tx('jobDetail.reportJobDescription', undefined, 'Tell us why this job violates our community guidelines.')}
           </p>
           <div className="space-y-2">
             {['spam', 'misleading', 'inappropriate', 'fraud', 'other'].map((reason) => (
               <label
                 key={reason}
-                className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors"
-                style={{
-                  borderColor: reportReason === reason ? 'var(--workspace-primary)' : 'var(--color-border-default)',
-                  background: reportReason === reason ? 'var(--workspace-primary-dim,rgba(139,92,246,0.08))' : 'var(--color-background-elevated)',
-                }}
+                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                  reportReason === reason ? 'border-violet-500 bg-violet-500/10' : 'border-white/5 bg-white/[0.02]'
+                }`}
               >
-                <input type="radio" name="report-reason" value={reason} checked={reportReason === reason} onChange={() => setReportReason(reason)} className="accent-[var(--workspace-primary)]" />
-                <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                <input type="radio" name="report-reason" value={reason} checked={reportReason === reason} onChange={() => setReportReason(reason)} className="accent-violet-500" />
+                <span className="text-sm font-bold text-white">
                   {tx(`jobDetail.reportReason.${reason}`, undefined, reason.charAt(0).toUpperCase() + reason.slice(1))}
                 </span>
               </label>
@@ -1402,5 +1344,6 @@ function JobDetail() {
 }
 
 export default JobDetail;
+
 
 

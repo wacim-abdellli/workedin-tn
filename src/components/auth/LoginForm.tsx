@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -84,10 +84,10 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
         <div className="w-full">
             {/* Header */}
             <div className="mb-7">
-                <h2 className="text-2xl font-bold text-white tracking-tight">
+                <h2 className="text-2xl font-bold text-[var(--color-text-primary)] tracking-tight">
                     {t.auth.loginTitle}
                 </h2>
-                <p className="mt-1 text-sm text-white/40">
+                <p className="mt-1 text-sm text-[var(--color-text-primary)]/40">
                     {t.auth.loginSubtitle}
                 </p>
             </div>
@@ -97,7 +97,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 type="button"
                 onClick={handleGoogle}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.98] disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-[var(--color-text-primary)] transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.98] disabled:opacity-50"
             >
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -114,7 +114,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                     <div className="w-full border-t border-white/8" />
                 </div>
                 <div className="relative flex justify-center">
-                    <span className="px-3 bg-zinc-950 text-xs text-white/25 uppercase tracking-widest">{t.auth.or}</span>
+                    <span className="px-3 bg-[var(--color-bg-base)] text-xs text-[var(--color-text-primary)]/25 uppercase tracking-widest">{t.auth.or}</span>
                 </div>
             </div>
 
@@ -122,7 +122,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {/* Email */}
                 <div className="space-y-1.5">
-                    <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                    <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]/60">
                         <Mail className="w-3.5 h-3.5" />
                         {t.auth.email}
                     </label>
@@ -132,7 +132,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             placeholder={t.auth.emailPlaceholder}
                             dir="ltr"
                             autoComplete="email"
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
                             {...register('email')}
                         />
                         {errors.email && <p className="mt-1.5 text-xs text-red-400">{errors.email.message}</p>}
@@ -142,7 +142,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 {/* Password */}
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                        <label className="flex items-center gap-2 text-sm font-medium text-white/60">
+                        <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-primary)]/60">
                             <Lock className="w-3.5 h-3.5" />
                             {t.auth.password.label}
                         </label>
@@ -156,13 +156,13 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                             placeholder={t.auth.passwordPlaceholder}
                             dir="ltr"
                             autoComplete="current-password"
-                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-12 text-sm text-white placeholder:text-white/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-12 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/25 outline-none transition-all hover:border-white/20 focus:border-[var(--workspace-primary)] focus:ring-2 focus:ring-[var(--workspace-primary)]/20"
                             {...register('password')}
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-white/30 hover:text-white/60 transition-colors"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)]/60 transition-colors"
                         >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -179,7 +179,7 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
                 <button
                     type="submit"
                     disabled={isLoading || isLockedOut}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--workspace-primary)] px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 mt-1"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--workspace-primary)] px-4 py-3 text-sm font-semibold text-[var(--color-text-primary)] transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 mt-1"
                 >
                     {isLoading ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -194,12 +194,12 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
 
             {/* Switch to signup */}
             {onSwitchToSignup && (
-                <p className="mt-6 text-center text-sm text-white/30">
+                <p className="mt-6 text-center text-sm text-[var(--color-text-primary)]/30">
                     {t.auth.noAccount}{' '}
                     <button
                         type="button"
                         onClick={onSwitchToSignup}
-                        className="text-white/70 font-semibold hover:text-white transition-colors"
+                        className="text-[var(--color-text-primary)]/70 font-semibold hover:text-[var(--color-text-primary)] transition-colors"
                     >
                         {t.nav.signup}
                     </button>
@@ -210,3 +210,5 @@ function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
 }
 
 export default LoginForm;
+
+

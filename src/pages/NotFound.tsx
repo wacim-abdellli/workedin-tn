@@ -8,12 +8,12 @@ export default function NotFound() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-[var(--color-bg-base)]">
+    <div className="min-h-screen bg-[var(--color-bg-base)]">
       <Header />
       <main className="flex min-h-screen flex-col items-center justify-center px-4 pt-20">
         {/* Big 404 number */}
         <div className="relative mb-8 select-none">
-          <span className="text-[160px] font-black leading-none tracking-tighter text-muted/20 dark:text-white/5">
+          <span className="text-[160px] font-black leading-none tracking-tighter text-[var(--color-text-primary)] opacity-[0.06]">
             404
           </span>
           <div className="absolute inset-0 flex items-center justify-center">
@@ -23,17 +23,17 @@ export default function NotFound() {
           </div>
         </div>
 
-        <h1 className="mb-3 text-center text-3xl font-bold text-foreground dark:text-white">
+        <h1 className="mb-3 text-center text-3xl font-bold text-[var(--color-text-primary)]">
           {t.notFound?.title || 'Page Not Found'}
         </h1>
-        <p className="mb-10 max-w-md text-center text-muted">
+        <p className="mb-10 max-w-md text-center text-[var(--color-text-tertiary)]">
           {t.notFound?.description || "The page you're looking for doesn't exist or has been moved."}
         </p>
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3 font-medium text-foreground transition hover:bg-surface"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-6 py-3 font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-bg-muted)]"
           >
             <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
             {t.notFound?.goBack || 'Go Back'}

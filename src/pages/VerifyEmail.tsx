@@ -50,149 +50,54 @@ function VerifyEmail() {
     };
 
     return (
-        <>
-            <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
-            `}</style>
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '100vh',
-                background: '#0c0c0c',
-                fontFamily: "'Outfit', sans-serif",
-                padding: '20px',
-            }}>
-                <div style={{
-                    width: '100%',
-                    maxWidth: 480,
-                    background: '#111',
-                    border: '1px solid #222',
-                    borderRadius: 20,
-                    padding: '48px 40px',
-                    textAlign: 'center',
-                }}>
-                    <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'center' }}>
-                        <Logo variant="full" size="md" mode="client" />
-                    </div>
+        <div className="flex items-center justify-center min-h-screen bg-[var(--color-bg-base)] px-5">
+            <div className="w-full max-w-[480px] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-2xl p-12 text-center shadow-xl">
+                <div className="mb-8 flex justify-center">
+                    <Logo variant="full" size="md" mode="client" />
+                </div>
 
-                    <div style={{
-                        width: 64,
-                        height: 64,
-                        margin: '0 auto 24px',
-                        background: 'rgba(139, 92, 246, 0.1)',
-                        borderRadius: 16,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}>
-                        <Mail style={{ width: 32, height: 32, color: '#8b5cf6' }} />
-                    </div>
+                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl flex items-center justify-center bg-purple-500/10">
+                    <Mail className="w-8 h-8 text-purple-500" />
+                </div>
 
-                    <h1 style={{
-                        fontSize: 28,
-                        fontWeight: 800,
-                        color: '#fff',
-                        marginBottom: 12,
-                        letterSpacing: '-0.5px',
-                    }}>
-                        {t.verifyEmail.title}
-                    </h1>
+                <h1 className="text-[28px] font-extrabold tracking-tight text-[var(--color-text-primary)] mb-3">
+                    {t.verifyEmail.title}
+                </h1>
 
-                    <p style={{
-                        fontSize: 15,
-                        color: '#888',
-                        lineHeight: 1.6,
-                        marginBottom: 32,
-                    }}>
-                        {tx('verifyEmail.subtitle', { email }, `We sent a verification link to ${email}. Click it to activate your account.`)}
+                <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed mb-8">
+                    {tx('verifyEmail.subtitle', { email }, `We sent a verification link to ${email}. Click it to activate your account.`)}
+                </p>
+
+                <button
+                    onClick={handleResend}
+                    disabled={isResending || cooldown > 0}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[15px] font-extrabold text-white tracking-tight transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.98] mb-3"
+                    style={{ background: '#E8820C' }}
+                >
+                    {isResending ? (
+                        <><RefreshCw className="w-4 h-4 animate-spin" />{tx('support.form.sending', undefined, 'Sending...')}</>
+                    ) : cooldown > 0 ? (
+                        tx('verifyEmail.resendCooldown', { seconds: String(cooldown) }, `Resend in ${cooldown} seconds`)
+                    ) : (
+                        <><RefreshCw className="w-4 h-4" />{t.verifyEmail.resend}</>
+                    )}
+                </button>
+
+                <button
+                    onClick={() => navigate('/signup')}
+                    className="w-full py-3.5 rounded-xl text-[15px] font-bold text-[var(--color-text-secondary)] border border-[var(--color-border-default)] bg-transparent hover:bg-[var(--color-bg-muted)] hover:border-[var(--color-border-strong)] transition-all duration-200"
+                >
+                    {t.verifyEmail.wrongEmail}
+                </button>
+
+                <div className="mt-6 p-4 rounded-xl flex items-start gap-3 text-left bg-blue-500/10 border border-blue-500/20">
+                    <AlertCircle className="w-[18px] h-[18px] text-blue-400 shrink-0 mt-0.5" />
+                    <p className="text-[13px] text-blue-300 leading-relaxed">
+                        {t.verifyEmail.checkSpam} {t.verifyEmail.noEmail}
                     </p>
-
-                    <button
-                        onClick={handleResend}
-                        disabled={isResending || cooldown > 0}
-                        style={{
-                            width: '100%',
-                            padding: 14,
-                            background: (isResending || cooldown > 0) ? '#9a5608' : '#E8820C',
-                            border: 'none',
-                            borderRadius: 10,
-                            fontSize: 15,
-                            fontWeight: 800,
-                            color: '#fff',
-                            cursor: (isResending || cooldown > 0) ? 'not-allowed' : 'pointer',
-                            fontFamily: "'Outfit', sans-serif",
-                            letterSpacing: '-0.3px',
-                            marginBottom: 12,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 8,
-                        }}
-                        onMouseEnter={e => { if (!isResending && cooldown === 0) (e.target as HTMLElement).style.background = '#d4750a'; }}
-                        onMouseLeave={e => { if (!isResending && cooldown === 0) (e.target as HTMLElement).style.background = '#E8820C'; }}
-                    >
-                        {isResending ? (
-                            <>
-                                <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
-                                {tx('support.form.sending', undefined, 'Sending...')}
-                            </>
-                        ) : cooldown > 0 ? (
-                            tx('verifyEmail.resendCooldown', { seconds: String(cooldown) }, `Resend in ${cooldown} seconds`)
-                        ) : (
-                            <>
-                                <RefreshCw style={{ width: 16, height: 16 }} />
-                                {t.verifyEmail.resend}
-                            </>
-                        )}
-                    </button>
-
-                    <button
-                        onClick={() => navigate('/signup')}
-                        style={{
-                            width: '100%',
-                            padding: 14,
-                            background: 'transparent',
-                            border: '1px solid #2a2a2a',
-                            borderRadius: 10,
-                            fontSize: 15,
-                            fontWeight: 700,
-                            color: '#aaa',
-                            cursor: 'pointer',
-                            fontFamily: "'Outfit', sans-serif",
-                            letterSpacing: '-0.3px',
-                        }}
-                        onMouseEnter={e => {
-                            (e.target as HTMLElement).style.background = '#1a1a1a';
-                            (e.target as HTMLElement).style.borderColor = '#333';
-                        }}
-                        onMouseLeave={e => {
-                            (e.target as HTMLElement).style.background = 'transparent';
-                            (e.target as HTMLElement).style.borderColor = '#2a2a2a';
-                        }}
-                    >
-                        {t.verifyEmail.wrongEmail}
-                    </button>
-
-                    <div style={{
-                        marginTop: 24,
-                        padding: '14px 16px',
-                        background: 'rgba(59, 130, 246, 0.1)',
-                        border: '1px solid rgba(59, 130, 246, 0.2)',
-                        borderRadius: 12,
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: 12,
-                        textAlign: 'left',
-                    }}>
-                        <AlertCircle style={{ width: 18, height: 18, color: '#60a5fa', flexShrink: 0, marginTop: 2 }} />
-                        <p style={{ fontSize: 13, color: '#93c5fd', lineHeight: 1.5 }}>
-                            {t.verifyEmail.checkSpam} {t.verifyEmail.noEmail}
-                        </p>
-                    </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 

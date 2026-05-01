@@ -420,19 +420,19 @@ export default function VerifyIdentity() {
     }
     // ── Main flow ───────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#13294f_0%,_#0b1328_40%,_#0b1020_100%)] py-10">
+        <div className="min-h-screen bg-[var(--color-bg-subtle)] py-10">
             <SEO title={tx('verifyIdentity.seo.title', undefined, 'التحقق من الهوية')} description={tx('verifyIdentity.seo.description', undefined, 'قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة')} />
             <div className="container mx-auto px-4">
                 <div className="mx-auto max-w-4xl">
                     {/* Header */}
                     <div className="mb-10 text-center px-1">
-                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 dark:bg-black/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/90">
+                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--workspace-primary)]/30 bg-[var(--workspace-primary-dim)] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--workspace-primary)]">
                             <Sparkles className="h-3.5 w-3.5" />
                             {tx('verifyIdentity.header.kicker', undefined, 'Secure Account Upgrade')}
                         </div>
-                        <h1 className="mb-3 text-3xl font-bold text-white md:text-4xl">{tx('verifyIdentity.header.title', undefined, 'Identity verification')}</h1>
-                        <p className="mx-auto max-w-2xl text-lg text-slate-300">{tx('verifyIdentity.header.subtitle', undefined, 'خطوة واحدة تفصلك عن زيادة ثقة عملائك وحماية حسابك')}</p>
-                        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-400/10 px-4 py-1.5 text-xs font-medium text-cyan-100">
+                        <h1 className="mb-3 text-3xl font-bold text-[var(--color-text-primary)] md:text-4xl">{tx('verifyIdentity.header.title', undefined, 'Identity verification')}</h1>
+                        <p className="mx-auto max-w-2xl text-lg text-[var(--color-text-secondary)]">{tx('verifyIdentity.header.subtitle', undefined, 'خطوة واحدة تفصلك عن زيادة ثقة عملائك وحماية حسابك')}</p>
+                        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-1.5 text-xs font-medium text-cyan-600 dark:text-cyan-300">
                             <Loader2 className="h-3.5 w-3.5" />
                             {tx('verifyIdentity.header.eta', undefined, 'Takes about 2-3 minutes to complete')}
                         </div>
@@ -445,10 +445,10 @@ export default function VerifyIdentity() {
                             { icon: <ScanLine className="h-4 w-4" />, title: tx('verifyIdentity.security.qualityTitle', undefined, 'Smart quality checks'), desc: tx('verifyIdentity.security.qualityDesc', undefined, 'We validate file format, size, and basic image quality before upload.') },
                             { icon: <Loader2 className="h-4 w-4" />, title: tx('verifyIdentity.security.reviewTitle', undefined, 'Fast review'), desc: tx('verifyIdentity.security.reviewDesc', undefined, 'Most verification requests are reviewed within 24 hours.') },
                         ].map((b, i) => (
-                            <div key={i} className="rounded-2xl border border-white/10 dark:border-white/10 bg-white/10 dark:bg-black/20 p-4 text-sm text-slate-200 backdrop-blur-sm">
-                                <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 dark:bg-black/20 text-blue-200">{b.icon}</div>
-                                <p className="font-semibold text-white">{b.title}</p>
-                                <p className="mt-1 text-xs text-slate-300">{b.desc}</p>
+                            <div key={i} className="rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-4 text-sm text-[var(--color-text-secondary)]">
+                                <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--workspace-primary-dim)] text-[var(--workspace-primary)]">{b.icon}</div>
+                                <p className="font-semibold text-[var(--color-text-primary)]">{b.title}</p>
+                                <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">{b.desc}</p>
                             </div>
                         ))}
                     </div>

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+﻿import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getJobEditRoute } from '@/lib/routes'
 import { FolderOpen } from 'lucide-react'
@@ -10,6 +10,7 @@ import { useTranslation } from '@/i18n'
 import EmptyState from '@/components/ui/EmptyState'
 import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
+
 interface JobProposalCountRow {
   count: number;
 }
@@ -116,7 +117,6 @@ const deriveJobStatus = (
   const normalizedJobStatus = normalize(jobStatus);
   const normalizedContractStatus = normalize(contract?.status);
 
-  // Contract state is the strongest signal when a contract exists.
   if (contract) {
     if (normalizedContractStatus === 'pending_payment') return 'needs_attention';
     if (normalizedContractStatus === 'delivery_submitted') return 'in_progress';
@@ -130,7 +130,6 @@ const deriveJobStatus = (
   if (normalizedJobStatus === 'cancelled' || normalizedJobStatus === 'canceled' || normalizedJobStatus === 'closed') return 'finished_unsuccessful';
   if (normalizedJobStatus === 'disputed' || normalizedJobStatus === 'in_review') return 'needs_attention';
 
-  // Without a contract, only keep in-progress if there is still proposal activity.
   if ((normalizedJobStatus === 'in_progress' || normalizedJobStatus === 'matched') && proposalsCount > 0) {
     return 'in_progress';
   }
@@ -300,19 +299,19 @@ export default function ClientJobs() {
   }
 
   const statusPillClass = (job: EnrichedClientJob) => {
-    if (job.derivedStatus === 'open') return 'status-pill-pending';
-    if (job.derivedStatus === 'in_progress') return 'status-pill-progress';
-    if (job.derivedStatus === 'finished_success') return 'status-pill-completed';
-    if (job.derivedStatus === 'needs_attention') return 'status-pill-neutral';
-    return 'status-pill-neutral';
+    if (job.derivedStatus === 'open') return 'bg-amber-500/10 text-amber-300 border-amber-500/20';
+    if (job.derivedStatus === 'in_progress') return 'bg-sky-500/10 text-sky-300 border-sky-500/20';
+    if (job.derivedStatus === 'finished_success') return 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
+    if (job.derivedStatus === 'needs_attention') return 'bg-rose-500/10 text-rose-300 border-rose-500/20';
+    return 'bg-white/5 text-white/50 border-white/10';
   }
 
   const resultTextClass = (job: EnrichedClientJob) => {
-    if (job.derivedStatus === 'finished_success') return 'text-emerald-300';
-    if (job.derivedStatus === 'finished_unsuccessful') return 'text-red-300';
-    if (job.derivedStatus === 'needs_attention') return 'text-amber-300';
-    if (job.derivedStatus === 'in_progress') return 'text-amber-200';
-    return 'text-on-surface-muted';
+    if (job.derivedStatus === 'finished_success') return 'text-emerald-400';
+    if (job.derivedStatus === 'finished_unsuccessful') return 'text-rose-400';
+    if (job.derivedStatus === 'needs_attention') return 'text-rose-400';
+    if (job.derivedStatus === 'in_progress') return 'text-sky-400';
+    return 'text-white/40';
   }
 
   const formatBudget = (job: EnrichedClientJob) => {
@@ -392,61 +391,68 @@ export default function ClientJobs() {
   }, [jobToConfirmDelete, queryClient, showToast, tx, user?.id]);
 
   return (
-    <div className="page-shell">
+    <div className="min-h-screen page-bg-base">
       <Header />
-      <div className="page-shell-content">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         
         {/* Header section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground dark:text-white">{tx('pages.clientJobs.title', undefined, 'My Projects')}</h1>
-            <p className="text-muted mt-1">{tx('pages.clientJobs.subtitle', undefined, 'Manage your posted projects and active contracts')}</p>
+            <h1 className="text-2xl font-black text-white tracking-tight">
+              {tx('pages.clientJobs.title', undefined, 'My Projects')}
+            </h1>
+            <p className="text-sm text-white/50 mt-1">
+              {tx('pages.clientJobs.subtitle', undefined, 'Manage your posted projects and active contracts')}
+            </p>
           </div>
           <button
             onClick={() => navigate('/jobs/new')}
-            className="bg-amber-600 hover:bg-amber-500 text-white font-medium flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-colors"
+            className="bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg transition-colors"
           >
             {tx('pages.clientJobs.postProject', undefined, 'Post a project')}
           </button>
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="rounded-2xl border border-surface surface-card p-4">
-            <p className="text-sm text-on-surface-muted font-medium">{tx('pages.clientJobs.open', undefined, 'Open')}</p>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.open}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+            <p className="text-xs text-white/50 font-bold uppercase tracking-wider">{tx('pages.clientJobs.open', undefined, 'Open')}</p>
+            <p className="text-2xl font-black text-amber-500 mt-1">{stats.open}</p>
           </div>
-          <div className="rounded-2xl border border-surface surface-card p-4">
-            <p className="text-sm text-on-surface-muted font-medium">{tx('pages.clientJobs.inProgress', undefined, 'In progress')}</p>
-            <p className="text-2xl font-bold text-on-surface mt-1">{stats.inProgress}</p>
+          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+            <p className="text-xs text-white/50 font-bold uppercase tracking-wider">{tx('pages.clientJobs.inProgress', undefined, 'In progress')}</p>
+            <p className="text-2xl font-black text-sky-400 mt-1">{stats.inProgress}</p>
           </div>
-          <div className="rounded-2xl border border-surface surface-card p-4">
-            <p className="text-sm text-on-surface-muted font-medium">{tx('pages.clientJobs.needsAttention', undefined, 'Needs attention')}</p>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.needsAttention}</p>
+          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+            <p className="text-xs text-white/50 font-bold uppercase tracking-wider">{tx('pages.clientJobs.needsAttention', undefined, 'Needs attention')}</p>
+            <p className="text-2xl font-black text-rose-400 mt-1">{stats.needsAttention}</p>
           </div>
-          <div className="rounded-2xl border border-surface surface-card p-4">
-            <p className="text-sm text-on-surface-muted font-medium">{tx('pages.clientJobs.finished', undefined, 'Finished')}</p>
-            <p className="text-2xl font-bold text-on-surface mt-1">{stats.finished}</p>
-            <p className="text-xs text-on-surface-muted mt-1">
+          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+            <p className="text-xs text-white/50 font-bold uppercase tracking-wider">{tx('pages.clientJobs.finished', undefined, 'Finished')}</p>
+            <p className="text-2xl font-black text-emerald-400 mt-1">{stats.finished}</p>
+            <p className="text-[10px] font-semibold text-white/30 mt-1 uppercase tracking-widest">
               {tx('pages.clientJobs.finishedBreakdown', { success: stats.finishedSuccess, unsuccessful: stats.finishedUnsuccessful }, `${stats.finishedSuccess} success / ${stats.finishedUnsuccessful} unsuccessful`) }
             </p>
           </div>
         </div>
 
         {/* Filter tabs */}
-        <div className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-surface surface-card p-1.5">
-          {(['all', 'active', 'attention', 'finished'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab
-                ? 'surface-sunken text-on-surface border border-[var(--workspace-primary)]/40'
-                : 'text-on-surface-muted border border-transparent hover:text-on-surface hover-surface'
-                }`}
-            >
-              {tabLabel(tab)}
-            </button>
-          ))}
+        <div className="flex overflow-x-auto scrollbar-hide mb-6 border-b border-white/5">
+          {(['all', 'active', 'attention', 'finished'] as const).map(tab => {
+            const active = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`relative flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold transition-all shrink-0 ${active ? "text-amber-400" : "text-white/40 hover:text-white/70"}`}
+              >
+                {tabLabel(tab)}
+                {active && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500 rounded-t-full shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Content */}
@@ -456,133 +462,139 @@ export default function ClientJobs() {
           </div>
         ) : !jobs || jobs.length === 0 ? (
           allJobs.length === 0 ? (
-            <EmptyState
-              icon={FolderOpen}
-              title={tx('pages.clientJobs.emptyTitle', undefined, 'No projects yet')}
-              description={tx('pages.clientJobs.emptyDescription', undefined, 'Post your first project and receive proposals from verified professionals.')}
-              action={{
-                label: tx('pages.clientJobs.postFree', undefined, "Post a project — it's free"),
-                onClick: () => navigate('/jobs/new'),
-                variant: 'primary',
-              }}
-            />
+            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] flex flex-col items-center text-center py-16 px-8">
+              <div className="h-16 w-16 rounded-2xl flex items-center justify-center mb-5 bg-amber-500/10">
+                <FolderOpen className="w-8 h-8 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">
+                {tx('pages.clientJobs.emptyTitle', undefined, 'No projects yet')}
+              </h3>
+              <p className="text-sm text-white/40 mb-6 max-w-md">
+                {tx('pages.clientJobs.emptyDescription', undefined, 'Post your first project and receive proposals from verified professionals.')}
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/jobs/new')}
+                className="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-colors"
+              >
+                {tx('pages.clientJobs.postFree', undefined, "Post a project — it's free")}
+              </button>
+            </div>
           ) : (
-            <div className="rounded-2xl border px-6 py-10 text-center"
-              style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 70%, transparent)' }}>
-              <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] px-6 py-16 text-center">
+              <h3 className="text-lg font-bold text-white mb-2">
                 {tx('pages.clientJobs.emptyFilteredTitle', undefined, 'No projects in this tab')}
               </h3>
-              <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-sm text-white/40 mb-6">
                 {tx('pages.clientJobs.emptyFilteredDescription', undefined, 'Try another tab to see your other projects.')}
               </p>
               <button
                 type="button"
                 onClick={() => setActiveTab('all')}
-                className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/12 px-3 py-1.5 text-sm font-medium text-amber-200 hover:bg-amber-500/20"
+                className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition-colors"
               >
                 {tx('pages.clientJobs.showAll', undefined, 'Show all projects')}
               </button>
             </div>
           )
         ) : (
-          <div className="space-y-3">
-            {jobs.map((job) => (
+          <div className="flex flex-col rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden">
+            {jobs.map((job, index) => (
               <div 
                 key={job.id}
-                className="rounded-2xl border border-surface surface-card px-4 py-4 sm:px-5"
+                className={`p-6 hover:bg-white/[0.02] transition-colors flex flex-col lg:flex-row lg:items-start justify-between gap-6 group ${index < jobs.length - 1 ? "border-b border-white/5" : ""}`}
               >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3">
-                  <div>
-                    <h3 className="mb-2 text-lg font-semibold text-gray-100">
-                      {job.title}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-200">
-                        {job.category || tx('pages.clientJobs.uncategorized', undefined, 'Uncategorized')}
-                      </span>
-                      <span className={`whitespace-nowrap ${statusPillClass(job)}`}>
-                        {statusLabel(job)}
-                      </span>
-                    </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="mb-2 text-base font-bold text-white group-hover:text-amber-400 transition-colors truncate">
+                    {job.title}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-bold text-white/60 uppercase tracking-wider">
+                      {job.category || tx('pages.clientJobs.uncategorized', undefined, 'Uncategorized')}
+                    </span>
+                    <span className={`whitespace-nowrap rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${statusPillClass(job)}`}>
+                      {statusLabel(job)}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 sm:flex-col sm:items-end shrink-0">
-                    {job.latestContract?.id ? (
-                      <button
-                        onClick={() => navigate(`/contracts/${job.latestContract?.id}`, {
-                          state: {
-                            otherUserId: job.latestContract?.freelancer_id || null,
-                          },
-                        })}
-                        className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/12 px-3 py-1.5 text-sm font-medium text-amber-200 hover:bg-amber-500/20"
-                      >
-                        {job.derivedStatus === 'finished_success' || job.derivedStatus === 'finished_unsuccessful'
-                          ? tx('pages.clientJobs.viewResult', undefined, 'View result')
-                          : tx('pages.clientJobs.openContract', undefined, 'Open contract')}
-                      </button>
-                    ) : job.proposals && job.proposals[0]?.count > 0 && (
-                      <button 
-                        onClick={() => navigate(`/client/jobs/${job.id}/proposals`)}
-                        className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/12 px-3 py-1.5 text-sm font-medium text-amber-200 hover:bg-amber-500/20"
-                      >
-                        {tx('pages.clientJobs.viewProposals', undefined, 'View proposals')}
-                      </button>
-                    )}
-                    {job.derivedStatus === 'open' && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => navigate(getJobEditRoute(job.id))}
-                          className="inline-flex items-center justify-center rounded-lg border border-surface surface-sunken px-3 py-1.5 text-sm font-medium text-on-surface-muted hover-surface"
-                        >
-                          {tx('pages.clientJobs.edit', undefined, 'Edit')}
-                        </button>
-                        <button
-                          onClick={() => void handleDeleteJob(job)}
-                          disabled={deletingJobId === job.id}
-                          className="inline-flex items-center justify-center rounded-lg border border-red-500/30 bg-red-500/12 px-3 py-1.5 text-sm font-medium text-red-200 hover:bg-red-500/20 disabled:opacity-60"
-                        >
-                          {deletingJobId === job.id
-                            ? tx('pages.clientJobs.deleting', undefined, 'Deleting...')
-                            : tx('pages.clientJobs.delete', undefined, 'Delete')}
-                        </button>
-                      </div>
-                    )}
-                    {job.derivedStatus === 'finished_unsuccessful' && (
-                      <button
-                        onClick={() => handleRepost(job)}
-                        className="inline-flex items-center justify-center rounded-lg border border-surface surface-sunken px-3 py-1.5 text-sm font-medium text-on-surface-muted hover-surface"
-                      >
-                        {tx('pages.clientJobs.repostProject', undefined, 'Repost project')}
-                      </button>
-                    )}
+                  
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
+                    <p className="text-xs font-bold text-white">
+                      {formatBudget(job)}
+                    </p>
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
+                      {job.job_type === 'fixed' || job.job_type === 'fixed_price'
+                        ? tx('pages.clientJobs.fixedPrice', undefined, 'Fixed Price')
+                        : tx('pages.clientJobs.hourlyRate', undefined, 'Hourly Rate')}
+                    </p>
+                    <p className="text-xs font-medium text-amber-400/80">
+                      {tx('pages.clientJobs.proposalsCount', { count: job.proposals?.[0]?.count || 0 }, `${job.proposals?.[0]?.count || 0} proposals`)}
+                    </p>
                   </div>
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
-                  <p className="font-semibold text-gray-100 flex items-center gap-1">
-                    {formatBudget(job)}
+
+                  <p className={`mb-2 text-xs font-bold uppercase tracking-wider ${resultTextClass(job)}`}>
+                    {outcomeText(job)}
                   </p>
-                  <p className="inline-flex items-center gap-1 rounded-full border border-surface surface-sunken px-2 py-0.5 text-xs font-medium text-on-surface-muted">
-                    {job.job_type === 'fixed' || job.job_type === 'fixed_price'
-                      ? tx('pages.clientJobs.fixedPrice', undefined, 'Fixed Price')
-                      : tx('pages.clientJobs.hourlyRate', undefined, 'Hourly Rate')}
-                  </p>
-                  <p className="text-sm text-muted">
-                    {tx('pages.clientJobs.proposalsCount', { count: job.proposals?.[0]?.count || 0 }, `${job.proposals?.[0]?.count || 0} proposals`)}
+                  
+                  <p className="text-xs text-white/30 font-medium">
+                    {tx('pages.clientJobs.postedAgo', { time: formatDaysAgo(job.created_at) }, `Posted ${formatDaysAgo(job.created_at)}`)}
                   </p>
                 </div>
 
-                <p className={`mb-2 text-sm font-medium ${resultTextClass(job)}`}>
-                  {outcomeText(job)}
-                </p>
-                
-                <p className="text-sm text-muted">
-                  {tx('pages.clientJobs.postedAgo', { time: formatDaysAgo(job.created_at) }, `Posted ${formatDaysAgo(job.created_at)}`)}
-                </p>
+                <div className="flex items-center gap-2 sm:flex-col sm:items-end shrink-0">
+                  {job.latestContract?.id ? (
+                    <button
+                      onClick={() => navigate(`/workspace/${job.latestContract?.id}`, {
+                        state: {
+                          otherUserId: job.latestContract?.freelancer_id || null,
+                        },
+                      })}
+                      className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition-colors"
+                    >
+                      {job.derivedStatus === 'finished_success' || job.derivedStatus === 'finished_unsuccessful'
+                        ? tx('pages.clientJobs.viewResult', undefined, 'View result')
+                        : tx('pages.clientJobs.openContract', undefined, 'Workspace')}
+                    </button>
+                  ) : job.proposals && job.proposals[0]?.count > 0 && (
+                    <button 
+                      onClick={() => navigate(`/client/jobs/${job.id}/proposals`)}
+                      className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition-colors"
+                    >
+                      {tx('pages.clientJobs.viewProposals', undefined, 'View proposals')}
+                    </button>
+                  )}
+                  {job.derivedStatus === 'open' && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => navigate(getJobEditRoute(job.id))}
+                        className="inline-flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-bold text-white transition-colors"
+                      >
+                        {tx('pages.clientJobs.edit', undefined, 'Edit')}
+                      </button>
+                      <button
+                        onClick={() => void handleDeleteJob(job)}
+                        disabled={deletingJobId === job.id}
+                        className="inline-flex items-center justify-center rounded-lg border border-rose-500/20 bg-rose-500/10 px-4 py-2 text-xs font-bold text-rose-400 hover:bg-rose-500/20 disabled:opacity-60 transition-colors"
+                      >
+                        {deletingJobId === job.id
+                          ? tx('pages.clientJobs.deleting', undefined, 'Deleting...')
+                          : tx('pages.clientJobs.delete', undefined, 'Delete')}
+                      </button>
+                    </div>
+                  )}
+                  {job.derivedStatus === 'finished_unsuccessful' && (
+                    <button
+                      onClick={() => handleRepost(job)}
+                      className="inline-flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-bold text-white transition-colors"
+                    >
+                      {tx('pages.clientJobs.repostProject', undefined, 'Repost project')}
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </main>
 
       <Modal
         isOpen={!!jobToConfirmDelete}
@@ -590,28 +602,29 @@ export default function ClientJobs() {
         title={tx('pages.clientJobs.deleteConfirmTitle', undefined, 'Delete Project')}
         size="md"
         footer={
-          <div className="flex justify-end gap-3 mt-4">
+          <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={() => setJobToConfirmDelete(null)}
-              className="px-4 py-2 rounded-xl text-on-surface-muted hover:text-on-surface transition-colors border border-surface hover-surface"
+              className="px-5 py-2 rounded-lg text-white/50 hover:text-white font-bold transition-colors bg-white/5 hover:bg-white/10"
             >
               {tx('common.cancel', undefined, 'Cancel')}
             </button>
             <button
               onClick={confirmDeleteJob}
               disabled={!!deletingJobId}
-              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
+              className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-bold transition-colors disabled:opacity-50"
             >
               {tx('pages.clientJobs.delete', undefined, 'Delete')}
             </button>
           </div>
         }
       >
-        <p className="text-on-surface-muted mt-2">
+        <p className="text-white/60 mt-2 text-sm">
           {tx('pages.clientJobs.deleteConfirmText', undefined, 'Are you sure you want to delete this project permanently? This action cannot be undone.')}
         </p>
       </Modal>
     </div>
   )
 }
+
 

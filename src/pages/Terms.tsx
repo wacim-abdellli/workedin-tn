@@ -6,25 +6,25 @@ export default function Terms() {
     const { tx } = useTranslation();
 
     return (
-        <div className="min-h-screen" style={{ background: "var(--page-bg)" }}>
+        <div className="min-h-screen bg-[var(--color-bg-subtle)]">
             <SEO {...SEO_CONFIG.terms} url="/terms" />
             <Header />
 
             <div className="container-custom py-12">
                 <div className="max-w-3xl mx-auto">
-                    <h1 className="text-3xl font-bold text-foreground mb-8">{tx('legalPages.terms.title')}</h1>
+                    <h1 className="text-3xl font-bold text-[var(--color-text-primary)] mb-8">{tx('legalPages.terms.title')}</h1>
 
                     <div className="card prose prose-lg max-w-none">
-                        <p className="text-muted mb-6">{tx('legalPages.terms.lastUpdated')}</p>
+                        <p className="text-[var(--color-text-tertiary)] mb-6">{tx('legalPages.terms.lastUpdated')}</p>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.terms.sections.intro.title')}</h2>
-                            <p className="text-foreground/80 mb-4">{tx('legalPages.terms.sections.intro.text')}</p>
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.terms.sections.intro.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)] mb-4">{tx('legalPages.terms.sections.intro.text')}</p>
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.terms.sections.registration.title')}</h2>
-                            <ul className="list-disc list-inside text-foreground/80 space-y-2">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.terms.sections.registration.title')}</h2>
+                            <ul className="list-disc list-inside text-[var(--color-text-secondary)] space-y-2">
                                 <li>{tx('legalPages.terms.sections.registration.items.age')}</li>
                                 <li>{tx('legalPages.terms.sections.registration.items.accuracy')}</li>
                                 <li>{tx('legalPages.terms.sections.registration.items.security')}</li>
@@ -33,9 +33,9 @@ export default function Terms() {
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.terms.sections.platformUse.title')}</h2>
-                            <p className="text-foreground/80 mb-4">{tx('legalPages.terms.sections.platformUse.intro')}</p>
-                            <ul className="list-disc list-inside text-foreground/80 space-y-2">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.terms.sections.platformUse.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)] mb-4">{tx('legalPages.terms.sections.platformUse.intro')}</p>
+                            <ul className="list-disc list-inside text-[var(--color-text-secondary)] space-y-2">
                                 <li>{tx('legalPages.terms.sections.platformUse.items.illegal')}</li>
                                 <li>{tx('legalPages.terms.sections.platformUse.items.impersonation')}</li>
                                 <li>{tx('legalPages.terms.sections.platformUse.items.abusive')}</li>
@@ -45,9 +45,9 @@ export default function Terms() {
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.terms.sections.contractsPayments.title')}</h2>
-                            <p className="text-foreground/80 mb-4">{tx('legalPages.terms.sections.contractsPayments.intro')}</p>
-                            <ul className="list-disc list-inside text-foreground/80 space-y-2">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.terms.sections.contractsPayments.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)] mb-4">{tx('legalPages.terms.sections.contractsPayments.intro')}</p>
+                            <ul className="list-disc list-inside text-[var(--color-text-secondary)] space-y-2">
                                 <li>{tx('legalPages.terms.sections.contractsPayments.items.fee')}</li>
                                 <li>{tx('legalPages.terms.sections.contractsPayments.items.secureMethods')}</li>
                                 <li>{tx('legalPages.terms.sections.contractsPayments.items.holdPeriod')}</li>
@@ -55,16 +55,17 @@ export default function Terms() {
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.terms.sections.disputes.title')}</h2>
-                            <p className="text-foreground/80 mb-4">{tx('legalPages.terms.sections.disputes.text')}</p>
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.terms.sections.disputes.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)] mb-4">{tx('legalPages.terms.sections.disputes.text')}</p>
                         </section>
 
                         <section className="mb-8">
-                            <h2 className="text-xl font-bold mb-4">{tx('legalPages.terms.sections.contact.title')}</h2>
-                            <p className="text-foreground/80">
+                            <h2 className="text-xl font-bold mb-4 text-[var(--color-text-primary)]">{tx('legalPages.terms.sections.contact.title')}</h2>
+                            <p className="text-[var(--color-text-secondary)]">
                                 {tx('legalPages.terms.sections.contact.intro')}
                                 <br />
-                                {tx('legalPages.terms.sections.contact.emailLabel')} {tx('ui.legal_workedin_tn')}</p>
+                                {tx('legalPages.terms.sections.contact.emailLabel')} {tx('ui.legal_workedin_tn')}
+                            </p>
                         </section>
                     </div>
                 </div>

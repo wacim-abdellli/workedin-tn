@@ -1,4 +1,4 @@
-import { Star, User } from 'lucide-react';
+﻿import { Star, User } from 'lucide-react';
 import { OptimizedImage } from '../../common';
 import type { FreelancerData } from '@/types/freelancer';
 import { useTranslation } from '../../../i18n';
@@ -9,13 +9,15 @@ interface ReviewsSectionProps {
 }
 
 function Stars({ rating, size = 'h-3.5 w-3.5' }: { rating: number; size?: string }) {
+    const numRating = Number(rating) || 0;
+    const rounded = Math.round(numRating);
     return (
         <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => (
                 <Star
                     key={i}
-                    className={`${size} ${i < Math.round(rating) ? 'fill-current' : ''}`}
-                    style={{ color: i < Math.round(rating) ? '#F59E0B' : 'rgba(255,255,255,0.2)' }}
+                    className={`${size} ${i < rounded ? 'fill-current' : ''}`}
+                    style={{ color: i < rounded ? '#F59E0B' : 'rgba(255,255,255,0.2)' }}
                 />
             ))}
         </div>
@@ -118,3 +120,4 @@ export default function ReviewsSection({ reviews, stats }: ReviewsSectionProps) 
         </section>
     );
 }
+

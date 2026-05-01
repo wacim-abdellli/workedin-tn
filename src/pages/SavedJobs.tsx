@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Heart, MapPin, Clock, Star, Briefcase } from 'lucide-react';
 import { Header } from '@/components/layout';
@@ -369,3 +369,4 @@ export default function SavedJobsPage() {
     </>
   );
 }
+

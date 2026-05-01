@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+﻿import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import {
     AlertCircle,
     CalendarDays,
@@ -150,8 +150,8 @@ const fmtAmount = (amount: number | null | undefined) => {
     return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number.isFinite(n) ? n : 0)} TND`;
 };
 
-const surface = 'border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#161719] rounded-[10px]';
-const surfaceHover = 'transition-colors duration-[80ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[#1a1b1e]';
+const surface = 'border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] rounded-[10px]';
+const surfaceHover = 'transition-colors duration-[80ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)]';
 const labelClass = 'text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]';
 const bodyClass = 'text-[14px] font-normal leading-[1.6] text-[#8A8880]';
 const monoClass = 'font-mono text-[13px] text-[#8A8880]';
@@ -194,7 +194,7 @@ const resolveStatus = (status: string) => {
     if (st === 'completed') return { label: 'Completed', tone: 'border-[#7F77DD] bg-[#3C3489]/70 text-[#F0EFE8]', accent: 'bg-[#7F77DD]', icon: <CheckCircle className="h-3.5 w-3.5" /> };
     if (st === 'disputed') return { label: 'Disputed', tone: 'border-[#A32D2D] bg-[#501313]/75 text-[#F0EFE8]', accent: 'bg-[#A32D2D]', icon: <ShieldAlert className="h-3.5 w-3.5" /> };
     if (st === 'pending_payment') return { label: 'Pending', tone: 'border-[#185FA5] bg-[#042C53]/75 text-[#F0EFE8]', accent: 'bg-[#185FA5]', icon: <Wallet className="h-3.5 w-3.5" /> };
-    return { label: 'Syncing', tone: 'border-[rgba(255,255,255,0.07)] bg-white/[0.03] text-[#8A8880]', accent: 'bg-[#55534F]', icon: <AlertCircle className="h-3.5 w-3.5" /> };
+    return { label: 'Syncing', tone: 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]', accent: 'bg-[#55534F]', icon: <AlertCircle className="h-3.5 w-3.5" /> };
 };
 
 export default function ContractDetailsSidebar({
@@ -298,7 +298,7 @@ export default function ContractDetailsSidebar({
                 title: isPendingPayment ? 'Payment pending' : 'No action required',
                 body: isPendingPayment ? 'Funding must be confirmed before work begins.' : 'Keep the conversation open while work continues.',
                 primaryLabel: null,
-                tone: 'border-l-[1.5px] border-l-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.07)] bg-[#161719] text-[#8A8880]',
+                tone: 'border-l-[1.5px] border-l-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]',
             };
         })();
 
@@ -368,7 +368,7 @@ export default function ContractDetailsSidebar({
     const rt = roleTheme(userRole);
 
     return (
-        <div className="min-h-[70vh] bg-[#0D0D0E] text-[#F0EFE8]">
+        <div className="min-h-[70vh] bg-[var(--color-bg-base)] text-[#F0EFE8]">
             <style>{`
                 @keyframes contractTabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
                 @keyframes pulseRole{0%,100%{opacity:1}50%{opacity:0.6}}
@@ -377,7 +377,7 @@ export default function ContractDetailsSidebar({
             {/* Role-colored top stripe */}
             <div className={`h-[3px] w-full bg-gradient-to-r ${rt.headerStripe}`} />
 
-            <header className="sticky top-0 z-30 border-b border-[rgba(255,255,255,0.06)] bg-[#0D0D0E]/96 px-5 py-3.5 backdrop-blur-xl">
+            <header className="sticky top-0 z-30 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/96 px-5 py-3.5 backdrop-blur-xl">
                 <div className="flex items-center justify-between gap-3">
                     {/* Left: avatar + title + status */}
                     <div className="flex min-w-0 items-center gap-3">
@@ -422,7 +422,7 @@ export default function ContractDetailsSidebar({
             </header>
 
             {/* Tab bar */}
-            <nav className="sticky top-[68px] z-20 border-b border-[rgba(255,255,255,0.06)] bg-[#0D0D0E]/95 px-5 backdrop-blur-xl">
+            <nav className="sticky top-[68px] z-20 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/95 px-5 backdrop-blur-xl">
                 <div className="flex h-10 items-end gap-6 overflow-x-auto" role="tablist" aria-label="Contract workspace sections">
                     {tabs.map((tab, index) => (
                         <button
@@ -475,20 +475,20 @@ export default function ContractDetailsSidebar({
 
             {previewFile ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="File preview">
-                    <div className="w-full max-w-lg rounded-[10px] bg-[#111214] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+                    <div className="w-full max-w-lg rounded-[10px] bg-[var(--color-bg-elevated)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
                         <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                                 <p className={labelClass}>File preview</p>
                                 <h3 className="mt-1 truncate text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">{previewFile.name}</h3>
                                 <p className={monoClass}>{[previewFile.senderName, fmtDate(previewFile.uploadedAt, 'Unknown'), fmtSize(previewFile.size)].filter(Boolean).join(' · ') || 'Protected contract file'}</p>
                             </div>
-                            <button ref={previewCloseRef} type="button" onClick={() => setPreviewFile(null)} className={`rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#161719] px-3 py-2 text-[13px] font-medium text-[#8A8880] hover:text-[#F0EFE8] ${focusRing}`}>Close</button>
+                            <button ref={previewCloseRef} type="button" onClick={() => setPreviewFile(null)} className={`rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[13px] font-medium text-[#8A8880] hover:text-[#F0EFE8] ${focusRing}`}>Close</button>
                         </div>
-                        <div className="mt-4 rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#0D0D0E] p-4">
+                        <div className="mt-4 rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-base)] p-4">
                             <p className={bodyClass}>Preview opens in a secure focused step first. Use Open file to view or download the asset according to contract access rules.</p>
                         </div>
                         <div className="mt-4 flex justify-end gap-2">
-                            <button type="button" onClick={() => setPreviewFile(null)} className={`rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#161719] px-3 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] ${focusRing}`}>Cancel</button>
+                            <button type="button" onClick={() => setPreviewFile(null)} className={`rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] ${focusRing}`}>Cancel</button>
                             <button type="button" onClick={() => { const file = previewFile; setPreviewFile(null); onOpenSharedFile?.(file); }} className={`rounded-[10px] bg-[#1D9E75] px-3 py-2 text-[14px] font-medium text-[#F0EFE8] hover:bg-[#24b889] ${focusRing}`}>Open file</button>
                         </div>
                     </div>
@@ -539,7 +539,7 @@ function ContractPulse({ model, rt }: { model: WorkspaceModel; rt: RoleTheme }) 
     ];
 
     return (
-        <section className="rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[#111214] px-4 py-4">
+        <section className="rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-4">
             <div className="mb-3 flex items-center justify-between gap-3">
                 <p className={labelClass}>At a glance</p>
                 <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${model.status.tone}`}>{model.status.icon}{model.status.label}</span>
@@ -547,7 +547,7 @@ function ContractPulse({ model, rt }: { model: WorkspaceModel; rt: RoleTheme }) 
 
             <div className="grid grid-cols-3 gap-2">
                 {stats.map((stat) => (
-                    <div key={stat.label} className="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[#161719] px-3 py-3">
+                    <div key={stat.label} className="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-elevated)] px-3 py-3">
                         <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#55534F]">{stat.label}</p>
                         <p className={`mt-1.5 text-[22px] font-bold tracking-[-0.02em] ${rt.accentText}`}>{stat.value}</p>
                         <p className="text-[11px] text-[#55534F]">{stat.hint}</p>
@@ -560,7 +560,7 @@ function ContractPulse({ model, rt }: { model: WorkspaceModel; rt: RoleTheme }) 
                     <span className="text-[12px] text-[#55534F]">Progress</span>
                     <span className={`font-mono text-[12px] font-semibold ${rt.accentText}`}>{model.progressPct}%</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#1a1b1e]">
+                <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
                     <div className={`h-full rounded-full transition-all duration-500 ${rt.accentBg}`} style={{ width: `${model.progressPct}%` }} />
                 </div>
             </div>
@@ -594,7 +594,7 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
                     </button>
                 ) : null}
                 <button type="button" onClick={() => setActiveTab('activity')}
-                    className={`rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[#161719] px-3 py-2 text-[13px] font-medium text-[#8A8880] transition-colors hover:text-[#F0EFE8] ${focusRing} ${rt.focusRingColor}`}>
+                    className={`rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[13px] font-medium text-[#8A8880] transition-colors hover:text-[#F0EFE8] ${focusRing} ${rt.focusRingColor}`}>
                     View history
                 </button>
             </div>
@@ -609,10 +609,10 @@ function ActionDeck({ model, rt, isActionLoading, onDeliver, onRequestChanges, o
     if (!hasActions) return null;
 
     return (
-        <section className="rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[#111214] px-4 py-4">
+        <section className="rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-4">
             <div className="mb-3 flex items-center justify-between gap-3">
                 <p className={labelClass}>Quick actions</p>
-                <span className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[#161719] px-2.5 py-0.5 font-mono text-[11px] text-[#8A8880]">{model.revLeft} rev left</span>
+                <span className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-2.5 py-0.5 font-mono text-[11px] text-[#8A8880]">{model.revLeft} rev left</span>
             </div>
             <div className="flex flex-wrap gap-2">
                 {model.showFreelancerDeliver ? <PrimaryButton rt={rt} onClick={onDeliver} disabled={isActionLoading} icon={<PackageCheck className="h-4 w-4" />} label="Submit delivery" /> : null}
@@ -649,7 +649,7 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
                             className={`rounded-full border px-3 py-1 text-[12px] font-medium transition-colors ${focusRing} ${rt.focusRingColor} ${
                                 fileFilter === filter.id
                                     ? `${rt.accentBg} border-transparent text-[#0D0D0E] font-semibold`
-                                    : 'border-[rgba(255,255,255,0.07)] bg-[#161719] text-[#8A8880] hover:text-[#F0EFE8]'
+                                    : 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880] hover:text-[#F0EFE8]'
                             }`}>
                             {filter.label}
                         </button>
@@ -679,7 +679,7 @@ function MilestonesTab({ model, rt, userRole }: { model: WorkspaceModel; rt: Rol
                     <h3 className="mt-1 text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">{model.completedMilestones}/{model.milestones.length} completed</h3>
                 </div>
                 {userRole === 'freelancer' && model.milestones.length === 0 ? (
-                    <button type="button" disabled className={`rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#111214] px-3 py-2 text-[13px] font-medium text-[#55534F] ${focusRing}`}>+ Add milestone</button>
+                    <button type="button" disabled className={`rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[13px] font-medium text-[#55534F] ${focusRing}`}>+ Add milestone</button>
                 ) : null}
             </div>
 
@@ -702,9 +702,9 @@ function MilestonesTab({ model, rt, userRole }: { model: WorkspaceModel; rt: Rol
 
 function FilesEmptyState({ userRole, canDeliver, onDeliver }: { userRole: 'client' | 'freelancer'; canDeliver: boolean; onDeliver: () => void }) {
     return (
-        <div className="flex items-center justify-between gap-3 rounded-[10px] border-[0.5px] border-dashed border-[rgba(255,255,255,0.07)] bg-[#111214] px-4 py-[14px]">
+        <div className="flex items-center justify-between gap-3 rounded-[10px] border-[0.5px] border-dashed border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-[14px]">
             <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#161719] text-[#55534F]"><FolderOpen className="h-4 w-4" /></div>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#55534F]"><FolderOpen className="h-4 w-4" /></div>
                 <div className="min-w-0">
                     <p className="text-[14px] font-medium text-[#8A8880]">No files shared yet</p>
                     <p className="mt-0.5 text-[13px] text-[#55534F]">{userRole === 'freelancer' ? 'Upload a delivery when work is ready.' : 'Files will appear after the freelancer delivers or shares assets.'}</p>
@@ -751,11 +751,11 @@ function DeliveryFileRow({ file, type, userRole, onPreviewFile }: { file: Contra
     const canOpen = !isLocked || userRole === 'freelancer';
     const rowTone = !isFinal ? 'border-l-[#BA7517]' : isReleased ? 'border-l-[#7F77DD]' : 'border-l-[#55534F]';
     const badge = !isFinal ? 'Review Asset' : isReleased ? 'Released' : 'Pending';
-    const badgeTone = !isFinal ? 'border-[#BA7517] bg-[#633806]/65 text-[#F0EFE8]' : isReleased ? 'border-[#7F77DD] bg-[#3C3489]/70 text-[#F0EFE8]' : 'border-[rgba(255,255,255,0.07)] bg-[#111214] text-[#8A8880]';
+    const badgeTone = !isFinal ? 'border-[#BA7517] bg-[#633806]/65 text-[#F0EFE8]' : isReleased ? 'border-[#7F77DD] bg-[#3C3489]/70 text-[#F0EFE8]' : 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]';
     const contractFile = { id: file.id, name: file.name, url: '', type: file.mimeType ?? null, size: file.sizeBytes ?? null, storageBucket: file.storageBucket ?? 'contract-files', storagePath: file.storagePath };
 
     return (
-        <button type="button" onClick={() => canOpen ? onPreviewFile(contractFile) : undefined} disabled={!canOpen} className={`group flex w-full items-center gap-2 rounded-[10px] border-[0.5px] border-l-[3px] border-[rgba(255,255,255,0.07)] ${rowTone} bg-[#111214] px-4 py-[14px] text-left transition-colors duration-[60ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[#1a1b1e] disabled:cursor-default ${focusRing}`}>
+        <button type="button" onClick={() => canOpen ? onPreviewFile(contractFile) : undefined} disabled={!canOpen} className={`group flex w-full items-center gap-2 rounded-[10px] border-[0.5px] border-l-[3px] border-[rgba(255,255,255,0.07)] ${rowTone} bg-[var(--color-bg-elevated)] px-4 py-[14px] text-left transition-colors duration-[60ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] disabled:cursor-default ${focusRing}`}>
             <FileIcon name={file.name} mimeType={file.mimeType} />
             <div className="min-w-0 flex-1">
                 <p className="truncate text-[14px] font-medium text-[#F0EFE8]">{file.name}</p>
@@ -770,7 +770,7 @@ function DeliveryFileRow({ file, type, userRole, onPreviewFile }: { file: Contra
 
 function SharedFileRow({ file, onPreviewFile }: { file: ContractSharedFile; onPreviewFile: (file: ContractSharedFile) => void }) {
     return (
-        <button type="button" onClick={() => onPreviewFile(file)} className={`group flex w-full items-center gap-2 rounded-[10px] border-[0.5px] border-l-[3px] border-[rgba(255,255,255,0.07)] border-l-[#185FA5] bg-[#111214] px-4 py-[14px] text-left transition-colors duration-[60ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[#1a1b1e] disabled:cursor-default ${focusRing}`}>
+        <button type="button" onClick={() => onPreviewFile(file)} className={`group flex w-full items-center gap-2 rounded-[10px] border-[0.5px] border-l-[3px] border-[rgba(255,255,255,0.07)] border-l-[#185FA5] bg-[var(--color-bg-elevated)] px-4 py-[14px] text-left transition-colors duration-[60ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] disabled:cursor-default ${focusRing}`}>
             <FileIcon name={file.name} mimeType={file.type} />
             <div className="min-w-0 flex-1">
                 <p className="truncate text-[14px] font-medium text-[#F0EFE8]">{file.name}</p>
@@ -788,7 +788,7 @@ function ActivityRow({ event }: { event: ContractActivityEvent }) {
     if (isSystem) {
         return (
             <div className="flex justify-center">
-                <div className="rounded-full border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#111214] px-3 py-1.5 text-center text-[13px] font-medium text-[#8A8880]">
+                <div className="rounded-full border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-1.5 text-center text-[13px] font-medium text-[#8A8880]">
                     {event.text}{event.timestamp ? ` — ${fmtTime(event.timestamp)}` : ''}
                 </div>
             </div>
@@ -801,7 +801,7 @@ function ActivityRow({ event }: { event: ContractActivityEvent }) {
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                     <p className="text-[14px] font-medium text-[#F0EFE8]">{event.actorName || (event.actorRole === 'client' ? 'Client' : 'Freelancer')}</p>
-                    {event.actorRole ? <span className="rounded-full border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#111214] px-2 py-0.5 text-[11px] font-medium text-[#8A8880]">{event.actorRole}</span> : null}
+                    {event.actorRole ? <span className="rounded-full border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-2 py-0.5 text-[11px] font-medium text-[#8A8880]">{event.actorRole}</span> : null}
                     {event.timestamp ? <span className={monoClass}>{fmtTime(event.timestamp)}</span> : null}
                 </div>
                 <p className={bodyClass}>{event.text}</p>
@@ -816,15 +816,15 @@ function TimelineMilestone({ milestone, index, rt }: { milestone: ContractMilest
     return (
         <div className="relative w-48 shrink-0 pt-10">
             <div className={`absolute left-0 top-1 flex h-9 w-9 items-center justify-center rounded-full border ${
-                done ? `${rt.accentBg} border-transparent text-[#0D0D0E]` : 'border-[rgba(255,255,255,0.07)] bg-[#111214] text-[#55534F]'
+                done ? `${rt.accentBg} border-transparent text-[#0D0D0E]` : 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#55534F]'
             }`}>
                 {done ? <CheckCircle className="h-4 w-4" /> : <span className="text-[13px] font-semibold">{index + 1}</span>}
             </div>
-            <div className="rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[#161719] px-3 py-3">
+            <div className="rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-3">
                 <p className="truncate text-[13px] font-semibold text-[#F0EFE8]">{title}</p>
                 <p className="mt-0.5 text-[11px] text-[#55534F]">{fmtDate(milestone.due_date)}</p>
                 <span className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-                    done ? `${rt.accentBorder} ${rt.accentFill} ${rt.accentText}` : 'border-[rgba(255,255,255,0.07)] bg-[#111214] text-[#55534F]'
+                    done ? `${rt.accentBorder} ${rt.accentFill} ${rt.accentText}` : 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#55534F]'
                 }`}>{done ? 'Done' : 'Open'}</span>
             </div>
         </div>
@@ -832,13 +832,13 @@ function TimelineMilestone({ milestone, index, rt }: { milestone: ContractMilest
 }
 
 function InfoChip({ icon, label, hideOnMobile, className }: { icon: ReactNode; label: string; hideOnMobile?: boolean; className?: string }) {
-    return <span className={`items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.07)] bg-[#161719] px-2.5 py-1 font-mono text-[12px] text-[#8A8880] ${hideOnMobile ? 'hidden sm:inline-flex' : 'inline-flex'} ${className ?? ''}`}>{icon}{label}</span>;
+    return <span className={`items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-2.5 py-1 font-mono text-[12px] text-[#8A8880] ${hideOnMobile ? 'hidden sm:inline-flex' : 'inline-flex'} ${className ?? ''}`}>{icon}{label}</span>;
 }
 
 function FileIcon({ name, mimeType }: { name?: string | null; mimeType?: string | null }) {
     const value = `${name || ''} ${mimeType || ''}`.toLowerCase();
     const Icon = value.includes('image') || /\.(png|jpe?g|gif|webp|svg)$/i.test(value) ? Image : value.includes('zip') || value.includes('archive') ? FileArchive : FileText;
-    return <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#161719] text-[#8A8880]"><Icon className="h-4 w-4" /></div>;
+    return <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]"><Icon className="h-4 w-4" /></div>;
 }
 
 function LockedFinalNotice({ count }: { count: number }) {
@@ -855,8 +855,8 @@ function LockedFinalNotice({ count }: { count: number }) {
 
 function CompactEmpty({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
     return (
-        <div className="flex items-center gap-3 rounded-[10px] border-[0.5px] border-dashed border-[rgba(255,255,255,0.07)] bg-[#111214] px-4 py-[14px]">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#161719] text-[#55534F]">{icon}</div>
+        <div className="flex items-center gap-3 rounded-[10px] border-[0.5px] border-dashed border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-[14px]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#55534F]">{icon}</div>
             <div><p className="text-[14px] font-medium text-[#8A8880]">{title}</p><p className="mt-0.5 text-[13px] text-[#55534F]">{text}</p></div>
         </div>
     );
@@ -865,7 +865,7 @@ function CompactEmpty({ icon, title, text }: { icon: ReactNode; title: string; t
 function PartyAvatar({ party, size = 'md' }: { party?: { full_name?: string; avatar_url?: string | null } | null; size?: 'md' | 'lg' }) {
     const dim = size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
     return (
-        <div className={`relative flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[#161719] text-[#8A8880]`}>
+        <div className={`relative flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]`}>
             {party?.avatar_url ? <img src={party.avatar_url} alt={party.full_name || 'User'} className="h-full w-full object-cover" /> : <User className="h-4 w-4" />}
         </div>
     );
@@ -876,9 +876,12 @@ function PrimaryButton({ rt, onClick, disabled, icon, label }: { rt: RoleTheme; 
 }
 
 function GhostButton({ onClick, disabled, icon, label }: { onClick?: () => void; disabled?: boolean; icon: ReactNode; label: string }) {
-    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-2 rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[#161719] px-3 py-2 text-[14px] font-medium text-[#8A8880] transition-colors duration-[80ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[#1a1b1e] hover:text-[#F0EFE8] disabled:opacity-35 ${focusRing}`}>{icon}{label}</button>;
+    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-2 rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[14px] font-medium text-[#8A8880] transition-colors duration-[80ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] hover:text-[#F0EFE8] disabled:opacity-35 ${focusRing}`}>{icon}{label}</button>;
 }
 
 function DangerButton({ onClick, disabled, icon, label }: { onClick?: () => void; disabled?: boolean; icon: ReactNode; label: string }) {
     return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-2 rounded-[10px] border-[0.5px] border-[#A32D2D] bg-[#501313]/75 px-3 py-2 text-[14px] font-medium text-[#F0EFE8] transition-colors duration-[80ms] hover:bg-[#6a1919] disabled:opacity-50 ${focusRing}`}>{icon}{label}</button>;
 }
+
+
+

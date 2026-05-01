@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+﻿import React, { useId, useState } from 'react';
 import { Upload, FileText, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from '../../i18n';
@@ -104,7 +104,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     "rounded-[1.6rem] border-2 border-dashed p-8 text-center transition-colors",
                     isDragging
                         ? "border-[color:var(--workspace-primary)] bg-[color:var(--workspace-primary)]/10"
-                        : "border-border bg-white/70 dark:border-white/10 border-border dark:bg-white/[0.03]"
+                        : "border-border bg-white/70 dark:border-white/10 border-border dark:bg-[var(--color-bg-elevated)]"
                 )}
             >
                 <div className="flex justify-center">
@@ -224,3 +224,4 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         </div>
     );
 };
+

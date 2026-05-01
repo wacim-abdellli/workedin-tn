@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { Pencil, X, Check, Search, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
 import type { Skill, SkillCategory } from '@/types';
 import { PREDEFINED_SKILLS } from '@/types';
@@ -331,3 +331,4 @@ export default function SkillsSection({ skills, language, isOwner, onUpdate }: P
         </section>
     );
 }
+

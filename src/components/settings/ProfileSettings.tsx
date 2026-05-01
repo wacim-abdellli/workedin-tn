@@ -73,8 +73,9 @@ export default function ProfileSettings() {
               await updateProfile({
                   full_name: form.full_name,
                   phone: normalizeOptionalPhone(form.phone),
-                    email: form.email,
-                    bio: form.bio,
+                  phone_verified: !!form.phone, // Automatically mark as verified for now
+                  email: form.email,
+                  bio: form.bio,
                   location: form.location,
               });
               showToast(tx('settings.toasts.profileSaved', undefined, 'Profile updated successfully'), 'success');

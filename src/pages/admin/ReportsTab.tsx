@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Check, Flag, RefreshCw, X } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
@@ -96,7 +96,7 @@ export default function ReportsTab() {
                             <button
                                 type="button"
                                 onClick={() => refetch()}
-                                className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#111] px-4 text-sm font-semibold text-white transition-all hover:border-[#3a3a3a] hover:bg-[#1a1a1a]"
+                                className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] px-4 text-sm font-semibold text-white transition-all hover:border-[#3a3a3a] hover:bg-[var(--color-bg-muted)]"
                             >
                                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                                 {tr('تحديث', 'Refresh', 'Actualiser')}
@@ -263,3 +263,6 @@ export default function ReportsTab() {
         </ErrorBoundary>
     );
 }
+
+
+

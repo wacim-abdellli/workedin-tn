@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Check, Eye, Loader2, RefreshCw, Shield, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
@@ -267,7 +267,7 @@ export default function VerificationsTab() {
                         <button
                             type="button"
                             onClick={load}
-                            className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#111] px-4 text-sm font-semibold text-white transition-all hover:border-[#3a3a3a] hover:bg-[#1a1a1a]"
+                            className="inline-flex h-10 items-center gap-2 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] px-4 text-sm font-semibold text-white transition-all hover:border-[#3a3a3a] hover:bg-[var(--color-bg-muted)]"
                         >
                             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                             {tx('dashboard.admin.verification.refresh', undefined, 'Refresh')}
@@ -385,3 +385,6 @@ export default function VerificationsTab() {
         </ErrorBoundary>
     );
 }
+
+
+

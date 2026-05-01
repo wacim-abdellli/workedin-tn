@@ -1,4 +1,4 @@
-import { logger } from '@/lib/logger';
+﻿import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import {
     CheckCircle2,
@@ -291,7 +291,7 @@ export default function VerificationQueue() {
     }
 
     return (
-         <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.12),transparent_24%),linear-gradient(180deg,#eef3fb_0%,#e8eef8_100%)] py-8 dark:bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_22%),linear-gradient(180deg,#050811_0%,#08101c_42%,#0a1220_100%)]">
+         <div className="min-h-screen bg-[var(--color-bg-subtle)] py-8">
              <SEO title={tx('dashboard.admin.verificationQueue.seoTitle', undefined, 'Identity verification requests - Admin dashboard')} description={tx('dashboard.admin.verificationQueue.seoDescription', undefined, 'Review and manage submitted identity verification requests')} />
              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                  {/* Header */}
@@ -330,7 +330,7 @@ export default function VerificationQueue() {
                          </h2>
 
                          {verifications.length === 0 ? (
-                             <div className="bg-white dark:bg-[var(--color-bg-elevated)] rounded-xl p-8 text-center border border-[var(--color-border-subtle)] dark:border-[var(--color-border-strong)] dark:border-[var(--color-border-default)]">
+                             <div className="bg-[var(--color-bg-elevated)] rounded-xl p-8 text-center border border-[var(--color-border-subtle)] dark:border-[var(--color-border-strong)] dark:border-[var(--color-border-default)]">
                                  <CheckCircle2 className="w-12 h-12 text-[var(--color-status-success)] mx-auto mb-4" />
                                  <p className="text-[var(--color-text-secondary)] dark:text-[var(--color-text-muted)]">
                                      {tx('dashboard.admin.verificationQueue.noPending', undefined, 'No pending verification requests')}
@@ -540,7 +540,7 @@ export default function VerificationQueue() {
                                     setShowRejectModal(false);
                                     setRejectionReason('');
                                 }}
-                                className="flex-1 px-4 py-3 bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-elevated)] dark:bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)] dark:text-[var(--color-text-disabled)] rounded-xl font-medium hover:bg-[var(--color-bg-muted)] dark:hover:bg-gray-600 transition-colors"
+                                className="flex-1 px-4 py-3 bg-[var(--color-bg-subtle)] dark:bg-[var(--color-bg-muted)] text-[var(--color-text-secondary)] dark:text-[var(--color-text-disabled)] rounded-xl font-medium hover:bg-[var(--color-bg-muted)] hover:bg-[var(--color-bg-muted)] transition-colors"
                              >
                                  {tx('dashboard.admin.verificationQueue.cancel', undefined, 'Cancel')}
                              </button>
@@ -562,3 +562,6 @@ export default function VerificationQueue() {
         </div>
     );
 }
+
+
+

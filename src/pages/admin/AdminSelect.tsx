@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 interface Option {
@@ -57,3 +57,4 @@ export default function AdminSelect({ value, onChange, options, className = '' }
     </div>
   );
 }
+

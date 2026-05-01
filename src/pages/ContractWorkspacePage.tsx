@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, AlertCircle, MessageSquare, Users } from 'lucide-react';
 import { Header } from '../components/layout';
@@ -377,3 +377,4 @@ export default function ContractWorkspacePage() {
         </div>
     );
 }
+

@@ -438,13 +438,13 @@ export default function PortfolioDashboard() {
                         </div>
 
                         <div className="flex items-center gap-3 self-start md:self-center">
-                            <div className="flex items-center bg-[#1b1b1b] rounded-2xl p-1 border border-white/10">
+                            <div className="flex items-center bg-[var(--color-bg-elevated)] rounded-2xl p-1 border border-[var(--color-border-default)]">
                                 <button
                                     onClick={() => setViewMode('grid')}
                                     className={`h-10 w-10 rounded-xl inline-flex items-center justify-center transition-colors ${
                                         viewMode === 'grid'
-                                            ? 'bg-[#8B5CF6]/20 text-[#8B5CF6] border border-[#8B5CF6]/45'
-                                            : 'text-white/45 hover:text-white/75'
+                                            ? 'bg-[var(--workspace-primary-dim)] text-[var(--workspace-primary)] border border-[var(--workspace-primary)]/40'
+                                            : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
                                     }`}
                                     aria-label={tx('portfolio.view.gridAria')}
                                 >
@@ -454,8 +454,8 @@ export default function PortfolioDashboard() {
                                     onClick={() => setViewMode('list')}
                                     className={`h-10 w-10 rounded-xl inline-flex items-center justify-center transition-colors ${
                                         viewMode === 'list'
-                                            ? 'bg-[#8B5CF6]/20 text-[#8B5CF6] border border-[#8B5CF6]/45'
-                                            : 'text-white/45 hover:text-white/75'
+                                            ? 'bg-[var(--workspace-primary-dim)] text-[var(--workspace-primary)] border border-[var(--workspace-primary)]/40'
+                                            : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
                                     }`}
                                     aria-label={tx('portfolio.view.listAria')}
                                 >
@@ -478,8 +478,8 @@ export default function PortfolioDashboard() {
                 {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[...Array(6)].map((_, i) => (
-                            <div key={i} className="bg-[#141414] rounded-2xl overflow-hidden border border-white/10 shadow-sm">
-                                <Skeleton className="aspect-video w-full bg-white/5" />
+                            <div key={i} className="bg-[var(--color-bg-elevated)] rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] shadow-sm">
+                                <Skeleton className="aspect-video w-full bg-[var(--color-bg-muted)]" />
                                 <div className="p-4 space-y-2">
                                     <Skeleton className="h-5 w-3/4 bg-white/5" />
                                     <Skeleton className="h-4 w-full bg-white/5" />
@@ -500,7 +500,7 @@ export default function PortfolioDashboard() {
                             return (
                                 <div
                                     key={item.id}
-                                    className={`bg-[#141414] rounded-2xl overflow-hidden border border-white/10 group transition-all duration-200 hover:border-white/20 hover:bg-[#181818] ${
+                                    className={`bg-[var(--color-bg-elevated)] rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] group transition-all duration-200 hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-muted)] ${
                                         viewMode === 'list' ? 'sm:flex' : ''
                                     }`}
                                 >
@@ -573,7 +573,7 @@ export default function PortfolioDashboard() {
                                                 {item.skills_used?.slice(0, 3).map((skill, i) => (
                                                     <span
                                                         key={i}
-                                                        className="max-w-full truncate px-2.5 py-1 bg-[#8B5CF6]/12 text-[#c4b5fd] text-xs rounded-full border border-[#8B5CF6]/35"
+                                                        className="max-w-full truncate px-2.5 py-1 bg-[var(--workspace-primary-dim)] text-[var(--workspace-primary)] text-xs rounded-full border border-[var(--workspace-primary)]/30"
                                                         title={skill}
                                                     >
                                                         {skill}
@@ -591,7 +591,7 @@ export default function PortfolioDashboard() {
                                                     {item.tools_used.slice(0, 2).map((tool, index) => (
                                                         <span
                                                             key={`${tool}-${index}`}
-                                                            className="max-w-full truncate px-2.5 py-1 bg-[#f59e0b]/12 text-[#fbbf24] text-xs rounded-full border border-[#f59e0b]/35"
+                                                            className="max-w-full truncate px-2.5 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs rounded-full border border-amber-500/30"
                                                             title={tool}
                                                         >
                                                             {tool}
@@ -611,9 +611,9 @@ export default function PortfolioDashboard() {
                         })}
                     </div>
                 ) : (
-                    <div className="text-center py-20 bg-[#141414] rounded-3xl border border-dashed border-white/20">
-                        <div className="w-16 h-16 bg-white/[0.04] rounded-full flex items-center justify-center mx-auto mb-4">
-                            <ImageIcon className="w-8 h-8 text-white/30" />
+                    <div className="text-center py-20 bg-[var(--color-bg-elevated)] rounded-3xl border border-dashed border-[var(--color-border-default)]">
+                        <div className="w-16 h-16 bg-[var(--color-bg-muted)] rounded-full flex items-center justify-center mx-auto mb-4">
+                            <ImageIcon className="w-8 h-8 text-[var(--color-text-tertiary)]" />
                         </div>
                         <h3 className="text-xl font-bold text-white mb-2">{t.portfolio.empty.title}</h3>
                         <p className="text-white/55 mb-6 max-w-md mx-auto">{t.portfolio.empty.description}</p>

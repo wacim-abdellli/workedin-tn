@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Clock, ExternalLink, Share2, Sparkles, Users, BarChart2, Trophy, Inbox, Edit } from 'lucide-react';
+﻿import { Calendar, DollarSign, Clock, Share2, Sparkles, Users, BarChart2, Trophy, Inbox, Edit } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from '../../i18n';
 import { ROUTES, getJobEditRoute } from '../../lib/routes';
@@ -39,7 +39,7 @@ export default function JobEmptyPane({ job }: JobSummaryProps) {
     const { jobId } = useParams<{ jobId: string }>();
 
     if (!job) return (
-        <div className="flex-1 flex flex-col items-center justify-center py-20 px-8 text-center" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex-1 flex flex-col items-center justify-center py-20 px-8 text-center text-[var(--color-text-primary)]/40">
             <Inbox className="w-12 h-12 mx-auto mb-4 opacity-20" />
             <p className="text-sm">Select a proposal to view details</p>
         </div>
@@ -57,23 +57,17 @@ export default function JobEmptyPane({ job }: JobSummaryProps) {
     const durationLabel = formatDuration(job.duration, tx);
 
     return (
-        <div className="flex-1 overflow-y-auto p-6 space-y-5" style={{ background: 'var(--page-bg)' }}>
+        <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-[var(--color-bg-base)]">
 
             {/* Empty prompt */}
-            <div
-                className="rounded-2xl border py-10 px-6 text-center"
-                style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 60%, transparent)' }}
-            >
-                <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                    style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}
-                >
-                    <Inbox className="w-7 h-7" style={{ color: 'var(--workspace-primary-mid)' }} />
+            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] py-10 px-6 text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-amber-500/10">
+                    <Inbox className="w-7 h-7 text-amber-400" />
                 </div>
-                <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="text-base font-bold mb-1 text-[var(--color-text-primary)]">
                     Select a proposal
                 </h3>
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-sm text-[var(--color-text-primary)]/50">
                     Click any proposal from the list to review it here.
                 </p>
             </div>
@@ -82,72 +76,61 @@ export default function JobEmptyPane({ job }: JobSummaryProps) {
             {job.stats && (
                 <div className="grid grid-cols-3 gap-3">
                     {[
-                        { icon: Users, label: 'Proposals', value: job.stats.proposals, color: 'var(--workspace-primary-mid)', bg: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' },
-                        { icon: BarChart2, label: 'Interviews', value: job.stats.interviewing, color: '#818cf8', bg: 'rgba(99,102,241,0.12)' },
-                        { icon: Trophy, label: 'Shortlisted', value: job.stats.shortlisted, color: '#fbbf24', bg: 'rgba(245,158,11,0.12)' },
+                        { icon: Users, label: 'Proposals', value: job.stats.proposals, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                        { icon: BarChart2, label: 'Interviews', value: job.stats.interviewing, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+                        { icon: Trophy, label: 'Shortlisted', value: job.stats.shortlisted, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
                     ].map(({ icon: Icon, label, value, color, bg }) => (
-                        <div key={label}
-                            className="rounded-2xl border p-4 text-center"
-                            style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 60%, transparent)' }}>
-                            <div className="w-8 h-8 rounded-xl flex items-center justify-center mx-auto mb-2" style={{ background: bg }}>
-                                <Icon className="w-4 h-4" style={{ color }} />
+                        <div key={label} className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] p-4 text-center">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center mx-auto mb-2 ${bg}`}>
+                                <Icon className={`w-4 h-4 ${color}`} />
                             </div>
-                            <p className="text-xl font-black" style={{ color }}>{value}</p>
-                            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{label}</p>
+                            <p className={`text-xl font-black ${color}`}>{value}</p>
+                            <p className="text-[10px] mt-0.5 text-[var(--color-text-primary)]/50 uppercase tracking-wider font-bold">{label}</p>
                         </div>
                     ))}
                 </div>
             )}
 
             {/* Job details */}
-            <div
-                className="rounded-2xl border overflow-hidden"
-                style={{ background: 'var(--card-bg)', borderColor: 'color-mix(in srgb, var(--border) 60%, transparent)' }}
-            >
-                <div
-                    className="px-4 py-3 border-b relative overflow-hidden"
-                    style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)', background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 7%, var(--card-bg)), var(--card-bg))' }}
-                >
-                    <h3 className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--workspace-primary-mid)' }}>
+            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] overflow-hidden">
+                <div className="px-4 py-3 border-b border-white/5 relative overflow-hidden bg-gradient-to-br from-amber-500/5 to-transparent">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-amber-400">
                         {tx('jobProposals.jobDetails', undefined, 'Job Details')}
                     </h3>
                 </div>
 
-                <div className="divide-y" style={{ borderColor: 'color-mix(in srgb, var(--border) 40%, transparent)' }}>
+                <div className="divide-y divide-white/5">
                     {[
-                        { icon: DollarSign, iconBg: 'color-mix(in srgb, #22c55e 12%, transparent)', iconColor: '#22c55e', label: 'Budget', value: `${job.budget_min} – ${job.budget_max} ${currency}`, sub: jobTypeLabel },
-                        { icon: Clock, iconBg: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)', iconColor: 'var(--workspace-primary-mid)', label: 'Duration', value: durationLabel, sub: null },
-                        { icon: Calendar, iconBg: 'rgba(99,102,241,0.12)', iconColor: '#818cf8', label: 'Posted', value: formattedDate, sub: null },
+                        { icon: DollarSign, iconBg: 'bg-emerald-500/10', iconColor: 'text-emerald-400', label: 'Budget', value: `${job.budget_min} – ${job.budget_max} ${currency}`, sub: jobTypeLabel },
+                        { icon: Clock, iconBg: 'bg-amber-500/10', iconColor: 'text-amber-400', label: 'Duration', value: durationLabel, sub: null },
+                        { icon: Calendar, iconBg: 'bg-indigo-500/10', iconColor: 'text-indigo-400', label: 'Posted', value: formattedDate, sub: null },
                     ].map(({ icon: Icon, iconBg, iconColor, label, value, sub }) => (
                         <div key={label} className="flex items-center gap-3 px-4 py-3.5">
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" style={{ background: iconBg }}>
-                                <Icon className="w-4 h-4" style={{ color: iconColor }} />
+                            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+                                <Icon className={`w-4 h-4 ${iconColor}`} />
                             </span>
                             <div className="min-w-0">
-                                <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</p>
-                                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{value}</p>
-                                {sub && <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
+                                <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5 text-[var(--color-text-primary)]/40">{label}</p>
+                                <p className="text-sm font-bold text-[var(--color-text-primary)]">{value}</p>
+                                {sub && <p className="text-[11px] text-[var(--color-text-primary)]/50">{sub}</p>}
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="px-4 py-3 border-t grid grid-cols-2 gap-2"
-                    style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}>
+                <div className="px-4 py-3 border-t border-white/5 grid grid-cols-2 gap-2">
                     <button type="button"
                         onClick={() => {
                             if (navigator.share) navigator.share({ url: window.location.href });
                             else navigator.clipboard.writeText(window.location.href);
                         }}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-semibold transition-all hover:opacity-80"
-                        style={{ borderColor: 'color-mix(in srgb, var(--border) 80%, transparent)', color: 'var(--text-secondary)' }}>
+                        className="flex items-center justify-center gap-1.5 rounded-lg border border-white/10 py-2 text-xs font-semibold text-[var(--color-text-primary)]/70 hover:bg-white/5 transition-colors">
                         <Share2 className="w-3.5 h-3.5" />
                         Share
                     </button>
                     <button type="button"
                         onClick={() => navigate(jobId ? getJobEditRoute(jobId) : ROUTES.jobs)}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-semibold transition-all hover:brightness-110"
-                        style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 28%, transparent)', color: 'var(--workspace-primary-mid)', background: 'color-mix(in srgb, var(--workspace-primary) 5%, transparent)' }}>
+                        className="flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/20 py-2 text-xs font-bold text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 transition-colors">
                         <Edit className="w-3.5 h-3.5" />
                         Edit Job
                     </button>
@@ -155,25 +138,20 @@ export default function JobEmptyPane({ job }: JobSummaryProps) {
             </div>
 
             {/* AI card */}
-            <div
-                className="rounded-2xl p-5 relative overflow-hidden border"
-                style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--workspace-primary) 16%, var(--card-bg)), var(--card-bg))', borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)' }}
-            >
-                <div aria-hidden className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full blur-3xl opacity-25"
-                    style={{ background: 'var(--workspace-primary)' }} />
+            <div className="rounded-xl p-5 relative overflow-hidden border border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-transparent">
+                <div aria-hidden className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full blur-3xl opacity-20 bg-amber-500" />
                 <div className="relative">
                     <div className="flex items-center gap-2 mb-2">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 15%, transparent)' }}>
-                            <Sparkles className="w-4 h-4" style={{ color: 'var(--workspace-primary-mid)' }} />
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-amber-500/20">
+                            <Sparkles className="w-4 h-4 text-amber-400" />
                         </div>
-                        <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>AI Recommendations</h3>
+                        <h3 className="text-sm font-bold text-[var(--color-text-primary)]">AI Recommendations</h3>
                     </div>
-                    <p className="text-xs leading-relaxed mb-3" style={{ color: 'var(--text-secondary)' }}>
+                    <p className="text-xs leading-relaxed mb-4 text-[var(--color-text-primary)]/60">
                         We analyzed your requirements and found 3 freelancers that match your project at 95%.
                     </p>
                     <button type="button"
-                        className="w-full rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-110"
-                        style={{ background: 'var(--workspace-primary)', color: '#fff', boxShadow: '0 4px 16px -4px color-mix(in srgb, var(--workspace-primary) 50%, transparent)' }}>
+                        className="w-full rounded-lg py-2.5 text-xs font-bold text-[#0a0a0a] bg-amber-500 hover:bg-amber-400 transition-colors shadow-[0_4px_16px_-4px_rgba(245,158,11,0.5)]">
                         View Suggestions
                     </button>
                 </div>
@@ -181,3 +159,5 @@ export default function JobEmptyPane({ job }: JobSummaryProps) {
         </div>
     );
 }
+
+

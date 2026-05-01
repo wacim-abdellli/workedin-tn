@@ -62,9 +62,11 @@ export interface Profile {
     legal_preferences?: Record<string, unknown>;
     preferred_language: Language;
     cin_verified?: boolean;
+    phone_verified?: boolean;
     onboarding_completed?: boolean;
     client_onboarding_completed?: boolean;
     freelancer_onboarding_completed?: boolean;
+    is_online_for_messages?: boolean;
     created_at: string;
     updated_at: string;
 }

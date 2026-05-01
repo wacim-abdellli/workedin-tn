@@ -1,4 +1,4 @@
-import type { UseFormReturn } from 'react-hook-form';
+﻿import type { UseFormReturn } from 'react-hook-form';
 import { Sparkles, CheckCircle, DollarSign, ArrowRight, ArrowLeft, Zap, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import Button from '../ui/Button';
@@ -118,28 +118,28 @@ export default function OnboardingStep2({
                     <Zap className="w-3.5 h-3.5" />
                     {tx('onboarding.freelancer.skillsRateAndAvailability', undefined, 'Skills, rate, and availability')}
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
                     {tx('onboarding.freelancer.step2TitleUpdated', undefined, 'Choose skills and set your hourly rate')}
                 </h2>
-                <p className="text-base text-gray-600 dark:text-on-surface-muted leading-relaxed">
+                <p className="text-base text-gray-600 dark:text-[var(--color-text-tertiary)] leading-relaxed">
                     {tx('onboarding.freelancer.step2Description', undefined, 'Use Upwork-style profile signals: clear services, realistic hourly rate, and current availability.')}
                 </p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                 {/* Skills Selection */}
-                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-gray-800 rounded-2xl p-6 shadow-sm">
+                <div className="relative bg-gradient-to-br from-[var(--color-bg-elevated)] to-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-2xl p-6 shadow-sm">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl -z-10" />
                     
                     <div className="flex items-center justify-between mb-6">
-                        <label className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <label className="text-lg font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
                             <Sparkles className="w-5 h-5 text-purple-400" />
                             {t.profile.skills}
-                            <span className="text-xs font-normal text-on-surface-subtle dark:text-on-surface-muted">({t.profile.optional})</span>
+                            <span className="text-xs font-normal text-[var(--color-text-primary)]-subtle dark:text-[var(--color-text-tertiary)]">({t.profile.optional})</span>
                         </label>
                         <span className={`text-sm font-bold px-3 py-1.5 rounded-full transition-all duration-300 ${selectedSkillCount === maxSkills
-                            ? 'bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/20 scale-105'
-                            : 'bg-[#1a1a1a] text-on-surface-muted border border-gray-800'
+                            ? 'bg-gradient-to-r from-purple-500 to-violet-500 text-[var(--color-text-primary)] shadow-lg shadow-purple-500/20 scale-105'
+                            : 'bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)] border border-[var(--color-border-subtle)]'
                             }`}>
                             {selectedSkillCount}/{maxSkills}
                         </span>
@@ -147,13 +147,13 @@ export default function OnboardingStep2({
 
                     {/* Search Bar */}
                     <div className="mb-4 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-subtle" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-primary)]-subtle" />
                         <input
                             type="text"
                             placeholder={tx('profile.searchSkills', undefined, 'Search skills...')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-[#101216] border border-gray-800 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                            className="w-full pl-10 pr-4 py-2.5 bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-xl text-sm text-[var(--color-text-primary)] placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
                         />
                     </div>
 
@@ -168,23 +168,23 @@ export default function OnboardingStep2({
                             const displaySkills = isExpanded ? skills : primarySkills;
 
                             return (
-                                <div key={category} className="border border-gray-800 rounded-xl overflow-hidden">
+                                <div key={category} className="border border-[var(--color-border-subtle)] rounded-xl overflow-hidden">
                                     <button
                                         type="button"
                                         onClick={() => toggleCategory(category)}
-                                        className="w-full flex items-center justify-between px-4 py-2.5 bg-[#101216] hover:bg-[#151519] transition-colors"
+                                        className="w-full flex items-center justify-between px-4 py-2.5 bg-[var(--color-bg-subtle)] hover:bg-[var(--color-bg-subtle)] transition-colors"
                                     >
                                         <span className="text-sm font-semibold text-purple-400">
                                             {getCategoryLabel(category)}
                                         </span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs text-on-surface-subtle">
+                                            <span className="text-xs text-[var(--color-text-primary)]-subtle">
                                                 {skills.filter(s => selectedSkills.find(sel => sel.id === s.id)).length}/{skills.length}
                                             </span>
                                             {isExpanded ? (
-                                                <ChevronUp className="w-4 h-4 text-on-surface-subtle" />
+                                                <ChevronUp className="w-4 h-4 text-[var(--color-text-primary)]-subtle" />
                                             ) : (
-                                                <ChevronDown className="w-4 h-4 text-on-surface-subtle" />
+                                                <ChevronDown className="w-4 h-4 text-[var(--color-text-primary)]-subtle" />
                                             )}
                                         </div>
                                     </button>
@@ -202,17 +202,17 @@ export default function OnboardingStep2({
                                                             relative group p-3 rounded-lg text-start transition-all duration-300
                                                             flex items-center justify-between
                                                             ${isSelected
-                                                                ? 'bg-gradient-to-br from-purple-500 to-violet-500 text-white shadow-lg shadow-purple-500/30 scale-105 ring-2 ring-purple-500/50'
-                                                                : 'bg-[#1a1a1a] border border-gray-800 hover:border-purple-500/50 hover:shadow-md'
+                                                                ? 'bg-gradient-to-br from-purple-500 to-violet-500 text-[var(--color-text-primary)] shadow-lg shadow-purple-500/30 scale-105 ring-2 ring-purple-500/50'
+                                                                : 'bg-[var(--color-bg-muted)] border border-[var(--color-border-subtle)] hover:border-purple-500/50 hover:shadow-md'
                                                             }
                                                         `}
                                                     >
-                                                        <span className={`text-xs font-medium transition-all ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                                                        <span className={`text-xs font-medium transition-all ${isSelected ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-primary)]'}`}>
                                                             {getSkillName(skill)}
                                                         </span>
                                                         {isSelected && (
                                                             <div className="bg-white/20 rounded-full p-0.5">
-                                                                <CheckCircle className="w-3 h-3 text-white" />
+                                                                <CheckCircle className="w-3 h-3 text-[var(--color-text-primary)]" />
                                                             </div>
                                                         )}
                                                     </button>
@@ -225,7 +225,7 @@ export default function OnboardingStep2({
                                         <button
                                             type="button"
                                             onClick={() => toggleCategory(category)}
-                                            className="w-full px-4 py-2 text-xs text-purple-400 hover:text-purple-300 bg-[#0a0a0a] hover:bg-[#0f0f0f] transition-colors"
+                                            className="w-full px-4 py-2 text-xs text-purple-400 hover:text-purple-300 bg-[var(--color-bg-base)] hover:bg-[var(--color-bg-base)] transition-colors"
                                         >
                                             + {secondarySkills.length} {tx('profile.secondarySkills', undefined, 'more skills')}
                                         </button>
@@ -235,13 +235,13 @@ export default function OnboardingStep2({
                         })}
                     </div>
 
-                    <p className="mt-3 text-xs text-on-surface-muted">
+                    <p className="mt-3 text-xs text-[var(--color-text-tertiary)]">
                         {tx('onboarding.freelancer.skillsClarification', undefined, 'These skills appear on your profile and in client search filters. Pick only what you can deliver now.')}
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 group">
+                    <div className="relative bg-gradient-to-br from-[var(--color-bg-elevated)] to-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 group">
                         <div className="absolute top-0 left-0 w-24 h-24 bg-green-500/5 rounded-full blur-2xl -z-10 group-hover:bg-green-500/10 transition-all" />
                         <Input
                             {...register('hourly_rate')}
@@ -257,7 +257,7 @@ export default function OnboardingStep2({
                         />
                     </div>
 
-                    <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 group">
+                    <div className="relative bg-gradient-to-br from-[var(--color-bg-elevated)] to-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 group">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl -z-10 group-hover:bg-purple-500/10 transition-all" />
                         <CustomSelect
                             name="availability"
@@ -271,13 +271,13 @@ export default function OnboardingStep2({
                     </div>
                 </div>
 
-                <div className="flex gap-4 pt-6 border-t border-gray-800">
+                <div className="flex gap-4 pt-6 border-t border-[var(--color-border-subtle)]">
                     <Button
                         type="button"
                         variant="ghost"
                         size="lg"
                         onClick={onBack}
-                        className="px-8 hover:bg-[#1a1a1a] transition-all duration-300"
+                        className="px-8 hover:bg-[var(--color-bg-muted)] transition-all duration-300"
                         leftIcon={<BackArrowIcon className="w-5 h-5" />}
                     >
                         {t.common.back}
@@ -297,4 +297,7 @@ export default function OnboardingStep2({
         </div>
     );
 }
+
+
+
 

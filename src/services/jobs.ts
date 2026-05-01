@@ -173,7 +173,7 @@ export async function getCategoryCounts(categories: string[]) {
 export async function getJobById(jobId: string) {
     const fetchPromise = () => supabaseAnon
         .from('jobs')
-        .select('*, client:public_profiles!jobs_client_id_fkey(id, full_name, avatar_url, location, created_at)')
+        .select('*, client:public_profiles!jobs_client_id_fkey(id, full_name, avatar_url, location, created_at, phone_verified, payment_verified)')
         .eq('id', jobId)
         .single();
     

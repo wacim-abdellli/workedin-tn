@@ -1,4 +1,4 @@
-import { AlertTriangle, ShieldAlert, Mail, User, MessageSquare, Send } from 'lucide-react';
+﻿import { AlertTriangle, ShieldAlert, Mail, User, MessageSquare, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -158,7 +158,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
                 to="/"
-                className="inline-flex h-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] px-5 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08]"
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-5 text-sm font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-muted)]"
               >
                 {tx('common.returnHome', undefined, 'Return home')}
               </Link>
@@ -189,33 +189,33 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
           }}
         >
           <div 
-            className="relative w-full max-w-2xl bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-2xl bg-[var(--color-bg-elevated)] rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-white dark:bg-[#0f172a] border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between z-10">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{tx('common.contactSupport', undefined, 'Contact Support')}</h2>
+            <div className="sticky top-0 bg-[var(--color-bg-elevated)] border-b border-[var(--color-border-subtle)] px-6 py-4 flex items-center justify-between z-10">
+              <h2 className="text-xl font-bold text-[var(--color-text-primary)]">{tx('common.contactSupport', undefined, 'Contact Support')}</h2>
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowContactForm(false);
                 }}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-lg hover:bg-[var(--color-bg-muted)] transition-colors"
                 aria-label={tx('common.close', undefined, 'Close')}
               >
-                <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-[var(--color-text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-[var(--color-text-tertiary)]">
                 {tx('support.form.description', undefined, 'Fill out the form below and our support team will get back to you as soon as possible.')}
               </p>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                   {tx('support.form.fullName', undefined, 'Full Name')} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -226,13 +226,13 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder={tx('support.form.fullNamePlaceholder', undefined, 'Enter your full name')}
                     required
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1e293b] text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                   {tx('support.form.emailAddress', undefined, 'Email Address')} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -243,13 +243,13 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="your.email@example.com"
                     required
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1e293b] text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                   {tx('support.form.subject', undefined, 'Subject')}
                 </label>
                 <div className="relative">
@@ -259,13 +259,13 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     placeholder={tx('support.form.subjectPlaceholder', undefined, 'Brief description of your issue')}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1e293b] text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
                   {tx('support.form.message', undefined, 'Message')} <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -274,11 +274,11 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                   placeholder={tx('support.form.messagePlaceholder', undefined, 'Please describe your issue in detail...')}
                   rows={6}
                   required
-                  className="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1e293b] px-4 py-3 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 resize-none"
+                  className="w-full rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 resize-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border-subtle)]">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -286,7 +286,7 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
                     setShowContactForm(false);
                   }}
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl border border-[var(--color-border-default)] text-[var(--color-text-secondary)] font-medium hover:bg-[var(--color-bg-muted)] transition-colors disabled:opacity-50"
                 >
                   {tx('common.cancel', undefined, 'Cancel')}
                 </button>
@@ -319,3 +319,6 @@ export default function AccountStatusGate({ status }: { status: AccountStatus })
     </div>
   );
 }
+
+
+

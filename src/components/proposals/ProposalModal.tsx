@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -130,25 +130,25 @@ export default function ProposalModal({
 
     return (
         <div
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm px-4 py-8 overflow-y-auto"
+            className="fixed inset-0 z-50 bg-[var(--color-bg-base)]/80 backdrop-blur-sm px-4 py-8 overflow-y-auto"
             onClick={onClose}
         >
             <div
-                className="mx-auto w-full max-w-3xl bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl shadow-2xl flex flex-col max-h-[92vh]"
+                className="mx-auto w-full max-w-3xl bg-[var(--color-bg-base)] border border-white/5 rounded-2xl shadow-2xl flex flex-col max-h-[92vh]"
                 onClick={(event) => event.stopPropagation()}
             >
-                <div className="px-6 py-5 border-b border-[var(--border)] flex items-start justify-between gap-4">
+                <div className="px-6 py-5 border-b border-white/5 flex items-start justify-between gap-4 bg-[var(--color-bg-elevated)]">
                     <div className="min-w-0">
-                        <h2 className="text-xl font-semibold text-[var(--text-primary)] truncate">
+                        <h2 className="text-xl font-bold text-[var(--color-text-primary)] truncate">
                             {tx('jobDetail.submitProposal', undefined, 'Submit Proposal')}
                         </h2>
-                        <p className="text-sm text-[var(--text-muted)] mt-1 truncate">{job.title}</p>
+                        <p className="text-sm text-[var(--color-text-primary)]/50 mt-1 truncate">{job.title}</p>
                     </div>
 
                     <button
                         type="button"
                         onClick={onClose}
-                        className="p-2 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-colors"
+                        className="p-2 rounded-lg border border-white/5 text-[var(--color-text-primary)]/40 hover:text-[var(--color-text-primary)] hover:border-white/10 hover:bg-[var(--color-bg-elevated)] transition-colors"
                         aria-label={tx('common.close', undefined, 'Close')}
                     >
                         <X className="w-4 h-4" />
@@ -158,19 +158,19 @@ export default function ProposalModal({
                 <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col min-h-0">
                     <fieldset disabled={isSubmitting} className="contents">
                         <div className="px-6 py-6 overflow-y-auto space-y-7 min-h-0">
-                            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-bg)] p-4">
-                                <p className="text-xs uppercase tracking-wide text-[var(--text-muted)] mb-1">
+                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] p-4">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-primary)]/40 mb-1">
                                     {tx('proposalModal.jobContext', undefined, 'Job context')}
                                 </p>
-                                <p className="text-sm text-[var(--text-primary)] font-medium line-clamp-2">{job.title}</p>
-                                <p className="text-xs text-[var(--text-secondary)] mt-2">
+                                <p className="text-sm text-[var(--color-text-primary)] font-medium line-clamp-2">{job.title}</p>
+                                <p className="text-xs text-[var(--color-text-primary)]/60 mt-2">
                                     {tx('jobDetail.budget', undefined, 'Budget')}: {budgetLabel}
                                 </p>
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-5">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-[var(--text-secondary)]">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-primary)]/70">
                                         {tx('jobDetail.yourBid', undefined, 'Your bid')}
                                     </label>
                                     <div className="relative">
@@ -179,31 +179,31 @@ export default function ProposalModal({
                                             min={10}
                                             step={1}
                                             {...register('bid_amount', { valueAsNumber: true })}
-                                            className={`w-full rounded-xl bg-[var(--input-bg)] border px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-purple-500/20 ${errors.bid_amount ? 'border-red-500 focus:border-red-500' : 'border-[var(--input-border)] focus:border-purple-500'}`}
+                                            className={`w-full rounded-xl bg-black/20 border px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/30 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-colors ${errors.bid_amount ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/10 focus:border-violet-500'}`}
                                             placeholder="0"
                                         />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[var(--text-muted)]">{currency}</span>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--color-text-primary)]/40">{currency}</span>
                                     </div>
                                     {errors.bid_amount ? (
-                                        <p className="text-red-400 text-xs">{errors.bid_amount.message}</p>
+                                        <p className="text-rose-400 text-xs">{errors.bid_amount.message}</p>
                                     ) : null}
 
-                                    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-bg)] p-3 space-y-1.5 text-sm">
-                                        <div className="flex items-center justify-between text-[var(--text-muted)]">
+                                    <div className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] p-3 space-y-1.5 text-sm">
+                                        <div className="flex items-center justify-between text-[var(--color-text-primary)]/50">
                                             <span>
                                                 {tx('proposalModal.platformFee', { percent: PLATFORM_FEE_PERCENT }, 'Platform fee ({{percent}}%)')}
                                             </span>
                                             <span>-{platformFee.toFixed(2)} {currency}</span>
                                         </div>
-                                        <div className="flex items-center justify-between text-[var(--text-primary)] font-semibold pt-1 border-t border-[var(--border)]">
+                                        <div className="flex items-center justify-between text-[var(--color-text-primary)] font-semibold pt-2 border-t border-white/5 mt-2">
                                             <span>{tx('proposalModal.youReceive', undefined, 'You will receive')}</span>
-                                            <span>{netAmount.toFixed(2)} {currency}</span>
+                                            <span className="text-violet-400">{netAmount.toFixed(2)} {currency}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-[var(--text-secondary)]">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-primary)]/70">
                                         {tx('proposalModal.deliveryTime', undefined, 'Delivery time')}
                                     </label>
                                     <Controller
@@ -224,29 +224,29 @@ export default function ProposalModal({
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-[var(--text-secondary)]">
+                                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-primary)]/70">
                                     {tx('proposalModal.coverLetter', undefined, 'Cover letter')}
                                 </label>
                                 <textarea
                                     {...register('cover_letter')}
                                     rows={8}
-                                    className={`w-full rounded-xl bg-[var(--input-bg)] border px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/20 ${errors.cover_letter ? 'border-red-500 focus:border-red-500' : 'border-[var(--input-border)] focus:border-purple-500'}`}
+                                    className={`w-full rounded-xl bg-black/20 border px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/30 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-colors ${errors.cover_letter ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/10 focus:border-violet-500'}`}
                                     placeholder={tx('proposalModal.coverLetterPlaceholder', undefined, 'Explain your approach, relevant experience, and delivery plan...')}
                                 />
                                 <div className="flex items-center justify-between text-xs">
                                     {errors.cover_letter ? (
-                                        <span className="text-red-400">{errors.cover_letter.message}</span>
+                                        <span className="text-rose-400">{errors.cover_letter.message}</span>
                                     ) : (
-                                        <span className="text-[var(--text-muted)]">
+                                        <span className="text-[var(--color-text-primary)]/40">
                                             {tx('proposalModal.coverLetterMinHint', { count: 100 }, 'Minimum {{count}} characters required')}
                                         </span>
                                     )}
-                                    <span className="text-[var(--text-muted)]">{coverLetter.length}/1000</span>
+                                    <span className="text-[var(--color-text-primary)]/40">{coverLetter.length}/1000</span>
                                 </div>
                             </div>
 
                             <div className="space-y-3">
-                                <label className="text-sm font-medium text-[var(--text-secondary)]">
+                                <label className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-primary)]/70">
                                     {tx('proposalModal.attachmentsOptional', undefined, 'Attachments (optional)')}
                                 </label>
 
@@ -254,19 +254,19 @@ export default function ProposalModal({
                                     {attachments.map((file, index) => (
                                         <div
                                             key={`${file.name}-${index}`}
-                                            className="relative group rounded-xl border border-[var(--border)] bg-[var(--surface-bg)] p-3"
+                                            className="relative group rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] p-3"
                                         >
                                             <button
                                                 type="button"
                                                 onClick={() => removeAttachment(index)}
-                                                className="absolute -top-2 -right-2 rounded-full bg-[var(--surface-bg)] border border-[var(--border)] p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] opacity-0 group-hover:opacity-100 transition-opacity"
+                                                className="absolute -top-2 -right-2 rounded-full bg-rose-500 border border-white/10 p-1 text-[var(--color-text-primary)] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-600"
                                                 aria-label={tx('proposalModal.removeAttachmentAria', { name: file.name }, 'Remove attachment: {{name}}')}
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                             </button>
                                             <div className="flex flex-col items-center gap-2 text-center">
-                                                <FileText className="w-7 h-7 text-purple-400" />
-                                                <span className="text-[11px] leading-4 text-[var(--text-muted)] truncate w-full">
+                                                <FileText className="w-7 h-7 text-violet-400" />
+                                                <span className="text-[11px] leading-4 text-[var(--color-text-primary)]/60 truncate w-full">
                                                     {file.name}
                                                 </span>
                                             </div>
@@ -277,10 +277,10 @@ export default function ProposalModal({
                                         <button
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-bg)] p-3 flex flex-col items-center justify-center gap-2 text-[var(--text-muted)] hover:text-purple-300 hover:border-purple-500 transition-colors"
+                                            className="rounded-xl border border-dashed border-white/20 bg-[var(--color-bg-elevated)] p-3 flex flex-col items-center justify-center gap-2 text-[var(--color-text-primary)]/40 hover:text-violet-300 hover:border-violet-500/50 hover:bg-violet-500/5 transition-colors"
                                         >
                                             <Upload className="w-5 h-5" />
-                                            <span className="text-[11px] leading-4 text-center">
+                                            <span className="text-[11px] font-bold uppercase tracking-wider leading-4 text-center">
                                                 {tx('proposalModal.addFile', undefined, 'Add file')}
                                             </span>
                                         </button>
@@ -295,19 +295,19 @@ export default function ProposalModal({
                                     className="hidden"
                                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                 />
-                                <p className="text-xs text-[var(--text-muted)]">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-primary)]/30">
                                     {tx('proposalModal.fileLimit', undefined, 'Up to 5 files, 10MB each')}
                                 </p>
                             </div>
                         </div>
                     </fieldset>
 
-                    <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--card-bg)] flex items-center justify-end gap-3">
+                    <div className="px-6 py-4 border-t border-white/5 bg-[var(--color-bg-elevated)] flex items-center justify-end gap-3 rounded-b-2xl">
                         <button
                             type="button"
                             onClick={onClose}
                             disabled={isSubmitting}
-                            className="px-5 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-5 py-2.5 rounded-xl border border-white/10 text-sm font-bold text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)] hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {tx('common.cancel', undefined, 'Cancel')}
                         </button>
@@ -315,7 +315,7 @@ export default function ProposalModal({
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-sm font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[170px]"
+                            className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-bold text-[var(--color-text-primary)] shadow-[0_4px_14px_0_rgba(139,92,246,0.39)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.23)] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-w-[170px]"
                         >
                             {isSubmitting
                                 ? tx('proposalModal.submitting', undefined, 'Submitting...')
@@ -327,4 +327,7 @@ export default function ProposalModal({
         </div>
     );
 }
+
+
+
 

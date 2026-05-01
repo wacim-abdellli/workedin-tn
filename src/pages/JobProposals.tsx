@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Share2, Edit, MoreVertical, Loader2 } from 'lucide-react';
 import { Header } from '../components/layout';
@@ -630,12 +630,12 @@ export default function JobProposals() {
 
     if (loading) {
         return (
-            <div className="flex flex-col" style={{ height: '100dvh', background: 'var(--page-bg)' }}>
+            <div className="min-h-screen page-bg-base flex flex-col">
                 <Header />
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center space-y-3">
-                        <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: 'var(--workspace-primary)' }} />
-                        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading proposals…</p>
+                        <Loader2 className="w-8 h-8 animate-spin mx-auto text-amber-500" />
+                        <p className="text-sm text-white/50">Loading proposals…</p>
                     </div>
                 </div>
             </div>
@@ -643,49 +643,39 @@ export default function JobProposals() {
     }
 
     return (
-        <div className="flex flex-col" style={{ height: '100dvh', background: 'var(--page-bg)' }}>
+        <div className="min-h-screen page-bg-base flex flex-col">
             <Header />
 
             {/* ── COMPACT JOB TITLE BAR ── */}
-            <div
-                className="flex items-center justify-between gap-4 px-5 py-3 border-b shrink-0"
-                style={{
-                    background: 'var(--card-bg)',
-                    borderColor: 'color-mix(in srgb, var(--border) 55%, transparent)',
-                }}
-            >
+            <div className="flex items-center justify-between gap-4 px-5 py-3 border-b border-white/5 bg-[var(--color-bg-base)] shrink-0">
                 <div className="flex items-center gap-3 min-w-0">
-                    <h1 className="text-base font-black truncate" style={{ color: 'var(--text-primary)' }}>
+                    <h1 className="text-base font-black truncate text-white">
                         {job?.title || 'Loading…'}
                     </h1>
                     {job?.status && (
-                        <span
-                            className="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold border"
-                            style={{
-                                background: job.status === 'open' ? 'rgba(34,197,94,0.12)' : 'color-mix(in srgb, var(--border) 20%, transparent)',
-                                color: job.status === 'open' ? '#4ade80' : 'var(--text-muted)',
-                                borderColor: job.status === 'open' ? 'rgba(34,197,94,0.28)' : 'color-mix(in srgb, var(--border) 50%, transparent)',
-                            }}
-                        >
+                        <span className={`shrink-0 rounded-md px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
+                            job.status === 'open'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : 'bg-white/5 text-white/50 border-white/10'
+                        }`}>
                             {job.status === 'open' ? t.jobProposals.open : job.status}
                         </span>
                     )}
                     {/* Quick stats pills */}
-                    <div className="hidden sm:flex items-center gap-1.5">
+                    <div className="hidden sm:flex items-center gap-2">
                         {[
                             { v: stats.proposals, l: 'proposals' },
                             { v: stats.interviewing, l: 'interviews' },
                         ].map(({ v, l }) => (
                             <span key={l}
-                                className="rounded-full border px-2.5 py-0.5 text-[11px] font-semibold"
-                                style={{ background: 'color-mix(in srgb, var(--workspace-primary) 6%, var(--card-bg))', borderColor: 'color-mix(in srgb, var(--workspace-primary) 16%, transparent)', color: 'var(--text-secondary)' }}>
-                                <strong style={{ color: 'var(--workspace-primary-mid)' }}>{v}</strong> {l}
+                                className="rounded-md border border-amber-500/20 bg-amber-500/5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-200">
+                                <strong className="text-amber-400">{v}</strong> {l}
                             </span>
                         ))}
                     </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                     <Button variant="outline" size="sm" leftIcon={<Share2 className="w-3.5 h-3.5" />}>
                         {t.jobProposals.share}
                     </Button>
@@ -700,16 +690,10 @@ export default function JobProposals() {
             </div>
 
             {/* ── SPLIT PANE CONTENT ── */}
-            <div className="flex flex-1 overflow-hidden min-h-0">
+            <div className="flex flex-1 overflow-hidden min-h-0 relative max-w-6xl mx-auto w-full">
 
                 {/* ═══ LEFT: Proposals list ═══ */}
-                <div
-                    className={`w-full sm:w-[340px] md:w-[380px] xl:w-[420px] shrink-0 flex-col border-e overflow-hidden min-h-0 ${selectedProposal ? 'hidden sm:flex' : 'flex'}`}
-                    style={{
-                        background: 'var(--card-bg)',
-                        borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)',
-                    }}
-                >
+                <div className={`w-full sm:w-[340px] md:w-[380px] xl:w-[420px] shrink-0 flex flex-col border-r border-white/5 bg-[var(--color-bg-base)] min-h-0 ${selectedProposal ? 'hidden sm:flex' : 'flex'}`}>
                     {/* Search + sort */}
                     <ProposalFilterBar
                         filters={filters}
@@ -719,56 +703,48 @@ export default function JobProposals() {
                     />
 
                     {/* Tab strip */}
-                    <div
-                        className="flex shrink-0 border-b"
-                        style={{ borderColor: 'color-mix(in srgb, var(--border) 50%, transparent)' }}
-                    >
-                        {TABS.map(tab => (
-                            <button
-                                key={tab.key}
-                                type="button"
-                                onClick={() => setActiveTab(tab.key)}
-                                className="flex-1 relative py-2.5 text-[11px] font-bold transition-colors border-b-2"
-                                style={{
-                                    borderBottomColor: activeTab === tab.key ? 'var(--workspace-primary)' : 'transparent',
-                                    color: activeTab === tab.key ? 'var(--workspace-primary-mid)' : 'var(--text-muted)',
-                                    marginBottom: '-1px',
-                                }}
-                            >
-                                {tab.label}
-                                {tabCounts[tab.key] > 0 && (
-                                    <span
-                                        className="ms-1 rounded-full px-1.5 text-[9px] font-black"
-                                        style={{
-                                            background: activeTab === tab.key ? 'var(--workspace-primary)' : 'color-mix(in srgb, var(--border) 60%, transparent)',
-                                            color: activeTab === tab.key ? '#fff' : 'var(--text-muted)',
-                                        }}
-                                    >
-                                        {tabCounts[tab.key]}
-                                    </span>
-                                )}
-                            </button>
-                        ))}
+                    <div className="flex shrink-0 border-b border-white/5 overflow-x-auto scrollbar-hide">
+                        {TABS.map(tab => {
+                            const active = activeTab === tab.key;
+                            return (
+                                <button
+                                    key={tab.key}
+                                    type="button"
+                                    onClick={() => setActiveTab(tab.key)}
+                                    className={`flex-1 relative py-3 px-4 text-[10px] uppercase tracking-wider font-bold transition-all shrink-0 ${active ? "text-amber-400" : "text-white/40 hover:text-white/70"}`}
+                                >
+                                    {tab.label}
+                                    {tabCounts[tab.key] > 0 && (
+                                        <span className={`ms-1.5 rounded-sm px-1.5 py-0.5 text-[9px] font-black ${active ? "bg-amber-500 text-white" : "bg-white/5 text-white/40"}`}>
+                                            {tabCounts[tab.key]}
+                                        </span>
+                                    )}
+                                    {active && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500 rounded-t-full shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Proposals list */}
                     <div className="flex-1 overflow-y-auto">
                         {hireMutation.isPending && (
-                            <div className="flex items-center gap-2 px-4 py-2.5 text-xs border-b" style={{ borderColor: 'color-mix(in srgb, var(--border) 40%, transparent)', color: 'var(--workspace-primary-mid)', background: 'color-mix(in srgb, var(--workspace-primary) 6%, transparent)' }}>
-                                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                            <div className="flex items-center gap-2 px-4 py-3 text-xs border-b border-amber-500/20 text-amber-400 bg-amber-500/5 font-medium">
+                                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                                 Creating contract…
                             </div>
                         )}
 
                         {displayedProposals.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-16 px-6 text-center" style={{ color: 'var(--text-muted)' }}>
-                                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}>
+                            <div className="flex flex-col items-center justify-center py-16 px-6 text-center text-white/40">
+                                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-white/5 border border-white/10">
                                     <span className="text-xl">📭</span>
                                 </div>
-                                <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
+                                <p className="text-sm font-bold text-white mb-1">
                                     {searchQuery ? 'No matches found' : t.jobProposals.noProposals}
                                 </p>
-                                <p className="text-xs">{searchQuery ? 'Try a different search term.' : t.jobProposals.noProposalsDesc}</p>
+                                <p className="text-xs text-white/50">{searchQuery ? 'Try a different search term.' : t.jobProposals.noProposalsDesc}</p>
                             </div>
                         ) : (
                             displayedProposals.map(proposal => (
@@ -807,3 +783,4 @@ export default function JobProposals() {
         </div>
     );
 }
+

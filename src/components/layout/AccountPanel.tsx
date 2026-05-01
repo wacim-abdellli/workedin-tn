@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
@@ -284,7 +284,7 @@ export default function AccountPanel({
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-purple-500 dark:text-purple-300">
                     {copy.sectionLabel}
                   </p>
-                  <h2 className="mt-1 text-lg font-semibold text-foreground dark:text-white">{displayName}</h2>
+                  <h2 className="mt-1 text-lg font-semibold text-foreground dark:text-[var(--color-text-primary)]">{displayName}</h2>
                 </div>
                 <button
                   type="button"
@@ -307,7 +307,7 @@ export default function AccountPanel({
                       />
                     ) : (
                       <div
-                        className="flex h-14 w-14 items-center justify-center rounded-2xl text-base font-semibold text-white ring-1 ring-white dark:ring-white/10"
+                        className="flex h-14 w-14 items-center justify-center rounded-2xl text-base font-semibold text-[var(--color-text-primary)] ring-1 ring-white dark:ring-white/10"
                         style={{ background: `linear-gradient(135deg, ${avatarFrom}, ${avatarTo})` }}
                       >
                         {getInitials(displayName)}
@@ -318,7 +318,7 @@ export default function AccountPanel({
                       <div className="text-xs font-semibold uppercase tracking-[0.22em] text-purple-500/90 dark:text-purple-300">
                         {t.nav.profile}
                       </div>
-                      <h2 className="mt-2 truncate text-lg font-semibold text-foreground dark:text-white">{displayName}</h2>
+                      <h2 className="mt-2 truncate text-lg font-semibold text-foreground dark:text-[var(--color-text-primary)]">{displayName}</h2>
                       <p className="mt-1 truncate text-sm text-muted">
                         {profile?.username ? `@${profile.username}` : user.email}
                       </p>
@@ -363,7 +363,7 @@ export default function AccountPanel({
                   <Link
                     to={profilePath}
                     onClick={onClose}
-                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl bg-[#1a1a1a] hover:bg-[#222] px-4 py-3 text-sm font-semibold text-white transition-all duration-300"
+                    className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-2xl bg-[var(--color-bg-muted)] hover:bg-[var(--color-bg-muted)] px-4 py-3 text-sm font-semibold text-[var(--color-text-primary)] transition-all duration-300"
                   >
                     <span>{t.publicProfile.editProfile}</span>
                     <ChevronRight className="h-4 w-4 text-gray-400 rtl:rotate-180" />
@@ -388,7 +388,7 @@ export default function AccountPanel({
                       <Link
                         to={setupActionTo}
                         onClick={onClose}
-                        className="inline-flex min-h-[40px] items-center justify-center rounded-2xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition-all hover:bg-purple-500 hover:shadow-xl hover:shadow-purple-500/30"
+                        className="inline-flex min-h-[40px] items-center justify-center rounded-2xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)] shadow-lg shadow-purple-500/20 transition-all hover:bg-purple-500 hover:shadow-xl hover:shadow-purple-500/30"
                       >
                         {setupActionLabel}
                       </Link>
@@ -416,7 +416,7 @@ export default function AccountPanel({
                     </div>
                   </div>
 
-                  <div className="mt-5 text-sm font-semibold text-foreground dark:text-white">{copy.switchWorkspace}</div>
+                  <div className="mt-5 text-sm font-semibold text-foreground dark:text-[var(--color-text-primary)]">{copy.switchWorkspace}</div>
                   <div className="mt-4 grid gap-4 2xl:grid-cols-2">
                     {workspaceCards.map((item) => {
                       const Icon = item.icon;
@@ -445,7 +445,7 @@ export default function AccountPanel({
                               ? item.accent === 'purple'
                                 ? 'bg-gradient-to-br from-purple-500/10 to-violet-500/10'
                                 : 'bg-gradient-to-br from-[#E8820C]/10 to-amber-500/10'
-                              : 'bg-[#1a1a1a] hover:bg-[#222]',
+                              : 'bg-[var(--color-bg-muted)] hover:bg-[var(--color-bg-muted)]',
                             isActive && 'cursor-default'
                           )}
                         >
@@ -458,7 +458,7 @@ export default function AccountPanel({
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="text-base font-semibold text-foreground dark:text-white">{item.title}</div>
+                                <div className="text-base font-semibold text-foreground dark:text-[var(--color-text-primary)]">{item.title}</div>
                                 <span
                                   className={cn(
                                     'inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold',
@@ -590,10 +590,10 @@ function ActionLink({
     <Link
       to={to}
       onClick={onClick}
-      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl bg-[#1a1a1a] hover:bg-[#222] px-4 py-3 text-sm font-semibold text-white transition-all duration-300"
+      className="inline-flex min-h-[44px] items-center justify-between gap-3 rounded-2xl bg-[var(--color-bg-muted)] hover:bg-[var(--color-bg-muted)] px-4 py-3 text-sm font-semibold text-[var(--color-text-primary)] transition-all duration-300"
     >
       <span className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0f0f0f]">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-bg-base)]">
           {icon}
         </span>
         <span>{label}</span>
@@ -612,4 +612,7 @@ function formatMemberSince(value: string | undefined, language: string): string 
   const locale = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'ar-TN';
   return new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(parsed);
 }
+
+
+
 

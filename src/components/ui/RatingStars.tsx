@@ -13,11 +13,12 @@ export default function RatingStars({
   snippet?: string;
   className?: string;
 }) {
+  const numRating = Number(rating) || 0;
   return (
     <div className={cn('group relative inline-flex items-center gap-2', className)}>
       <div className="flex items-center gap-1">
         {Array.from({ length: 5 }).map((_, index) => {
-          const fill = Math.max(0, Math.min(1, rating - index));
+          const fill = Math.max(0, Math.min(1, numRating - index));
           return (
             <span key={index} className="relative h-4 w-4">
               <Star className="absolute inset-0 h-4 w-4 text-amber-200 dark:text-amber-900/50" />
@@ -29,7 +30,7 @@ export default function RatingStars({
         })}
       </div>
       <span className="text-sm font-semibold text-[#1a1825] dark:text-white">
-        {rating.toFixed(1)}
+        {numRating.toFixed(1)}
         {typeof reviews === 'number' ? <span className="ml-1 text-[#6b6880] dark:text-[#8b8aa0]">({reviews})</span> : null}
       </span>
 

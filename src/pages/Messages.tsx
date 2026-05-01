@@ -60,6 +60,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { useReadReceipts } from '../hooks/useReadReceipts';
+import { usePresence } from '../hooks/usePresence';
 import { useTranslation } from '../i18n';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { validateUploadSelection } from '../lib/uploadPolicy';
@@ -930,6 +931,13 @@ function MessagesComponent() {
     const { user, profile, activeMode } = useAuth();
     const { showToast } = useToast();
     const { tx, language } = useTranslation();
+
+    // Track this user's presence and get the isOnline helper for checking others
+    const { isOnline: isUserOnline } = usePresence({ 
+        userId: user?.id, 
+        isOnlineForMessages: profile?.is_online_for_messages !== false 
+    });
+
     const deletedMessageLabel = tx('pages.messages.deletedMessage', undefined, 'Message deleted');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -4752,9 +4760,9 @@ function MessagesComponent() {
     }, [messages.length, pendingQueue.length]);
 
     const renderConversationList = () => (
-        <div className={`${showMobileThread ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-[#1b1f24] bg-[#121212] flex-col shrink-0`}>
+        <div className={`${showMobileThread ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 border-r border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] flex-col shrink-0`}>
             {/* Header */}
-            <div className="border-b border-[#1b1f24] bg-[#141414] p-4 space-y-3">
+            <div className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-4 space-y-3">
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-bold tracking-tight text-on-surface">{tx('pages.messages.title', undefined, 'Messages')}</h2>
@@ -4793,7 +4801,7 @@ function MessagesComponent() {
                                 className={`rounded-lg px-3 py-1 text-[11px] font-medium transition-all ${
                                     filter === f
                                         ? `${accentClasses.contractToggleActive} border`
-                                        : 'text-on-surface-subtle hover:text-on-surface hover:bg-[#1f1f1f] border border-transparent'
+                                        : 'text-on-surface-subtle hover:text-on-surface hover:bg-[var(--color-bg-muted)] border border-transparent'
                                 }`}
                             >
                                 {f === 'all' ? tx('pages.messages.filterAll', undefined, 'All') : tx('pages.messages.filterUnread', undefined, 'Unread')}
@@ -4815,7 +4823,7 @@ function MessagesComponent() {
                     </div>
                 ) : displayConversations.length === 0 ? (
                     <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
-                        <div className="h-10 w-10 rounded-full bg-[#1a1a1a] flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-[var(--color-bg-muted)] flex items-center justify-center">
                             {showArchived
                                 ? <Archive className="h-5 w-5 text-on-surface-subtle" />
                                 : <Mail className="h-5 w-5 text-on-surface-subtle" />}
@@ -4851,7 +4859,7 @@ function MessagesComponent() {
                                             e.stopPropagation();
                                             isArchived ? unarchiveConversation(conversation.id) : archiveConversation(conversation.id);
                                         }}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 rounded-full border border-[#2a2a2a] bg-[#141414] items-center justify-center text-on-surface-subtle hover:text-on-surface transition-all opacity-0 group-hover/item:opacity-100 hidden md:flex"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] items-center justify-center text-on-surface-subtle hover:text-on-surface transition-all opacity-0 group-hover/item:opacity-100 hidden md:flex"
                                         aria-label={isArchived ? 'Unarchive conversation' : 'Archive conversation'}
                                     >
                                         <Archive className="h-3 w-3" />
@@ -4877,25 +4885,34 @@ function MessagesComponent() {
                                                 : `border-transparent bg-transparent ${accentClasses.conversationHoverSurface}`
                                         }`}>
                                             {/* Avatar */}
-                                            <button
-                                                type="button"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    navigate(getConversationProfilePath(conversation));
-                                                }}
-                                                aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
-                                                className={`relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-[#22272d] bg-[#0f1114] text-sm font-semibold text-on-surface-muted transition-all hover:ring-2 ${accentClasses.avatarHoverRing}`}
-                                            >
-                                                <span aria-hidden="true">{conversation.otherUser.full_name.charAt(0)}</span>
-                                                {conversation.otherUser.avatar_url ? (
-                                                    <img
-                                                        src={conversation.otherUser.avatar_url}
-                                                        alt={conversation.otherUser.full_name}
-                                                        className="absolute inset-0 h-full w-full object-cover"
-                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            <div className="relative shrink-0 h-11 w-11">
+                                                <button
+                                                    type="button"
+                                                    onClick={(event) => {
+                                                        event.stopPropagation();
+                                                        navigate(getConversationProfilePath(conversation));
+                                                    }}
+                                                    aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
+                                                    className={`relative block h-11 w-11 overflow-hidden rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] flex items-center justify-center text-sm font-semibold text-on-surface-muted transition-all hover:ring-2 ${accentClasses.avatarHoverRing}`}
+                                                >
+                                                    <span aria-hidden="true">{conversation.otherUser.full_name.charAt(0)}</span>
+                                                    {conversation.otherUser.avatar_url ? (
+                                                        <img
+                                                            src={conversation.otherUser.avatar_url}
+                                                            alt={conversation.otherUser.full_name}
+                                                            className="absolute inset-0 h-full w-full object-cover"
+                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                        />
+                                                    ) : null}
+                                                </button>
+                                                {/* Online Indicator */}
+                                                {isUserOnline(conversation.otherUser.id) && (
+                                                    <div 
+                                                        className="absolute -bottom-[2px] -right-[2px] z-10 h-3.5 w-3.5 rounded-full border-[2.5px] border-[var(--color-bg-subtle)] bg-[#14a800] shadow-sm" 
+                                                        aria-hidden="true" 
                                                     />
-                                                ) : null}
-                                            </button>
+                                                )}
+                                            </div>
 
                                             {/* Content */}
                                             <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden gap-[4px]">
@@ -4964,12 +4981,12 @@ function MessagesComponent() {
                 )}
 
                 {hasMoreConversations && displayConversations.length > 0 && !searchQuery && !showArchived ? (
-                    <div className="border-t border-[#1b1f24] px-4 py-3">
+                    <div className="border-t border-[var(--color-border-subtle)] px-4 py-3">
                         <button
                             type="button"
                             onClick={() => setPage((prev) => prev + 1)}
                             disabled={isLoadingMore}
-                            className="w-full rounded-xl border border-[#242a31] bg-[#101214] px-3 py-2 text-[12px] text-on-surface-muted transition-colors hover:bg-[#171a1f] disabled:opacity-50"
+                            className="w-full rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] px-3 py-2 text-[12px] text-on-surface-muted transition-colors hover:bg-[var(--color-bg-muted)] disabled:opacity-50"
                         >
                             {isLoadingMore ? tx('common.loading', undefined, 'Loading...') : tx('pages.messages.loadMore', undefined, 'Load more')}
                         </button>
@@ -4978,14 +4995,14 @@ function MessagesComponent() {
             </div>
 
             {/* Archived toggle at the bottom */}
-            <div className="border-t border-[#1b1f24] bg-[#141414] px-4 py-2.5">
+            <div className="border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-2.5">
                 <button
                     type="button"
                     onClick={() => { setShowArchived((v) => !v); setSearchQuery(''); setFilter('all'); }}
                     className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-medium transition-all ${
                         showArchived
                             ? `${accentClasses.contractToggleActive} border`
-                            : 'text-on-surface-subtle hover:text-on-surface hover:bg-[#1f1f1f] border border-transparent'
+                            : 'text-on-surface-subtle hover:text-on-surface hover:bg-[var(--color-bg-muted)] border border-transparent'
                     }`}
                 >
                     <Archive className="h-3.5 w-3.5" />
@@ -5001,10 +5018,10 @@ function MessagesComponent() {
     const renderMessageThread = () => (
         <div className={`${showMobileThread ? 'flex' : 'hidden md:flex'} flex-1 flex-col page-bg-base relative`}>
             {selectedConversation ? (
-                <div className={`flex h-full min-h-0 flex-1 ${isContractSession ? 'bg-[#07080a]' : ''}`}>
-                    <div className={`relative flex min-w-0 flex-1 flex-col overflow-hidden ${isContractSession ? 'border-l border-white/5 bg-[#090a0d]' : ''}`}>
+                <div className={`flex h-full min-h-0 flex-1 ${isContractSession ? 'bg-[var(--color-bg-base)]' : ''}`}>
+                    <div className={`relative flex min-w-0 flex-1 flex-col overflow-hidden ${isContractSession ? 'border-l border-white/5 bg-[var(--color-bg-base)]' : ''}`}>
                         <div className={`pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-stops))] ${accentClasses.threadAmbientGlow}`} />
-                        <div className="relative z-20 min-h-[84px] border-b border-[#1b1f24] bg-[#151515] px-4 py-4 backdrop-blur-sm md:px-6">
+                        <div className="relative z-20 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-3 backdrop-blur-sm md:px-6">
                             <div className="flex items-start justify-between gap-3">
                                 <div className="flex min-w-0 items-start gap-3">
                                     <button
@@ -5016,26 +5033,35 @@ function MessagesComponent() {
                                         <ArrowLeft className="w-4 h-4" />
                                     </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate(getConversationProfilePath(selectedConversation))}
-                                        aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
-                                        className={`relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-[#22272d] bg-[#0f1114] text-sm font-semibold text-on-surface-muted shadow-md transition-all hover:ring-2 ${accentClasses.headerAvatarHoverRing}`}
-                                    >
-                                        <span aria-hidden="true">{selectedConversation.otherUser.full_name.charAt(0)}</span>
-                                        {selectedConversation.otherUser.avatar_url ? (
-                                            <img
-                                                src={selectedConversation.otherUser.avatar_url}
-                                                alt={selectedConversation.otherUser.full_name}
-                                                className="absolute inset-0 h-full w-full object-cover"
-                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    <div className="relative shrink-0 h-12 w-12">
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate(getConversationProfilePath(selectedConversation))}
+                                            aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
+                                            className={`relative block h-12 w-12 overflow-hidden rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] flex items-center justify-center text-sm font-semibold text-on-surface-muted shadow-md transition-all hover:ring-2 ${accentClasses.headerAvatarHoverRing}`}
+                                        >
+                                            <span aria-hidden="true" className="text-[13px] font-semibold">{selectedConversation.otherUser.full_name.charAt(0)}</span>
+                                            {selectedConversation.otherUser.avatar_url ? (
+                                                <img
+                                                    src={selectedConversation.otherUser.avatar_url}
+                                                    alt={selectedConversation.otherUser.full_name}
+                                                    className="absolute inset-0 h-full w-full object-cover"
+                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                />
+                                            ) : null}
+                                        </button>
+                                        {/* Online Indicator */}
+                                        {isUserOnline(selectedConversation.otherUser.id) && (
+                                            <div 
+                                                className="absolute -bottom-1 -right-1 z-10 h-4 w-4 rounded-full border-[3px] border-[var(--color-bg-elevated)] bg-[#14a800] shadow-sm" 
+                                                aria-hidden="true" 
                                             />
-                                        ) : null}
-                                    </button>
+                                        )}
+                                    </div>
 
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                                            <p className="truncate text-base font-bold text-on-surface shrink-0">
+                                            <p className="truncate text-[14px] font-semibold text-on-surface shrink-0">
                                                 {selectedConversation.otherUser.full_name}
                                             </p>
                                             {(() => {
@@ -5088,7 +5114,7 @@ function MessagesComponent() {
                             </div>
 
                             {isMenuOpen ? (
-                                <div ref={menuRef} className="absolute right-6 top-[72px] z-[70] mt-2 w-48 overflow-hidden rounded-xl border border-[#232830] bg-[#121418] py-1 shadow-2xl">
+                                <div ref={menuRef} className="absolute right-6 top-[72px] z-[70] mt-2 w-48 overflow-hidden rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] py-1 shadow-2xl">
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -5141,59 +5167,53 @@ function MessagesComponent() {
                         </div>
 
                         {contractCockpit ? (
-                            <div className={`relative z-10 mx-4 mt-4 md:mx-6 rounded-2xl border overflow-hidden ${contractCockpit.theme.shell}`}>
-                                {/* Collapsed thin bar — always visible */}
+                            <div className={`relative z-10 mx-4 mt-3 md:mx-6 overflow-hidden rounded-xl border ${contractCockpit.theme.shell}`}>
+                                {/* Collapsed slim bar */}
                                 <button
                                     type="button"
                                     onClick={() => setIsBannerExpanded(prev => !prev)}
                                     aria-expanded={isBannerExpanded}
                                     aria-label="Toggle contract details"
-                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left"
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-left"
                                 >
-                                    <span className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${contractCockpit.theme.chip}`}>
+                                    <span className={`inline-flex shrink-0 items-center rounded-full border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] ${contractCockpit.theme.chip}`}>
                                         {contractCockpit.statusLabel}
                                     </span>
-                                    <span className="min-w-0 flex-1 truncate text-sm font-semibold text-on-surface">
+                                    <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-on-surface">
                                         {contractCockpit.title}
                                     </span>
                                     <svg
-                                        className={`h-4 w-4 shrink-0 text-on-surface-muted transition-transform duration-200 ${isBannerExpanded ? 'rotate-180' : ''}`}
+                                        className={`h-3.5 w-3.5 shrink-0 text-on-surface-muted transition-transform duration-150 ${isBannerExpanded ? 'rotate-180' : ''}`}
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                                        strokeLinecap="round" strokeLinejoin="round"
-                                        aria-hidden="true"
+                                        strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
                                     >
                                         <path d="m6 9 6 6 6-6" />
                                     </svg>
                                 </button>
 
-                                {/* Expanded details panel */}
+                                {/* Expanded details — minimal inline chips */}
                                 {isBannerExpanded ? (
-                                    <div className="border-t border-white/10 px-4 pb-3 pt-3">
-                                        <p className="mb-3 text-sm leading-5 text-on-surface-muted">
-                                            {contractCockpit.nextStep}
-                                        </p>
-                                        <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface-muted">
-                                            <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                                                <span className={contractCockpit.theme.accent}>Amount</span> {contractCockpit.amount}
+                                    <div className="flex flex-wrap items-center gap-1.5 border-t border-white/[0.07] px-3 py-2">
+                                        <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] text-on-surface-muted">
+                                            <span className={`${contractCockpit.theme.accent} font-medium`}>Amount</span> {contractCockpit.amount}
+                                        </span>
+                                        <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] text-on-surface-muted">
+                                            <span className={`${contractCockpit.theme.accent} font-medium`}>Due</span> {contractCockpit.dueLabel}
+                                        </span>
+                                        {selectedContractStatus === 'delivery_submitted' ? (
+                                            <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] text-on-surface-muted">
+                                                <span className={`${contractCockpit.theme.accent} font-medium`}>Review</span> {contractCockpit.reviewDueLabel}
                                             </span>
-                                            <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                                                <span className={contractCockpit.theme.accent}>Due</span> {contractCockpit.dueLabel}
-                                            </span>
-                                            {selectedContractStatus === 'delivery_submitted' ? (
-                                                <span className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                                                    <span className={contractCockpit.theme.accent}>Review</span> {contractCockpit.reviewDueLabel}
-                                                </span>
-                                            ) : null}
-                                            {selectedConversation.contract_id ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
-                                                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 font-semibold text-on-surface transition hover:bg-white/10"
-                                                >
-                                                    Open Workspace ↗
-                                                </button>
-                                            ) : null}
-                                        </div>
+                                        ) : null}
+                                        {selectedConversation.contract_id ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
+                                                className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-on-surface transition hover:bg-white/10"
+                                            >
+                                                Workspace ↗
+                                            </button>
+                                        ) : null}
                                     </div>
                                 ) : null}
                             </div>
@@ -5231,11 +5251,11 @@ function MessagesComponent() {
                             <>
                                 <div className="flex-1" />
                                 <div className="mb-4 flex items-center gap-3">
-                                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#2a2a2e] to-transparent" />
-                                    <span className="rounded-full border border-[#262b31] bg-[#111317] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-on-surface-subtle">
+                                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[var(--color-border-subtle)] to-transparent" />
+                                    <span className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-on-surface-subtle">
                                         {tx('pages.messages.today', undefined, 'Today')}
                                     </span>
-                                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#2a2a2e] to-transparent" />
+                                    <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[var(--color-border-subtle)] to-transparent" />
                                 </div>
 
                                 <div className="flex w-full flex-col gap-4 relative">
@@ -5298,7 +5318,7 @@ function MessagesComponent() {
                                                                     isDeletedMessage(message)
                                                                         ? 'rounded-full border border-surface surface-sunken text-on-surface-subtle px-3 py-1.5 text-xs'
                                                                         : isContractSystemMessage
-                                                                        ? 'flex items-center gap-2 rounded-full border border-white/[0.07] bg-[#111214] px-4 py-2 text-[12px] font-medium text-[#8A8880] tracking-wide'
+                                                                        ? 'flex items-center gap-2 rounded-full border border-white/[0.07] bg-[var(--color-bg-elevated)] px-4 py-2 text-[12px] font-medium text-[#8A8880] tracking-wide'
                                                                         : (hasImageAttachment && (isImageOnlyMessage || shouldRenderImageCaption))
                                                                         ? (isOwnMessage
                                                                             ? `${accentClasses.ownBubbleBg} p-1 overflow-hidden rounded-2xl rounded-br-sm text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
@@ -5400,7 +5420,7 @@ function MessagesComponent() {
                                                                                     }`}
                                                                                     aria-label={tx('pages.messages.a11y.openAttachment', undefined, 'Open attachment')}
                                                                                 >
-                                                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? accentClasses.ownAttachmentIcon : `bg-[#1e1c22] ${accentClasses.neutralAttachmentIcon}`}`}>
+                                                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? accentClasses.ownAttachmentIcon : `bg-[var(--color-bg-muted)] ${accentClasses.neutralAttachmentIcon}`}`}>
                                                                                         <FileText className="w-5 h-5" />
                                                                                     </div>
 
@@ -5493,51 +5513,34 @@ function MessagesComponent() {
 
                     <div className="shrink-0 border-t border-[#191c21] bg-[#0d0d0f]/98 px-4 py-3 backdrop-blur-sm">
                         {contractActionBar ? (
-                            <div className={`mb-3 rounded-2xl border px-3 py-3 ${contractActionBar.tone}`}>
-                                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                                    <p className="text-sm font-medium leading-5">{contractActionBar.text}</p>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={contractActionBar.onPrimary}
-                                            disabled={isAnyContractActionLoading}
-                                            className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-black transition hover:bg-zinc-200 disabled:opacity-60"
-                                        >
-                                            {contractActionBar.primary}
+                            <div className={`mb-2 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 ${contractActionBar.tone}`}>
+                                <p className="min-w-0 flex-1 text-[12px] font-medium leading-4 text-on-surface">{contractActionBar.text}</p>
+                                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                                    <button type="button" onClick={contractActionBar.onPrimary} disabled={isAnyContractActionLoading}
+                                        className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-bold text-black transition hover:bg-zinc-200 disabled:opacity-60">
+                                        {contractActionBar.primary}
+                                    </button>
+                                    {contractActionBar.secondary ? (
+                                        <button type="button" onClick={contractActionBar.secondary.onClick} disabled={isAnyContractActionLoading}
+                                            className="rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-bold text-on-surface transition hover:bg-white/10 disabled:opacity-60">
+                                            {contractActionBar.secondary.label}
                                         </button>
-                                        {contractActionBar.secondary ? (
-                                            <button
-                                                type="button"
-                                                onClick={contractActionBar.secondary.onClick}
-                                                disabled={isAnyContractActionLoading}
-                                                className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs font-bold text-on-surface transition hover:bg-white/10 disabled:opacity-60"
-                                            >
-                                                {contractActionBar.secondary.label}
-                                            </button>
-                                        ) : null}
-                                        {contractActionBar.danger ? (
-                                            <button
-                                                type="button"
-                                                onClick={contractActionBar.danger.onClick}
-                                                disabled={isAnyContractActionLoading}
-                                                className="rounded-xl border border-rose-400/25 bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-100 transition hover:bg-rose-500/15 disabled:opacity-60"
-                                            >
-                                                {contractActionBar.danger.label}
-                                            </button>
-                                        ) : null}
-                                        <button
-                                            type="button"
-                                            onClick={() => selectedConversation?.contract_id && navigate(getContractWorkspaceRoute(selectedConversation.contract_id))}
-                                            className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold text-on-surface-muted transition hover:bg-white/5 hover:text-on-surface"
-                                        >
-                                            Workspace ↗
+                                    ) : null}
+                                    {contractActionBar.danger ? (
+                                        <button type="button" onClick={contractActionBar.danger.onClick} disabled={isAnyContractActionLoading}
+                                            className="rounded-lg border border-rose-400/25 bg-rose-500/10 px-2.5 py-1 text-[11px] font-bold text-rose-100 transition hover:bg-rose-500/15 disabled:opacity-60">
+                                            {contractActionBar.danger.label}
                                         </button>
-                                    </div>
+                                    ) : null}
+                                    <button type="button" onClick={() => selectedConversation?.contract_id && navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
+                                        className="rounded-lg border border-white/10 bg-black/20 px-2.5 py-1 text-[11px] font-bold text-on-surface-muted transition hover:bg-white/5 hover:text-on-surface">
+                                        Workspace ↗
+                                    </button>
                                 </div>
                             </div>
                         ) : null}
                         {replyTarget ? (
-                            <div className="mb-3 rounded-xl border border-[#1f2328] bg-[#111317] px-3 py-2">
+                            <div className="mb-3 rounded-xl border border-[#1f2328] bg-[var(--color-bg-elevated)] px-3 py-2">
                                 <div className="flex items-start gap-2">
                                     <span className={`mt-0.5 h-8 w-1 rounded-full ${accentClasses.replyStripe}`} aria-hidden="true" />
                                     <div className="min-w-0 flex-1">
@@ -5547,7 +5550,7 @@ function MessagesComponent() {
                                     <button
                                         type="button"
                                         onClick={() => setReplyTarget(null)}
-                                        className="rounded-md p-1 text-zinc-500 hover:bg-[#1e1c22] hover:text-white transition-colors"
+                                        className="rounded-md p-1 text-zinc-500 hover:bg-[var(--color-bg-muted)] hover:text-white transition-colors"
                                         aria-label={tx('pages.messages.cancelReply', undefined, 'Cancel reply')}
                                     >
                                         <X className="h-4 w-4" />
@@ -5574,7 +5577,7 @@ function MessagesComponent() {
                                 ) : null}
 
                                 {audioBlob ? (
-                                    <div className="rounded-xl border border-[#1f2328] bg-[#111317] px-3 py-2">
+                                    <div className="rounded-xl border border-[#1f2328] bg-[var(--color-bg-elevated)] px-3 py-2">
                                         <div className="flex items-center gap-2 text-sm text-zinc-200">
                                             <FileAudio className={`w-4 h-4 ${accentClasses.iconAccent}`} />
                                             <span className="flex-1">{tx('pages.messages.voiceMemo', undefined, 'Audio note')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
@@ -5583,13 +5586,13 @@ function MessagesComponent() {
                                                 onClick={cancelRecording}
                                                 disabled={isSending}
                                                 aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')}
-                                                className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-[#1e1c22] transition-colors disabled:opacity-50"
+                                                className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-[var(--color-bg-muted)] transition-colors disabled:opacity-50"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
                                         </div>
                                         {audioPreviewUrl ? (
-                                            <div className="mt-2 rounded-xl border border-[#1d2126] bg-[#0f1114] px-3 py-2">
+                                            <div className="mt-2 rounded-xl border border-[#1d2126] bg-[var(--color-bg-subtle)] px-3 py-2">
                                                 <MessageAudioPlayer
                                                     src={audioPreviewUrl}
                                                     name={tx('pages.messages.voiceMemo', undefined, 'Audio note')}
@@ -5602,7 +5605,7 @@ function MessagesComponent() {
                                 ) : null}
 
                                 {selectedFile ? (
-                                    <div className="rounded-xl border border-[#1f2328] bg-[#111317] px-3 py-2">
+                                    <div className="rounded-xl border border-[#1f2328] bg-[var(--color-bg-elevated)] px-3 py-2">
                                         <div className="flex items-center gap-2 text-sm text-zinc-200">
                                             <FileText className={`w-4 h-4 ${accentClasses.iconAccent}`} />
                                             <span className="flex-1 truncate">{selectedFile.name}</span>
@@ -5611,7 +5614,7 @@ function MessagesComponent() {
                                                 onClick={() => setSelectedFile(null)}
                                                 disabled={isSending}
                                                 aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')}
-                                                className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-[#1e1c22] transition-colors disabled:opacity-50"
+                                                className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-[var(--color-bg-muted)] transition-colors disabled:opacity-50"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
@@ -5625,7 +5628,7 @@ function MessagesComponent() {
 
                         {!canSendInSelectedConversation ? (
                             /* ── Premium Read-Only Lock Panel ── */
-                            <div className="flex items-center gap-3 rounded-[20px] border border-white/[0.07] bg-[#111214] px-4 py-3.5">
+                            <div className="flex items-center gap-3 rounded-[20px] border border-white/[0.07] bg-[var(--color-bg-elevated)] px-4 py-3.5">
                                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-white/[0.07] bg-[#161719] text-[#55534F]">
                                     <Flag className="h-4 w-4" />
                                 </div>
@@ -5652,7 +5655,7 @@ function MessagesComponent() {
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isSending || !!selectedFile || !canAttachInSelectedConversation}
                                     aria-label={tx('pages.messages.a11y.attachFile', undefined, 'Attach file')}
-                                    className="p-2.5 text-zinc-500 hover:text-white hover:bg-[#1e1c22] rounded-xl cursor-pointer transition-all disabled:opacity-50"
+                                    className="p-2.5 text-zinc-500 hover:text-white hover:bg-[var(--color-bg-muted)] rounded-xl cursor-pointer transition-all disabled:opacity-50"
                                 >
                                     <Paperclip className="w-4 h-4" />
                                 </button>
@@ -5687,7 +5690,7 @@ function MessagesComponent() {
                                     className={`p-2.5 rounded-xl transition-all ${
                                         isRecording
                                             ? 'bg-red-500/20 text-red-300'
-                                            : 'text-zinc-500 hover:text-white hover:bg-[#1e1c22]'
+                                            : 'text-zinc-500 hover:text-white hover:bg-[var(--color-bg-muted)]'
                                     } disabled:opacity-50`}
                                 >
                                     {isRecording ? <Square className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
@@ -5744,7 +5747,7 @@ function MessagesComponent() {
             ) : (
                 <div className="flex-1 flex items-center justify-center px-6">
                     <div className="text-center max-w-xs">
-                        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.07] bg-[#111214] text-[#55534F]">
+                        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.07] bg-[var(--color-bg-elevated)] text-[#55534F]">
                             <Mail className="h-7 w-7" />
                         </div>
                         <h3 className="text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">
@@ -5807,7 +5810,7 @@ function MessagesComponent() {
                         placeholder={tx('contract.deliverNotePlaceholder', undefined, 'Delivery notes (optional)...')}
                         aria-label={tx('contract.deliverNoteAria', undefined, 'Delivery notes')}
                     />
-                    <div className="space-y-3 rounded-xl border border-[#2f2f2f] bg-[#121212] p-3">
+                    <div className="space-y-3 rounded-xl border border-[#2f2f2f] bg-[var(--color-bg-subtle)] p-3">
                         <div>
                             <p className="text-sm font-medium text-white">Review Files</p>
                             <p className="mt-1 text-xs text-zinc-400">Files the client can review immediately before accepting.</p>
@@ -6014,7 +6017,7 @@ function MessagesComponent() {
                 title={tx('pages.messages.contractWorkspaceTitle', undefined, 'Contract Workspace')}
                 size="full"
             >
-                <div className="mx-auto max-w-5xl overflow-hidden rounded-[10px] bg-[#111214] shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+                <div className="mx-auto max-w-5xl overflow-hidden rounded-[10px] bg-[var(--color-bg-elevated)] shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
                     {isContractSidebarDataLoading ? (
                         <div className="flex min-h-[420px] items-center justify-center px-6 text-center">
                             <div className="space-y-3">

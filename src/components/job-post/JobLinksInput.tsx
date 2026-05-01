@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import {
   Box,
   Facebook,
@@ -41,7 +41,7 @@ const PLATFORM_STYLE: Record<JobLinkPlatform, string> = {
   dropbox: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/25',
   behance: 'bg-violet-500/15 text-violet-300 border-violet-500/25',
   figma: 'bg-orange-500/15 text-orange-300 border-orange-500/25',
-  website: 'bg-white/10 text-white/80 border-white/15',
+  website: 'bg-white/10 text-[var(--color-text-primary)]/80 border-white/15',
 };
 
 function PlatformIcon({ platform }: { platform: JobLinkPlatform }) {
@@ -113,7 +113,7 @@ export default function JobLinksInput({
     <div className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-white">
+          <p className="text-sm font-semibold text-[var(--color-text-primary)]">
             {tx('jobs.new.links.title', undefined, 'Reference links (optional)')}
           </p>
           <p className="text-xs text-[#a3a3a3] mt-1 leading-5">
@@ -124,7 +124,7 @@ export default function JobLinksInput({
             )}
           </p>
         </div>
-        <span className="rounded-full border border-white/10 bg-white/[0.035] px-2.5 py-1 text-[11px] text-[#b8b8b8]">
+        <span className="rounded-full border border-white/10 bg-[var(--color-bg-elevated)] px-2.5 py-1 text-[11px] text-[#b8b8b8]">
           {normalizedLinks.length} / {maxLinks}
         </span>
       </div>
@@ -148,7 +148,7 @@ export default function JobLinksInput({
             undefined,
             'Paste link (e.g. drive.google.com/... or linkedin.com/in/...)',
           )}
-          className="w-full rounded-2xl border border-orange-500/20 bg-[#1f1b15] px-4 py-3 text-sm text-[var(--text-primary)] caret-orange-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none ring-1 ring-orange-500/5 transition-all duration-200 placeholder:text-orange-100/42 hover:border-orange-400/40 hover:bg-[#251f18] hover:ring-orange-500/10 focus:border-orange-400 focus:bg-[#261f17] focus:ring-4 focus:ring-orange-500/20"
+          className="w-full rounded-2xl border border-orange-500/20 bg-amber-500/10 px-4 py-3 text-sm text-[var(--text-primary)] caret-orange-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none ring-1 ring-orange-500/5 transition-all duration-200 placeholder:text-orange-100/42 hover:border-orange-400/40 hover:bg-amber-500/10 hover:ring-orange-500/10 focus:border-orange-400 focus:bg-amber-500/10 focus:ring-4 focus:ring-orange-500/20"
         />
         <button
           type="button"
@@ -172,14 +172,14 @@ export default function JobLinksInput({
             return (
               <div
                 key={link}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2.5"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[var(--color-bg-elevated)] px-3 py-2.5"
               >
                 <div className="min-w-0 flex items-center gap-3">
                   <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${PLATFORM_STYLE[meta.platform]}`}>
                     <PlatformIcon platform={meta.platform} />
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-white">{meta.platformLabel}</p>
+                    <p className="truncate text-sm font-medium text-[var(--color-text-primary)]">{meta.platformLabel}</p>
                     <p className="truncate text-xs text-[#8f8f8f]">{meta.hostname}</p>
                   </div>
                 </div>
@@ -200,3 +200,6 @@ export default function JobLinksInput({
     </div>
   );
 }
+
+
+
