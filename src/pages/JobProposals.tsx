@@ -6,6 +6,7 @@ import Button from '../components/ui/Button';
 import ProposalListItem from '../components/proposals/ProposalCard';
 import ProposalFilterBar from '../components/proposals/ProposalFiltersSidebar';
 import JobEmptyPane from '../components/proposals/JobSummaryCard';
+import AIRecommendationsCard from '../components/proposals/AIRecommendationsCard';
 import type { Proposal, ProposalStatus, ProposalFilters } from '../types/proposal';
 import ProposalDetailPane from '../components/proposals/ProposalDetailModal';
 import { supabase, withTimeout } from '../lib/supabase';
@@ -15,6 +16,7 @@ import { logger } from '../lib/logger';
 import { useTranslation } from '../i18n';
 import { useMutation } from '@tanstack/react-query';
 import { ROUTES, getJobEditRoute } from '../lib/routes';
+import { generateAIRecommendations, type AIRecommendations } from '../services/aiRecommendations';
 
 interface JobData {
     id: string;
@@ -79,6 +81,9 @@ export default function JobProposals() {
     const [job, setJob] = useState<JobData | null>(cached?.job ?? null);
     const [filters, setFilters] = useState<ProposalFilters>({});
     const proposalsLoadErrorShownRef = useRef(false);
+    const [hasActiveContract, setHasActiveContract] = useState(false);
+    const [recommendations, setRecommendations] = useState<AIRecommendations | null>(null);
+    const [recommendationsLoading, setRecommendationsLoading] = useState(false);
 
     useEffect(() => {
         if (!jobId) return;
@@ -196,13 +201,24 @@ export default function JobProposals() {
 
         const fetchAll = async () => {
             try {
-                const [jobRes, proposalsRows] = await Promise.all([
+                const [jobRes, proposalsRows, contractsRes] = await Promise.all([
                     withTimeout(supabase.from('jobs').select('*').eq('id', jobId).single(), 10000),
                     fetchProposalsRows(),
+                    withTimeout(
+                        supabase.from('contracts')
+                            .select('id, status')
+                            .eq('job_id', jobId)
+                            .in('status', ['active', 'in_progress', 'pending_payment', 'delivery_submitted']),
+                        10000
+                    ),
                 ]);
 
                 if (jobRes.error) throw jobRes.error;
                 setJob(jobRes.data);
+
+                // Check if there are any active contracts
+                const activeContracts = contractsRes.data || [];
+                setHasActiveContract(activeContracts.length > 0);
 
                 const rows = proposalsRows || [];
                 const transformedProposals: Proposal[] = rows.map((p: Record<string, unknown>) => {
@@ -252,6 +268,23 @@ export default function JobProposals() {
                 setShortlistedIds(transformedProposals.filter(p => p.status === 'shortlisted').map(p => p.id));
                 writeCache(jobRes.data, transformedProposals);
                 proposalsLoadErrorShownRef.current = false;
+
+                // Generate AI recommendations
+                if (jobRes.data && transformedProposals.length > 0) {
+                    setRecommendationsLoading(true);
+                    try {
+                        const recs = await generateAIRecommendations(
+                            jobId,
+                            transformedProposals,
+                            jobRes.data
+                        );
+                        setRecommendations(recs);
+                    } catch (error) {
+                        logger.warn('Failed to generate AI recommendations', error);
+                    } finally {
+                        setRecommendationsLoading(false);
+                    }
+                }
             } catch (error) {
                 logger.error('Failed to fetch proposals', error);
                 showLoadErrorToastOnce();
@@ -283,6 +316,38 @@ export default function JobProposals() {
             showToast(t.jobProposals.hireFirst, 'info');
         }
     }, [proposals, navigate, showToast]);
+
+    const handleShareJob = useCallback(async () => {
+        if (!jobId) return;
+        
+        const jobUrl = `${window.location.origin}/jobs/${jobId}`;
+        
+        try {
+            // Try to use native share API if available (mobile)
+            if (navigator.share) {
+                await navigator.share({
+                    title: job?.title || 'Job Opportunity',
+                    text: `Check out this job: ${job?.title || 'Job Opportunity'}`,
+                    url: jobUrl,
+                });
+                showToast('Shared successfully', 'success');
+            } else {
+                // Fallback to clipboard
+                await navigator.clipboard.writeText(jobUrl);
+                showToast('Job link copied to clipboard', 'success');
+            }
+        } catch (error) {
+            // If share was cancelled or clipboard failed, try clipboard as fallback
+            if (error instanceof Error && error.name !== 'AbortError') {
+                try {
+                    await navigator.clipboard.writeText(jobUrl);
+                    showToast('Job link copied to clipboard', 'success');
+                } catch {
+                    showToast('Failed to share job', 'error');
+                }
+            }
+        }
+    }, [jobId, job?.title, showToast]);
 
     const handleShortlist = useCallback(async (proposalId: string) => {
         const isShortlisted = shortlistedIds.includes(proposalId);
@@ -494,6 +559,8 @@ export default function JobProposals() {
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
         onSuccess: (contract) => {
             showToast(t.jobProposals.hireSuccess, 'success');
+            // Mark that we now have an active contract
+            setHasActiveContract(true);
             navigate(`/messages?contract=${contract.id}&with=${contract.freelancerId}`, {
                 state: { contractId: contract.id, otherUserId: contract.freelancerId },
             });
@@ -634,7 +701,7 @@ export default function JobProposals() {
                 <Header />
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center space-y-3">
-                        <Loader2 className="w-8 h-8 animate-spin mx-auto text-amber-500" />
+                        <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: 'var(--workspace-primary)' }} />
                         <p className="text-sm text-white/50">Loading proposals…</p>
                     </div>
                 </div>
@@ -676,11 +743,17 @@ export default function JobProposals() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                    <Button variant="outline" size="sm" leftIcon={<Share2 className="w-3.5 h-3.5" />}>
+                    <Button variant="outline" size="sm" leftIcon={<Share2 className="w-3.5 h-3.5" />} onClick={handleShareJob}>
                         {t.jobProposals.share}
                     </Button>
-                    <Button variant="outline" size="sm" leftIcon={<Edit className="w-3.5 h-3.5" />}
-                        onClick={() => navigate(jobId ? getJobEditRoute(jobId) : ROUTES.jobs)}>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        leftIcon={<Edit className="w-3.5 h-3.5" />}
+                        onClick={() => navigate(jobId ? getJobEditRoute(jobId) : ROUTES.jobs)}
+                        disabled={hasActiveContract}
+                        title={hasActiveContract ? 'Cannot edit job with active contract' : 'Edit job details'}
+                    >
                         {t.jobProposals.edit}
                     </Button>
                     <Button variant="ghost" size="sm">
@@ -690,7 +763,7 @@ export default function JobProposals() {
             </div>
 
             {/* ── SPLIT PANE CONTENT ── */}
-            <div className="flex flex-1 overflow-hidden min-h-0 relative max-w-6xl mx-auto w-full">
+            <div className="flex flex-1 overflow-hidden min-h-0 relative w-full">
 
                 {/* ═══ LEFT: Proposals list ═══ */}
                 <div className={`w-full sm:w-[340px] md:w-[380px] xl:w-[420px] shrink-0 flex flex-col border-r border-white/5 bg-[var(--color-bg-base)] min-h-0 ${selectedProposal ? 'hidden sm:flex' : 'flex'}`}>
@@ -776,7 +849,13 @@ export default function JobProposals() {
                             onUnarchive={() => handleUnarchive(liveSelectedProposal.id)}
                         />
                     ) : (
-                        <JobEmptyPane job={job ? { ...job, stats } : null} />
+                        <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-[var(--color-bg-base)]">
+                            <AIRecommendationsCard 
+                                recommendations={recommendations}
+                                isLoading={recommendationsLoading || !recommendations}
+                            />
+                            <JobEmptyPane job={job ? { ...job, stats } : null} hasActiveContract={hasActiveContract} />
+                        </div>
                     )}
                 </div>
             </div>

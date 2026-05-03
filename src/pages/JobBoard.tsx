@@ -469,7 +469,13 @@ function JobBoard() {
         </div>
 
         {checked ? (
-          <span className="bg-purple-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full shrink-0">
+          <span 
+            className="text-[10px] w-4 h-4 flex items-center justify-center rounded-full shrink-0"
+            style={{ 
+              background: 'var(--workspace-primary)',
+              color: 'var(--workspace-primary-text)'
+            }}
+          >
             {activeCount ?? 1}
           </span>
         ) : null}
@@ -504,7 +510,10 @@ function JobBoard() {
                   <button
                     type="button"
                     onClick={clearAllFilters}
-                    className="text-xs text-violet-500 hover:text-violet-600 dark:text-violet-400 dark:hover:text-violet-300 transition-colors"
+                    className="text-xs transition-colors"
+                    style={{ color: 'var(--workspace-primary)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                   >
                     {tx('pages.jobBoard.filters.clearAll', undefined, 'Clear all')}
                   </button>
@@ -529,7 +538,7 @@ function JobBoard() {
                                 }}
                               >
                                 {checked && (
-                                  <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none">
+                                  <svg className="w-2.5 h-2.5" viewBox="0 0 10 10" fill="none" style={{ color: 'var(--workspace-primary-text)' }}>
                                     <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                   </svg>
                                 )}
@@ -542,10 +551,13 @@ function JobBoard() {
                             {count > 0 && (
                               <span className={`ml-auto shrink-0 min-w-[20px] text-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold tabular-nums transition-colors ${
                                 checked
-                                  ? 'text-white'
+                                  ? ''
                                   : 'text-on-surface-subtle bg-[var(--color-bg-muted)]'
                               }`}
-                              style={checked ? { background: 'color-mix(in srgb, var(--workspace-primary,#8b5cf6) 25%, transparent)' } : {}}
+                              style={checked ? { 
+                                background: 'color-mix(in srgb, var(--workspace-primary) 25%, transparent)',
+                                color: 'var(--workspace-primary-text)'
+                              } : {}}
                               >{count}</span>
                             )}
                           </label>
@@ -761,7 +773,11 @@ function JobBoard() {
                             >
                               {isFixed ? 'Fixed' : 'Hourly'}
                             </span>
-                            <h3 className="text-base font-bold text-on-surface group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors line-clamp-1 [overflow-wrap:anywhere]">
+                            <h3 className="text-base font-bold text-on-surface transition-colors line-clamp-1 [overflow-wrap:anywhere]"
+                              style={{ color: 'var(--color-text-primary)' }}
+                              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
+                              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                            >
                               {job.title || 'Untitled job'}
                             </h3>
                           </div>
@@ -812,7 +828,14 @@ function JobBoard() {
                         <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
                           {/* Applied badge */}
                           {isAlreadyApplied && (
-                            <span className="inline-flex items-center gap-1 rounded-lg border border-violet-500/25 bg-violet-500/10 px-2 py-1 text-[10px] font-semibold text-violet-300">
+                            <span 
+                              className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-semibold"
+                              style={{ 
+                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 25%, transparent)',
+                                background: 'var(--workspace-primary-dim)',
+                                color: 'var(--workspace-primary-mid)'
+                              }}
+                            >
                               ✓ Applied
                             </span>
                           )}
@@ -837,13 +860,16 @@ function JobBoard() {
                               className={`h-8 px-4 rounded-xl text-xs font-bold transition-all active:scale-[0.97] ${
                                 isAlreadyApplied
                                   ? 'text-on-surface-muted border border-surface surface-sunken hover-surface'
-                                  : 'text-white hover:brightness-110'
+                                  : ''
                               }`}
                               style={isAlreadyApplied
                                 ? undefined
                                 : {
-                                  background: 'linear-gradient(135deg,var(--workspace-primary,#8b5cf6) 0%,color-mix(in srgb,var(--workspace-primary,#8b5cf6) 70%,#6d28d9) 100%)',
+                                  background: 'linear-gradient(135deg,var(--workspace-primary) 0%,color-mix(in srgb,var(--workspace-primary) 70%,transparent) 100%)',
+                                  color: 'var(--workspace-primary-text)'
                                 }}
+                              onMouseEnter={(e) => !isAlreadyApplied && (e.currentTarget.style.filter = 'brightness(1.1)')}
+                              onMouseLeave={(e) => !isAlreadyApplied && (e.currentTarget.style.filter = 'brightness(1)')}
                             >
                               {isAlreadyApplied
                                 ? tx('pages.jobBoard.actions.applied', undefined, 'Applied')
@@ -865,7 +891,20 @@ function JobBoard() {
                   type="button"
                   onClick={() => fetchNextPage()}
                   disabled={isFetchingNextPage}
-                  className="rounded-xl border border-white/10 bg-white/4 px-6 py-2.5 text-sm text-white/60 hover:text-white hover:bg-white/8 disabled:opacity-50 transition-all"
+                  className="rounded-xl border px-6 py-2.5 text-sm transition-all disabled:opacity-50"
+                  style={{ 
+                    borderColor: 'var(--color-border-default)',
+                    background: 'var(--color-bg-subtle)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--color-bg-muted)';
+                    e.currentTarget.style.color = 'var(--color-text-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'var(--color-bg-subtle)';
+                    e.currentTarget.style.color = 'var(--color-text-secondary)';
+                  }}
                 >
                   {isFetchingNextPage ? 'Loading...' : 'Load more'}
                 </button>

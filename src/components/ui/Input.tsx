@@ -41,12 +41,13 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
             text-[var(--color-text-primary)]
             text-sm
             transition-all duration-150
-            placeholder:text-[var(--color-text-disabled)]
-            focus:outline-none 
+            placeholder:text-[var(--color-text-tertiary)]
+            focus:outline-none
+            focus:ring-1 focus:ring-[var(--workspace-primary)]/40
             ${error
-                ? 'border-[var(--color-status-error)] focus:border-[var(--color-status-error)]'
+                ? 'border-[var(--color-status-error)] focus:border-[var(--color-status-error)] focus:ring-[var(--color-status-error)]/20'
                 : success
-                    ? 'border-[var(--color-status-success)] focus:border-[var(--color-status-success)]'
+                    ? 'border-[var(--color-status-success)] focus:border-[var(--color-status-success)] focus:ring-[var(--color-status-success)]/20'
                     : 'border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] focus:border-[var(--workspace-primary)]'
             }
             ${leftIcon ? 'ps-11' : 'px-4'}
@@ -78,7 +79,9 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
                 )}
                 <div className="relative">
                     {leftIcon && (
-                        <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-4 text-[var(--color-text-disabled)] transition-colors">
+                        <div className={`pointer-events-none absolute start-0 flex ps-4 text-[var(--color-text-disabled)] transition-colors ${
+                            as === 'textarea' ? 'items-start pt-3 top-0' : 'items-center inset-y-0'
+                        }`}>
                             {leftIcon}
                         </div>
                     )}

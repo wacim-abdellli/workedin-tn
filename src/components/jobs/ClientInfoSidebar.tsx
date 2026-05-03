@@ -1,4 +1,4 @@
-﻿import { BadgeCheck, CheckCircle2, MapPin, Star } from "lucide-react";
+import { BadgeCheck, CheckCircle2, MapPin, Star } from "lucide-react";
 import OptimizedImage from "@/components/common/OptimizedImage";
 import { useTranslation } from "@/i18n";
 
@@ -16,6 +16,7 @@ interface ClientInfoSidebarProps {
   emailVerified?: boolean;
   memberSince?: string;
   onViewProfile?: () => void;
+  isOwnProfile?: boolean;
 }
 
 function getInitials(value: string): string {
@@ -38,6 +39,7 @@ export default function ClientInfoSidebar({
   emailVerified = false,
   memberSince = "Mar 2026",
   onViewProfile,
+  isOwnProfile = false,
 }: ClientInfoSidebarProps) {
   const { tx } = useTranslation();
 
@@ -49,9 +51,9 @@ export default function ClientInfoSidebar({
   ];
 
   const verifications = [
-    { label: tx("jobDetail.paymentMethodVerified", undefined, "Payment method verified"), ok: paymentVerified },
-    { label: tx("jobDetail.phoneNumberVerified",   undefined, "Phone number verified"),  ok: phoneVerified   },
-    { label: tx("jobDetail.emailAddressVerified",  undefined, "Email address verified"),  ok: emailVerified   },
+    { id: 'payment', label: tx("jobDetail.paymentMethodVerified", undefined, "Payment method verified"), ok: paymentVerified, fixUrl: '/settings?tab=payment' },
+    { id: 'phone', label: tx("jobDetail.phoneNumberVerified",   undefined, "Phone number verified"),  ok: phoneVerified, fixUrl: '/settings?tab=profile' },
+    { id: 'email', label: tx("jobDetail.emailAddressVerified",  undefined, "Email address verified"),  ok: emailVerified, fixUrl: '/settings?tab=profile' },
   ];
 
   return (
@@ -118,14 +120,30 @@ export default function ClientInfoSidebar({
         <h4 className="text-xs font-bold text-[var(--color-text-primary)]/60 uppercase tracking-wider">
           {tx("jobDetail.clientVerifications", undefined, "Verifications")}
         </h4>
-        {verifications.map(({ label, ok }) => (
-          <div key={label} className="flex items-center gap-2 text-xs">
-            {ok
-              ? <BadgeCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              : <CheckCircle2 className="w-4 h-4 text-[var(--color-text-primary)]/20 shrink-0" />}
-            <span className={ok ? 'text-[var(--color-text-primary)]/70' : 'text-[var(--color-text-primary)]/30 line-through'}>{label}</span>
-          </div>
-        ))}
+        {verifications.map(({ id, label, ok, fixUrl }) => {
+          const content = (
+            <div key={id} className={`flex items-center gap-2 text-xs ${(!ok && isOwnProfile) ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}>
+              {ok
+                ? <BadgeCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                : <CheckCircle2 className={`w-4 h-4 shrink-0 ${isOwnProfile ? 'text-amber-400/80' : 'text-[var(--color-text-primary)]/20'}`} />}
+              <span className={ok ? 'text-[var(--color-text-primary)]/70' : 'text-[var(--color-text-primary)]/30 line-through'}>
+                {label}
+              </span>
+              {!ok && isOwnProfile && (
+                <span className="text-[10px] text-amber-400 ml-auto whitespace-nowrap bg-amber-400/10 px-1.5 py-0.5 rounded">Fix now</span>
+              )}
+            </div>
+          );
+
+          if (!ok && isOwnProfile && fixUrl) {
+            return (
+              <a href={fixUrl} key={id} className="block no-underline">
+                {content}
+              </a>
+            );
+          }
+          return content;
+        })}
         <p className="text-[10px] text-[var(--color-text-primary)]/25 pt-1">
           {tx("jobDetail.memberSince", undefined, "Member since")} {memberSince}
         </p>

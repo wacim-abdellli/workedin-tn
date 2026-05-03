@@ -173,24 +173,65 @@ export default function Wallet() {
       <div className="page-shell-content">
         
         {/* SECTION A: Header with Balance */}
-        <div className="mb-6 bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 dark:from-indigo-900/90 dark:via-purple-900/80 dark:to-violet-900/80 rounded-2xl p-8 text-white shadow-xl shadow-purple-500/20 dark:shadow-none ring-1 ring-black/5 dark:ring-white/10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 bg-black/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div 
+          className="mb-6 rounded-2xl p-8 shadow-xl ring-1 relative overflow-hidden"
+          style={{ 
+            background: 'radial-gradient(120% 180% at 0% 0%, color-mix(in srgb, var(--workspace-primary) 15%, transparent) 0%, transparent 60%), var(--color-bg-elevated)',
+            boxShadow: 'var(--shadow-lg)',
+            ringColor: 'var(--color-border-subtle)',
+            color: 'var(--color-text-primary)'
+          }}
+        >
+          <div 
+            className="absolute top-0 right-0 -mt-4 -mr-4 w-48 h-48 rounded-full blur-3xl pointer-events-none"
+            style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}
+          />
+          <div 
+            className="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 rounded-full blur-2xl pointer-events-none"
+            style={{ background: 'color-mix(in srgb, var(--color-bg-base) 10%, transparent)' }}
+          />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-white/20 dark:bg-white/10 backdrop-blur-md flex items-center justify-center shadow-inner border border-white/20">
-                  <WalletIcon className="w-6 h-6 text-white" />
+                <div 
+                  className="w-12 h-12 rounded-xl backdrop-blur-md flex items-center justify-center shadow-inner border"
+                  style={{ 
+                    background: 'var(--workspace-primary-dim)',
+                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
+                  }}
+                >
+                  <WalletIcon 
+                    className="w-6 h-6"
+                    style={{ color: 'var(--workspace-primary)' }}
+                  />
                 </div>
-                <h1 className="text-2xl font-bold">{t.wallet?.title || 'My Wallet'}</h1>
+                <h1 
+                  className="text-2xl font-bold"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {t.wallet?.title || 'My Wallet'}
+                </h1>
               </div>
               
               <div className="mb-2">
-                <p className="text-sm text-purple-200 font-medium">{t.wallet?.balance || 'Available Balance'}</p>
-                <h2 className="text-4xl font-bold mt-1">{formatCurrency(wallet?.balance || 0, true, language)}</h2>
+                <p 
+                  className="text-sm font-medium"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
+                  {t.wallet?.balance || 'Available Balance'}
+                </p>
+                <h2 
+                  className="text-4xl font-bold mt-1"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {formatCurrency(wallet?.balance || 0, true, language)}
+                </h2>
               </div>
               
-              <div className="flex items-center gap-2 text-sm text-purple-200">
+              <div 
+                className="flex items-center gap-2 text-sm"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
                 <Clock className="w-4 h-4" />
                 <span>{t.wallet?.pendingBalance || 'Pending in Escrow'}: {formatCurrency(wallet?.pending_balance || 0, true, language)}</span>
               </div>
@@ -200,14 +241,27 @@ export default function Wallet() {
               <button
                 onClick={() => setIsWithdrawalModalOpen(true)}
                 disabled={!wallet || wallet.balance < MIN_WITHDRAWAL_AMOUNT}
-                className="bg-white text-[var(--workspace-primary)] font-semibold px-6 py-3 rounded-xl hover:bg-white/90 shadow-sm transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="font-semibold px-6 py-3 rounded-xl shadow-sm transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                style={{ 
+                  background: 'var(--color-bg-base)',
+                  color: 'var(--workspace-primary)'
+                }}
+                onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '0.9')}
+                onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '1')}
               >
                 <ArrowUpRight className="w-5 h-5" />
                 {t.wallet?.requestWithdrawal || 'Request Withdrawal'}
               </button>
               <button
                 onClick={() => setIsDepositModalOpen(true)}
-                className="bg-white/20 hover:bg-white/30 text-white font-semibold px-6 py-3 rounded-xl transition-colors shrink-0 flex items-center gap-2 border border-white/30 backdrop-blur-sm"
+                className="font-semibold px-6 py-3 rounded-xl transition-colors shrink-0 flex items-center gap-2 border backdrop-blur-sm"
+                style={{ 
+                  background: 'var(--workspace-primary-dim)',
+                  borderColor: 'color-mix(in srgb, var(--workspace-primary) 30%, transparent)',
+                  color: 'var(--workspace-primary)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--workspace-primary-dim)'}
               >
                 <Plus className="w-5 h-5" />
                 {tx('wallet.deposit', undefined, 'Deposit Funds')}
@@ -239,7 +293,12 @@ export default function Wallet() {
               <WalletIcon className="w-4 h-4" />
               <span>{t.wallet?.balance || 'Available Balance'}</span>
             </div>
-            <p className="stat-card-value text-green-600 dark:text-green-400">{formatCurrency(wallet?.balance || 0, true, language)}</p>
+            <p 
+              className="stat-card-value"
+              style={{ color: 'var(--color-status-success)' }}
+            >
+              {formatCurrency(wallet?.balance || 0, true, language)}
+            </p>
           </div>
           
           <div className="stat-card">
@@ -247,7 +306,12 @@ export default function Wallet() {
               <Clock className="w-4 h-4" />
               <span>{t.wallet?.pendingBalance || 'Pending in Escrow'}</span>
             </div>
-            <p className="stat-card-value text-amber-600 dark:text-amber-400">{formatCurrency(wallet?.pending_balance || 0, true, language)}</p>
+            <p 
+              className="stat-card-value"
+              style={{ color: 'var(--color-status-warning)' }}
+            >
+              {formatCurrency(wallet?.pending_balance || 0, true, language)}
+            </p>
           </div>
         </div>
 
@@ -258,7 +322,7 @@ export default function Wallet() {
           <div className="card overflow-hidden">
             {transactionsLoading ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+                <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--workspace-primary)' }} />
               </div>
             ) : transactions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
@@ -299,11 +363,14 @@ export default function Wallet() {
                               {transaction.description || t.wallet?.transactionLabel || 'Transaction'}
                             </td>
                             <td className="data-table-td whitespace-nowrap text-end">
-                              <span className={`text-sm font-semibold ${
-                                isCredit ? 'text-green-600 dark:text-green-400' : 
-                                isDebit ? 'text-red-600 dark:text-red-400' : 
-                                'text-foreground'
-                              }`}>
+                              <span 
+                                className="text-sm font-semibold"
+                                style={{ 
+                                  color: isCredit ? 'var(--color-status-success)' : 
+                                         isDebit ? 'var(--color-status-error)' : 
+                                         'var(--color-text-primary)'
+                                }}
+                              >
                                 {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(transaction.amount, true, language)}
                               </span>
                             </td>
@@ -358,7 +425,10 @@ export default function Wallet() {
                 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex flex-col gap-3 border-t border-border px-4 py-4 dark:border-white/5 sm:flex-row sm:items-center sm:justify-between md:px-6">
+                  <div 
+                    className="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-6"
+                    style={{ borderColor: 'var(--color-border-subtle)' }}
+                  >
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
@@ -390,7 +460,7 @@ export default function Wallet() {
           <div className="card overflow-hidden">
             {withdrawalsLoading ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+                <Loader2 className="w-6 h-6 animate-spin" style={{ color: 'var(--workspace-primary)' }} />
               </div>
             ) : !withdrawals || withdrawals.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
@@ -520,8 +590,14 @@ export default function Wallet() {
           <div className="relative w-full max-w-md rounded-2xl bg-[var(--surface-bg)] border border-border p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                  <ArrowDownLeft className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <div 
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ 
+                    background: 'var(--color-status-success-bg)',
+                    color: 'var(--color-status-success)'
+                  }}
+                >
+                  <ArrowDownLeft className="w-5 h-5" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground">{tx('wallet.deposit', undefined, 'Deposit Funds')}</h3>
               </div>
@@ -583,7 +659,13 @@ export default function Wallet() {
                 type="button"
                 onClick={handleDeposit}
                 disabled={isDepositing || !depositAmount || selectedPaymentMethod !== 'dhmad'}
-                className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ 
+                  background: 'var(--color-status-success)',
+                  color: 'var(--color-text-inverse)'
+                }}
+                onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.filter = 'brightness(1.1)')}
+                onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.filter = 'brightness(1)')}
               >
                 {isDepositing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowDownLeft className="w-4 h-4" />}
                 {isDepositing ? tx('wallet.processingDeposit', undefined, 'Processing...') : tx('wallet.continueToPayment', undefined, 'Continue to Payment')}
@@ -823,9 +905,21 @@ function WithdrawalModal({ wallet, onClose, onSuccess }: { wallet: WalletType; o
           </div>
         )}
 
-          <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
-            <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-800 dark:text-amber-300">
+          <div 
+            className="p-3 border rounded-lg flex items-start gap-2"
+            style={{ 
+              background: 'var(--color-status-warning-bg)',
+              borderColor: 'color-mix(in srgb, var(--color-status-warning) 30%, transparent)'
+            }}
+          >
+            <Info 
+              className="w-5 h-5 shrink-0 mt-0.5"
+              style={{ color: 'var(--color-status-warning)' }}
+            />
+            <p 
+              className="text-sm"
+              style={{ color: 'var(--color-status-warning-text)' }}
+            >
               {t.wallet?.withdrawalSubmittedDesc || 'Withdrawal requests are reviewed within 2-5 business days'}
             </p>
           </div>

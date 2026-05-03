@@ -50,11 +50,24 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   }
 
   if (!isFullyReady && !profile) {
+    // Try to detect workspace from localStorage for better UX
+    let detectedMode: 'freelancer' | 'client' | 'admin' = 'freelancer';
+    try {
+      const storedProfile = localStorage.getItem('profile');
+      if (storedProfile) {
+        const parsed = JSON.parse(storedProfile);
+        if (parsed?.active_mode === 'client') detectedMode = 'client';
+      }
+    } catch {
+      // Ignore
+    }
+    
     return (
       <div className="fixed inset-0 z-50">
         <FullScreenLoader
           label={tx('ui.loading')}
           hint="Checking your account and workspace access"
+          mode={detectedMode}
         />
       </div>
     );

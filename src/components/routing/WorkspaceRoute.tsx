@@ -36,7 +36,7 @@ export function WorkspaceRoute({ workspace, children }: WorkspaceRouteProps) {
     if (!savedWorkspace || savedWorkspace === workspace) {
       return (
         <div className="fixed inset-0 z-50">
-          <FullScreenLoader label={tx('ui.loading')} hint="Checking your workspace access" />
+          <FullScreenLoader label={tx('ui.loading')} hint="Checking your workspace access" mode={workspace} />
         </div>
       );
     }

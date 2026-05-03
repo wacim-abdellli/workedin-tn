@@ -43,7 +43,7 @@ const TAB_STATUS_MAP: Record<ProposalTab, string[]> = {
   all: [],
   pending: ["pending", "new", "shortlisted"],
   accepted: ["accepted", "hired"],
-  rejected: ["rejected", "archived", "withdrawn"],
+  rejected: ["rejected", "declined", "archived", "withdrawn"],
 };
 
 const normalizeToTab = (status: string): ProposalTab => {
@@ -260,12 +260,14 @@ export default function MyProposals() {
   };
 
   const TABS: ProposalTab[] = ["all", "pending", "accepted", "rejected"];
-
   return (
     <div className="min-h-screen page-bg-base">
-      <SEO title={tx("pages.myProposals.title", undefined, "My Proposals")} url="/my-proposals" />
+      <SEO 
+        title={tx("pages.myProposals.title", undefined, "My Proposals")} 
+        description={tx("pages.myProposals.subtitle", undefined, "Track every proposal you've sent")}
+        url="/my-proposals" 
+      />
       <Header />
-
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* ── Page Header ── */}
         <div className="mb-6">

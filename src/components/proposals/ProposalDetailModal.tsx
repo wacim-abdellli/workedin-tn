@@ -468,7 +468,7 @@ export default function ProposalDetailPane({
                     <div className="space-y-5 animate-in fade-in duration-200 max-w-2xl">
                         {isLoadingInsights ? (
                             <div className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]/50">
-                                <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+                                <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--workspace-primary)' }} />
                                 Loading freelancer profile details...
                             </div>
                         ) : resolvedBio ? (
@@ -504,7 +504,7 @@ export default function ProposalDetailPane({
                     <div className="animate-in fade-in duration-200">
                         {isLoadingInsights ? (
                             <div className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]/50">
-                                <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+                                <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--workspace-primary)' }} />
                                 Loading portfolio...
                             </div>
                         ) : portfolioItems.length > 0 ? (
@@ -554,7 +554,7 @@ export default function ProposalDetailPane({
                     <div className="animate-in fade-in duration-200">
                         {isLoadingInsights ? (
                             <div className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]/50">
-                                <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+                                <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--workspace-primary)' }} />
                                 Loading reviews...
                             </div>
                         ) : reviewItems.length > 0 ? (

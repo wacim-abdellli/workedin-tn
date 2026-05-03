@@ -458,7 +458,7 @@ export default function ClientJobs() {
         {/* Content */}
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--workspace-primary)' }}></div>
           </div>
         ) : !jobs || jobs.length === 0 ? (
           allJobs.length === 0 ? (

@@ -1,4 +1,4 @@
-﻿import {
+import {
     MapPin,
     Star,
     Target,
@@ -25,6 +25,9 @@
     MessageSquare,
     ArrowLeft,
     X,
+    Save,
+    Loader2,
+    DollarSign,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -50,6 +53,10 @@ import {
     ProfileSectionHeader,
     ProfileStatCard,
 } from '@/components/profile/ProfilePrimitives';
+import { ProfileHero } from "@/components/profile/ProfileHero";
+import { ProfileStatBar } from "@/components/profile/ProfileStatBar";
+import { ProfileSection, ProfileTag, ProfileEmptySlot } from "@/components/profile/ProfileSection";
+import { ProfileActionSidebar } from "@/components/profile/ProfileActionSidebar";
 import OptimizedImage from '@/components/common/OptimizedImage';
 import type {
     FreelancerData,
@@ -370,7 +377,12 @@ function CompactMultiSelectEditor({
                     value={searchQuery}
                     onChange={(event) => onSearchChange(event.target.value)}
                     placeholder={`Search ${title.toLowerCase()}...`}
-                    className="flex-1 bg-[#0f0f0f] border border-surface rounded-lg text-white p-2.5 outline-none transition-all"
+                    className="flex-1 border rounded-lg p-2.5 outline-none transition-all"
+                    style={{ 
+                        background: 'var(--color-bg-base)',
+                        borderColor: 'var(--color-border-default)',
+                        color: 'var(--color-text-primary)'
+                    }}
                 />
                 <span
                     className="text-xs font-semibold px-2.5 py-1 rounded-full border w-fit"
@@ -605,7 +617,7 @@ function ProfileView({
         return { score, pct };
     });
 
-    const accentColor = '#8B5CF6';
+    const accentColor = 'var(--workspace-primary)';
 
     const skillPickerOptions = useMemo<PickerOption[]>(() => {
         return PREDEFINED_SKILLS.map((skill) => ({
@@ -941,274 +953,218 @@ function ProfileView({
                 border: 'rgba(107,114,128,0.3)',
             };
 
-    return (
-        <div className="min-h-screen w-full page-bg-base p-4 sm:p-6">
-            {isOwner ? (
-                <input
-                    ref={avatarInputRef}
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.webp,.gif"
-                    className="hidden"
-                    onChange={handleAvatarUploadSelection}
-                    disabled={isSavingAnySection}
-                />
-            ) : null}
+  const heroBadges = [
+    { label: "Freelancer", style: "filled" as const },
+    { label: availabilityBadge.label, style: "filled" as const },
+  ];
 
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 flex flex-col gap-5">
-                    <ProfileSectionCard className="relative overflow-hidden bg-[radial-gradient(circle_at_85%_10%,rgba(139,92,246,0.16),transparent_38%),#141414] border-white/10">
-                        <div className="absolute -top-8 right-10 h-24 w-24 rounded-full bg-[#8B5CF6]/15 blur-2xl" />
-                        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start gap-5">
-                            <div className="relative w-fit">
-                                <ProfileAvatar
-                                    type="freelancer"
-                                    name={freelancer.full_name || 'Freelancer'}
-                                    imageUrl={freelancer.avatar_url}
-                                    showOnlineDot={freelancer.availability === 'available'}
-                                />
+  const heroMeta = [
+    { icon: <MapPin className="w-3.5 h-3.5" />, label: freelancer.location || 'Ariana' },
+    { icon: <Star className="w-3.5 h-3.5" />, label: `${freelancer.stats.rating.toFixed(1)} - ${freelancer.stats.reviews_count} reviews` },
+    { icon: <TrendingUp className="w-3.5 h-3.5" />, label: `${freelancer.stats.success_rate}% success` },
+  ];
 
-                                {isOwner ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => avatarInputRef.current?.click()}
-                                        disabled={isSavingAnySection}
-                                        className="absolute -bottom-1 -left-1 h-9 w-9 rounded-full border border-white/15 bg-[var(--color-bg-subtle)] text-gray-200 inline-flex items-center justify-center hover:text-white transition-colors"
-                                        title={tx('pages.freelancerProfile.actions.changeProfilePicture', undefined, 'Change profile picture')}
-                                    >
-                                        <Camera className="w-4 h-4" />
-                                    </button>
-                                ) : null}
-                            </div>
+  const heroActions = isOwner && !editingBasics ? (
+    <button
+      type="button"
+      onClick={openBasicsEditor}
+      className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-xl border transition-all duration-150"
+      style={{ 
+        color: 'var(--color-text-secondary)', 
+        borderColor: 'var(--color-border-subtle)'
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
+      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+    >
+      <Edit2 className="w-3.5 h-3.5" />
+      {tx('pages.freelancerProfile.actions.editProfile', undefined, 'Edit profile')}
+    </button>
+  ) : isOwner && editingBasics ? (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => { resetBasicsDraft(); setEditingBasics(false); }}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all"
+        style={{ 
+          color: 'var(--color-text-secondary)', 
+          borderColor: 'var(--color-border-default)'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
+        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+      >
+        <X className="w-3.5 h-3.5" />
+        {tx('common.cancel', undefined, 'Cancel')}
+      </button>
+      <button
+        type="button"
+        onClick={saveBasics}
+        disabled={savingBasics}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all disabled:opacity-70"
+        style={{ 
+          color: 'var(--workspace-primary)',
+          borderColor: 'color-mix(in srgb, var(--workspace-primary) 40%, transparent)',
+          background: 'var(--workspace-primary-dim)'
+        }}
+      >
+        {savingBasics ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+        {savingBasics ? tx('common.saving', undefined, 'Saving...') : tx('common.save', undefined, 'Save')}
+      </button>
+    </div>
+  ) : undefined;
 
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-3 flex-wrap">
-                                    <div>
-                                        <h1 className="text-2xl sm:text-[1.75rem] leading-tight font-black tracking-tight text-white">
-                                            {freelancer.full_name || 'Freelancer'}
-                                        </h1>
-                                        <p className="text-white/55 mt-1 text-sm sm:text-base">
-                                            {freelancer.title || 'Independent specialist'}
-                                        </p>
-                                    </div>
+  return (
+    <div className="min-h-screen w-full page-bg-base">
+      <ProfileHero
+        variant="freelancer"
+        name={freelancer.full_name || 'Freelancer'}
+        subtitle={freelancer.title || 'Independent specialist'}
+        avatarUrl={freelancer.avatar_url}
+        badges={heroBadges}
+        meta={heroMeta}
+        actions={heroActions}
+        isOwner={isOwner}
+        isUploadingAvatar={savingAvatar}
+        onAvatarUpload={handleAvatarUploadSelection}
+      />
 
-                                    {isOwner && !editingBasics ? (
-                                        <button
-                                            type="button"
-                                            onClick={openBasicsEditor}
-                                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-white/10 text-white/65 hover:text-white transition-colors"
-                                        >
-                                            <Edit2 className="w-3.5 h-3.5" />
-                                            {tx('pages.freelancerProfile.actions.editProfile', undefined, 'Edit profile')}
-                                        </button>
-                                    ) : null}
-                                </div>
+      {isOwner && editingBasics && (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+          <div className="surface-card border rounded-2xl p-5 mb-6 animate-in fade-in slide-in-from-top-2" style={{ borderColor: 'var(--color-border-subtle)' }}>
+            <h3 className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--color-text-secondary)' }}>Edit Basics</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>{tx('pages.freelancerProfile.form.fullName', undefined, 'Full name')}</label>
+                    <input
+                        type="text"
+                        value={fullNameDraft}
+                        onChange={(e) => setFullNameDraft(e.target.value)}
+                        className="w-full bg-[var(--color-background-base)] border rounded-xl text-sm px-4 py-2.5 outline-none transition-colors"
+                        style={{ 
+                            borderColor: 'var(--color-border-default)'
+                        }}
+                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--workspace-primary)'}
+                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--color-border-default)'}
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>{tx('pages.freelancerProfile.form.professionalTitle', undefined, 'Professional title')}</label>
+                    <input
+                        type="text"
+                        value={titleDraft}
+                        onChange={(e) => setTitleDraft(e.target.value)}
+                        className="w-full bg-[var(--color-background-base)] border rounded-xl text-sm px-4 py-2.5 outline-none transition-colors"
+                        style={{ 
+                            borderColor: 'var(--color-border-default)'
+                        }}
+                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--workspace-primary)'}
+                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--color-border-default)'}
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>{tx('pages.freelancerProfile.form.hourlyRateTnd', undefined, 'Hourly rate (TND)')}</label>
+                    <input
+                        type="number"
+                        min={0}
+                        value={hourlyRateDraft}
+                        onChange={(e) => setHourlyRateDraft(e.target.value)}
+                        className="w-full bg-[var(--color-background-base)] border rounded-xl text-sm px-4 py-2.5 outline-none focus:border-[#8B5CF6] transition-colors"
+                        style={{ borderColor: 'var(--color-border-default)' }}
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>Availability</label>
+                    <select
+                        value={availabilityDraft}
+                        onChange={(e) => setAvailabilityDraft(e.target.value as FreelancerData['availability'])}
+                        className="w-full bg-[var(--color-background-base)] border rounded-xl text-sm px-4 py-2.5 outline-none focus:border-[#8B5CF6] transition-colors"
+                        style={{ borderColor: 'var(--color-border-default)' }}
+                    >
+                        {availabilityOptions.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-                                <div className="flex flex-wrap gap-2 mt-3">
-                                    <span
-                                        className="px-3 py-1 rounded-full border text-xs font-semibold"
-                                        style={{
-                                            background: `color-mix(in srgb, ${accentColor} 12%, transparent)`,
-                                            color: accentColor,
-                                            borderColor: `color-mix(in srgb, ${accentColor} 35%, transparent)`,
-                                        }}
-                                    >
-                                        Freelancer
-                                    </span>
-                                    <span
-                                        className="px-3 py-1 rounded-full border text-xs font-semibold"
-                                        style={{
-                                            background: availabilityBadge.background,
-                                            color: availabilityBadge.color,
-                                            borderColor: availabilityBadge.border,
-                                        }}
-                                    >
-                                        {availabilityBadge.label}
-                                    </span>
-                                </div>
+      {/* ── Stat bar ────────────────────────────────────────────────────── */}
+      <ProfileStatBar
+        variant="freelancer"
+        stats={[
+            { icon: <Briefcase className="w-4 h-4" />, label: 'Completed', value: freelancer.stats.jobs_completed },
+            { icon: <DollarSign className="w-4 h-4" />, label: 'Hourly Rate', value: `${freelancer.hourly_rate} TND/hr`, highlight: true },
+            { icon: <CheckCircle className="w-4 h-4" />, label: 'Success Rate', value: `${freelancer.stats.success_rate}%` },
+            { icon: <Clock className="w-4 h-4" />, label: 'Response Time', value: '< 2 hrs' },
+        ]}
+      />
 
-                                {editingBasics && isOwner ? (
-                                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 rounded-xl border border-white/10 bg-black/30 p-3.5">
-                                        <div>
-                                            <label className="text-xs text-white/50">{tx('pages.freelancerProfile.form.fullName', undefined, 'Full name')}</label>
-                                            <input
-                                                type="text"
-                                                value={fullNameDraft}
-                                                onChange={(event) => setFullNameDraft(event.target.value)}
-                                                className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded-lg text-white p-2.5 outline-none"
-                                            />
-                                        </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-5">
 
-                                        <div>
-                                            <label className="text-xs text-white/50">{tx('pages.freelancerProfile.form.professionalTitle', undefined, 'Professional title')}</label>
-                                            <input
-                                                type="text"
-                                                value={titleDraft}
-                                                onChange={(event) => setTitleDraft(event.target.value)}
-                                                className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded-lg text-white p-2.5 outline-none"
-                                            />
-                                        </div>
 
-                                        <div>
-                                            <label className="text-xs text-white/50">{tx('pages.freelancerProfile.form.hourlyRateTnd', undefined, 'Hourly rate (TND)')}</label>
-                                            <input
-                                                type="number"
-                                                min={0}
-                                                value={hourlyRateDraft}
-                                                onChange={(event) => setHourlyRateDraft(event.target.value)}
-                                                className="mt-1 w-full bg-[#0b0b0b] border border-white/10 rounded-lg text-white p-2.5 outline-none"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="text-xs text-white/50">Availability</label>
-                                            <select
-                                                value={availabilityDraft}
-                                                onChange={(event) => setAvailabilityDraft(event.target.value as FreelancerData['availability'])}
-                                                className="mt-1 w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] p-2.5 outline-none"
-                                            >
-                                                {availabilityOptions.map((option) => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="md:col-span-2 flex justify-end gap-2 pt-1">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    resetBasicsDraft();
-                                                    setEditingBasics(false);
-                                                }}
-                                                className="px-4 py-2 rounded-lg border border-white/10 text-white/70 text-sm"
-                                                disabled={savingBasics}
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={saveBasics}
-                                                disabled={savingBasics}
-                                                className="px-4 py-2 rounded-lg text-on-surface text-sm font-semibold transition-colors disabled:opacity-70"
-                                                style={{ background: accentColor }}
-                                            >
-                                                {savingBasics ? 'Saving...' : 'Save profile'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : null}
-
-                                <div className="flex flex-wrap gap-4 text-sm text-white/55 mt-4">
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <MapPin className="w-4 h-4" />
-                                        {freelancer.location || 'Ariana'}
-                                    </span>
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <Star className="w-4 h-4" style={{ color: accentColor }} />
-                                        {freelancer.stats.rating.toFixed(1)} - {freelancer.stats.reviews_count} reviews
-                                    </span>
-                                    <span className="inline-flex items-center gap-1.5">
-                                        <TrendingUp className="w-4 h-4" style={{ color: accentColor }} />
-                                        {freelancer.stats.success_rate}% success
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </ProfileSectionCard>
-
-                    <ProfileSectionCard>
+                    <ProfileSection
+                        title="Introduction"
+                        animationDelay={80}
+                        onEdit={isOwner && !editingBio ? () => setEditingBio(true) : undefined}
+                        editLabel="Edit"
+                    >
                         {editingBio && isOwner ? (
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
-                                    <span className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: `${accentColor}CC` }}>
-                                        Introduction
-                                    </span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setBioDraft(freelancer.bio || '');
-                                        setEditingBio(false);
-                                    }}
-                                    className="text-xs text-white/60 hover:text-white"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        ) : (
-                            <ProfileSectionHeader
-                                title="Introduction"
-                                accentColor={accentColor}
-                                isOwner={isOwner}
-                                onEdit={() => setEditingBio(true)}
-                                editLabel="Edit"
-                                editIcon={<Edit2 className="w-3.5 h-3.5" />}
-                            />
-                        )}
-
-                        {editingBio && isOwner ? (
-                            <>
+                            <div className="space-y-3">
                                 <textarea
                                     rows={4}
                                     value={bioDraft}
                                     onChange={(event) => setBioDraft(event.target.value)}
-                                    className="w-full bg-[#0b0b0b] border border-white/10 rounded-lg text-white p-3 outline-none"
+                                    className="w-full resize-none rounded-xl border text-sm px-4 py-3 transition-all focus:outline-none placeholder:text-[var(--color-text-tertiary)]"
+                                    style={{
+                                        background: "var(--color-background-base)",
+                                        borderColor: "var(--color-border-default)",
+                                        color: "var(--color-text-primary)",
+                                    }}
+                                    onFocus={e => { e.currentTarget.style.borderColor = accentColor; }}
+                                    onBlur={e => { e.currentTarget.style.borderColor = "var(--color-border-default)"; }}
                                 />
-                                <div className="flex justify-end mt-3">
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setBioDraft(freelancer.bio || ''); setEditingBio(false); }}
+                                        className="text-xs font-semibold px-4 py-2 rounded-xl border transition-all"
+                                        style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(255,255,255,0.12)" }}
+                                        disabled={savingBio}
+                                    >
+                                        Cancel
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={saveBio}
                                         disabled={savingBio}
-                                        className="px-4 py-2 rounded-lg text-on-surface text-sm font-semibold transition-colors disabled:opacity-70"
+                                        className="text-xs font-semibold px-4 py-2 rounded-xl text-white transition-all flex items-center gap-2 disabled:opacity-70"
                                         style={{ background: accentColor }}
                                     >
+                                        {savingBio ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                                         {savingBio ? 'Saving...' : 'Save bio'}
                                     </button>
                                 </div>
-                            </>
-                        ) : (
-                            <p className="text-white/75 leading-relaxed text-sm sm:text-base">
-                                {freelancer.bio || 'No bio added yet'}
-                            </p>
-                        )}
-                    </ProfileSectionCard>
-
-                    <ProfileSectionCard>
-                        {editingSkills && isOwner ? (
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
-                                    <span className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: `${accentColor}CC` }}>
-                                        {tx('pages.freelancerProfile.sections.coreStrengths', undefined, 'Core strengths')}
-                                    </span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSelectedSkillNames(freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean));
-                                        setSkillSearchQuery('');
-                                        setEditingSkills(false);
-                                    }}
-                                    className="text-xs text-white/60 hover:text-white"
-                                >
-                                    Cancel
-                                </button>
                             </div>
+                        ) : freelancer.bio ? (
+                            <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+                                {freelancer.bio}
+                            </p>
                         ) : (
-                            <ProfileSectionHeader
-                                title={tx('pages.freelancerProfile.sections.coreStrengths', undefined, 'Core strengths')}
-                                accentColor={accentColor}
-                                isOwner={isOwner}
-                                onEdit={() => setEditingSkills(true)}
-                                editLabel="Edit"
-                                editIcon={<Edit2 className="w-3.5 h-3.5" />}
-                            />
+                            <ProfileEmptySlot message="No bio added yet." />
                         )}
+                    </ProfileSection>
 
+                    <ProfileSection
+                        title={tx('pages.freelancerProfile.sections.coreStrengths', undefined, 'Core strengths')}
+                        animationDelay={160}
+                        onEdit={isOwner && !editingSkills ? () => setEditingSkills(true) : undefined}
+                        editLabel="Edit"
+                    >
                         {editingSkills && isOwner ? (
-                            <>
+                            <div className="space-y-4">
                                 <CompactMultiSelectEditor
                                     title="Skills"
                                     searchQuery={skillSearchQuery}
@@ -1219,71 +1175,47 @@ function ProfileView({
                                     accentColor={accentColor}
                                     maxSelected={15}
                                 />
-                                <div className="flex justify-end mt-3">
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setSelectedSkillNames(freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean)); setSkillSearchQuery(''); setEditingSkills(false); }}
+                                        className="text-xs font-semibold px-4 py-2 rounded-xl border transition-all"
+                                        style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(255,255,255,0.12)" }}
+                                        disabled={savingSkills}
+                                    >
+                                        Cancel
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={saveSkills}
                                         disabled={savingSkills || selectedSkillNames.length === 0}
-                                        className="px-4 py-2 rounded-lg text-on-surface text-sm font-semibold transition-colors disabled:opacity-70"
+                                        className="text-xs font-semibold px-4 py-2 rounded-xl text-white transition-all flex items-center gap-2 disabled:opacity-70"
                                         style={{ background: accentColor }}
                                     >
+                                        {savingSkills ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                                         {savingSkills ? 'Saving...' : 'Save skills'}
                                     </button>
                                 </div>
-                            </>
-                        ) : (
+                            </div>
+                        ) : strengths.length > 0 ? (
                             <div className="flex flex-wrap gap-2">
                                 {strengths.map((item) => (
-                                    <span
-                                        key={item}
-                                        className="px-3.5 py-1.5 rounded-full border text-sm"
-                                        style={{
-                                            background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
-                                            color: accentColor,
-                                            borderColor: `color-mix(in srgb, ${accentColor} 25%, transparent)`,
-                                        }}
-                                    >
-                                        {item}
-                                    </span>
+                                    <ProfileTag key={item} label={item} accentColor={accentColor} />
                                 ))}
                             </div>
-                        )}
-                    </ProfileSectionCard>
-
-                    <ProfileSectionCard>
-                        {editingTools && isOwner ? (
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
-                                    <span className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: `${accentColor}CC` }}>
-                                        Tools
-                                    </span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSelectedToolNames(freelancer.tools);
-                                        setToolSearchQuery('');
-                                        setEditingTools(false);
-                                    }}
-                                    className="text-xs text-white/60 hover:text-white"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
                         ) : (
-                            <ProfileSectionHeader
-                                title="Tools"
-                                accentColor={accentColor}
-                                isOwner={isOwner}
-                                onEdit={() => setEditingTools(true)}
-                                editLabel="Edit"
-                                editIcon={<Edit2 className="w-3.5 h-3.5" />}
-                            />
+                            <ProfileEmptySlot message="No skills added yet." />
                         )}
+                    </ProfileSection>
 
+                    <ProfileSection
+                        title="Tools"
+                        animationDelay={240}
+                        onEdit={isOwner && !editingTools ? () => setEditingTools(true) : undefined}
+                        editLabel="Edit"
+                    >
                         {editingTools && isOwner ? (
-                            <>
+                            <div className="space-y-4">
                                 <CompactMultiSelectEditor
                                     title="Tools"
                                     searchQuery={toolSearchQuery}
@@ -1294,43 +1226,40 @@ function ProfileView({
                                     accentColor={accentColor}
                                     maxSelected={15}
                                 />
-                                <div className="flex justify-end mt-3">
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setSelectedToolNames(freelancer.tools); setToolSearchQuery(''); setEditingTools(false); }}
+                                        className="text-xs font-semibold px-4 py-2 rounded-xl border transition-all"
+                                        style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(255,255,255,0.12)" }}
+                                        disabled={savingTools}
+                                    >
+                                        Cancel
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={saveTools}
                                         disabled={savingTools || selectedToolNames.length === 0}
-                                        className="px-4 py-2 rounded-lg text-on-surface text-sm font-semibold transition-colors disabled:opacity-70"
+                                        className="text-xs font-semibold px-4 py-2 rounded-xl text-white transition-all flex items-center gap-2 disabled:opacity-70"
                                         style={{ background: accentColor }}
                                     >
+                                        {savingTools ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                                         {savingTools ? 'Saving...' : 'Save tools'}
                                     </button>
                                 </div>
-                            </>
-                        ) : (
+                            </div>
+                        ) : tools.length > 0 ? (
                             <div className="flex flex-wrap gap-2">
                                 {tools.map((item) => (
-                                    <span
-                                        key={item}
-                                        className="px-3.5 py-1.5 rounded-full border text-sm"
-                                        style={{
-                                            background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
-                                            color: accentColor,
-                                            borderColor: `color-mix(in srgb, ${accentColor} 25%, transparent)`,
-                                        }}
-                                    >
-                                        {item}
-                                    </span>
+                                    <ProfileTag key={item} label={item} accentColor="var(--workspace-primary)" />
                                 ))}
                             </div>
+                        ) : (
+                            <ProfileEmptySlot message="No tools added yet." />
                         )}
-                    </ProfileSectionCard>
+                    </ProfileSection>
 
-                    <ProfileSectionCard>
-                        <ProfileSectionHeader
-                            title={tx('pages.freelancerProfile.sections.selectedWork', undefined, 'Selected work')}
-                            accentColor={accentColor}
-                        />
-
+                    <ProfileSection title={tx('pages.freelancerProfile.sections.selectedWork', undefined, 'Selected work')} animationDelay={320}>
                         {workSamples.length > 0 ? (
                             <div className={`grid gap-4 ${workSamples.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
                                 {workSamples.map((item) => {
@@ -1397,14 +1326,26 @@ function ProfileView({
                                                         {item.tools_used.slice(0, 3).map((tool) => (
                                                             <span
                                                                 key={tool}
-                                                                className="max-w-full truncate text-[11px] px-2 py-0.5 rounded-full border border-[#f59e0b]/35 text-[#fbbf24] bg-[#f59e0b]/10"
+                                                                className="max-w-full truncate text-[11px] px-2 py-0.5 rounded-full border"
+                                                                style={{
+                                                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 35%, transparent)',
+                                                                    color: 'var(--workspace-primary)',
+                                                                    background: 'var(--workspace-primary-dim)'
+                                                                }}
                                                                 title={tool}
                                                             >
                                                                 {tool}
                                                             </span>
                                                         ))}
                                                         {item.tools_used.length > 3 ? (
-                                                            <span className="text-[11px] px-2 py-0.5 rounded-full border border-white/15 text-white/55 bg-white/[0.04]">
+                                                            <span 
+                                                                className="text-[11px] px-2 py-0.5 rounded-full border"
+                                                                style={{
+                                                                    borderColor: 'var(--color-border-subtle)',
+                                                                    color: 'var(--color-text-tertiary)',
+                                                                    background: 'var(--color-bg-subtle)'
+                                                                }}
+                                                            >
                                                                 +{item.tools_used.length - 3} more
                                                             </span>
                                                         ) : null}
@@ -1476,7 +1417,7 @@ function ProfileView({
                                 accentColor={accentColor}
                             />
                         )}
-                    </ProfileSectionCard>
+                    </ProfileSection>
 
                     {activeWorkSample ? (
                         <div
@@ -1639,7 +1580,12 @@ function ProfileView({
                                                         {activeWorkSample.tools_used.map((tool) => (
                                                             <span
                                                                 key={tool}
-                                                                className="text-xs px-2.5 py-1 rounded-full border border-[#f59e0b]/35 text-[#fbbf24] bg-[#f59e0b]/10"
+                                                                className="text-xs px-2.5 py-1 rounded-full border"
+                                                                style={{
+                                                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 35%, transparent)',
+                                                                    color: 'var(--workspace-primary)',
+                                                                    background: 'var(--workspace-primary-dim)'
+                                                                }}
                                                             >
                                                                 {tool}
                                                             </span>
@@ -1675,14 +1621,9 @@ function ProfileView({
                         </div>
                     ) : null}
 
-                    <ProfileSectionCard>
-                        <ProfileSectionHeader
-                            title={tx('pages.freelancerProfile.sections.clientTrust', undefined, 'Client trust')}
-                            accentColor={accentColor}
-                        />
-
+                    <ProfileSection title={tx('pages.freelancerProfile.sections.clientTrust', undefined, 'Client trust')} animationDelay={400}>
                         <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 items-start">
-                            <div className="rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-4 text-center">
+                            <div className="rounded-xl border bg-[var(--color-bg-base)] p-4 text-center" style={{ borderColor: 'var(--color-border-subtle)' }}>
                                 <p className="text-5xl leading-none font-black text-white">
                                     {freelancer.stats.rating.toFixed(1)}
                                 </p>
@@ -1698,23 +1639,23 @@ function ProfileView({
                                         />
                                     ))}
                                 </div>
-                                <p className="text-xs text-white/45 mt-2">{freelancer.stats.reviews_count} reviews</p>
+                                <p className="text-xs text-[var(--color-text-secondary)] mt-2">{freelancer.stats.reviews_count} reviews</p>
                             </div>
 
                             <div className="space-y-2">
                                 {reviewBuckets.map(({ score, pct }) => (
                                     <div key={score} className="flex items-center gap-2 text-xs">
-                                        <span className="w-3 text-white/55">{score}</span>
-                                        <div className="h-2 flex-1 bg-white/10 rounded-full overflow-hidden">
+                                        <span className="w-3 text-[var(--color-text-secondary)]">{score}</span>
+                                        <div className="h-2 flex-1 rounded-full overflow-hidden" style={{ background: 'var(--color-border-subtle)' }}>
                                             <div
-                                                className="h-full rounded-full"
+                                                className="h-full rounded-full transition-all duration-500"
                                                 style={{
                                                     width: `${pct}%`,
                                                     background: `linear-gradient(90deg, ${accentColor}, color-mix(in srgb, ${accentColor} 55%, #ffffff))`,
                                                 }}
                                             />
                                         </div>
-                                        <span className="w-10 text-right text-white/40">{pct}%</span>
+                                        <span className="w-10 text-right text-[var(--color-text-tertiary)]">{pct}%</span>
                                     </div>
                                 ))}
                             </div>
@@ -1723,220 +1664,116 @@ function ProfileView({
                         {freelancer.reviews.length > 0 ? (
                             <div className="mt-6 space-y-3">
                                 {freelancer.reviews.slice(0, 3).map((review) => (
-                                    <article key={review.id} className="rounded-xl border border-white/10 bg-[#0f0f0f] p-3.5">
+                                    <article key={review.id} className="rounded-xl border p-3.5" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-subtle)' }}>
                                         <div className="flex items-start justify-between gap-3">
                                             <div>
                                                 <p className="text-sm font-semibold text-white">{review.client_name}</p>
-                                                <p className="text-xs text-white/45 mt-0.5">{review.job_title || 'Project collaboration'}</p>
+                                                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{review.job_title || 'Project collaboration'}</p>
                                             </div>
                                             <div className="inline-flex items-center gap-1 text-xs" style={{ color: accentColor }}>
                                                 <Star className="w-3.5 h-3.5" style={{ fill: accentColor }} />
                                                 {review.rating.toFixed(1)}
                                             </div>
                                         </div>
-                                        <p className="text-sm text-white/70 mt-2">{review.comment}</p>
+                                        <p className="text-sm text-[var(--color-text-secondary)] mt-2">{review.comment}</p>
                                     </article>
                                 ))}
                             </div>
                         ) : (
-                            <p className="mt-5 text-sm text-white/45 text-center">
-                                {tx('pages.freelancerProfile.reviews.empty', undefined, 'No reviews yet. Complete your first contract to receive feedback.')}
-                            </p>
+                            <ProfileEmptySlot message={tx('pages.freelancerProfile.reviews.empty', undefined, 'No reviews yet. Complete your first contract to receive feedback.')} />
                         )}
-                    </ProfileSectionCard>
+                    </ProfileSection>
                 </div>
 
-                <aside className="lg:col-span-1 flex flex-col gap-5">
-                    <ProfileSectionCard className="bg-[#131313]">
-                        <div className="flex flex-col gap-3">
-                            {isOwner ? (
-                                <button
-                                    onClick={() => navigate(`/freelancer/${freelancer.username || freelancer.id}?preview=public`)}
-                                    className="group relative w-full overflow-hidden rounded-xl p-3.5 text-left border transition-all duration-200"
-                                    style={{
-                                        borderColor: `color-mix(in srgb, ${accentColor} 45%, #2b2b2b)`,
-                                        background: `linear-gradient(135deg, color-mix(in srgb, ${accentColor} 24%, #141414) 0%, #171717 58%, #131313 100%)`,
-                                        boxShadow: `0 14px 36px -26px color-mix(in srgb, ${accentColor} 62%, transparent)`,
-                                    }}
-                                    disabled={isSavingAnySection}
-                                >
-                                    <span
-                                        className="pointer-events-none absolute -right-6 -top-8 h-20 w-20 rounded-full opacity-35"
-                                        style={{ background: `color-mix(in srgb, ${accentColor} 40%, transparent)` }}
-                                    />
-                                    <span className="inline-flex items-center gap-2 text-base font-semibold text-white relative z-10">
-                                        <Eye className="w-4 h-4 text-white/90" />
-                                        {tx('pages.freelancerProfile.cta.viewPublicProfile', undefined, 'View Public Profile')}
-                                    </span>
-                                    <span className="mt-1 block text-xs text-white/75 relative z-10">
-                                        {tx('pages.freelancerProfile.cta.viewPublicProfileDescription', undefined, 'Preview exactly how clients and visitors see your profile.')}
-                                    </span>
-                                </button>
-                            ) : null}
-
-                            {isOwner ? (
-                                <button
-                                    onClick={() => navigate(ROUTES.freelancerPortfolio)}
-                                    className="w-full rounded-xl p-3.5 text-left border border-white/10 bg-[linear-gradient(180deg,#1a1a1a_0%,#171717_100%)] transition-all duration-200 hover:border-white/20 hover:bg-[var(--color-bg-muted)]"
-                                    disabled={isSavingAnySection}
-                                >
-                                    <span className="inline-flex items-center gap-2 text-base font-semibold text-white">
-                                        <Briefcase className="w-4 h-4" style={{ color: accentColor }} />
-                                        {tx('pages.freelancerProfile.cta.portfolioDashboard', undefined, 'Portfolio Dashboard')}
-                                    </span>
-                                    <span className="mt-1 block text-xs text-white/45">{tx('pages.freelancerProfile.cta.portfolioDashboardDescription', undefined, 'Add and organize your best work samples.')}</span>
-                                </button>
-                            ) : null}
-
-                            {isOwner ? (
-                                <button
-                                    onClick={() => navigate(ROUTES.myProposals)}
-                                    className="w-full rounded-xl p-3.5 text-left border border-white/10 bg-[linear-gradient(180deg,#1a1a1a_0%,#171717_100%)] transition-all duration-200 hover:border-white/20 hover:bg-[var(--color-bg-muted)]"
-                                    disabled={isSavingAnySection}
-                                >
-                                    <span className="inline-flex items-center gap-2 text-base font-semibold text-white">
-                                        <MessageSquare className="w-4 h-4" style={{ color: accentColor }} />
-                                        {tx('pages.freelancerProfile.cta.myProposals', undefined, 'My Proposals')}
-                                    </span>
-                                    <span className="mt-1 block text-xs text-white/45">{tx('pages.freelancerProfile.cta.myProposalsDescription', undefined, 'Track statuses and follow up faster.')}</span>
-                                </button>
-                            ) : null}
-
-                            {isOwner ? (
-                                <button
-                                    onClick={() => navigate(ROUTES.settings)}
-                                    className="w-full rounded-xl p-3.5 text-left border border-white/10 transition-all duration-200 hover:bg-[var(--color-bg-elevated)] hover:border-white/20"
-                                    disabled={isSavingAnySection}
-                                >
-                                    <span className="inline-flex items-center gap-2 text-base font-semibold text-white/90">
-                                        <Settings className="w-4 h-4 text-white/80" />
-                                        {tx('pages.freelancerProfile.cta.workspaceSettings', undefined, 'Workspace Settings')}
-                                    </span>
-                                    <span className="mt-1 block text-xs text-white/45">{tx('pages.freelancerProfile.cta.workspaceSettingsDescription', undefined, 'Notifications, security, and account controls.')}</span>
-                                </button>
-                            ) : null}
-
-                            {viewerRole === 'client' ? (
-                                <button
-                                    onClick={onHireNow}
-                                    className="w-full text-white rounded-xl py-3 font-semibold transition-colors"
-                                    style={{ background: accentColor }}
-                                >
-                                    {tx('pages.freelancerProfile.cta.hireMe', undefined, 'Hire Me')}
-                                </button>
-                            ) : null}
-
-                            {viewerRole === 'client' ? (
+                <div className="lg:col-span-1">
+                    <ProfileActionSidebar
+                        variant="freelancer"
+                        primaryCta={
+                            viewerRole === 'client' ? (
+                                <div className="flex flex-col gap-2">
+                                    <button
+                                        onClick={onHireNow}
+                                        className="w-full text-white rounded-xl py-3 font-semibold transition-all shadow-[0_4px_14px_0_rgba(139,92,246,0.39)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.23)]"
+                                        style={{ background: accentColor }}
+                                    >
+                                        {tx('pages.freelancerProfile.cta.hireMe', undefined, 'Hire Me')}
+                                    </button>
+                                    <button
+                                        onClick={onOpenContact}
+                                        className="w-full rounded-xl py-3 font-semibold transition-colors inline-flex items-center justify-center gap-2 hover:bg-[#8B5CF6]/10"
+                                        style={{ border: `1px solid color-mix(in srgb, ${accentColor} 50%, transparent)`, color: accentColor }}
+                                    >
+                                        <MessageSquare className="w-4 h-4" />
+                                        {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
+                                    </button>
+                                </div>
+                            ) : (viewerRole === 'freelancer' || viewerRole === 'guest') ? (
                                 <button
                                     onClick={onOpenContact}
-                                    className="w-full rounded-xl py-3 font-semibold transition-colors inline-flex items-center justify-center gap-2"
-                                    style={{
-                                        border: `1px solid ${accentColor}`,
-                                        color: accentColor,
-                                        background: `color-mix(in srgb, ${accentColor} 8%, transparent)`,
-                                    }}
+                                    className="w-full rounded-xl py-3 font-semibold transition-colors inline-flex items-center justify-center gap-2 hover:bg-white/5"
+                                    style={{ border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
                                 >
                                     <MessageSquare className="w-4 h-4" />
                                     {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
                                 </button>
-                            ) : null}
-
-                            {(viewerRole === 'freelancer' || viewerRole === 'guest') ? (
-                                <button
-                                    onClick={onOpenContact}
-                                    className="w-full bg-transparent border border-white/10 text-white/75 rounded-xl py-3 font-semibold transition-colors hover:text-white inline-flex items-center justify-center gap-2"
-                                >
-                                    <MessageSquare className="w-4 h-4" />
-                                    {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
-                                </button>
-                            ) : null}
-                        </div>
-                    </ProfileSectionCard>
-
-                    <section className="grid grid-cols-2 gap-3">
-                        <ProfileStatCard
-                            icon={<Briefcase className="w-4 h-4" />}
-                            value={freelancer.stats.jobs_completed}
-                            label="Completed"
-                            accentColor={accentColor}
-                        />
-                        <ProfileStatCard
-                            icon={<Wallet className="w-4 h-4" />}
-                            value={`${freelancer.stats.total_earnings.toLocaleString()} TND`}
-                            label="Earned"
-                            accentColor={accentColor}
-                        />
-                        <ProfileStatCard
-                            icon={<Clock className="w-4 h-4" />}
-                            value={`${freelancer.stats.response_time_hours}h`}
-                            label="Response"
-                            accentColor={accentColor}
-                            suffix={<span className="text-green-400 text-xs font-semibold">Fast</span>}
-                        />
-                        <ProfileStatCard
-                            icon={<Coins className="w-4 h-4" />}
-                            value={`${freelancer.hourly_rate} TND/h`}
-                            label={tx('pages.freelancerProfile.stats.hourlyRate', undefined, 'Hourly rate')}
-                            accentColor={accentColor}
-                        />
-                    </section>
-
-                    <ProfileSectionCard>
-                        <ProfileInfoHeader
-                            icon={<ShieldCheck className="w-4 h-4" />}
-                            title={tx('pages.freelancerProfile.sections.workInformation', undefined, 'Work information')}
-                            accentColor={accentColor}
-                        />
-
-                        <div>
-                            <ProfileInfoRow
-                                label="Status"
-                                value={
-                                    <span className="text-sm" style={{ color: freelancer.availability === 'available' ? '#4ade80' : '#fbbf24' }}>
+                            ) : undefined
+                        }
+                        workspaceInfo={[
+                            {
+                                label: "Status",
+                                value: (
+                                    <span className="flex items-center justify-end gap-1.5">
+                                        <span className="w-2 h-2 rounded-full" style={{ background: freelancer.availability === 'available' ? '#4ade80' : '#fbbf24' }} />
                                         {freelancer.availability === 'available' ? 'Available for work' : freelancer.availability}
                                     </span>
-                                }
-                            />
-                            <ProfileInfoRow
-                                label={tx('pages.freelancerProfile.info.memberSince', undefined, 'Member since')}
-                                value={new Date(freelancer.joined_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
-                            />
-                            <ProfileInfoRow
-                                label={tx('pages.freelancerProfile.info.lastSeen', undefined, 'Last seen')}
-                                value={<span className="text-green-400">Recently</span>}
-                            />
-                        </div>
-                    </ProfileSectionCard>
-
-                    <ProfileSectionCard>
-                        <ProfileInfoHeader
-                            icon={<CheckCircle className="w-4 h-4" />}
-                            title="Verifications"
-                            accentColor={accentColor}
-                        />
-
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2.5 text-sm text-white/75 py-1.5">
-                                {freelancer.verifications.cin ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-white/35" />}
-                                <span>Identity</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 text-sm text-white/75 py-1.5">
-                                {freelancer.verifications.phone ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-white/35" />}
-                                <span>Phone</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 text-sm text-white/75 py-1.5">
-                                {freelancer.verifications.email ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-white/35" />}
-                                <span>Email</span>
-                            </div>
-                            <div className="flex items-center gap-2.5 text-sm text-white/75 py-1.5">
-                                {freelancer.verifications.payment ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-white/35" />}
-                                <span>{tx('pages.freelancerProfile.verifications.paymentMethod', undefined, 'Payment method')}</span>
-                            </div>
-                        </div>
-                    </ProfileSectionCard>
-                </aside>
+                                )
+                            },
+                            {
+                                label: tx('pages.freelancerProfile.info.memberSince', undefined, 'Member since'),
+                                value: new Date(freelancer.joined_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+                            },
+                            {
+                                label: tx('pages.freelancerProfile.info.lastSeen', undefined, 'Last seen'),
+                                value: <span className="text-emerald-400">Recently</span>
+                            }
+                        ]}
+                        verifications={[
+                            { label: 'Identity', passed: !!freelancer.verifications.cin },
+                            { label: 'Phone', passed: !!freelancer.verifications.phone },
+                            { label: 'Email', passed: !!freelancer.verifications.email },
+                            { label: tx('pages.freelancerProfile.verifications.paymentMethod', undefined, 'Payment method'), passed: !!freelancer.verifications.payment },
+                        ]}
+                        ownerActions={isOwner ? [
+                            {
+                                icon: <Eye className="w-4 h-4" />,
+                                label: tx('pages.freelancerProfile.cta.viewPublicProfile', undefined, 'View Public Profile'),
+                                description: 'Preview how others see your profile.',
+                                onClick: () => navigate(`/freelancer/${freelancer.username || freelancer.id}?preview=public`)
+                            },
+                            {
+                                icon: <Briefcase className="w-4 h-4" />,
+                                label: tx('pages.freelancerProfile.cta.portfolioDashboard', undefined, 'Portfolio Dashboard'),
+                                description: 'Organize your best work.',
+                                onClick: () => navigate(ROUTES.freelancerPortfolio)
+                            },
+                            {
+                                icon: <MessageSquare className="w-4 h-4" />,
+                                label: tx('pages.freelancerProfile.cta.myProposals', undefined, 'My Proposals'),
+                                description: 'Track statuses and follow up.',
+                                onClick: () => navigate(ROUTES.myProposals)
+                            },
+                            {
+                                icon: <Settings className="w-4 h-4" />,
+                                label: tx('pages.freelancerProfile.cta.workspaceSettings', undefined, 'Workspace Settings'),
+                                description: 'Notifications and security.',
+                                onClick: () => navigate(ROUTES.settings)
+                            }
+                        ] : []}
+                    />
+                </div>
             </div>
         </div>
+      </div>
     );
 }
 
@@ -2590,15 +2427,40 @@ export default function FreelancerProfile() {
             <Header />
             {isPublicPreview ? (
                 <div className="max-w-6xl mx-auto px-6 pt-5">
-                    <div className="surface-card border border-surface rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                    <div 
+                        className="surface-card border rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+                        style={{ borderColor: 'var(--color-border-default)' }}
+                    >
                         <div>
-                            <p className="text-sm font-semibold text-white">{tx('pages.freelancerProfile.publicPreview.title', undefined, 'Public Profile Preview')}</p>
-                            <p className="text-xs text-on-surface-muted">{tx('pages.freelancerProfile.publicPreview.description', undefined, 'You are viewing your profile as other users see it.')}</p>
+                            <p 
+                                className="text-sm font-semibold"
+                                style={{ color: 'var(--color-text-primary)' }}
+                            >
+                                {tx('pages.freelancerProfile.publicPreview.title', undefined, 'Public Profile Preview')}
+                            </p>
+                            <p 
+                                className="text-xs"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                            >
+                                {tx('pages.freelancerProfile.publicPreview.description', undefined, 'You are viewing your profile as other users see it.')}
+                            </p>
                         </div>
                         <button
                             type="button"
                             onClick={() => navigate(`/freelancer/${usernameOrId || user?.id || ''}`)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-[#3a3a3a] px-3 py-2 text-sm text-gray-200 hover:text-white hover:border-[#565656] transition-colors"
+                            className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
+                            style={{ 
+                                borderColor: 'var(--color-border-default)',
+                                color: 'var(--color-text-secondary)'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.color = 'var(--color-text-primary)';
+                                e.currentTarget.style.borderColor = 'var(--color-border-strong)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.color = 'var(--color-text-secondary)';
+                                e.currentTarget.style.borderColor = 'var(--color-border-default)';
+                            }}
                         >
                             <ArrowLeft className="w-4 h-4" />
                             {tx('pages.freelancerProfile.publicPreview.exit', undefined, 'Exit Preview')}

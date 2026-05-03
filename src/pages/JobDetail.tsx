@@ -1236,6 +1236,7 @@ function JobDetail() {
               onViewProfile={
                 canViewClientProfile ? () => navigate(`/client/${job.client_id}`) : undefined
               }
+              isOwnProfile={user?.id === job.client_id}
             />
 
             {/* Job Stats */}

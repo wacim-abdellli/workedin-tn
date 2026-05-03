@@ -7,11 +7,9 @@ import {
     inferAudioMimeType,
     formatAudioTime
 } from '../../lib/audioProcessing';
-
 const extractMessageAttachmentPath = (value: string | null | undefined): string | null => {
     const raw = String(value || '').trim();
     if (!raw) return null;
-
     if (!/^(https?:)/i.test(raw)) {
         const normalized = raw.replace(/^\/+/, '');
         const withoutPublicPrefix = normalized.replace(/^storage\/v1\/object\/public\/message_attachments\//i, '');
@@ -20,21 +18,18 @@ const extractMessageAttachmentPath = (value: string | null | undefined): string 
             : withoutPublicPrefix;
         return objectPath || null;
     }
-
     try {
         const parsed = new URL(raw);
         const decodedPath = decodeURIComponent(parsed.pathname);
         const marker = '/message_attachments/';
         const markerIndex = decodedPath.indexOf(marker);
         if (markerIndex === -1) return null;
-
         const candidate = decodedPath.slice(markerIndex + marker.length);
         return candidate || null;
     } catch {
         return null;
     }
 };
-
 export type MessageAudioPlayerProps = {
     src: string;
     rawSource?: string;
@@ -49,7 +44,6 @@ export function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, acce
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const fallbackObjectUrlRef = useRef<string | null>(null);
     const didAttemptBlobFallbackRef = useRef(false);
-
     const [playbackSrc, setPlaybackSrc] = useState(src);
     const [isPlaying, setIsPlaying] = useState(false);
     const [duration, setDuration] = useState(0);
@@ -57,7 +51,6 @@ export function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, acce
     const [isLoading, setIsLoading] = useState(false);
     const [hasError, setHasError] = useState(false);
     const isVioletAccent = accentVariant === 'violet';
-
     const waveformBars = useMemo(() => (
         Array.from({ length: 18 }, (_, index) => {
             const seeded = Math.sin((index + 1.8) * 1.57) * 0.5 + 0.5;
@@ -67,11 +60,9 @@ export function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, acce
 
     const progressRatio = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
     const defaultDuration = duration > 0 ? duration : 14;
-
     const displayAudioName = useMemo(() => {
         const rawName = String(name || '').trim();
         if (!rawName) return tx('pages.messages.voiceMemo', undefined, 'Audio note');
-
         const lowerName = rawName.toLowerCase();
         if (
             lowerName.includes('voice memo')
@@ -93,13 +84,11 @@ export function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, acce
         setIsLoading(false);
         setHasError(false);
         didAttemptBlobFallbackRef.current = false;
-
         if (fallbackObjectUrlRef.current) {
             URL.revokeObjectURL(fallbackObjectUrlRef.current);
             fallbackObjectUrlRef.current = null;
         }
     }, [src]);
-
     useEffect(() => {
         return () => {
             if (fallbackObjectUrlRef.current) {
@@ -108,15 +97,12 @@ export function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, acce
             }
         };
     }, []);
-
     const tryBlobFallback = useCallback(async (): Promise<boolean> => {
         if (!src) {
             setHasError(true);
             return false;
         }
-
         let incomingBlob: Blob | null = null;
-
         try {
             const response = await fetch(src, { cache: 'no-store' });
             if (response.ok) {

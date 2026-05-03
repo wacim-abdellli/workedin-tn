@@ -1,128 +1,188 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Save, User, Briefcase, Building2, Zap, Check, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Check, Eye, Loader2, Save, Shield, User, Zap } from 'lucide-react';
-import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/Toast';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import OptimizedImage from '@/components/common/OptimizedImage';
-import { supabase } from '@/lib/supabase';
+import { useTranslation } from '@/i18n';
 import { logger } from '@/lib/logger';
-import { getAvatarGradient, getInitials } from '@/lib/avatar';
+import { isValidOptionalPhone, normalizeOptionalPhone } from '@/lib/phone';
+import { supabase } from '@/lib/supabase';
 import { switchWorkspace } from '@/lib/switchWorkspace';
-import { uploadAvatar } from '@/services/profiles';
-import { isValidOptionalPhone, normalizeOptionalPhone, sanitizePhoneInput } from '@/lib/phone';
 
+import { BasicInfoForm, buildBasicInitialForm } from './BasicInfoForm';
+import type { BasicFormData } from './BasicInfoForm';
+import { FreelancerInfoForm, buildFreelancerInitialForm, mergeDescription } from './FreelancerInfoForm';
+import type { FreelancerFormData } from './FreelancerInfoForm';
+import { ClientInfoForm, buildClientInitialForm, mergePrefText } from './ClientInfoForm';
+import type { ClientFormData } from './ClientInfoForm';
+
+// ─── Tab definitions ────────────────────────────────────────────────────────
+type ProfileTab = 'basic' | 'freelancer' | 'client' | 'workspace';
+
+// ─── Component ───────────────────────────────────────────────────────────────
 export default function ProfileSettings() {
-    const { dir, t, tx } = useTranslation();
-    const { user, profile, freelancerProfile, activeMode, refreshProfile, updateProfile } = useAuth();
+    const { user, profile, freelancerProfile, activeMode, updateProfile, updateFreelancerProfile, refreshProfile } = useAuth();
     const { showToast } = useToast();
+    const { tx, t } = useTranslation();
     const navigate = useNavigate();
 
-    const [isSaving, setIsSaving] = useState(false);
-    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-    const [localAvatarPreview, setLocalAvatarPreview] = useState<string | null>(null);
-    const localAvatarPreviewRef = useRef<string | null>(null);
-    const [isSwitchingWorkspace, setIsSwitchingWorkspace] = useState<'freelancer' | 'client' | null>(null);
-    const [form, setForm] = useState({ full_name: '', phone: '', email: '', bio: '', location: '' });
+    const isFreelancer = profile?.user_type === 'freelancer' || profile?.user_type === 'both';
+    const isClient     = profile?.user_type === 'client'     || profile?.user_type === 'both';
+    const isBoth       = profile?.user_type === 'both';
 
-    // Revoke local object URLs to avoid memory leaks
-    useEffect(() => {
-        return () => {
-            if (localAvatarPreviewRef.current) {
-                URL.revokeObjectURL(localAvatarPreviewRef.current);
-            }
-        };
-    }, []);
+    // Sync the active tab whenever the user switches workspace mode
+    const computeTab = useCallback((): ProfileTab => {
+        if (activeMode === 'freelancer' && isFreelancer) return 'freelancer';
+        if (activeMode === 'client' && isClient) return 'client';
+        return 'basic';
+    }, [activeMode, isFreelancer, isClient]);
 
-    // Clear preview once profile DB update reflects the real URL
-    useEffect(() => {
-        if (localAvatarPreview && profile?.avatar_url && !profile.avatar_url.startsWith('blob:')) {
-            URL.revokeObjectURL(localAvatarPreview);
-            localAvatarPreviewRef.current = null;
-            setLocalAvatarPreview(null);
-        }
-    }, [profile?.avatar_url, localAvatarPreview]);
+    const [activeTab, setActiveTab] = useState<ProfileTab>(computeTab);
 
+    // Keep tab in sync whenever the workspace mode changes externally
     useEffect(() => {
-        if (profile) {
-            setForm({
-                full_name: profile.full_name || '',
-                phone: profile.phone || '',
-                email: profile.email || user?.email || '',
-                bio: profile.bio || '',
-                location: profile.location || '',
-            });
-        }
+        setActiveTab(computeTab());
+    }, [activeMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── Form state (controlled, lifted here so we can do one global save) ──
+    const [basicForm,      setBasicForm]      = useState<BasicFormData>(() => buildBasicInitialForm(profile, user?.email));
+    const [freelancerForm, setFreelancerForm] = useState<FreelancerFormData>(() => buildFreelancerInitialForm(freelancerProfile));
+    const [clientForm,     setClientForm]     = useState<ClientFormData>(() => buildClientInitialForm(profile));
+
+    // Snapshot of what's in the DB – used for isDirty detection
+    const [savedBasic,      setSavedBasic]      = useState<BasicFormData>(() => buildBasicInitialForm(profile, user?.email));
+    const [savedFreelancer, setSavedFreelancer] = useState<FreelancerFormData>(() => buildFreelancerInitialForm(freelancerProfile));
+    const [savedClient,     setSavedClient]     = useState<ClientFormData>(() => buildClientInitialForm(profile));
+
+    // Re-sync forms when DB data arrives / changes
+    useEffect(() => {
+        const b = buildBasicInitialForm(profile, user?.email);
+        setBasicForm(b);
+        setSavedBasic(b);
     }, [profile, user?.email]);
 
-     const handleSave = async () => {
-         if (!user?.id) return;
+    useEffect(() => {
+        const f = buildFreelancerInitialForm(freelancerProfile);
+        setFreelancerForm(f);
+        setSavedFreelancer(f);
+    }, [freelancerProfile]);
 
-         if (!isValidOptionalPhone(form.phone)) {
-             showToast(
-                 tx('settings.toasts.invalidPhone', undefined, 'Please enter a valid phone number (8-15 digits, optional country code).'),
-                 'error'
-             );
-             return;
-         }
+    useEffect(() => {
+        const c = buildClientInitialForm(profile);
+        setClientForm(c);
+        setSavedClient(c);
+    }, [profile]);
 
-         setIsSaving(true);
-         try {
-              await updateProfile({
-                  full_name: form.full_name,
-                  phone: normalizeOptionalPhone(form.phone),
-                  phone_verified: !!form.phone, // Automatically mark as verified for now
-                  email: form.email,
-                  bio: form.bio,
-                  location: form.location,
-              });
-              showToast(tx('settings.toasts.profileSaved', undefined, 'Profile updated successfully'), 'success');
-         } catch (error: any) {
-             logger.error('Error saving profile:', error);
-             if (error?.message?.includes('duplicate key value violates unique constraint') && error?.message?.includes('phone')) {
-                 showToast(tx('settings.toasts.phoneTaken', undefined, 'This phone number is already in use by another account.'), 'error');
-             } else {
-                 showToast(tx('settings.toasts.profileSaveError', undefined, 'Failed to save profile changes'), 'error');
-             }
-         } finally {
-             setIsSaving(false);
-         }
-     };
+    // ── isDirty checks ────────────────────────────────────────────────────
+    const basicDirty      = JSON.stringify(basicForm)      !== JSON.stringify(savedBasic);
+    const freelancerDirty = JSON.stringify(freelancerForm) !== JSON.stringify(savedFreelancer);
+    const clientDirty     = JSON.stringify(clientForm)     !== JSON.stringify(savedClient);
+    const anyDirty        = basicDirty || (isFreelancer && freelancerDirty) || (isClient && clientDirty);
 
-    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !user?.id) return;
+    // ── Global Save ───────────────────────────────────────────────────────
+    const [isSaving, setIsSaving] = useState(false);
 
-        // Show instant local preview before upload finishes
-        if (localAvatarPreviewRef.current) URL.revokeObjectURL(localAvatarPreviewRef.current);
-        const preview = URL.createObjectURL(file);
-        localAvatarPreviewRef.current = preview;
-        setLocalAvatarPreview(preview);
-        setIsUploadingAvatar(true);
+    const handleSave = useCallback(async () => {
+        if (!user?.id) return;
 
-        try {
-            const avatarUrl = await uploadAvatar(user.id, file);
-            // Always update ALL three avatar fields so the new picture is consistent
-            // across every workspace and every component that reads these fields.
-            await updateProfile({
-                avatar_url: avatarUrl,
-                avatar_url_freelancer: avatarUrl,
-                avatar_url_client: avatarUrl,
-            });
-            showToast(tx('settings.toasts.avatarUpdated', undefined, 'Profile image updated'), 'success');
-        } catch (error) {
-            logger.error('Error uploading avatar:', error);
-            // Revert local preview on error
-            URL.revokeObjectURL(preview);
-            localAvatarPreviewRef.current = null;
-            setLocalAvatarPreview(null);
-            showToast(tx('settings.toasts.avatarUpdateError', undefined, 'Failed to upload profile image'), 'error');
-        } finally {
-            setIsUploadingAvatar(false);
+        // Validate phone before anything
+        if (basicDirty && basicForm.phone && !isValidOptionalPhone(basicForm.phone)) {
+            showToast(tx('settings.toasts.invalidPhone', undefined, 'Please enter a valid phone number.'), 'error');
+            setActiveTab('basic');
+            return;
         }
-    };
+
+        setIsSaving(true);
+        try {
+            // 1. Basic profile
+            if (basicDirty) {
+                await updateProfile({
+                    full_name: basicForm.full_name,
+                    phone: normalizeOptionalPhone(basicForm.phone),
+                    phone_verified: !!basicForm.phone,
+                    email: basicForm.email,
+                    bio: basicForm.bio,
+                    location: basicForm.location,
+                });
+            }
+
+            // 2. Freelancer profile
+            if (isFreelancer && freelancerDirty) {
+                const parsedRate  = parseFloat(freelancerForm.hourly_rate);
+                const parsedYears = parseInt(freelancerForm.years_experience, 10);
+                const parsedHours = parseInt(freelancerForm.weekly_availability_hours, 10);
+                await updateFreelancerProfile({
+                    title:       freelancerForm.title,
+                    hourly_rate: isNaN(parsedRate)  ? undefined : parsedRate,
+                    availability: freelancerForm.availability,
+                    years_experience: isNaN(parsedYears) ? undefined : parsedYears,
+                    tools:       freelancerForm.tools,
+                    industries:  freelancerForm.industries,
+                    portfolio_links: freelancerForm.portfolio_links.split(',').map(s => s.trim()).filter(Boolean),
+                    weekly_availability_hours: isNaN(parsedHours) ? undefined : parsedHours,
+                    revision_policy: freelancerForm.revision_policy,
+                    // Merge typed text back into the jsonb without nuking hidden keys
+                    project_preferences: mergeDescription(
+                        freelancerProfile?.project_preferences as Record<string, unknown>,
+                        freelancerForm.project_preferences
+                    ),
+                });
+            }
+
+            // 3. Client profile fields on the profiles table
+            if (isClient && clientDirty) {
+                await updateProfile({
+                    company_name:     clientForm.company_name,
+                    company_website:  clientForm.company_website,
+                    company_industry: clientForm.company_industry,
+                    company_size:     clientForm.company_size,
+                    company_role:     clientForm.company_role,
+                    hiring_needs:     clientForm.hiring_needs.split(',').map(s => s.trim()).filter(Boolean),
+                    project_budget_preference:   clientForm.project_budget_preference,
+                    project_timeline_preference: clientForm.project_timeline_preference,
+                    // Preserve hidden onboarding keys by merging
+                    communication_preferences: mergePrefText(
+                        profile?.communication_preferences as Record<string, unknown>,
+                        clientForm.communication_preferences
+                    ),
+                    screening_preferences: mergePrefText(
+                        profile?.screening_preferences as Record<string, unknown>,
+                        clientForm.screening_preferences
+                    ),
+                    legal_preferences: mergePrefText(
+                        profile?.legal_preferences as Record<string, unknown>,
+                        clientForm.legal_preferences
+                    ),
+                });
+            }
+
+            showToast(tx('settings.toasts.profileSaved', undefined, 'All changes saved successfully'), 'success');
+        } catch (err: any) {
+            logger.error('Profile save error:', err);
+            if (err?.message?.includes('phone')) {
+                showToast(tx('settings.toasts.phoneTaken', undefined, 'Phone number already in use.'), 'error');
+            } else {
+                showToast(tx('settings.toasts.profileSaveError', undefined, 'Failed to save changes'), 'error');
+            }
+        } finally {
+            setIsSaving(false);
+        }
+    }, [
+        user?.id, basicDirty, freelancerDirty, clientDirty,
+        basicForm, freelancerForm, clientForm,
+        isFreelancer, isClient,
+        freelancerProfile, profile,
+        updateProfile, updateFreelancerProfile, showToast, tx,
+    ]);
+
+    const handleDiscard = useCallback(() => {
+        setBasicForm(savedBasic);
+        setFreelancerForm(savedFreelancer);
+        setClientForm(savedClient);
+    }, [savedBasic, savedFreelancer, savedClient]);
+
+    // ── Workspace switcher ────────────────────────────────────────────────
+    const [isSwitchingWorkspace, setIsSwitchingWorkspace] = useState<'freelancer' | 'client' | null>(null);
 
     const handleWorkspaceSelection = async (type: 'freelancer' | 'client' | 'both') => {
         const userId = user?.id;
@@ -131,8 +191,8 @@ export default function ProfileSettings() {
             setIsSwitchingWorkspace(type);
             try {
                 await switchWorkspace({ userId, targetWorkspace: type, currentUserType: profile?.user_type ?? 'client', profile, freelancerProfile, navigate });
-            } catch (error) {
-                logger.error('Workspace selection error:', error);
+            } catch (err) {
+                logger.error('Workspace selection error:', err);
                 showToast(t.auth.accountPanel.switchError, 'error');
             } finally {
                 window.setTimeout(() => setIsSwitchingWorkspace(null), 350);
@@ -147,158 +207,258 @@ export default function ProfileSettings() {
                 if (fe) throw fe;
             }
             await refreshProfile();
-            showToast(tx('settings.toasts.workspaceBothEnabled', undefined, 'Both workspaces are now enabled on your account.'), 'success');
-        } catch (error) {
-            logger.error('Workspace selection error:', error);
-            showToast(t.common.error + ': ' + (error instanceof Error ? error.message : ''), 'error');
+            showToast(tx('settings.toasts.workspaceBothEnabled', undefined, 'Both workspaces enabled.'), 'success');
+        } catch (err) {
+            logger.error('Workspace selection error:', err);
+            showToast(t.common.error + ': ' + (err instanceof Error ? err.message : ''), 'error');
         }
     };
 
-    void dir;
+    // ── Tab config ────────────────────────────────────────────────────────
+    // UX principle: show only what is relevant to the current workspace mode.
+    // A 'both' user in Freelancer mode should not see Client tabs (noise).
+    // They can switch mode from the header to access the other workspace.
+    type TabConfig = { id: ProfileTab; label: string; icon: typeof User; show: boolean; dirty?: boolean };
+    const TABS: TabConfig[] = [
+        { id: 'basic',      label: 'Basic Info',   icon: User,      show: true,                                        dirty: basicDirty },
+        { id: 'freelancer', label: 'Freelancer',   icon: Briefcase, show: isFreelancer && activeMode === 'freelancer', dirty: freelancerDirty },
+        { id: 'client',     label: 'Client',       icon: Building2, show: isClient     && activeMode === 'client',     dirty: clientDirty },
+        { id: 'workspace',  label: 'Workspace',    icon: Zap,       show: true },
+    ].filter(tab => tab.show);
+
+    // ── CSS accent token per active tab ────────────────────────────────────
+    // We inject a scoped --ps-accent CSS variable so every Input inside
+    // that section automatically gets the right focus ring colour.
+    const FREELANCER_COLOR = '#8B5CF6';
+    const CLIENT_COLOR     = '#F59E0B';
+    const accentVar =
+        activeTab === 'freelancer' ? FREELANCER_COLOR
+      : activeTab === 'client'    ? CLIENT_COLOR
+      : 'var(--workspace-primary)';
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Premium Avatar Section */}
-            <div className="flex items-start gap-4">
-                <div className="relative group">
-                    {(localAvatarPreview || profile?.avatar_url) ? (
-                        <img
-                            src={localAvatarPreview || profile?.avatar_url}
-                            alt={form.full_name}
-                            className="w-24 h-24 rounded-2xl object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                            style={{ boxShadow: '0 0 0 2px var(--workspace-primary), 0 0 0 4px var(--color-background-base)' }}
-                        />
-                    ) : (
-                        <div
-                            className="flex h-24 w-24 items-center justify-center rounded-2xl text-lg font-semibold text-white transition-transform duration-300 group-hover:scale-[1.02]"
-                            style={{
-                                background: `linear-gradient(135deg, ${getAvatarGradient(form.full_name || 'User').join(', ')})`,
-                                boxShadow: '0 0 0 2px var(--workspace-primary), 0 0 0 4px var(--color-background-base)',
-                            }}
-                        >
-                            {getInitials(form.full_name || 'User')}
-                        </div>
-                    )}
-                    <label className="absolute -bottom-2 -end-2 w-9 h-9 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-200 hover:scale-110 text-white" style={{ background: "var(--workspace-primary)" }}>
-                        {isUploadingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                        <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif" className="hidden" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
-                    </label>
-                </div>
-                <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-lg" style={{ color: "var(--color-text-primary)" }}>{form.full_name || tx('settings.userFallback', undefined, 'User')}</h3>
-                          {(profile?.user_type === 'freelancer' || profile?.user_type === 'both') && (
-                              <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="xs"
-                                  className="h-6 text-xs px-2 py-0 gap-1"
-                                  onClick={() => navigate(`/freelancer/${profile?.username || user?.id}`)}
-                              >
-                                  <Eye className="w-3 h-3" />
-                                  {tx('settings.viewProfile', undefined, 'View')}
-                              </Button>
-                          )}
-                      </div>
-                    <p className="text-sm mb-3" style={{ color: "var(--color-text-secondary)" }}>{form.email}</p>
-                    <div className="flex flex-wrap gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white" style={{ background: "var(--workspace-primary)" }}>
-                            <User className="w-3 h-3" />
-                            {profile?.user_type === 'freelancer' ? tx('settings.accountTypeFreelancer', undefined, 'Freelancer')
-                                : profile?.user_type === 'client' ? tx('settings.accountTypeClient', undefined, 'Client')
-                                : profile?.user_type === 'both' ? tx('settings.accountTypeBoth', undefined, 'Both')
-                                : tx('settings.accountTypeUnknown', undefined, 'Not set')}
-                        </span>
-                        {profile?.cin_verified ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-white" style={{ background: "var(--color-status-success)" }}>
-                                <Check className="w-3 h-3" />{tx('settings.identityVerified', undefined, 'Verified')}
-                            </span>
-                        ) : (
-                            <button onClick={() => navigate('/verify-identity')} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 text-white" style={{ background: "var(--workspace-accent)" }}>
-                                <Shield className="w-3 h-3" />{tx('settings.verifyIdentity', undefined, 'Verify')}
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </div>
+        <div className="space-y-0">
+            {/* ── Card wrapper ─────────────────────────────────────────── */}
+            <div className="surface-card border rounded-2xl overflow-hidden relative">
+                {/* Top accent line */}
+                <div className="absolute top-0 left-0 right-0 h-0.5 transition-all duration-300"
+                     style={{ background: `linear-gradient(90deg, ${accentVar} 0%, transparent 70%)` }} />
 
-            <div className="border-t" style={{ borderColor: "var(--color-border-subtle)" }} />
-
-            {/* Enhanced Form fields */}
-            <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input label={tx('settings.fullName', undefined, 'Full name')} value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
-                    <Input label={tx('settings.phoneNumberLabel', undefined, 'Phone number')} type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={e => setForm({ ...form, phone: sanitizePhoneInput(e.target.value) })} placeholder={tx('common.phonePlaceholder', undefined, 'Enter your phone number')} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input label={tx('settings.emailOptionalLabel', undefined, 'Email (optional)')} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder={tx('settings.emailPlaceholder', undefined, 'email@example.com')} />
-                    <Input label={tx('settings.location', undefined, 'Location')} value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
-                </div>
-                <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>{tx('settings.bioLabel', undefined, 'Bio')}</label>
-                    <textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} rows={3} className="input-base w-full resize-none text-sm transition-all duration-200 focus:ring-2" placeholder={tx('settings.bioPlaceholder', undefined, 'Write a short bio about yourself...')} style={{ background: "var(--color-background-base)", borderColor: "var(--color-border-subtle)", color: "var(--color-text-primary)", padding: "0.625rem 0.75rem" }} />
-                </div>
-            </div>
-
-            <div className="flex justify-end">
-                <Button variant="primary" size="sm" onClick={handleSave} isLoading={isSaving} leftIcon={<Save className="w-3.5 h-3.5" />} className="transition-all duration-200 hover:scale-105">
-                    {tx('settings.saveChanges', undefined, 'Save changes')}
-                </Button>
-            </div>
-
-            <div className="border-t" style={{ borderColor: "var(--color-border-subtle)" }} />
-
-            {/* Enhanced Workspace Switcher */}
-            <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4" style={{ color: "var(--workspace-primary)" }} />
-                    <h4 className="text-sm font-semibold" style={{ color: "var(--color-text-primary)" }}>{t.auth.accountPanel.switchWorkspace}</h4>
-                </div>
-                <p className="text-xs" style={{ color: "var(--color-text-secondary)" }}>{profile?.user_type === 'both' ? t.auth.accountPanel.switchWorkspaceBoth : t.auth.accountPanel.switchWorkspaceSingle}</p>
-                
-                <div className="grid gap-3 md:grid-cols-2">
-                    {([
-                        { type: 'freelancer' as const, label: t.auth.accountPanel.freelancerLabel, desc: t.auth.accountPanel.freelancerDesc },
-                        { type: 'client' as const, label: t.auth.accountPanel.clientLabel, desc: t.auth.accountPanel.clientDesc },
-                    ] as const).map(({ type, label, desc }) => {
-                        const isActive = activeMode === type;
-                        const isAvailable = profile?.user_type === 'both' || profile?.user_type === type;
-                        const actionLabel = isActive ? t.auth.accountPanel.current : isAvailable ? t.auth.accountPanel.switchAction : t.auth.accountPanel.enable;
+                {/* ── Tab bar ───────────────────────────────────────────── */}
+                <div className="flex gap-0 border-b overflow-x-auto" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                    {TABS.map(tab => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
                         return (
-                            <button 
-                                key={type} 
-                                type="button" 
-                                onClick={e => { e.preventDefault(); e.stopPropagation(); void handleWorkspaceSelection(type); }} 
-                                disabled={isActive || isSwitchingWorkspace !== null}
-                                className="group relative overflow-hidden rounded-xl border p-4 text-left transition-all duration-300 hover:shadow-lg disabled:cursor-default"
-                                style={{
-                                    borderColor: isActive ? "color-mix(in srgb, var(--workspace-primary) 30%, var(--color-border-subtle))" : "var(--color-border-subtle)",
-                                    background: isActive ? "color-mix(in srgb, var(--workspace-primary) 4%, var(--color-background-elevated))" : "var(--color-background-elevated)",
-                                }}
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`
+                                    relative flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap
+                                    transition-all duration-200 border-b-2 -mb-px
+                                    ${isActive
+                                        ? 'border-b-2 text-white'
+                                        : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-background-elevated)]'
+                                    }
+                                `}
+                                style={isActive ? { borderBottomColor: accentVar, color: accentVar } : {}}
                             >
-                                <div className="relative">
-                                    <div className="flex items-center justify-between gap-3 mb-3">
-                                        <div className="p-2 rounded-lg" style={{ background: isActive ? "var(--workspace-primary)" : "var(--color-background-subtle)" }}>
-                                            <User className="h-4 w-4" style={{ color: isActive ? "#ffffff" : "var(--color-text-secondary)" }} />
-                                        </div>
-                                        {isActive && (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{ background: "var(--workspace-primary)" }}>
-                                                <Check className="w-3 h-3" />
-                                                {actionLabel}
-                                            </span>
-                                        )}
-                                        {!isActive && isSwitchingWorkspace === type && (
-                                            <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--workspace-primary)" }} />
-                                        )}
-                                    </div>
-                                    <div className="text-sm font-medium mb-1" style={{ color: "var(--color-text-primary)" }}>{label}</div>
-                                    <p className="text-xs leading-relaxed" style={{ color: "var(--color-text-tertiary)" }}>{desc}</p>
-                                </div>
+                                <Icon className="w-4 h-4" />
+                                {tab.label}
+                                {tab.dirty && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 absolute top-2 right-2" />
+                                )}
                             </button>
                         );
                     })}
                 </div>
+
+                {/* ── Tab content ── scoped accent var so inputs get right focus color ── */}
+                <div
+                    className="p-6"
+                    style={{ '--workspace-primary': accentVar } as React.CSSProperties}
+                >
+                    {activeTab === 'basic' && (
+                        <BasicInfoForm form={basicForm} onChange={setBasicForm} />
+                    )}
+
+                    {activeTab === 'freelancer' && isFreelancer && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 rounded-lg" style={{ background: 'rgba(139,92,246,0.12)' }}>
+                                    <Briefcase className="w-4 h-4" style={{ color: '#8B5CF6' }} />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Professional Details</h3>
+                                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Manage your title, rate, skills and availability</p>
+                                </div>
+                            </div>
+                            <FreelancerInfoForm form={freelancerForm} onChange={setFreelancerForm} />
+                        </div>
+                    )}
+
+                    {activeTab === 'client' && isClient && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="p-1.5 rounded-lg bg-amber-500/10">
+                                    <Building2 className="w-4 h-4 text-amber-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                                        Company Details
+                                    </h3>
+                                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                                        Company info, hiring preferences and communication style
+                                    </p>
+                                </div>
+                            </div>
+                            <ClientInfoForm form={clientForm} onChange={setClientForm} />
+                        </div>
+                    )}
+
+                    {activeTab === 'workspace' && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Zap className="h-4 w-4" style={{ color: 'var(--workspace-primary)' }} />
+                                <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                                    {t.auth.accountPanel.switchWorkspace}
+                                </h4>
+                            </div>
+                            <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                                {isBoth ? t.auth.accountPanel.switchWorkspaceBoth : t.auth.accountPanel.switchWorkspaceSingle}
+                            </p>
+
+                            {/* Mode-specific settings tip */}
+                            {isBoth && (
+                                <div className="flex items-start gap-3 p-3 rounded-xl border text-xs" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 6%, var(--color-background-elevated))', borderColor: 'color-mix(in srgb, var(--workspace-primary) 25%, var(--color-border-subtle))' }}>
+                                    <Zap className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: 'var(--workspace-primary)' }} />
+                                    <span style={{ color: 'var(--color-text-secondary)' }}>
+                                        You are currently in <strong style={{ color: 'var(--color-text-primary)' }}>{activeMode === 'freelancer' ? 'Freelancer' : 'Client'} mode</strong>.
+                                        Switch your workspace in the header to edit the other profile's settings.
+                                    </span>
+                                </div>
+                            )}
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {([
+                                    { type: 'freelancer' as const, label: t.auth.accountPanel.freelancerLabel, desc: t.auth.accountPanel.freelancerDesc },
+                                    { type: 'client'     as const, label: t.auth.accountPanel.clientLabel,     desc: t.auth.accountPanel.clientDesc },
+                                ] as const).map(({ type, label, desc }) => {
+                                    const isActive    = activeMode === type;
+                                    const isAvailable = profile?.user_type === 'both' || profile?.user_type === type;
+                                    const actionLabel = isActive ? t.auth.accountPanel.current : isAvailable ? t.auth.accountPanel.switchAction : t.auth.accountPanel.enable;
+                                    const isBusy      = isSwitchingWorkspace === type;
+                                    return (
+                                        <button
+                                            key={type}
+                                            type="button"
+                                            onClick={() => handleWorkspaceSelection(type)}
+                                            disabled={isActive || isSwitchingWorkspace !== null}
+                                            className="group relative overflow-hidden rounded-xl border p-4 text-left transition-all duration-300 hover:shadow-md disabled:cursor-default"
+                                            style={{
+                                                borderColor: isActive ? 'color-mix(in srgb, var(--workspace-primary) 30%, var(--color-border-subtle))' : 'var(--color-border-subtle)',
+                                                background:  isActive ? 'color-mix(in srgb, var(--workspace-primary) 5%, var(--color-background-elevated))' : 'var(--color-background-elevated)',
+                                            }}
+                                        >
+                                            <div className="flex items-center justify-between mb-2">
+                                                <User className="w-4 h-4" style={{ color: isActive ? 'var(--workspace-primary)' : 'var(--color-text-tertiary)' }} />
+                                                {isActive
+                                                    ? <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{ background: 'var(--workspace-primary)' }}><Check className="w-3 h-3" />{actionLabel}</span>
+                                                    : isBusy
+                                                        ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--color-text-tertiary)]" />
+                                                        : <span className="text-xs font-medium" style={{ color: isAvailable ? 'var(--workspace-primary)' : 'var(--color-text-tertiary)' }}>{actionLabel}</span>
+                                                }
+                                            </div>
+                                            <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{label}</p>
+                                            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>{desc}</p>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {!isBoth && (
+                                <div className="mt-3 p-4 rounded-xl border flex items-start gap-3"
+                                     style={{ background: 'var(--color-background-elevated)', borderColor: 'var(--color-border-subtle)' }}>
+                                    <Zap className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--workspace-primary)' }} />
+                                    <div>
+                                        <p className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>
+                                            {t.auth.accountPanel.enableBothLabel}
+                                        </p>
+                                        <p className="text-xs mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+                                            {t.auth.accountPanel.enableBothDesc}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleWorkspaceSelection('both')}
+                                            className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:opacity-90"
+                                            style={{ background: 'var(--workspace-primary)', color: '#fff' }}
+                                        >
+                                            {t.auth.accountPanel.enableBothAction}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {/* ── Global sticky Save bar (only when dirty) ──────────────── */}
+            <div
+                className={`
+                    fixed bottom-0 left-0 right-0 z-50
+                    transition-all duration-300 ease-out
+                    ${anyDirty ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}
+                `}
+            >
+                <div className="max-w-5xl mx-auto px-4 pb-4">
+                    <div
+                        className="flex items-center justify-between gap-4 px-5 py-3.5 rounded-2xl border shadow-2xl"
+                        style={{
+                            background: 'color-mix(in srgb, var(--color-background-elevated) 95%, transparent)',
+                            borderColor: 'var(--color-border-default)',
+                            backdropFilter: 'blur(12px)',
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+                        }}
+                    >
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                            <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                You have unsaved changes
+                            </span>
+                            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                                {[basicDirty && 'Basic', isFreelancer && freelancerDirty && 'Freelancer', isClient && clientDirty && 'Client'].filter(Boolean).join(', ')}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={handleDiscard}
+                                disabled={isSaving}
+                                className="px-4 py-2 text-sm font-medium rounded-xl border transition-all hover:bg-[var(--color-background-base)] disabled:opacity-40"
+                                style={{ borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-secondary)' }}
+                            >
+                                Discard
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-xl text-white transition-all hover:opacity-90 disabled:opacity-60"
+                                style={{ background: 'var(--workspace-primary)' }}
+                            >
+                                {isSaving
+                                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
+                                    : <><Save className="w-4 h-4" /> Save all changes</>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom padding so sticky bar doesn't overlap content */}
+            {anyDirty && <div className="h-20" />}
         </div>
     );
 }

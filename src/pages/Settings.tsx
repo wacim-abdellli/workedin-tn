@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Settings as SettingsIcon,
@@ -17,6 +17,7 @@ import {
   Wallet,
   Building2,
   Info,
+  UserCircle,
 } from 'lucide-react';
 
 import { Header } from '../components/layout';
@@ -24,6 +25,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
+import ProfileSettings from '../components/settings/ProfileSettings';
 import { getVerificationStatus, subscribeToVerificationChanges, type VerificationStatus } from '@/lib/verificationStatus';
 import { useTranslation } from '@/i18n';
 import {
@@ -35,7 +37,7 @@ import {
 } from '@/services/payments';
 import { PaymentMethodCard } from '@/components/payment/PaymentMethodCard';
 
-type SettingsTab = 'account' | 'notifications' | 'payment' | 'privacy';
+type SettingsTab = 'account' | 'profile' | 'notifications' | 'payment' | 'privacy';
 type NotificationKey = 'new_job' | 'messages' | 'payments' | 'reviews' | 'marketing';
 
 type NotificationState = Record<NotificationKey, boolean>;
@@ -815,7 +817,14 @@ export default function Settings() {
   const { showToast } = useToast();
   const { tx } = useTranslation();
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>('account');
+  const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab === 'profile' || tab === 'payment' || tab === 'notifications' || tab === 'privacy') {
+      return tab as SettingsTab;
+    }
+    return 'account';
+  });
   const [identityStatus, setIdentityStatus] = useState<VerificationStatus>(profile?.cin_verified ? 'verified' : 'missing');
 
   useEffect(() => {
@@ -856,6 +865,7 @@ export default function Settings() {
 
   const navItems: Array<{ id: SettingsTab; label: string; icon: typeof SettingsIcon }> = [
     { id: 'account', label: 'Account', icon: SettingsIcon },
+    { id: 'profile', label: 'Profile Settings', icon: UserCircle },
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'payment', label: activeMode === 'freelancer' ? 'Earnings' : 'Billing', icon: CreditCard },
     { id: 'privacy', label: 'Privacy', icon: Shield },
@@ -900,6 +910,14 @@ export default function Settings() {
           goToNotifications={() => setActiveTab('notifications')}
           accentColor={accentColor}
         />
+      );
+    }
+
+    if (activeTab === 'profile') {
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <ProfileSettings />
+        </div>
       );
     }
 

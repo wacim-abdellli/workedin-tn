@@ -96,16 +96,16 @@ function getTimeGreeting(
 
 function jobStatusClass(status: string) {
     if (status === 'open') {
-        return 'border border-orange-500/30 bg-orange-500/10 text-orange-200';
+        return 'border border-[color-mix(in_srgb,var(--workspace-primary)_30%,transparent)] bg-[var(--workspace-primary-dim)] text-[var(--workspace-primary-mid)]';
     }
     if (status === 'in_progress') {
-        return 'border border-blue-500/30 bg-blue-500/10 text-blue-200';
+        return 'border border-[color-mix(in_srgb,var(--color-status-info)_30%,transparent)] bg-[var(--color-status-info-bg)] text-[var(--color-status-info)]';
     }
     if (status === 'completed') {
-        return 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-200';
+        return 'border border-[color-mix(in_srgb,var(--color-status-success)_30%,transparent)] bg-[var(--color-status-success-bg)] text-[var(--color-status-success)]';
     }
 
-    return 'border border-zinc-500/30 bg-zinc-500/10 text-zinc-200';
+    return 'border border-[var(--color-border-default)] bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)]';
 }
 
 function formatBudgetRange(
@@ -256,15 +256,15 @@ function ClientDashboardPage() {
                 <Header />
                 <main className="min-h-screen bg-[var(--color-bg-base)] pt-10 pb-12">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-                        <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-40" />
+                        <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-40" />
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                             <div className="lg:col-span-8 space-y-8">
-                                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-72" />
-                                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-64" />
+                                <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-72" />
+                                <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-64" />
                             </div>
                             <div className="lg:col-span-4 space-y-6">
-                                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-52" />
-                                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-64" />
+                                <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-52" />
+                                <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-64" />
                             </div>
                         </div>
                     </div>
@@ -311,8 +311,17 @@ function ClientDashboardPage() {
             <main className="min-h-screen bg-[var(--color-bg-base)] pt-6 pb-12">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-5">
                     {/* ── COMMAND CENTER BANNER ── */}
-                    <section className="relative overflow-hidden border rounded-xl bg-[radial-gradient(90%_160%_at_0%_0%,rgba(245,158,11,0.12)_0%,transparent_48%),#0a0a0a]" style={{ borderColor: 'rgba(245,158,11,0.15)' }}>
-                        <div className="pointer-events-none absolute -top-8 right-8 h-20 w-20 rounded-full bg-orange-500/10 blur-3xl" />
+                    <section 
+                        className="relative overflow-hidden border rounded-xl" 
+                        style={{ 
+                            background: 'radial-gradient(90% 160% at 0% 0%, color-mix(in srgb, var(--workspace-primary) 12%, transparent) 0%, transparent 48%), var(--color-bg-base)',
+                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 15%, transparent)'
+                        }}
+                    >
+                        <div 
+                            className="pointer-events-none absolute -top-8 right-8 h-20 w-20 rounded-full blur-3xl" 
+                            style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}
+                        />
 
                         <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 p-5">
                             <div className="min-w-0 flex items-center gap-4">
@@ -320,57 +329,132 @@ function ClientDashboardPage() {
                                     <img
                                         src={profile.avatar_url}
                                         alt={firstName}
-                                        className="h-12 w-12 rounded-full border border-white/10 object-cover ring-2 ring-orange-500/20"
+                                        className="h-12 w-12 rounded-full border object-cover ring-2"
+                                        style={{ 
+                                            borderColor: 'var(--color-border-default)',
+                                            ringColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
+                                        }}
                                     />
                                 ) : (
-                                    <div className="h-12 w-12 rounded-full border border-white/10 bg-[var(--color-bg-elevated)] flex items-center justify-center ring-2 ring-orange-500/20">
-                                        <Users className="h-5 w-5 text-orange-300" />
+                                    <div 
+                                        className="h-12 w-12 rounded-full border bg-[var(--color-bg-elevated)] flex items-center justify-center ring-2"
+                                        style={{ 
+                                            borderColor: 'var(--color-border-default)',
+                                            ringColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
+                                        }}
+                                    >
+                                        <Users className="h-5 w-5" style={{ color: 'var(--workspace-primary-mid)' }} />
                                     </div>
                                 )}
 
                                 <div className="min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Sparkles className="h-3.5 w-3.5 text-orange-400" />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-orange-300/80">
+                                        <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--workspace-primary)' }} />
+                                        <span 
+                                            className="text-[10px] font-bold uppercase tracking-wider"
+                                            style={{ color: 'color-mix(in srgb, var(--workspace-primary-mid) 80%, transparent)' }}
+                                        >
                                             {tx('dashboard.client.commandCenter', undefined, 'Client Dashboard')}
                                         </span>
                                     </div>
-                                    <h1 className="text-xl sm:text-2xl font-black tracking-tight truncate text-white leading-none">
+                                    <h1 
+                                        className="text-xl sm:text-2xl font-black tracking-tight truncate leading-none"
+                                        style={{ color: 'var(--color-text-primary)' }}
+                                    >
                                         {tx('dashboard.client.welcomeBack', undefined, 'Welcome back')}, {firstName}
                                     </h1>
-                                    <p className="text-xs text-white/50 mt-1.5 truncate">
+                                    <p 
+                                        className="text-xs mt-1.5 truncate"
+                                        style={{ color: 'var(--color-text-tertiary)' }}
+                                    >
                                         {tx('dashboard.client.commandCenterSubtitle', undefined, 'Track projects, proposals, and spending.')}
                                     </p>
                                 </div>
                             </div>
 
                             <div className="flex flex-row items-center gap-3 overflow-x-auto pb-1 lg:pb-0 scrollbar-hide shrink-0">
-                                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[100px]">
-                                    <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                                <div 
+                                    className="rounded-lg border px-4 py-2 min-w-[100px]"
+                                    style={{ 
+                                        borderColor: 'var(--color-border-subtle)',
+                                        background: 'var(--color-bg-subtle)'
+                                    }}
+                                >
+                                    <p 
+                                        className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
+                                        style={{ color: 'var(--color-text-tertiary)' }}
+                                    >
                                         {tx('dashboard.client.projectsLabel', undefined, 'Projects')}
                                     </p>
-                                    <p className="text-lg font-black text-white">{statsData.totalJobs}</p>
+                                    <p 
+                                        className="text-lg font-black"
+                                        style={{ color: 'var(--color-text-primary)' }}
+                                    >
+                                        {statsData.totalJobs}
+                                    </p>
                                 </div>
 
-                                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[100px]">
-                                    <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                                <div 
+                                    className="rounded-lg border px-4 py-2 min-w-[100px]"
+                                    style={{ 
+                                        borderColor: 'var(--color-border-subtle)',
+                                        background: 'var(--color-bg-subtle)'
+                                    }}
+                                >
+                                    <p 
+                                        className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
+                                        style={{ color: 'var(--color-text-tertiary)' }}
+                                    >
                                         {tx('dashboard.client.activeLabel', undefined, 'Active')}
                                     </p>
-                                    <p className="text-lg font-black text-white">{statsData.activeJobs}</p>
+                                    <p 
+                                        className="text-lg font-black"
+                                        style={{ color: 'var(--color-text-primary)' }}
+                                    >
+                                        {statsData.activeJobs}
+                                    </p>
                                 </div>
 
-                                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[100px]">
-                                    <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                                <div 
+                                    className="rounded-lg border px-4 py-2 min-w-[100px]"
+                                    style={{ 
+                                        borderColor: 'var(--color-border-subtle)',
+                                        background: 'var(--color-bg-subtle)'
+                                    }}
+                                >
+                                    <p 
+                                        className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
+                                        style={{ color: 'var(--color-text-tertiary)' }}
+                                    >
                                         {tx('dashboard.client.proposalsLabel', undefined, 'Proposals')}
                                     </p>
-                                    <p className="text-lg font-black text-white">{statsData.totalProposals}</p>
+                                    <p 
+                                        className="text-lg font-black"
+                                        style={{ color: 'var(--color-text-primary)' }}
+                                    >
+                                        {statsData.totalProposals}
+                                    </p>
                                 </div>
 
-                                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[100px]">
-                                    <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                                <div 
+                                    className="rounded-lg border px-4 py-2 min-w-[100px]"
+                                    style={{ 
+                                        borderColor: 'var(--color-border-subtle)',
+                                        background: 'var(--color-bg-subtle)'
+                                    }}
+                                >
+                                    <p 
+                                        className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
+                                        style={{ color: 'var(--color-text-tertiary)' }}
+                                    >
                                         {tx('dashboard.client.spentLabel', undefined, 'Spent')}
                                     </p>
-                                    <p className="text-lg font-black text-white">{formatCurrency(statsData.totalSpent, true, language)}</p>
+                                    <p 
+                                        className="text-lg font-black"
+                                        style={{ color: 'var(--color-text-primary)' }}
+                                    >
+                                        {formatCurrency(statsData.totalSpent, true, language)}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -382,15 +466,30 @@ function ClientDashboardPage() {
                         <section className="lg:col-span-8 flex flex-col gap-5">
                             
                             {/* Active Projects */}
-                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
-                                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-                                    <h2 className="text-xs font-bold uppercase tracking-wider text-orange-300">
+                            <div 
+                                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden flex flex-col"
+                                style={{ borderColor: 'var(--color-border-subtle)' }}
+                            >
+                                <header 
+                                    className="px-5 py-3 border-b flex justify-between items-center"
+                                    style={{ 
+                                        borderColor: 'var(--color-border-subtle)',
+                                        background: 'var(--color-bg-subtle)'
+                                    }}
+                                >
+                                    <h2 
+                                        className="text-xs font-bold uppercase tracking-wider"
+                                        style={{ color: 'var(--workspace-primary-mid)' }}
+                                    >
                                         {tx('dashboard.client.activeProjects', undefined, 'Active Projects')}
                                     </h2>
                                     <button
                                         type="button"
                                         onClick={() => navigate('/client/jobs')}
-                                        className="text-[11px] font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+                                        className="text-[11px] font-semibold transition-colors"
+                                        style={{ color: 'var(--workspace-primary)' }}
+                                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                                     >
                                         {tx('dashboard.client.viewAll', undefined, 'View All')} -&gt;
                                     </button>
@@ -398,18 +497,27 @@ function ClientDashboardPage() {
 
                                 {isStatsLoading ? (
                                     <div className="p-5 space-y-2">
-                                        <div className="animate-pulse h-12 rounded-lg bg-white/5" />
-                                        <div className="animate-pulse h-12 rounded-lg bg-white/5" />
+                                        <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
+                                        <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
                                     </div>
                                 ) : jobs.length === 0 ? (
                                     <div className="px-5 py-6 flex items-center justify-between gap-4">
-                                        <p className="text-sm text-white/40">
+                                        <p 
+                                            className="text-sm"
+                                            style={{ color: 'var(--color-text-tertiary)' }}
+                                        >
                                             {tx('dashboard.client.noActiveProjects', undefined, 'No active projects yet.')}
                                         </p>
                                         <button
                                             type="button"
                                             onClick={() => navigate('/jobs/new')}
-                                            className="shrink-0 rounded-lg bg-orange-600 hover:bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
+                                            className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                                            style={{ 
+                                                background: 'var(--workspace-primary)',
+                                                color: 'var(--workspace-primary-text)'
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--workspace-primary-hover)'}
+                                            onMouseLeave={(e) => e.currentTarget.style.background = 'var(--workspace-primary)'}
                                         >
                                             {tx('dashboard.client.postAProject', undefined, 'Post a Project')}
                                         </button>
@@ -421,18 +529,25 @@ function ClientDashboardPage() {
                                                 key={job.id}
                                                 type="button"
                                                 onClick={() => navigate(`/jobs/${job.id}`)}
-                                                className={`w-full text-left px-5 py-3.5 hover:bg-white/[0.02] transition-colors flex items-start justify-between gap-4 ${index < Math.min(jobs.length, 3) - 1 ? 'border-b border-white/5' : ''}`}
+                                                className={`w-full text-left px-5 py-3.5 hover:bg-[var(--color-bg-subtle)] transition-colors flex items-start justify-between gap-4 ${index < Math.min(jobs.length, 3) - 1 ? 'border-b' : ''}`}
+                                                style={{ borderColor: 'var(--color-border-subtle)' }}
                                             >
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-white/90 truncate">
+                                                    <p 
+                                                        className="text-sm font-semibold truncate"
+                                                        style={{ color: 'var(--color-text-primary)' }}
+                                                    >
                                                         {job.title}
                                                     </p>
-                                                    <div className="mt-1 flex items-center gap-2 text-xs text-white/50">
+                                                    <div 
+                                                        className="mt-1 flex items-center gap-2 text-xs"
+                                                        style={{ color: 'var(--color-text-secondary)' }}
+                                                    >
                                                         <span>{job.proposals_count} {tx('dashboard.client.proposalsCountText', undefined, 'proposals')}</span>
-                                                        <span className="text-white/20">•</span>
+                                                        <span style={{ color: 'var(--color-border-default)' }}>•</span>
                                                         <span>{formatDate(new Date(job.created_at).toISOString())}</span>
-                                                        <span className="text-white/20">•</span>
-                                                        <span className="font-medium text-white/70">{formatBudgetRange(job, language)}</span>
+                                                        <span style={{ color: 'var(--color-border-default)' }}>•</span>
+                                                        <span className="font-medium">{formatBudgetRange(job, language)}</span>
                                                     </div>
                                                 </div>
                                                 <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${jobStatusClass(job.status)}`}>
@@ -445,14 +560,32 @@ function ClientDashboardPage() {
                             </div>
 
                             {/* Recent Proposals */}
-                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
-                                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
+                            <div 
+                                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden flex flex-col"
+                                style={{ borderColor: 'var(--color-border-subtle)' }}
+                            >
+                                <header 
+                                    className="px-5 py-3 border-b flex justify-between items-center"
+                                    style={{ 
+                                        borderColor: 'var(--color-border-subtle)',
+                                        background: 'var(--color-bg-subtle)'
+                                    }}
+                                >
                                     <div className="flex items-center gap-3">
-                                        <h2 className="text-xs font-bold uppercase tracking-wider text-orange-300">
+                                        <h2 
+                                            className="text-xs font-bold uppercase tracking-wider"
+                                            style={{ color: 'var(--workspace-primary-mid)' }}
+                                        >
                                             {tx('dashboard.client.recentProposals', undefined, 'Recent Proposals')}
                                         </h2>
                                         {proposalsWaitingReview > 0 && (
-                                            <span className="px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 text-[10px] font-bold">
+                                            <span 
+                                                className="px-1.5 py-0.5 rounded text-[10px] font-bold"
+                                                style={{ 
+                                                    background: 'var(--workspace-primary-dim)',
+                                                    color: 'var(--workspace-primary-mid)'
+                                                }}
+                                            >
                                                 {proposalsWaitingReview} {tx('dashboard.client.reviewQueue', undefined, 'in queue')}
                                             </span>
                                         )}
@@ -460,7 +593,10 @@ function ClientDashboardPage() {
                                     <button
                                         type="button"
                                         onClick={() => navigate('/client/jobs')}
-                                        className="text-[11px] font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+                                        className="text-[11px] font-semibold transition-colors"
+                                        style={{ color: 'var(--workspace-primary)' }}
+                                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                                     >
                                         {tx('dashboard.client.viewAll', undefined, 'View All')} -&gt;
                                     </button>
@@ -468,11 +604,14 @@ function ClientDashboardPage() {
 
                                 {isStatsLoading ? (
                                     <div className="p-5 space-y-2">
-                                        <div className="animate-pulse h-10 rounded-lg bg-white/5" />
-                                        <div className="animate-pulse h-10 rounded-lg bg-white/5" />
+                                        <div className="animate-pulse h-10 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
+                                        <div className="animate-pulse h-10 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
                                     </div>
                                 ) : proposals.length === 0 ? (
-                                    <div className="px-5 py-6 text-sm text-white/40 text-center">
+                                    <div 
+                                        className="px-5 py-6 text-sm text-center"
+                                        style={{ color: 'var(--color-text-tertiary)' }}
+                                    >
                                         {tx('dashboard.client.noProposalsYet', undefined, 'No proposals yet.')}
                                     </div>
                                 ) : (
@@ -480,10 +619,14 @@ function ClientDashboardPage() {
                                         {proposals.slice(0, 4).map((proposal, index) => (
                                             <div
                                                 key={proposal.id}
-                                                className={`px-5 py-3 hover:bg-white/[0.02] transition-colors flex items-center justify-between gap-3 ${index < Math.min(proposals.length, 4) - 1 ? 'border-b border-white/5' : ''}`}
+                                                className={`px-5 py-3 hover:bg-[var(--color-bg-subtle)] transition-colors flex items-center justify-between gap-3 ${index < Math.min(proposals.length, 4) - 1 ? 'border-b' : ''}`}
+                                                style={{ borderColor: 'var(--color-border-subtle)' }}
                                             >
                                                 <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="relative h-9 w-9 rounded-full overflow-hidden border border-white/10 shrink-0">
+                                                    <div 
+                                                        className="relative h-9 w-9 rounded-full overflow-hidden border shrink-0"
+                                                        style={{ borderColor: 'var(--color-border-default)' }}
+                                                    >
                                                         {proposal.freelancer?.avatar_url ? (
                                                             <img
                                                                 src={proposal.freelancer.avatar_url}
@@ -491,30 +634,52 @@ function ClientDashboardPage() {
                                                                 className="h-full w-full object-cover"
                                                             />
                                                         ) : (
-                                                            <div className="h-full w-full bg-orange-500/10 text-orange-300 flex items-center justify-center text-[10px] font-bold uppercase">
+                                                            <div 
+                                                                className="h-full w-full flex items-center justify-center text-[10px] font-bold uppercase"
+                                                                style={{ 
+                                                                    background: 'var(--workspace-primary-dim)',
+                                                                    color: 'var(--workspace-primary-mid)'
+                                                                }}
+                                                            >
                                                                 {proposal.freelancer?.full_name?.[0] || 'F'}
                                                             </div>
                                                         )}
                                                     </div>
 
                                                     <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-white/90 truncate">
+                                                        <p 
+                                                            className="text-sm font-semibold truncate"
+                                                            style={{ color: 'var(--color-text-primary)' }}
+                                                        >
                                                             {proposal.freelancer?.full_name || tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
                                                         </p>
-                                                        <p className="text-[11px] text-white/50 truncate mt-0.5">
+                                                        <p 
+                                                            className="text-[11px] truncate mt-0.5"
+                                                            style={{ color: 'var(--color-text-tertiary)' }}
+                                                        >
                                                             {proposal.job?.title || tx('dashboard.client.untitledJob', undefined, 'Untitled job')}
                                                         </p>
                                                     </div>
                                                 </div>
 
                                                 <div className="text-right shrink-0 flex items-center gap-3">
-                                                    <p className="text-xs font-bold text-white">
+                                                    <p 
+                                                        className="text-xs font-bold"
+                                                        style={{ color: 'var(--color-text-primary)' }}
+                                                    >
                                                         {formatCurrency(proposal.bid_amount ?? 0, true, language)}
                                                     </p>
                                                     <button
                                                         type="button"
                                                         onClick={() => navigate(`/client/jobs/${proposal.job_id}/proposals`)}
-                                                        className="rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
+                                                        className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
+                                                        style={{ 
+                                                            background: 'var(--color-bg-subtle)',
+                                                            borderColor: 'var(--color-border-default)',
+                                                            color: 'var(--color-text-primary)'
+                                                        }}
+                                                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
+                                                        onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
                                                     >
                                                         {tx('dashboard.client.reviewBadge', undefined, 'Review')}
                                                     </button>
@@ -526,15 +691,30 @@ function ClientDashboardPage() {
                             </div>
 
                             {/* Active Contracts */}
-                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
-                                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-                                    <h2 className="text-xs font-bold uppercase tracking-wider text-orange-300">
+                            <div 
+                                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden flex flex-col"
+                                style={{ borderColor: 'var(--color-border-subtle)' }}
+                            >
+                                <header 
+                                    className="px-5 py-3 border-b flex justify-between items-center"
+                                    style={{ 
+                                        borderColor: 'var(--color-border-subtle)',
+                                        background: 'var(--color-bg-subtle)'
+                                    }}
+                                >
+                                    <h2 
+                                        className="text-xs font-bold uppercase tracking-wider"
+                                        style={{ color: 'var(--workspace-primary-mid)' }}
+                                    >
                                         {tx('dashboard.client.activeContracts', undefined, 'Active Contracts')}
                                     </h2>
                                     <button
                                         type="button"
                                         onClick={() => navigate('/contracts')}
-                                        className="text-[11px] font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+                                        className="text-[11px] font-semibold transition-colors"
+                                        style={{ color: 'var(--workspace-primary)' }}
+                                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                                     >
                                         {tx('dashboard.client.viewAll', undefined, 'View All')} -&gt;
                                     </button>
@@ -542,10 +722,13 @@ function ClientDashboardPage() {
 
                                 {isStatsLoading ? (
                                     <div className="p-5 space-y-2">
-                                        <div className="animate-pulse h-12 rounded-lg bg-white/5" />
+                                        <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
                                     </div>
                                 ) : activeContracts.length === 0 ? (
-                                    <div className="px-5 py-6 text-sm text-white/40 text-center">
+                                    <div 
+                                        className="px-5 py-6 text-sm text-center"
+                                        style={{ color: 'var(--color-text-tertiary)' }}
+                                    >
                                         {tx('dashboard.client.noActiveContracts', undefined, 'No active contracts yet.')}
                                     </div>
                                 ) : (
@@ -553,25 +736,42 @@ function ClientDashboardPage() {
                                         {activeContracts.slice(0, 3).map((contract, index) => (
                                             <div
                                                 key={contract.id}
-                                                className={`px-5 py-3.5 hover:bg-white/[0.02] transition-colors flex items-center justify-between gap-3 ${index < Math.min(activeContracts.length, 3) - 1 ? 'border-b border-white/5' : ''}`}
+                                                className={`px-5 py-3.5 hover:bg-[var(--color-bg-subtle)] transition-colors flex items-center justify-between gap-3 ${index < Math.min(activeContracts.length, 3) - 1 ? 'border-b' : ''}`}
+                                                style={{ borderColor: 'var(--color-border-subtle)' }}
                                             >
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-white/90 truncate">
+                                                    <p 
+                                                        className="text-sm font-semibold truncate"
+                                                        style={{ color: 'var(--color-text-primary)' }}
+                                                    >
                                                         {contract.title}
                                                     </p>
-                                                    <p className="text-xs text-white/50 truncate mt-0.5">
+                                                    <p 
+                                                        className="text-xs truncate mt-0.5"
+                                                        style={{ color: 'var(--color-text-secondary)' }}
+                                                    >
                                                         {contract.freelancer?.full_name || tx('dashboard.client.freelancerFallback', undefined, 'Freelancer')}
                                                     </p>
                                                 </div>
 
                                                 <div className="text-right shrink-0 flex items-center gap-3">
-                                                    <p className="text-xs font-bold text-white">
+                                                    <p 
+                                                        className="text-xs font-bold"
+                                                        style={{ color: 'var(--color-text-primary)' }}
+                                                    >
                                                         {formatCurrency(contract.total_amount ?? 0, true, language)}
                                                     </p>
                                                     <button
                                                         type="button"
                                                         onClick={() => navigate(`/contracts/${contract.id}`)}
-                                                        className="rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
+                                                        className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
+                                                        style={{ 
+                                                            background: 'var(--color-bg-subtle)',
+                                                            borderColor: 'var(--color-border-default)',
+                                                            color: 'var(--color-text-primary)'
+                                                        }}
+                                                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
+                                                        onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
                                                     >
                                                         {tx('dashboard.client.openContract', undefined, 'Workspace')}
                                                     </button>
@@ -587,23 +787,51 @@ function ClientDashboardPage() {
                         <aside className="lg:col-span-4 flex flex-col gap-5 sticky top-20">
                             
                             {/* CTA Widget */}
-                            <div className="relative overflow-hidden rounded-xl border border-orange-500/20 bg-gradient-to-br from-orange-500/10 via-[#0f0f0f] to-[#0a0a0a] p-5">
-                                <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-orange-500/20 blur-2xl" />
+                            <div 
+                                className="relative overflow-hidden rounded-xl border p-5"
+                                style={{ 
+                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
+                                    background: 'radial-gradient(90% 160% at 0% 0%, color-mix(in srgb, var(--workspace-primary) 10%, transparent) 0%, transparent 48%), var(--color-bg-base)'
+                                }}
+                            >
+                                <div 
+                                    className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full blur-2xl"
+                                    style={{ background: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)' }}
+                                />
 
                                 <div className="relative">
-                                    <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-orange-500/30 bg-orange-500/20 text-orange-300">
+                                    <div 
+                                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border"
+                                        style={{ 
+                                            borderColor: 'color-mix(in srgb, var(--workspace-primary) 30%, transparent)',
+                                            background: 'var(--workspace-primary-dim)',
+                                            color: 'var(--workspace-primary-mid)'
+                                        }}
+                                    >
                                         <Plus className="h-4 w-4" />
                                     </div>
-                                    <h3 className="mt-3 text-lg font-bold text-white leading-tight">
+                                    <h3 
+                                        className="mt-3 text-lg font-bold leading-tight"
+                                        style={{ color: 'var(--color-text-primary)' }}
+                                    >
                                         {tx('dashboard.client.needSomethingDone', undefined, 'Need something done?')}
                                     </h3>
-                                    <p className="mt-1.5 text-xs text-orange-200/60">
+                                    <p 
+                                        className="mt-1.5 text-xs"
+                                        style={{ color: 'var(--color-text-secondary)' }}
+                                    >
                                         {tx('dashboard.client.postProjectFree', undefined, 'Post a project free. Get proposals from verified Tunisian talent.')}
                                     </p>
                                     <button
                                         type="button"
                                         onClick={() => navigate('/jobs/new')}
-                                        className="mt-4 w-full rounded-lg bg-orange-600 hover:bg-orange-500 py-2 text-xs font-bold text-white transition-colors"
+                                        className="mt-4 w-full rounded-lg py-2 text-xs font-bold transition-colors"
+                                        style={{ 
+                                            background: 'var(--workspace-primary)',
+                                            color: 'var(--workspace-primary-text)'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--workspace-primary-hover)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.background = 'var(--workspace-primary)'}
                                     >
                                         {tx('dashboard.client.postProjectFreeCta', undefined, "Post a project - it's free")}
                                     </button>
@@ -611,30 +839,55 @@ function ClientDashboardPage() {
                             </div>
 
                             {/* Monthly Summary Widget */}
-                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">
+                            <div 
+                                className="rounded-xl border bg-[var(--color-bg-base)] p-5"
+                                style={{ borderColor: 'var(--color-border-subtle)' }}
+                            >
+                                <p 
+                                    className="text-[10px] font-bold uppercase tracking-wider"
+                                    style={{ color: 'var(--color-text-tertiary)' }}
+                                >
                                     {tx('dashboard.client.thisMonth', undefined, 'This Month')}
                                 </p>
-                                <p className="text-2xl font-black text-white mt-1 leading-none">
+                                <p 
+                                    className="text-2xl font-black mt-1 leading-none"
+                                    style={{ color: 'var(--color-text-primary)' }}
+                                >
                                     {formatCurrency(statsData.monthlySpending, true, language)}
                                 </p>
 
-                                <p className="text-[11px] text-white/40 mt-2">
+                                <p 
+                                    className="text-[11px] mt-2"
+                                    style={{ color: 'var(--color-text-tertiary)' }}
+                                >
                                     {tx('dashboard.client.acrossActiveContracts', { count: statsData.activeContracts }, `Across ${statsData.activeContracts} active contracts`)}
                                 </p>
 
                                 <button
                                     type="button"
                                     onClick={() => navigate('/wallet')}
-                                    className="w-full mt-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-lg text-xs font-bold transition-colors"
+                                    className="w-full mt-4 border py-2 rounded-lg text-xs font-bold transition-colors"
+                                    style={{ 
+                                        background: 'var(--color-bg-subtle)',
+                                        borderColor: 'var(--color-border-default)',
+                                        color: 'var(--color-text-primary)'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
                                 >
                                     {tx('dashboard.client.viewWallet', undefined, 'View Wallet')}
                                 </button>
                             </div>
 
                             {/* Quick Actions */}
-                            <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden">
-                                <p className="px-5 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-white/50">
+                            <div 
+                                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden"
+                                style={{ borderColor: 'var(--color-border-subtle)' }}
+                            >
+                                <p 
+                                    className="px-5 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider"
+                                    style={{ color: 'var(--color-text-tertiary)' }}
+                                >
                                     {tx('dashboard.client.quickActions', undefined, 'Quick Actions')}
                                 </p>
                                 <div className="flex flex-col p-2 pt-0">
@@ -664,10 +917,18 @@ function ClientDashboardPage() {
                                             key={action.label}
                                             type="button"
                                             onClick={() => navigate(action.path)}
-                                            className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
+                                            className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[var(--color-bg-subtle)] transition-colors text-left"
                                         >
-                                            <span className="text-xs font-semibold text-white/80">{action.label}</span>
-                                            <action.icon className="h-3.5 w-3.5 text-white/30" />
+                                            <span 
+                                                className="text-xs font-semibold"
+                                                style={{ color: 'var(--color-text-secondary)' }}
+                                            >
+                                                {action.label}
+                                            </span>
+                                            <action.icon 
+                                                className="h-3.5 w-3.5"
+                                                style={{ color: 'var(--color-text-tertiary)' }}
+                                            />
                                         </button>
                                     ))}
                                 </div>

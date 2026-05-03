@@ -171,17 +171,33 @@ const AuthCallback = () => {
         };
     }, []);
 
+    const detectLogoMode = (): 'freelancer' | 'client' => {
+        try {
+            const storedProfile = localStorage.getItem('profile');
+            if (storedProfile) {
+                const profile = JSON.parse(storedProfile);
+                if (profile?.active_mode === 'client') return 'client';
+            }
+        } catch {
+            // Ignore localStorage errors
+        }
+        return 'freelancer';
+    };
+
+    const logoMode = detectLogoMode();
+    const workspaceClass = logoMode === 'client' ? 'workspace-client' : '';
+
     return (
-        <div className="flex items-center justify-center min-h-screen bg-[var(--color-bg-base)] px-5">
+        <div className={`flex items-center justify-center min-h-screen bg-[var(--color-bg-base)] px-5 ${workspaceClass}`}>
             <div className="w-full max-w-[440px] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-2xl p-12 text-center shadow-xl">
                 <div className="mb-8 flex justify-center">
-                    <Logo variant="full" size="md" mode="client" />
+                    <Logo variant="full" size="md" mode={logoMode} />
                 </div>
 
                 {status === 'loading' ? (
                     <>
-                        <div className="w-14 h-14 mx-auto mb-6 rounded-2xl flex items-center justify-center bg-[rgba(232,130,12,0.1)]">
-                            <Loader2 className="w-7 h-7 text-[#E8820C] animate-spin" />
+                        <div className="w-14 h-14 mx-auto mb-6 rounded-2xl flex items-center justify-center" style={{ background: 'var(--workspace-primary-dim)' }}>
+                            <Loader2 className="w-7 h-7 animate-spin" style={{ color: 'var(--workspace-primary)' }} />
                         </div>
                         <h1 className="text-2xl font-extrabold tracking-tight text-[var(--color-text-primary)] mb-3">
                             {tx('pages.authCallback.signingIn', undefined, 'Signing you in')}

@@ -1,4 +1,4 @@
-﻿import type { UseFormReturn } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
 import { ArrowLeft, ArrowRight, Briefcase, Link2, Repeat, Timer, Wrench } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import Button from '../ui/Button';
@@ -12,33 +12,7 @@ interface OnboardingStep3Props {
     isLoading: boolean;
 }
 
-const TOOL_OPTIONS = [
-    'Figma',
-    'Adobe Illustrator',
-    'Adobe Photoshop',
-    'Canva',
-    'React',
-    'Vue',
-    'Node.js',
-    'WordPress',
-    'Shopify',
-    'Flutter',
-    'React Native',
-    'Notion',
-];
-
-const INDUSTRY_OPTIONS = [
-    'E-commerce',
-    'SaaS',
-    'Fintech',
-    'Healthcare',
-    'Education',
-    'Real Estate',
-    'Hospitality',
-    'Media',
-    'NGO',
-    'Government',
-];
+import { TOOL_OPTIONS, INDUSTRY_OPTIONS } from '../../lib/constants/profileOptions';
 
 export default function OnboardingStep3({
     form,

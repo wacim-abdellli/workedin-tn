@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Check, Eye, LayoutDashboard, Copy, Share2, Sparkles, PartyPopper } from 'lucide-react';
 
@@ -76,7 +76,7 @@ export default function JobPostSuccess() {
                         className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2.5 rounded-2xl px-8 py-4 font-bold transition-all hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden"
                         style={{ 
                             background: 'linear-gradient(135deg, var(--workspace-primary), color-mix(in srgb, var(--workspace-primary) 80%, black))', 
-                            color: var(--color-text-primary), 
+                            color: 'var(--text-primary)', 
                             boxShadow: '0 12px 32px -8px color-mix(in srgb, var(--workspace-primary) 60%, transparent)' 
                         }}>
                         <div className="absolute inset-0 bg-white/20 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-out" />

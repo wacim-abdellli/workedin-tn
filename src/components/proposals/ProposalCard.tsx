@@ -1,4 +1,4 @@
-﻿import { useState, memo } from 'react';
+import { useState, memo } from 'react';
 import { Star, Clock, CheckCircle2, DollarSign } from 'lucide-react';
 import type { Proposal } from '../../types/proposal';
 import { useTranslation } from '../../i18n';
@@ -16,7 +16,7 @@ function statusMeta(status: string) {
     if (s === 'shortlisted') return { label: 'Shortlisted', dot: 'bg-amber-400', bg: 'bg-amber-500/10', text: 'text-amber-400' };
     if (s === 'archived') return { label: 'Archived', dot: 'bg-slate-400', bg: 'bg-white/5', text: 'text-[var(--color-text-primary)]/50' };
     if (s === 'accepted') return { label: 'Accepted', dot: 'bg-emerald-400', bg: 'bg-emerald-500/10', text: 'text-emerald-400' };
-    if (s === 'rejected') return { label: 'Declined', dot: 'bg-rose-400', bg: 'bg-rose-500/10', text: 'text-rose-400' };
+    if (s === 'rejected' || s === 'declined') return { label: 'Declined', dot: 'bg-rose-400', bg: 'bg-rose-500/10', text: 'text-rose-400' };
     return { label: s, dot: 'bg-slate-400', bg: 'bg-white/5', text: 'text-[var(--color-text-primary)]/50' };
 }
 

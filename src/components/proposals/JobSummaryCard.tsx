@@ -1,4 +1,4 @@
-﻿import { Calendar, DollarSign, Clock, Share2, Sparkles, Users, BarChart2, Trophy, Inbox, Edit } from 'lucide-react';
+﻿import { Calendar, DollarSign, Clock, Share2, Users, BarChart2, Trophy, Inbox, Edit } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from '../../i18n';
 import { ROUTES, getJobEditRoute } from '../../lib/routes';
@@ -20,6 +20,7 @@ interface ProposalJobSummary {
 
 interface JobSummaryProps {
     job: ProposalJobSummary | null;
+    hasActiveContract?: boolean;
 }
 
 function formatDuration(raw: string, tx: (key: string, params?: Record<string, string | number>, fallback?: string) => string): string {
@@ -33,7 +34,7 @@ function formatDuration(raw: string, tx: (key: string, params?: Record<string, s
     return map[raw] ?? raw?.replace(/_/g, ' ') ?? '—';
 }
 
-export default function JobEmptyPane({ job }: JobSummaryProps) {
+export default function JobEmptyPane({ job, hasActiveContract = false }: JobSummaryProps) {
     const { tx } = useTranslation();
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
@@ -57,8 +58,7 @@ export default function JobEmptyPane({ job }: JobSummaryProps) {
     const durationLabel = formatDuration(job.duration, tx);
 
     return (
-        <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-[var(--color-bg-base)]">
-
+        <>
             {/* Empty prompt */}
             <div className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] py-10 px-6 text-center">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-amber-500/10">
@@ -130,33 +130,19 @@ export default function JobEmptyPane({ job }: JobSummaryProps) {
                     </button>
                     <button type="button"
                         onClick={() => navigate(jobId ? getJobEditRoute(jobId) : ROUTES.jobs)}
-                        className="flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/20 py-2 text-xs font-bold text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 transition-colors">
+                        disabled={hasActiveContract}
+                        title={hasActiveContract ? 'Cannot edit job with active contract' : 'Edit job details'}
+                        className={`flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/20 py-2 text-xs font-bold transition-colors ${
+                            hasActiveContract
+                                ? 'bg-amber-500/5 text-amber-400/40 border-amber-500/10 cursor-not-allowed'
+                                : 'text-amber-400 bg-amber-500/10 hover:bg-amber-500/20'
+                        }`}>
                         <Edit className="w-3.5 h-3.5" />
                         Edit Job
                     </button>
                 </div>
             </div>
-
-            {/* AI card */}
-            <div className="rounded-xl p-5 relative overflow-hidden border border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-transparent">
-                <div aria-hidden className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full blur-3xl opacity-20 bg-amber-500" />
-                <div className="relative">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-amber-500/20">
-                            <Sparkles className="w-4 h-4 text-amber-400" />
-                        </div>
-                        <h3 className="text-sm font-bold text-[var(--color-text-primary)]">AI Recommendations</h3>
-                    </div>
-                    <p className="text-xs leading-relaxed mb-4 text-[var(--color-text-primary)]/60">
-                        We analyzed your requirements and found 3 freelancers that match your project at 95%.
-                    </p>
-                    <button type="button"
-                        className="w-full rounded-lg py-2.5 text-xs font-bold text-[#0a0a0a] bg-amber-500 hover:bg-amber-400 transition-colors shadow-[0_4px_16px_-4px_rgba(245,158,11,0.5)]">
-                        View Suggestions
-                    </button>
-                </div>
-            </div>
-        </div>
+        </>
     );
 }
 

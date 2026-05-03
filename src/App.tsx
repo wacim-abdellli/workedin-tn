@@ -30,10 +30,6 @@ import { useRouteFocus } from "./hooks/useRouteFocus";
 import { useAuth } from "./contexts/AuthContext";
 import { shouldRequireUserTypeSelection, resolveActiveWorkspace } from "./lib/workspaceRoutes";
 
-const PageLoader = () => (
-  <FullScreenLoader label="Loading..." hint="Opening the next page" />
-);
-
 function AppRoutes() {
   return <Routes>{renderRouteDefinitions(appRoutes)}</Routes>;
 }
@@ -69,10 +65,20 @@ function AppContent() {
       ? "workspace-client"
       : "";
 
+  const workspaceMode = pathname.startsWith("/admin")
+    ? "admin"
+    : resolvedWorkspace === "client"
+      ? "client"
+      : "freelancer";
+
+  const PageLoader = () => (
+    <FullScreenLoader label="Loading..." hint="Opening the next page" mode={workspaceMode as 'freelancer' | 'client' | 'admin'} />
+  );
+
   return (
     <div className={`min-h-screen animate-fade-in ${workspaceClass}`}>
       {isWorkspaceSwitching && (
-        <div className="fixed inset-0 z-50 bg-[var(--page-bg)] flex items-center justify-center transition-opacity duration-150 no-transition">
+        <div className={`fixed inset-0 z-50 bg-[var(--page-bg)] flex items-center justify-center transition-opacity duration-150 no-transition ${workspaceClass}`}>
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 rounded-full border-2 border-[color:var(--workspace-primary)] border-t-transparent animate-spin no-transition" />
             <p className="text-xs text-[var(--text-muted)]">

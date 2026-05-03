@@ -113,15 +113,15 @@ function proposalStatusLabel(
 
 function proposalStatusClass(status: string) {
   if (status === "accepted" || status === "shortlisted") {
-    return "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
+    return "border border-[color-mix(in_srgb,var(--color-status-success)_30%,transparent)] bg-[var(--color-status-success-bg)] text-[var(--color-status-success)]";
   }
   if (status === "viewed") {
-    return "border border-blue-500/30 bg-blue-500/10 text-blue-300";
+    return "border border-[color-mix(in_srgb,var(--color-status-info)_30%,transparent)] bg-[var(--color-status-info-bg)] text-[var(--color-status-info)]";
   }
   if (status === "rejected") {
-    return "border border-rose-500/30 bg-rose-500/10 text-rose-300";
+    return "border border-[color-mix(in_srgb,var(--color-status-error)_30%,transparent)] bg-[var(--color-status-error-bg)] text-[var(--color-status-error)]";
   }
-  return "border border-violet-500/30 bg-violet-500/10 text-violet-300";
+  return "border border-[color-mix(in_srgb,var(--workspace-primary)_30%,transparent)] bg-[var(--workspace-primary-dim)] text-[var(--workspace-primary-mid)]";
 }
 
 function formatJobBudget(
@@ -458,15 +458,15 @@ function FreelancerDashboardPage() {
         <Header />
         <main className="min-h-screen bg-[var(--color-bg-base)] pt-10 pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-8">
-            <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-36" />
+            <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-36" />
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               <div className="lg:col-span-8 space-y-8">
-                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-72" />
-                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-64" />
+                <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-72" />
+                <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-64" />
               </div>
               <div className="lg:col-span-4 space-y-6">
-                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-48" />
-                <div className="animate-pulse rounded-2xl border border-white/5 bg-white/[0.02] h-64" />
+                <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-48" />
+                <div className="animate-pulse rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] h-64" />
               </div>
             </div>
           </div>
@@ -509,8 +509,17 @@ function FreelancerDashboardPage() {
       <main className="min-h-screen bg-[var(--color-bg-base)] pt-6 pb-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-5">
           {/* ── COMMAND CENTER BANNER ── */}
-          <section className="relative overflow-hidden border rounded-xl bg-[radial-gradient(90%_160%_at_0%_0%,rgba(139,92,246,0.12)_0%,transparent_48%),#0a0a0a]" style={{ borderColor: 'rgba(139,92,246,0.15)' }}>
-            <div className="pointer-events-none absolute -top-8 right-8 h-20 w-20 rounded-full bg-violet-500/10 blur-3xl" />
+          <section 
+            className="relative overflow-hidden border rounded-xl" 
+            style={{ 
+              background: 'radial-gradient(90% 160% at 0% 0%, color-mix(in srgb, var(--workspace-primary) 12%, transparent) 0%, transparent 48%), var(--color-bg-base)',
+              borderColor: 'color-mix(in srgb, var(--workspace-primary) 15%, transparent)'
+            }}
+          >
+            <div 
+              className="pointer-events-none absolute -top-8 right-8 h-20 w-20 rounded-full blur-3xl" 
+              style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}
+            />
 
             <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 p-5">
               <div className="min-w-0 flex items-center gap-4">
@@ -518,25 +527,44 @@ function FreelancerDashboardPage() {
                   <img
                     src={profile.avatar_url}
                     alt={firstName}
-                    className="h-12 w-12 rounded-full border border-white/10 object-cover ring-2 ring-violet-500/20"
+                    className="h-12 w-12 rounded-full border object-cover ring-2"
+                    style={{ 
+                      borderColor: 'var(--color-border-default)',
+                      ringColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
+                    }}
                   />
                 ) : (
-                  <div className="h-12 w-12 rounded-full border border-white/10 bg-[var(--color-bg-elevated)] flex items-center justify-center ring-2 ring-violet-500/20">
-                    <User className="h-5 w-5 text-violet-300" />
+                  <div 
+                    className="h-12 w-12 rounded-full border bg-[var(--color-bg-elevated)] flex items-center justify-center ring-2"
+                    style={{ 
+                      borderColor: 'var(--color-border-default)',
+                      ringColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
+                    }}
+                  >
+                    <User className="h-5 w-5" style={{ color: 'var(--workspace-primary-mid)' }} />
                   </div>
                 )}
 
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-violet-300/80">
+                    <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--workspace-primary)' }} />
+                    <span 
+                      className="text-[10px] font-bold uppercase tracking-wider"
+                      style={{ color: 'color-mix(in srgb, var(--workspace-primary-mid) 80%, transparent)' }}
+                    >
                       {tx("dashboard.freelancer.commandCenter", undefined, "Freelancer Dashboard")}
                     </span>
                   </div>
-                  <h1 className="text-xl sm:text-2xl font-black tracking-tight truncate text-white leading-none">
+                  <h1 
+                    className="text-xl sm:text-2xl font-black tracking-tight truncate leading-none"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     {tx("dashboard.freelancer.welcomeBack", undefined, "Welcome back")}, {firstName}
                   </h1>
-                  <p className="text-xs text-white/50 mt-1.5 truncate">
+                  <p 
+                    className="text-xs mt-1.5 truncate"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >
                     {tx(
                       "dashboard.freelancer.matchingHint",
                       { count: jobs.length },
@@ -547,25 +575,67 @@ function FreelancerDashboardPage() {
               </div>
 
               <div className="flex flex-row items-center gap-3 overflow-x-auto pb-1 lg:pb-0 scrollbar-hide shrink-0">
-                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[120px]">
-                  <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                <div 
+                  className="rounded-lg border px-4 py-2 min-w-[120px]"
+                  style={{ 
+                    borderColor: 'var(--color-border-subtle)',
+                    background: 'var(--color-bg-subtle)'
+                  }}
+                >
+                  <p 
+                    className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >
                     {tx("dashboard.freelancer.dailyApplicationsRemaining", undefined, "Applications")}
                   </p>
-                  <p className="text-lg font-black text-white">{dailyProposalUsage.remaining}</p>
+                  <p 
+                    className="text-lg font-black"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    {dailyProposalUsage.remaining}
+                  </p>
                 </div>
 
-                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[120px]">
-                  <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                <div 
+                  className="rounded-lg border px-4 py-2 min-w-[120px]"
+                  style={{ 
+                    borderColor: 'var(--color-border-subtle)',
+                    background: 'var(--color-bg-subtle)'
+                  }}
+                >
+                  <p 
+                    className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >
                     {tx("dashboard.freelancer.activeContracts", undefined, "Contracts")}
                   </p>
-                  <p className="text-lg font-black text-white">{activeContractsCount}</p>
+                  <p 
+                    className="text-lg font-black"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    {activeContractsCount}
+                  </p>
                 </div>
 
-                <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-2 min-w-[120px]">
-                  <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
+                <div 
+                  className="rounded-lg border px-4 py-2 min-w-[120px]"
+                  style={{ 
+                    borderColor: 'var(--color-border-subtle)',
+                    background: 'var(--color-bg-subtle)'
+                  }}
+                >
+                  <p 
+                    className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >
                     {tx("dashboard.freelancer.pendingProposals", undefined, "Pending")}
                   </p>
-                  <p className="text-lg font-black text-white">{pendingProposalsCount}</p>
+                  <p 
+                    className="text-lg font-black"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    {pendingProposalsCount}
+                  </p>
                 </div>
               </div>
             </div>
@@ -577,15 +647,30 @@ function FreelancerDashboardPage() {
             <section className="lg:col-span-8 flex flex-col gap-5">
               
               {/* Active Contracts */}
-              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
-                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-violet-300">
+              <div 
+                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden flex flex-col"
+                style={{ borderColor: 'var(--color-border-subtle)' }}
+              >
+                <header 
+                  className="px-5 py-3 border-b flex justify-between items-center"
+                  style={{ 
+                    borderColor: 'var(--color-border-subtle)',
+                    background: 'var(--color-bg-subtle)'
+                  }}
+                >
+                  <h2 
+                    className="text-xs font-bold uppercase tracking-wider"
+                    style={{ color: 'var(--workspace-primary-mid)' }}
+                  >
                     {tx("dashboard.freelancer.activeContracts", undefined, "Active Contracts")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => navigate("/contracts")}
-                    className="text-[11px] font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+                    className="text-[11px] font-semibold transition-colors"
+                    style={{ color: 'var(--workspace-primary)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                   >
                     {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
                   </button>
@@ -593,11 +678,14 @@ function FreelancerDashboardPage() {
 
                 {isLoading ? (
                   <div className="p-5 space-y-2">
-                    <div className="animate-pulse h-12 rounded-lg bg-white/5" />
-                    <div className="animate-pulse h-12 rounded-lg bg-white/5" />
+                    <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
+                    <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
                   </div>
                 ) : activeContractRows.length === 0 ? (
-                  <div className="px-5 py-6 text-sm text-white/40 text-center">
+                  <div 
+                    className="px-5 py-6 text-sm text-center"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >
                     {tx("dashboard.freelancer.noActiveContracts", undefined, "No active contracts yet.")}
                   </div>
                 ) : (
@@ -605,16 +693,34 @@ function FreelancerDashboardPage() {
                     {activeContractRows.map((row, index) => (
                       <div
                         key={row.id}
-                        className={`px-5 py-3.5 hover:bg-white/[0.02] transition-colors flex items-center justify-between gap-3 ${index < activeContractRows.length - 1 ? "border-b border-white/5" : ""}`}
+                        className={`px-5 py-3.5 hover:bg-[var(--color-bg-subtle)] transition-colors flex items-center justify-between gap-3 ${index < activeContractRows.length - 1 ? "border-b" : ""}`}
+                        style={{ borderColor: 'var(--color-border-subtle)' }}
                       >
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{row.jobTitle}</p>
-                          <p className="text-xs text-white/50 truncate mt-0.5">{row.clientName}</p>
+                          <p 
+                            className="text-sm font-semibold truncate"
+                            style={{ color: 'var(--color-text-primary)' }}
+                          >
+                            {row.jobTitle}
+                          </p>
+                          <p 
+                            className="text-xs truncate mt-0.5"
+                            style={{ color: 'var(--color-text-tertiary)' }}
+                          >
+                            {row.clientName}
+                          </p>
                         </div>
                         <button
                           type="button"
                           onClick={() => navigate(row.submitPath)}
-                          className="shrink-0 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
+                          className="shrink-0 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
+                          style={{ 
+                            background: 'var(--color-bg-subtle)',
+                            borderColor: 'var(--color-border-default)',
+                            color: 'var(--color-text-primary)'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
                         >
                           {tx("dashboard.freelancer.submitWork", undefined, "Workspace")}
                         </button>
@@ -625,15 +731,30 @@ function FreelancerDashboardPage() {
               </div>
 
               {/* Recent Proposals */}
-              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
-                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-violet-300">
+              <div 
+                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden flex flex-col"
+                style={{ borderColor: 'var(--color-border-subtle)' }}
+              >
+                <header 
+                  className="px-5 py-3 border-b flex justify-between items-center"
+                  style={{ 
+                    borderColor: 'var(--color-border-subtle)',
+                    background: 'var(--color-bg-subtle)'
+                  }}
+                >
+                  <h2 
+                    className="text-xs font-bold uppercase tracking-wider"
+                    style={{ color: 'var(--workspace-primary-mid)' }}
+                  >
                     {tx("dashboard.freelancer.recentProposals", undefined, "Recent Proposals")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => navigate("/my-proposals")}
-                    className="text-[11px] font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+                    className="text-[11px] font-semibold transition-colors"
+                    style={{ color: 'var(--workspace-primary)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                   >
                     {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
                   </button>
@@ -641,11 +762,14 @@ function FreelancerDashboardPage() {
 
                 {isLoading ? (
                   <div className="p-5 space-y-2">
-                    <div className="animate-pulse h-10 rounded-lg bg-white/5" />
-                    <div className="animate-pulse h-10 rounded-lg bg-white/5" />
+                    <div className="animate-pulse h-10 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
+                    <div className="animate-pulse h-10 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
                   </div>
                 ) : proposalRows.length === 0 ? (
-                  <div className="px-5 py-6 text-sm text-white/40 text-center">
+                  <div 
+                    className="px-5 py-6 text-sm text-center"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >
                     {tx("dashboard.freelancer.noProposalsYet", undefined, "No proposals yet.")}
                   </div>
                 ) : (
@@ -653,11 +777,22 @@ function FreelancerDashboardPage() {
                     {proposalRows.map((row, index) => (
                       <div
                         key={row.id}
-                        className={`px-5 py-3 hover:bg-white/[0.02] transition-colors flex items-center justify-between gap-3 ${index < proposalRows.length - 1 ? "border-b border-white/5" : ""}`}
+                        className={`px-5 py-3 hover:bg-[var(--color-bg-subtle)] transition-colors flex items-center justify-between gap-3 ${index < proposalRows.length - 1 ? "border-b" : ""}`}
+                        style={{ borderColor: 'var(--color-border-subtle)' }}
                       >
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-white/90 truncate">{row.jobTitle}</p>
-                          <p className="text-[11px] text-white/50 mt-0.5">{row.proposedRate}</p>
+                          <p 
+                            className="text-sm font-medium truncate"
+                            style={{ color: 'var(--color-text-primary)' }}
+                          >
+                            {row.jobTitle}
+                          </p>
+                          <p 
+                            className="text-[11px] mt-0.5"
+                            style={{ color: 'var(--color-text-tertiary)' }}
+                          >
+                            {row.proposedRate}
+                          </p>
                         </div>
                         <span
                           className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${proposalStatusClass(row.status)}`}
@@ -671,15 +806,30 @@ function FreelancerDashboardPage() {
               </div>
 
               {/* Matched Jobs */}
-              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden flex flex-col">
-                <header className="px-5 py-3 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-violet-300">
+              <div 
+                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden flex flex-col"
+                style={{ borderColor: 'var(--color-border-subtle)' }}
+              >
+                <header 
+                  className="px-5 py-3 border-b flex justify-between items-center"
+                  style={{ 
+                    borderColor: 'var(--color-border-subtle)',
+                    background: 'var(--color-bg-subtle)'
+                  }}
+                >
+                  <h2 
+                    className="text-xs font-bold uppercase tracking-wider"
+                    style={{ color: 'var(--workspace-primary-mid)' }}
+                  >
                     {tx("dashboard.freelancer.matchedForYou", undefined, "Matched Jobs")}
                   </h2>
                   <button
                     type="button"
                     onClick={() => navigate(ROUTES.jobs)}
-                    className="text-[11px] font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+                    className="text-[11px] font-semibold transition-colors"
+                    style={{ color: 'var(--workspace-primary)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                   >
                     {tx("dashboard.freelancer.browseJobs", undefined, "Browse")} -&gt;
                   </button>
@@ -687,11 +837,14 @@ function FreelancerDashboardPage() {
 
                 {isLoadingJobs ? (
                   <div className="p-5 space-y-2">
-                    <div className="animate-pulse h-12 rounded-lg bg-white/5" />
-                    <div className="animate-pulse h-12 rounded-lg bg-white/5" />
+                    <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
+                    <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
                   </div>
                 ) : jobs.length === 0 ? (
-                  <div className="px-5 py-6 text-sm text-white/40 text-center">
+                  <div 
+                    className="px-5 py-6 text-sm text-center"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >
                     {tx("dashboard.freelancer.noMatchesYet", undefined, "No new job matches right now.")}
                   </div>
                 ) : (
@@ -701,17 +854,31 @@ function FreelancerDashboardPage() {
                         key={job.id}
                         type="button"
                         onClick={() => navigate(`/jobs/${job.id}`)}
-                        className={`w-full text-left px-5 py-3.5 hover:bg-white/[0.02] transition-colors ${index < jobs.length - 1 ? "border-b border-white/5" : ""}`}
+                        className={`w-full text-left px-5 py-3.5 hover:bg-[var(--color-bg-subtle)] transition-colors ${index < jobs.length - 1 ? "border-b" : ""}`}
+                        style={{ borderColor: 'var(--color-border-subtle)' }}
                       >
-                        <p className="text-sm font-semibold text-white/90 truncate">{job.title}</p>
-                        <div className="mt-1 flex items-center gap-2 text-xs text-white/50">
+                        <p 
+                          className="text-sm font-semibold truncate"
+                          style={{ color: 'var(--color-text-primary)' }}
+                        >
+                          {job.title}
+                        </p>
+                        <div 
+                          className="mt-1 flex items-center gap-2 text-xs"
+                          style={{ color: 'var(--color-text-tertiary)' }}
+                        >
                           <span>
                             {job.category
                               ? tx(`categories.${job.category}`, undefined, job.category)
                               : tx("common.general", undefined, "General")}
                           </span>
-                          <span className="text-white/20">•</span>
-                          <span className="font-medium text-white/70">{formatJobBudget(job, language)}</span>
+                          <span style={{ color: 'var(--color-border-default)' }}>•</span>
+                          <span 
+                            className="font-medium"
+                            style={{ color: 'var(--color-text-secondary)' }}
+                          >
+                            {formatJobBudget(job, language)}
+                          </span>
                         </div>
                       </button>
                     ))}
@@ -724,13 +891,27 @@ function FreelancerDashboardPage() {
             <aside className="lg:col-span-4 flex flex-col gap-5 sticky top-20">
               
               {/* Earnings Widget */}
-              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">
+              <div 
+                className="rounded-xl border bg-[var(--color-bg-base)] p-5"
+                style={{ borderColor: 'var(--color-border-subtle)' }}
+              >
+                <p 
+                  className="text-[10px] font-bold uppercase tracking-wider"
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                >
                   {tx("dashboard.freelancer.earningsThisMonth", undefined, "Earnings this month")}
                 </p>
-                <p className="text-2xl font-black text-white mt-1 leading-none">{monthlyEarningsLabel}</p>
+                <p 
+                  className="text-2xl font-black mt-1 leading-none"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {monthlyEarningsLabel}
+                </p>
 
-                <p className="text-[11px] text-white/40 mt-2">
+                <p 
+                  className="text-[11px] mt-2"
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                >
                   {tx(
                     "dashboard.freelancer.lastMonthReference",
                     { value: formatCurrency(lastMonthEarnings, true, language) },
@@ -747,7 +928,14 @@ function FreelancerDashboardPage() {
                 <button
                   type="button"
                   onClick={() => navigate("/wallet")}
-                  className="w-full mt-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-lg text-xs font-bold transition-colors"
+                  className="w-full mt-4 border py-2 rounded-lg text-xs font-bold transition-colors"
+                  style={{ 
+                    background: 'var(--color-bg-subtle)',
+                    borderColor: 'var(--color-border-default)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
                 >
                   {tx("dashboard.freelancer.withdrawFunds", undefined, "Withdraw Funds")}
                 </button>
@@ -755,8 +943,14 @@ function FreelancerDashboardPage() {
 
               {/* Profile Completion Widget */}
               {profileCompletion < 100 && (
-                <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/50 mb-4">
+                <div 
+                  className="rounded-xl border bg-[var(--color-bg-base)] p-5"
+                  style={{ borderColor: 'var(--color-border-subtle)' }}
+                >
+                  <p 
+                    className="text-[10px] font-bold uppercase tracking-wider mb-4"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >
                     {tx("dashboard.freelancer.profileCompletion", undefined, "Profile Completion")}
                   </p>
                   
@@ -764,7 +958,8 @@ function FreelancerDashboardPage() {
                     <div className="relative h-12 w-12 shrink-0">
                       <svg className="h-12 w-12 -rotate-90 transform" viewBox="0 0 100 100">
                         <circle
-                          className="text-white/5 stroke-current"
+                          className="stroke-current"
+                          style={{ color: 'var(--color-border-subtle)' }}
                           strokeWidth="8"
                           cx="50"
                           cy="50"
@@ -772,7 +967,8 @@ function FreelancerDashboardPage() {
                           fill="transparent"
                         />
                         <circle
-                          className="text-violet-500 stroke-current transition-all duration-1000 ease-out"
+                          className="stroke-current transition-all duration-1000 ease-out"
+                          style={{ color: 'var(--workspace-primary)' }}
                           strokeWidth="8"
                           strokeLinecap="round"
                           cx="50"
@@ -784,18 +980,29 @@ function FreelancerDashboardPage() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-white">{profileCompletion}%</span>
+                        <span 
+                          className="text-[10px] font-bold"
+                          style={{ color: 'var(--color-text-primary)' }}
+                        >
+                          {profileCompletion}%
+                        </span>
                       </div>
                     </div>
                     
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-white/90">
+                      <p 
+                        className="text-xs font-semibold"
+                        style={{ color: 'var(--color-text-primary)' }}
+                      >
                         {tx("dashboard.freelancer.completeProfileLabel", undefined, "Complete your profile")}
                       </p>
                       <button
                         type="button"
                         onClick={() => navigate("/profile")}
-                        className="mt-1 text-[11px] text-violet-400 hover:text-violet-300 font-medium transition-colors"
+                        className="mt-1 text-[11px] font-medium transition-colors"
+                        style={{ color: 'var(--workspace-primary)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                       >
                         {tx("dashboard.freelancer.editProfileLink", undefined, "Edit profile")} -&gt;
                       </button>
@@ -805,8 +1012,14 @@ function FreelancerDashboardPage() {
               )}
 
               {/* Quick Actions */}
-              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] overflow-hidden">
-                <p className="px-5 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-white/50">
+              <div 
+                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden"
+                style={{ borderColor: 'var(--color-border-subtle)' }}
+              >
+                <p 
+                  className="px-5 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider"
+                  style={{ color: 'var(--color-text-tertiary)' }}
+                >
                   {tx("dashboard.freelancer.quickActions", undefined, "Quick Actions")}
                 </p>
                 <div className="flex flex-col p-2 pt-0">
@@ -836,10 +1049,18 @@ function FreelancerDashboardPage() {
                       key={action.label}
                       type="button"
                       onClick={() => navigate(action.path)}
-                      className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
+                      className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[var(--color-bg-subtle)] transition-colors text-left"
                     >
-                      <span className="text-xs font-semibold text-white/80">{action.label}</span>
-                      <action.icon className="h-3.5 w-3.5 text-white/30" />
+                      <span 
+                        className="text-xs font-semibold"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                      >
+                        {action.label}
+                      </span>
+                      <action.icon 
+                        className="h-3.5 w-3.5"
+                        style={{ color: 'var(--color-text-tertiary)' }}
+                      />
                     </button>
                   ))}
                 </div>
