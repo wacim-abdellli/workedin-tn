@@ -1627,13 +1627,14 @@ export const fr: Translations = {
             "noMessagesYet": "Pas encore de messages",
             "emptyThread": "Pas encore de messages. Commencez la conversation !",
             "messagePlaceholder": "Écrivez votre message...",
-            "selectConversationTitle": "Sélectionnez une conversation",
-            "selectConversationDescription": "Choisissez une conversation dans la liste pour commencer à discuter",
+            "selectConversationTitle": "Vos messages",
+            "selectConversationDescription": "Sélectionnez une conversation dans la barre latérale pour commencer à discuter, ou attendez qu'on vous contacte.",
             "selectConversationDetails": "Sélectionnez une conversation pour voir les détails",
             "profileAction": "Profil",
             "contractsAction": "Contrats",
             "directContext": "Discussion directe",
             "contractContext": "Discussion du contrat",
+            "directChat": "Discussion directe",
             "openContract": "Ouvrir le contrat",
             "archiveConversation": "Archiver la conversation",
             "deleteConversation": "Supprimer la conversation",
@@ -1642,9 +1643,17 @@ export const fr: Translations = {
             "recordVoice": "Enregistrer un message vocal",
             "recording": "Enregistrement...",
             "voiceMemo": "Note audio",
-            "userFallback": "user",
+            "attachmentLabel": "Pièce jointe",
+            "userFallback": "Utilisateur",
             "loadingConversations": "Chargement des conversations...",
             "loadingMessages": "Chargement des messages...",
+            "clientInboxLabel": "Boîte client",
+            "freelancerInboxLabel": "Boîte freelance",
+            "allConversationsLabel": "Toutes les conversations",
+            "archivedLabel": "ARCHIVÉES",
+            "backToInbox": "Retour à la boîte",
+            "viewArchived": "Conversations archivées",
+            "contractWorkspaceTitle": "Espace de travail du contrat",
             "typingIndicator": {
                 "singular": "est en train d'écrire...",
                 "plural": "personnes sont en train d'écrire..."
@@ -1657,12 +1666,27 @@ export const fr: Translations = {
                 "noMatchingTitle": "Aucune conversation correspondante",
                 "noMatchingDescription": "Essayez un autre nom ou effacez votre recherche.",
                 "noConversationsTitle": "Aucune conversation pour le moment",
-                "noConversationsDescription": "Commencez par envoyer une proposition ou contacter un freelance."
+                "noConversationsDescription": "Commencez par envoyer une proposition ou contacter un freelance.",
+                "noArchivedTitle": "Aucune conversation archivée"
             },
             "errors": {
                 "audioUpload": "Échec de l'envoi de l'audio",
                 "fileUpload": "Échec de l'envoi du fichier",
-                "fileTooLarge": "Le fichier doit faire moins de 10 Mo"
+                "fileTooLarge": "Le fichier doit faire moins de 10 Mo",
+                "invalidAttachment": "Le lien de la pièce jointe n'est pas disponible",
+                "openAttachment": "Impossible d'ouvrir la pièce jointe pour le moment",
+                "recordingLimit": "Limite d'enregistrement atteinte (5 minutes)",
+                "sendFailed": "Échec de l'envoi du message",
+                "fileUnsupported": "Type de fichier non pris en charge",
+                "fileInspectionFailed": "Impossible de vérifier ce fichier en toute sécurité. Veuillez choisir un autre fichier."
+            },
+            "offline": {
+                "synced": "Messages hors ligne synchronisés avec succès",
+                "fileTooLarge": "Fichier trop volumineux pour le stockage hors ligne (max 5 Mo)",
+                "audioTooLarge": "Audio trop volumineux pour le stockage hors ligne",
+                "encodingFailed": "Échec de la préparation du fichier pour le stockage hors ligne",
+                "storageFailed": "Échec de la sauvegarde du message hors ligne",
+                "queued": "Vous êtes hors ligne. Message mis en file d'attente et sera envoyé lors de la reconnexion."
             },
             "time": {
                 "now": "Maintenant",
@@ -1687,7 +1711,21 @@ export const fr: Translations = {
             "contractReferenceFallback": "Contrat",
             "contractReferenceWithId": "Contrat #{{id}}",
             "contractWithName": "Contrat avec {{name}}",
-            "contractProjectWithTitle": "Projet du contrat • {{title}}"
+            "contractProjectWithTitle": "Projet du contrat • {{title}}",
+            "seeLess": "Voir moins",
+            "seeMore": "Voir plus",
+            "contractDetails": {
+                "amount": "Montant",
+                "due": "Échéance",
+                "review": "Révision",
+                "workspace": "Espace de travail"
+            },
+            "delivery": {
+                "reviewFiles": "Fichiers de révision",
+                "reviewFilesDescription": "Fichiers que le client peut examiner immédiatement avant d'accepter.",
+                "finalLockedFiles": "Fichiers finaux verrouillés",
+                "finalLockedFilesDescription": "Fichiers qui restent verrouillés jusqu'à ce que le client accepte et que le paiement soit libéré."
+            }
         },
         "freelancerProfile": {
             "actions": {
@@ -3886,5 +3924,25 @@ export const fr: Translations = {
         "error": "Erreur",
         "warning": "Avertissement",
         "info": "Info"
+    },
+    "common": {
+        "back": "Retour",
+        "goBack": "Revenir",
+        "retry": "Réessayer",
+        "loading": "Chargement...",
+        "error": "Erreur",
+        "success": "Succès"
+    },
+    "contractWorkspace": {
+        "clientView": "Vue client",
+        "freelancerView": "Vue freelance",
+        "notFound": "Contrat introuvable ou vous n'avez pas accès.",
+        "notParticipant": "Vous n'êtes pas participant à ce contrat.",
+        "loadError": "Échec du chargement des détails du contrat. Veuillez réessayer.",
+        "unableToLoad": "Impossible de charger l'espace de travail",
+        "openToDeliver": "Ouvrez ce contrat dans Messages pour livrer le travail.",
+        "openToRequestChanges": "Ouvrez ce contrat dans Messages pour demander des modifications.",
+        "openToReleasePay": "Ouvrez ce contrat dans Messages pour libérer le paiement.",
+        "openToDispute": "Ouvrez ce contrat dans Messages pour ouvrir un litige."
     }
 };

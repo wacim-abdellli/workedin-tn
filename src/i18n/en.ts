@@ -1627,13 +1627,14 @@ export const en: Translations = {
             "noMessagesYet": "No messages yet",
             "emptyThread": "No messages yet. Start the conversation!",
             "messagePlaceholder": "Write your message...",
-            "selectConversationTitle": "Select a conversation",
-            "selectConversationDescription": "Choose a conversation from the list to start messaging",
+            "selectConversationTitle": "Your messages",
+            "selectConversationDescription": "Select a conversation from the sidebar to start messaging, or wait for someone to reach out.",
             "selectConversationDetails": "Select a conversation to view details",
             "profileAction": "Profile",
             "contractsAction": "Contracts",
             "directContext": "Direct chat",
             "contractContext": "Contract chat",
+            "directChat": "Direct chat",
             "openContract": "Open Contract",
             "archiveConversation": "Archive conversation",
             "deleteConversation": "Delete conversation",
@@ -1642,9 +1643,17 @@ export const en: Translations = {
             "recordVoice": "Record voice message",
             "recording": "Recording...",
             "voiceMemo": "Audio note",
-            "userFallback": "user",
+            "attachmentLabel": "Attachment",
+            "userFallback": "User",
             "loadingConversations": "Loading conversations...",
             "loadingMessages": "Loading messages...",
+            "clientInboxLabel": "Client inbox",
+            "freelancerInboxLabel": "Freelancer inbox",
+            "allConversationsLabel": "All conversations",
+            "archivedLabel": "ARCHIVED",
+            "backToInbox": "Back to inbox",
+            "viewArchived": "Archived conversations",
+            "contractWorkspaceTitle": "Contract workspace",
             "typingIndicator": {
                 "singular": "is typing...",
                 "plural": "people are typing..."
@@ -1657,12 +1666,27 @@ export const en: Translations = {
                 "noMatchingTitle": "No matching conversations",
                 "noMatchingDescription": "Try a different name or clear your search.",
                 "noConversationsTitle": "No conversations yet",
-                "noConversationsDescription": "Start by sending a proposal or contacting a freelancer."
+                "noConversationsDescription": "Start by sending a proposal or contacting a freelancer.",
+                "noArchivedTitle": "No archived conversations"
             },
             "errors": {
                 "audioUpload": "Failed to upload audio",
                 "fileUpload": "Failed to upload file",
-                "fileTooLarge": "File size must be less than 10 MB"
+                "fileTooLarge": "File size must be less than 10 MB",
+                "invalidAttachment": "Attachment link is not available",
+                "openAttachment": "Failed to open attachment right now",
+                "recordingLimit": "Recording limit reached (5 minutes)",
+                "sendFailed": "Failed to send message",
+                "fileUnsupported": "Unsupported file type",
+                "fileInspectionFailed": "Could not verify this file safely. Please choose another file."
+            },
+            "offline": {
+                "synced": "Offline messages synced successfully",
+                "fileTooLarge": "File too large for offline storage (max 5MB)",
+                "audioTooLarge": "Audio too large for offline storage",
+                "encodingFailed": "Failed to prepare file for offline storage",
+                "storageFailed": "Failed to save message offline",
+                "queued": "You are offline. Message queued and will send when reconnected."
             },
             "time": {
                 "now": "Now",
@@ -1687,7 +1711,21 @@ export const en: Translations = {
             "contractReferenceFallback": "Contract",
             "contractReferenceWithId": "Contract #{{id}}",
             "contractWithName": "Contract with {{name}}",
-            "contractProjectWithTitle": "Contract project • {{title}}"
+            "contractProjectWithTitle": "Contract project • {{title}}",
+            "seeLess": "See less",
+            "seeMore": "See more",
+            "contractDetails": {
+                "amount": "Amount",
+                "due": "Due",
+                "review": "Review",
+                "workspace": "Workspace"
+            },
+            "delivery": {
+                "reviewFiles": "Review Files",
+                "reviewFilesDescription": "Files the client can review immediately before accepting.",
+                "finalLockedFiles": "Final Locked Files",
+                "finalLockedFilesDescription": "Files that stay locked until the client accepts and payment is released."
+            }
         },
         "freelancerProfile": {
             "actions": {
@@ -3886,5 +3924,25 @@ export const en: Translations = {
         "error": "Error",
         "warning": "Warning",
         "info": "Info"
+    },
+    "common": {
+        "back": "Back",
+        "goBack": "Go back",
+        "retry": "Retry",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success"
+    },
+    "contractWorkspace": {
+        "clientView": "Client view",
+        "freelancerView": "Freelancer view",
+        "notFound": "Contract not found or you do not have access.",
+        "notParticipant": "You are not a participant in this contract.",
+        "loadError": "Failed to load contract details. Please try again.",
+        "unableToLoad": "Unable to load workspace",
+        "openToDeliver": "Open this contract in Messages to deliver work.",
+        "openToRequestChanges": "Open this contract in Messages to request changes.",
+        "openToReleasePay": "Open this contract in Messages to release payment.",
+        "openToDispute": "Open this contract in Messages to open a dispute."
     }
 };

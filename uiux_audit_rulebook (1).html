@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI/UX Audit Rulebook</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #F5F5F2;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+  .progress-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e5e2;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .prog-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .prog-label { font-size: 13px; color: #666; }
+  .prog-val { font-size: 13px; font-weight: 600; }
+  .prog-track { height: 6px; background: #e5e5e2; border-radius: 4px; overflow: hidden; }
+  .prog-fill { height: 100%; background: #1D9E75; border-radius: 4px; transition: width 0.3s; }
+
+  .legend { display: flex; gap: 16px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+  .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .filter-btn {
+    font-size: 12px; padding: 5px 13px; border-radius: 20px;
+    border: 1px solid #d5d5d0;
+    background: transparent; cursor: pointer;
+    color: #555; transition: all 0.15s;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    background: #1a1a1a; color: white; border-color: #1a1a1a;
+  }
+
+  .section { margin-bottom: 1.25rem; }
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: white;
+    border: 1px solid #e5e5e2;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header:hover { background: #f9f9f7; }
+  .section-icon { font-size: 15px; }
+  .section-title { font-size: 14px; font-weight: 600; flex: 1; }
+  .section-count {
+    font-size: 11px; padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid #e5e5e2;
+    color: #777;
+  }
+  .chevron { font-size: 10px; color: #aaa; transition: transform 0.2s; display: inline-block; }
+  .chevron.open { transform: rotate(90deg); }
+
+  .rules-list { display: flex; flex-direction: column; gap: 2px; }
+  .rule {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 14px;
+    border: 1px solid #e5e5e2;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .rule:hover { background: #fafaf8; }
+  .rule-check {
+    width: 17px; height: 17px; min-width: 17px;
+    border-radius: 4px;
+    border: 1.5px solid #c5c5c0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: transparent;
+    transition: all 0.15s;
+  }
+  .rule-check.done { background: #1D9E75; border-color: #1D9E75; color: white; }
+  .rule-text { font-size: 13px; line-height: 1.55; flex: 1; }
+  .rule-text.done { text-decoration: line-through; color: #aaa; }
+  .rule-tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px;
+    font-weight: 600; white-space: nowrap; margin-top: 2px;
+  }
+  .tag-must { background: #FCEBEB; color: #A32D2D; }
+  .tag-should { background: #FAEEDA; color: #854F0B; }
+  .tag-nice { background: #EAF3DE; color: #3B6D11; }
+
+  @media print {
+    body { background: white; }
+    .filter-bar { display: none; }
+    .rule { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>UI/UX Audit Rulebook</h1>
+  <p class="subtitle">Check off each rule to track compliance. Use with your agent for review.</p>
+
+  <div class="progress-card">
+    <div class="prog-top">
+      <span class="prog-label">Overall compliance</span>
+      <span class="prog-val" id="prog-text">0 / 60</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#A32D2D"></div> Must — blocking</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#854F0B"></div> Should — recommended</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#3B6D11"></div> Nice — enhancement</div>
+  </div>
+
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="must">Must</button>
+    <button class="filter-btn" data-filter="should">Should</button>
+    <button class="filter-btn" data-filter="nice">Nice</button>
+    <button class="filter-btn" data-filter="done">Done</button>
+    <button class="filter-btn" data-filter="todo">To do</button>
+  </div>
+
+  <div id="sections-root"></div>
+</div>
+
+<script>
+const data = [
+  {
+    id:"layout", icon:"⊞", title:"Layout & Structure",
+    rules:[
+      {t:"Consistent grid system used throughout (8px or 4px base unit)", level:"must"},
+      {t:"Page has clear visual hierarchy: primary → secondary → tertiary elements", level:"must"},
+      {t:"Content max-width is defined and respected (typically 960–1280px)", level:"must"},
+      {t:"Logical reading order: top-to-bottom, left-to-right (LTR layouts)", level:"must"},
+      {t:"No orphaned elements floating without spatial context", level:"should"},
+      {t:"Sections are visually separated with consistent spacing (not random margins)", level:"should"},
+      {t:"Sidebar or navigation does not overlap main content at any breakpoint", level:"must"},
+      {t:"Z-index layers are intentional and documented (modal > tooltip > header > content)", level:"should"},
+    ]
+  },
+  {
+    id:"typography", icon:"T", title:"Typography",
+    rules:[
+      {t:"Font scale is defined: H1, H2, H3, body, caption — not arbitrary sizes", level:"must"},
+      {t:"Line-height for body text is between 1.5 and 1.75", level:"must"},
+      {t:"Maximum line length (measure) is 65–80 characters for long-form text", level:"should"},
+      {t:"No more than 2 typefaces used in the UI", level:"should"},
+      {t:"Font weights are intentional: regular for body, medium/bold for emphasis only", level:"should"},
+      {t:"Text never gets clipped or truncated without a visible indicator (…)", level:"must"},
+      {t:"All caps usage limited to labels/badges only, never body copy", level:"should"},
+      {t:"Heading hierarchy is semantic (h1 > h2 > h3) and not skipped", level:"must"},
+    ]
+  },
+  {
+    id:"color", icon:"◐", title:"Color & Contrast",
+    rules:[
+      {t:"Text on background meets WCAG AA contrast ratio (4.5:1 normal, 3:1 large text)", level:"must"},
+      {t:"Color is never the sole indicator of meaning (always paired with icon or text)", level:"must"},
+      {t:"A consistent color system is defined (primary, secondary, semantic, neutral)", level:"must"},
+      {t:"Interactive elements have distinct states: default / hover / active / disabled", level:"must"},
+      {t:"Dark mode (if applicable) uses inverted ramps, not just CSS filter:invert()", level:"should"},
+      {t:"Brand accent color is used sparingly — not on every element", level:"should"},
+      {t:"Error red, warning amber, success green are reserved for status only", level:"must"},
+      {t:"No pure #000 on pure #FFF — slightly off-white/off-black reduces harshness", level:"nice"},
+    ]
+  },
+  {
+    id:"spacing", icon:"↔", title:"Spacing & Density",
+    rules:[
+      {t:"All spacing values come from the design system scale (4, 8, 12, 16, 24, 32, 48px…)", level:"must"},
+      {t:"Touch targets are at least 44×44px on mobile", level:"must"},
+      {t:"Related elements are grouped closer than unrelated ones (Gestalt proximity)", level:"must"},
+      {t:"Cards and containers have consistent internal padding", level:"should"},
+      {t:"Density is adapted to context: data tables tight, reading views generous", level:"should"},
+      {t:"Form labels are close to their input, not floating between two fields", level:"must"},
+      {t:"Page sections have sufficient vertical rhythm — no two sections feel cramped", level:"should"},
+    ]
+  },
+  {
+    id:"components", icon:"⬜", title:"Components & Consistency",
+    rules:[
+      {t:"Buttons have a clear visual priority: primary, secondary, ghost/text", level:"must"},
+      {t:"Icons are from a single icon set; no mixing of different styles", level:"should"},
+      {t:"Form inputs: same height, same border-radius, same focus ring throughout", level:"must"},
+      {t:"Modals/dialogs have a clear close affordance (X button + ESC key)", level:"must"},
+      {t:"Tables have visible row separators or alternating rows for scannability", level:"should"},
+      {t:"Tooltips trigger on hover and appear within viewport — never clipped", level:"should"},
+      {t:"Loading states defined: skeleton screens or spinners, no blank white flash", level:"must"},
+      {t:"Empty states are designed: icon + message + CTA, not just a blank container", level:"should"},
+      {t:"Destructive actions (delete, remove) require confirmation before execution", level:"must"},
+    ]
+  },
+  {
+    id:"feedback", icon:"↩", title:"Feedback & States",
+    rules:[
+      {t:"Every user action has visible feedback within 100ms (hover state at minimum)", level:"must"},
+      {t:"Error messages are specific and actionable — not just 'Something went wrong'", level:"must"},
+      {t:"Success confirmations are shown and disappear automatically (toast/banner)", level:"should"},
+      {t:"Long operations show progress (progress bar, percentage, or ETA)", level:"should"},
+      {t:"Disabled UI elements explain why they are disabled (tooltip or helper text)", level:"should"},
+      {t:"Form validation runs on blur (not only on submit) for immediate feedback", level:"should"},
+      {t:"Network errors are caught and shown to the user — no silent failures", level:"must"},
+    ]
+  },
+  {
+    id:"responsive", icon:"⬡", title:"Responsiveness & Breakpoints",
+    rules:[
+      {t:"Layout tested at 375px (mobile), 768px (tablet), 1280px (desktop) at minimum", level:"must"},
+      {t:"No horizontal scroll on mobile (except data tables with intentional overflow)", level:"must"},
+      {t:"Navigation collapses to mobile-friendly pattern below 768px", level:"must"},
+      {t:"Images are responsive (max-width: 100%, aspect-ratio preserved)", level:"must"},
+      {t:"Font sizes do not shrink below 14px on mobile", level:"must"},
+      {t:"Tap targets re-evaluated on mobile: minimum 44px, not just visually scaled down", level:"must"},
+      {t:"Modals become bottom sheets or full-screen on mobile if content is long", level:"nice"},
+    ]
+  },
+  {
+    id:"accessibility", icon:"⊙", title:"Accessibility",
+    rules:[
+      {t:"All images have descriptive alt text; decorative images use alt=''", level:"must"},
+      {t:"Keyboard navigation works: Tab, Shift+Tab, Enter, Escape all function correctly", level:"must"},
+      {t:"Focus ring is always visible — never removed without a replacement style", level:"must"},
+      {t:"ARIA roles/labels added where native HTML semantics are insufficient", level:"should"},
+      {t:"Skip-to-main-content link is available at the top of each page", level:"should"},
+      {t:"Animations respect prefers-reduced-motion media query", level:"should"},
+      {t:"Form fields are associated with labels via for/id or aria-label", level:"must"},
+      {t:"Color-blind safe palette verified with a simulation tool", level:"nice"},
+    ]
+  }
+];
+
+const totalRules = data.reduce((s, sec) => s + sec.rules.length, 0);
+let checkedSet = new Set();
+let currentFilter = "all";
+
+function updateProgress() {
+  const done = checkedSet.size;
+  document.getElementById("prog-text").textContent = done + " / " + totalRules;
+  document.getElementById("prog-fill").style.width = Math.round(done / totalRules * 100) + "%";
+}
+
+function shouldShow(rule, secId) {
+  const key = secId + rule.t;
+  if (currentFilter === "must") return rule.level === "must";
+  if (currentFilter === "should") return rule.level === "should";
+  if (currentFilter === "nice") return rule.level === "nice";
+  if (currentFilter === "done") return checkedSet.has(key);
+  if (currentFilter === "todo") return !checkedSet.has(key);
+  return true;
+}
+
+function render() {
+  const root = document.getElementById("sections-root");
+  root.innerHTML = "";
+  data.forEach(sec => {
+    const visibleRules = sec.rules.filter(r => shouldShow(r, sec.id));
+    if (!visibleRules.length) return;
+    const done = sec.rules.filter(r => checkedSet.has(sec.id + r.t)).length;
+
+    const section = document.createElement("div");
+    section.className = "section";
+
+    const header = document.createElement("div");
+    header.className = "section-header";
+    header.innerHTML =
+      '<span class="section-icon">' + sec.icon + '</span>' +
+      '<span class="section-title">' + sec.title + '</span>' +
+      '<span class="section-count">' + done + ' / ' + sec.rules.length + '</span>' +
+      '<span class="chevron open" id="chev-' + sec.id + '">▶</span>';
+
+    const list = document.createElement("div");
+    list.className = "rules-list";
+    list.id = "list-" + sec.id;
+
+    visibleRules.forEach(rule => {
+      const key = sec.id + rule.t;
+      const isDone = checkedSet.has(key);
+      const item = document.createElement("div");
+      item.className = "rule";
+      item.innerHTML =
+        '<div class="rule-check' + (isDone ? " done" : "") + '">' + (isDone ? "✓" : "") + '</div>' +
+        '<span class="rule-text' + (isDone ? " done" : "") + '">' + rule.t + '</span>' +
+        '<span class="rule-tag tag-' + rule.level + '">' + rule.level + '</span>';
+      item.addEventListener("click", () => {
+        if (checkedSet.has(key)) checkedSet.delete(key);
+        else checkedSet.add(key);
+        render(); updateProgress();
+      });
+      list.appendChild(item);
+    });
+
+    header.addEventListener("click", () => {
+      const l = document.getElementById("list-" + sec.id);
+      const c = document.getElementById("chev-" + sec.id);
+      const hidden = l.style.display === "none";
+      l.style.display = hidden ? "flex" : "none";
+      if (hidden) { l.style.flexDirection = "column"; l.style.gap = "2px"; }
+      c.classList.toggle("open", hidden);
+    });
+
+    section.appendChild(header);
+    section.appendChild(list);
+    root.appendChild(section);
+  });
+}
+
+document.getElementById("filter-bar").addEventListener("click", e => {
+  if (!e.target.dataset.filter) return;
+  currentFilter = e.target.dataset.filter;
+  document.querySelectorAll(".filter-btn").forEach(b =>
+    b.classList.toggle("active", b.dataset.filter === currentFilter));
+  render();
+});
+
+render();
+updateProgress();
+</script>
+</body>
+</html>

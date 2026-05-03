@@ -135,6 +135,7 @@ function Modal({
             style={{
                 background: 'var(--color-background-overlay)',
                 opacity: visible ? 1 : 0,
+                pointerEvents: visible ? 'auto' : 'none',
             }}
         >
             <div

@@ -1,6 +1,6 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, AlertCircle, MessageSquare, Users } from 'lucide-react';
+import { ArrowLeft, AlertCircle, MessageSquare, Users, PackageCheck, GitPullRequest, ShieldAlert, CheckCircle } from 'lucide-react';
 import { Header } from '../components/layout';
 import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
 import { supabase } from '../lib/supabase';
@@ -8,6 +8,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import { normalizeContractStatus } from '../lib/messagingLifecycle';
 import { ROUTES } from '@/lib/routes';
+import { useTranslation } from '@/i18n';
+import { useContractState } from '../hooks/useContractState';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -98,6 +100,7 @@ export default function ContractWorkspacePage() {
     const navigate = useNavigate();
     const { user, profile, activeMode } = useAuth();
     const { showToast } = useToast();
+    const { tx } = useTranslation();
 
     const [contract, setContract] = useState<ContractRow | null>(null);
     const [jobTitle, setJobTitle] = useState<string | null>(null);
@@ -107,6 +110,17 @@ export default function ContractWorkspacePage() {
     const [hasReviewed, setHasReviewed] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // ─── Action modal state ───────────────────────────────────────────────────
+    const [deliverOpen, setDeliverOpen] = useState(false);
+    const [deliverNote, setDeliverNote] = useState('');
+    const [changesOpen, setChangesOpen] = useState(false);
+    const [changesNote, setChangesNote] = useState('');
+    const [disputeOpen, setDisputeOpen] = useState(false);
+    const [disputeReason, setDisputeReason] = useState('');
+    const deliverTextareaRef = useRef<HTMLTextAreaElement>(null);
+    const changesTextareaRef = useRef<HTMLTextAreaElement>(null);
+    const disputeTextareaRef = useRef<HTMLTextAreaElement>(null);
 
     const userRole: 'client' | 'freelancer' = useMemo(() => {
         const mode = activeMode ?? profile?.active_mode;
@@ -127,8 +141,8 @@ export default function ContractWorkspacePage() {
 
     // Role-aware accent colors for the breadcrumb bar
     const roleAccent = userRole === 'client'
-        ? { badge: 'border-[#E8A020]/60 bg-[#E8A020]/10 text-[#E8A020]', stripe: 'from-[#E8A020]/15', label: 'Client view' }
-        : { badge: 'border-[#9B8FF0]/60 bg-[#9B8FF0]/10 text-[#9B8FF0]', stripe: 'from-[#9B8FF0]/12', label: 'Freelancer view' };
+        ? { badge: 'border-[#E8A020]/60 bg-[#E8A020]/10 text-[#E8A020]', stripe: 'from-[#E8A020]/15', label: tx('contractWorkspace.clientView', {}, 'Client view') }
+        : { badge: 'border-[#9B8FF0]/60 bg-[#9B8FF0]/10 text-[#9B8FF0]', stripe: 'from-[#9B8FF0]/12', label: tx('contractWorkspace.freelancerView', {}, 'Freelancer view') };
 
     const loadWorkspace = useCallback(async () => {
         if (!contractId || !user?.id) return;
@@ -158,9 +172,9 @@ export default function ContractWorkspacePage() {
             }
 
             if (contractError) throw contractError;
-            if (!contractData) { setError('Contract not found or you do not have access.'); return; }
+            if (!contractData) { setError(tx('contractWorkspace.notFound', {}, 'Contract not found or you do not have access.')); return; }
             if (contractData.client_id !== user.id && contractData.freelancer_id !== user.id) {
-                setError('You are not a participant in this contract.'); return;
+                setError(tx('contractWorkspace.notParticipant', {}, 'You are not a participant in this contract.')); return;
             }
 
             setContract(contractData as ContractRow);
@@ -226,7 +240,7 @@ export default function ContractWorkspacePage() {
             }
         } catch (err) {
             console.error('[ContractWorkspacePage] Failed to load:', err);
-            setError('Failed to load contract details. Please try again.');
+            setError(tx('contractWorkspace.loadError', {}, 'Failed to load contract details. Please try again.'));
         } finally {
             setIsLoading(false);
         }
@@ -273,14 +287,101 @@ export default function ContractWorkspacePage() {
         };
     }, [contract, jobTitle, jobDeadline, latestDelivery, sharedFiles, userRole, profile]);
 
+    // Intentionally empty — activity events will be populated by real-time hooks in a future pass
     const activityEvents = useMemo<ContractActivityEvent[]>(() => [], []);
 
+    // ─── Contract action hook ────────────────────────────────────────────────
+    const {
+        deliverWork,
+        acceptWork,
+        requestChanges,
+        openDispute,
+        isDelivering,
+        isAccepting,
+        isDisputing,
+    } = useContractState({
+        contractId: contractId ?? '',
+        userId: user?.id ?? '',
+        userRole,
+    });
+
+    const isActionLoading = isDelivering || isAccepting || isDisputing;
+
+    // ─── Navigation helpers ──────────────────────────────────────────────────
     const handleGoBack = () => { if (window.history.length > 1) navigate(-1); else navigate(ROUTES.messages); };
     const handleGoToMessages = () => {
         if (!contractId) { navigate(ROUTES.messages); return; }
         navigate(`${ROUTES.messages}?contract=${encodeURIComponent(contractId)}`);
     };
-    const redirectToMessages = (message: string) => { showToast(message, 'info'); handleGoToMessages(); };
+
+    // ─── Action handlers (real RPCs) ─────────────────────────────────────────
+    const handleDeliver = () => {
+        setDeliverNote('');
+        setDeliverOpen(true);
+        setTimeout(() => deliverTextareaRef.current?.focus(), 60);
+    };
+
+    const handleSubmitDelivery = async () => {
+        if (!deliverNote.trim()) return;
+        try {
+            await deliverWork(deliverNote.trim());
+            setDeliverOpen(false);
+            setDeliverNote('');
+            await loadWorkspace();
+            showToast(tx('contractWorkspace.deliverySubmitted', {}, 'Delivery submitted! The client will review your work.'), 'success');
+        } catch (err) {
+            showToast((err as Error).message || tx('contractWorkspace.deliveryFailed', {}, 'Failed to submit delivery.'), 'error');
+        }
+    };
+
+    const handleAcceptAndPay = async () => {
+        if (!window.confirm(tx('contractWorkspace.confirmRelease', {}, 'Approve work and release payment to the freelancer? This cannot be undone.'))) return;
+        try {
+            await acceptWork();
+            await loadWorkspace();
+            showToast(tx('contractWorkspace.paymentReleased', {}, 'Payment released! Final files are now unlocked.'), 'success');
+        } catch (err) {
+            showToast((err as Error).message || tx('contractWorkspace.releaseFailed', {}, 'Failed to release payment.'), 'error');
+        }
+    };
+
+    const handleRequestChanges = () => {
+        setChangesNote('');
+        setChangesOpen(true);
+        setTimeout(() => changesTextareaRef.current?.focus(), 60);
+    };
+
+    const handleSubmitChanges = async () => {
+        if (!changesNote.trim()) return;
+        try {
+            await requestChanges(changesNote.trim());
+            setChangesOpen(false);
+            setChangesNote('');
+            await loadWorkspace();
+            showToast(tx('contractWorkspace.revisionRequested', {}, 'Revision requested. The freelancer has been notified.'), 'success');
+        } catch (err) {
+            showToast((err as Error).message || tx('contractWorkspace.revisionFailed', {}, 'Failed to request revision.'), 'error');
+        }
+    };
+
+    const handleOpenDispute = () => {
+        setDisputeReason('');
+        setDisputeOpen(true);
+        setTimeout(() => disputeTextareaRef.current?.focus(), 60);
+    };
+
+    const handleSubmitDispute = async () => {
+        if (!disputeReason.trim()) return;
+        try {
+            await openDispute(disputeReason.trim());
+            setDisputeOpen(false);
+            setDisputeReason('');
+            await loadWorkspace();
+            showToast(tx('contractWorkspace.disputeOpened', {}, 'Dispute opened. Our team will review the case.'), 'info');
+        } catch (err) {
+            showToast((err as Error).message || tx('contractWorkspace.disputeFailed', {}, 'Failed to open dispute.'), 'error');
+        }
+    };
 
     const jobTitle_ = contractSidebarData?.job?.title;
 
@@ -298,7 +399,7 @@ export default function ContractWorkspacePage() {
                 <button type="button" onClick={handleGoBack}
                     className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/[0.07] bg-[#161719] px-3 py-1.5 text-[13px] font-medium text-[#8A8880] transition-colors hover:border-white/[0.12] hover:text-[#F0EFE8]">
                     <ArrowLeft className="h-3.5 w-3.5" />
-                    Back
+                    {tx('common.back', {}, 'Back')}
                 </button>
 
                 <div className="h-3.5 w-px bg-white/[0.08]" />
@@ -306,7 +407,7 @@ export default function ContractWorkspacePage() {
                 <button type="button" onClick={handleGoToMessages}
                     className="inline-flex items-center gap-1.5 text-[13px] text-[#55534F] transition-colors hover:text-[#F0EFE8]">
                     <MessageSquare className="h-3.5 w-3.5" />
-                    Messages
+                    {tx('nav.messages', {}, 'Messages')}
                 </button>
 
                 <div className="flex-1" />
@@ -338,17 +439,17 @@ export default function ContractWorkspacePage() {
                                 <AlertCircle className="h-7 w-7 text-red-400" />
                             </div>
                             <div>
-                                <h2 className="text-[18px] font-semibold text-[#F0EFE8]">Unable to load workspace</h2>
+                                <h2 className="text-[18px] font-semibold text-[#F0EFE8]">{tx('contractWorkspace.unableToLoad', {}, 'Unable to load workspace')}</h2>
                                 <p className="mt-1.5 text-[14px] leading-relaxed text-[#8A8880]">{error}</p>
                             </div>
                             <div className="flex items-center justify-center gap-2">
                                 <button type="button" onClick={() => void loadWorkspace()}
                                     className="inline-flex items-center gap-2 rounded-[10px] bg-[#1D9E75] px-4 py-2.5 text-[14px] font-semibold text-[#F0EFE8] transition-colors hover:bg-[#24b889]">
-                                    Retry
+                                    {tx('common.retry', {}, 'Retry')}
                                 </button>
                                 <button type="button" onClick={handleGoBack}
                                     className="inline-flex items-center gap-2 rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2.5 text-[14px] font-medium text-[#8A8880] transition-colors hover:text-[#F0EFE8]">
-                                    <ArrowLeft className="h-4 w-4" /> Go back
+                                    <ArrowLeft className="h-4 w-4" /> {tx('common.goBack', {}, 'Go back')}
                                 </button>
                             </div>
                         </div>
@@ -361,12 +462,12 @@ export default function ContractWorkspacePage() {
                                 userRole={userRole}
                                 currentStatus={currentStatus}
                                 deliverySubmitted={deliverySubmitted}
-                                isActionLoading={false}
+                                isActionLoading={isActionLoading}
                                 activityEvents={activityEvents}
-                                onDeliver={() => redirectToMessages('Open this contract in Messages to deliver work.')}
-                                onRequestChanges={() => redirectToMessages('Open this contract in Messages to request changes.')}
-                                onAcceptAndPay={() => redirectToMessages('Open this contract in Messages to release payment.')}
-                                onDispute={() => redirectToMessages('Open this contract in Messages to open a dispute.')}
+                                onDeliver={handleDeliver}
+                                onRequestChanges={handleRequestChanges}
+                                onAcceptAndPay={handleAcceptAndPay}
+                                onDispute={handleOpenDispute}
                                 onReview={() => { if (contractId) navigate(`/contracts/${contractId}/review`); }}
                                 hasLeftReview={hasReviewed}
                             />
@@ -374,6 +475,115 @@ export default function ContractWorkspacePage() {
                     </div>
                 ) : null}
             </main>
+
+            {/* ─── Deliver Work Modal ───────────────────────────────────────── */}
+            {deliverOpen ? (
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-deliver-title">
+                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]">
+                        <div className="mb-4 flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#9B8FF0]/15">
+                                <PackageCheck className="h-5 w-5 text-[#9B8FF0]" />
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Submit delivery</p>
+                                <h2 id="modal-deliver-title" className="text-[16px] font-semibold text-[#F0EFE8]">Describe your delivery</h2>
+                            </div>
+                        </div>
+                        <textarea
+                            ref={deliverTextareaRef}
+                            value={deliverNote}
+                            onChange={e => setDeliverNote(e.target.value)}
+                            placeholder="What did you complete? Add any notes for the client (e.g. file locations, version notes, passwords)…"
+                            rows={4}
+                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-[#9B8FF0]/60 focus:outline-none focus:ring-1 focus:ring-[#9B8FF0]/40"
+                        />
+                        <p className="mt-2 text-[12px] text-[#55534F]">Review files and final source files must be uploaded from the Messages thread. This note is sent alongside them.</p>
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button type="button" onClick={() => setDeliverOpen(false)} disabled={isDelivering}
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
+                                Cancel
+                            </button>
+                            <button type="button" onClick={() => void handleSubmitDelivery()} disabled={isDelivering || !deliverNote.trim()}
+                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#9B8FF0] px-4 py-2 text-[14px] font-semibold text-[#0D0D0E] transition-colors hover:bg-[#a99cf5] disabled:opacity-50">
+                                {isDelivering ? 'Submitting…' : 'Submit delivery'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {/* ─── Request Changes Modal ────────────────────────────────────── */}
+            {changesOpen ? (
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-changes-title">
+                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]">
+                        <div className="mb-4 flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#E8A020]/15">
+                                <GitPullRequest className="h-5 w-5 text-[#E8A020]" />
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Request revision</p>
+                                <h2 id="modal-changes-title" className="text-[16px] font-semibold text-[#F0EFE8]">What needs to change?</h2>
+                            </div>
+                        </div>
+                        <textarea
+                            ref={changesTextareaRef}
+                            value={changesNote}
+                            onChange={e => setChangesNote(e.target.value)}
+                            placeholder="Be specific — describe exactly what needs to be revised so the freelancer can act immediately…"
+                            rows={4}
+                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-[#E8A020]/60 focus:outline-none focus:ring-1 focus:ring-[#E8A020]/40"
+                        />
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button type="button" onClick={() => setChangesOpen(false)}
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8]">
+                                Cancel
+                            </button>
+                            <button type="button" onClick={() => void handleSubmitChanges()} disabled={!changesNote.trim()}
+                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#E8A020] px-4 py-2 text-[14px] font-semibold text-[#0D0D0E] transition-colors hover:bg-[#f0aa28] disabled:opacity-50">
+                                Send revision request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {/* ─── Open Dispute Modal ───────────────────────────────────────── */}
+            {disputeOpen ? (
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-dispute-title">
+                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]">
+                        <div className="mb-4 flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-red-500/15">
+                                <ShieldAlert className="h-5 w-5 text-red-400" />
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Open dispute</p>
+                                <h2 id="modal-dispute-title" className="text-[16px] font-semibold text-[#F0EFE8]">Describe the issue</h2>
+                            </div>
+                        </div>
+                        <div className="mb-4 rounded-[10px] border border-red-500/20 bg-red-500/10 px-4 py-3">
+                            <p className="text-[13px] leading-relaxed text-red-300">Opening a dispute freezes the contract and notifies our team. All messaging is locked while the case is reviewed. Use this only if revision requests have failed.</p>
+                        </div>
+                        <textarea
+                            ref={disputeTextareaRef}
+                            value={disputeReason}
+                            onChange={e => setDisputeReason(e.target.value)}
+                            placeholder="Explain clearly what went wrong, what you expected, and what you received…"
+                            rows={4}
+                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-red-500/60 focus:outline-none focus:ring-1 focus:ring-red-500/40"
+                        />
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button type="button" onClick={() => setDisputeOpen(false)} disabled={isDisputing}
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
+                                Cancel
+                            </button>
+                            <button type="button" onClick={() => void handleSubmitDispute()} disabled={isDisputing || !disputeReason.trim()}
+                                className="inline-flex items-center gap-2 rounded-[10px] border border-red-500/40 bg-red-900/60 px-4 py-2 text-[14px] font-semibold text-red-200 transition-colors hover:bg-red-900 disabled:opacity-50">
+                                {isDisputing ? 'Opening dispute…' : 'Open dispute'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 }

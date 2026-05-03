@@ -1,4 +1,4 @@
-﻿import { CheckCircle2, Clock3, ExternalLink, Trash2 } from "lucide-react";
+import { CheckCircle2, Clock3, ExternalLink, Trash2 } from "lucide-react";
 import { PaymentLogo, type PaymentProviderId } from "./PaymentLogo";
 
 export type PaymentMethodStatus = "live" | "soon" | "default";
@@ -200,7 +200,12 @@ export function PaymentMethodCard({
           {onDelete && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`Remove ${name}? This action cannot be undone.`)) {
+                  onDelete();
+                }
+              }}
               className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-[var(--color-bg-muted)] text-[var(--color-text-tertiary)] transition hover:border-red-400/50 hover:text-red-400"
               aria-label={`Remove ${name}`}
             >

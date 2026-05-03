@@ -1,6 +1,6 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { m } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 import Button from './Button';
 
 interface EmptyStateProps {
@@ -32,6 +32,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     illustration,
     className = ''
 }) => {
+    const prefersReducedMotion = useReducedMotion();
     const isError = variant === 'error';
     const primaryColor = isError ? 'var(--color-status-error)' : 'var(--workspace-primary)';
     const bgColor = isError ? 'var(--color-status-error-bg)' : 'var(--workspace-primary-light)';
@@ -51,8 +52,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                 <div className="mb-8">{illustration}</div>
             ) : (
                 <m.div
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    animate={prefersReducedMotion ? {} : { y: [0, -6, 0] }}
+                    transition={prefersReducedMotion ? {} : { duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                     className="relative mb-8"
                 >
                     <div

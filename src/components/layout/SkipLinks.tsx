@@ -14,8 +14,8 @@ export default function SkipLinks() {
     // (though focus usually resets anyway)
 
     const links = [
-        { id: 'main-content', label: 'تخطى إلى المحتوى الرئيسي' },
-        { id: 'main-nav', label: 'تخطى إلى القائمة الرئيسية' },
+        { id: 'main-content', label: 'Skip to main content' },
+        { id: 'main-nav', label: 'Skip to navigation' },
     ];
 
     return (

@@ -43,7 +43,9 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, CombinedInputPr
             transition-all duration-150
             placeholder:text-[var(--color-text-tertiary)]
             focus:outline-none
-            focus:ring-1 focus:ring-[var(--workspace-primary)]/40
+            focus-visible:ring-2
+            focus-visible:ring-[var(--workspace-primary)]
+            focus-visible:ring-offset-2
             ${error
                 ? 'border-[var(--color-status-error)] focus:border-[var(--color-status-error)] focus:ring-[var(--color-status-error)]/20'
                 : success

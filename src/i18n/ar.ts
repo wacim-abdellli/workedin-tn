@@ -1625,13 +1625,14 @@ export const ar = {
             "noMessagesYet": "لا توجد رسائل بعد",
             "emptyThread": "لا توجد رسائل بعد. ابدأ المحادثة!",
             "messagePlaceholder": "اكتب رسالتك...",
-            "selectConversationTitle": "اختر محادثة",
-            "selectConversationDescription": "اختر محادثة من القائمة للبدء في المراسلة",
+            "selectConversationTitle": "رسائلك",
+            "selectConversationDescription": "اختر محادثة من الشريط الجانبي للبدء في المراسلة، أو انتظر حتى يتواصل معك أحد.",
             "selectConversationDetails": "اختر محادثة لعرض التفاصيل",
             "profileAction": "الملف الشخصي",
             "contractsAction": "العقود",
             "directContext": "محادثة مباشرة",
             "contractContext": "محادثة العقد",
+            "directChat": "محادثة مباشرة",
             "openContract": "فتح العقد",
             "archiveConversation": "أرشفة المحادثة",
             "deleteConversation": "حذف المحادثة",
@@ -1640,9 +1641,17 @@ export const ar = {
             "recordVoice": "تسجيل مقطع صوتي",
             "recording": "جاري التسجيل...",
             "voiceMemo": "مقطع صوتي",
-            "userFallback": "user",
+            "attachmentLabel": "مرفق",
+            "userFallback": "مستخدم",
             "loadingConversations": "جاري تحميل المحادثات...",
             "loadingMessages": "جاري تحميل الرسائل...",
+            "clientInboxLabel": "صندوق العميل",
+            "freelancerInboxLabel": "صندوق المستقل",
+            "allConversationsLabel": "جميع المحادثات",
+            "archivedLabel": "المؤرشفة",
+            "backToInbox": "العودة للصندوق",
+            "viewArchived": "المحادثات المؤرشفة",
+            "contractWorkspaceTitle": "مساحة عمل العقد",
             "typingIndicator": {
                 "singular": "يكتب...",
                 "plural": "أشخاص يكتبون..."
@@ -1655,12 +1664,27 @@ export const ar = {
                 "noMatchingTitle": "لا توجد محادثات مطابقة",
                 "noMatchingDescription": "جرب البحث باسم مختلف أو امسح البحث.",
                 "noConversationsTitle": "لا توجد محادثات بعد",
-                "noConversationsDescription": "ابدأ بإرسال عرض أو التواصل مع مستقل."
+                "noConversationsDescription": "ابدأ بإرسال عرض أو التواصل مع مستقل.",
+                "noArchivedTitle": "لا توجد محادثات مؤرشفة"
             },
             "errors": {
                 "audioUpload": "فشل رفع المقطع الصوتي",
                 "fileUpload": "فشل رفع الملف",
-                "fileTooLarge": "حجم الملف يجب أن يكون أقل من 10 ميغابايت"
+                "fileTooLarge": "حجم الملف يجب أن يكون أقل من 10 ميغابايت",
+                "invalidAttachment": "رابط المرفق غير متاح",
+                "openAttachment": "فشل فتح المرفق حالياً",
+                "recordingLimit": "تم الوصول لحد التسجيل (5 دقائق)",
+                "sendFailed": "فشل إرسال الرسالة",
+                "fileUnsupported": "نوع الملف غير مدعوم",
+                "fileInspectionFailed": "تعذر التحقق من هذا الملف بأمان. يرجى اختيار ملف آخر."
+            },
+            "offline": {
+                "synced": "تم مزامنة الرسائل غير المتصلة بنجاح",
+                "fileTooLarge": "الملف كبير جداً للتخزين غير المتصل (الحد الأقصى 5 ميغابايت)",
+                "audioTooLarge": "المقطع الصوتي كبير جداً للتخزين غير المتصل",
+                "encodingFailed": "فشل تحضير الملف للتخزين غير المتصل",
+                "storageFailed": "فشل حفظ الرسالة غير المتصلة",
+                "queued": "أنت غير متصل. تم وضع الرسالة في قائمة الانتظار وسيتم إرسالها عند الاتصال."
             },
             "time": {
                 "now": "الآن",
@@ -1685,7 +1709,21 @@ export const ar = {
             "contractReferenceFallback": "العقد",
             "contractReferenceWithId": "العقد #{{id}}",
             "contractWithName": "عقد مع {{name}}",
-            "contractProjectWithTitle": "مشروع العقد • {{title}}"
+            "contractProjectWithTitle": "مشروع العقد • {{title}}",
+            "seeLess": "عرض أقل",
+            "seeMore": "عرض المزيد",
+            "contractDetails": {
+                "amount": "المبلغ",
+                "due": "الموعد",
+                "review": "المراجعة",
+                "workspace": "مساحة العمل"
+            },
+            "delivery": {
+                "reviewFiles": "ملفات المراجعة",
+                "reviewFilesDescription": "الملفات التي يمكن للعميل مراجعتها فوراً قبل القبول.",
+                "finalLockedFiles": "الملفات النهائية المقفلة",
+                "finalLockedFilesDescription": "الملفات التي تبقى مقفلة حتى يقبل العميل ويتم تحرير الدفع."
+            }
         },
         "freelancerProfile": {
             "actions": {
@@ -3884,6 +3922,26 @@ export const ar = {
         "error": "خطأ",
         "warning": "تنبيه",
         "info": "معلومة"
+    },
+    "common": {
+        "back": "رجوع",
+        "goBack": "العودة",
+        "retry": "إعادة المحاولة",
+        "loading": "جاري التحميل...",
+        "error": "خطأ",
+        "success": "نجاح"
+    },
+    "contractWorkspace": {
+        "clientView": "عرض العميل",
+        "freelancerView": "عرض المستقل",
+        "notFound": "العقد غير موجود أو ليس لديك صلاحية الوصول.",
+        "notParticipant": "أنت لست مشاركاً في هذا العقد.",
+        "loadError": "فشل تحميل تفاصيل العقد. يرجى المحاولة مرة أخرى.",
+        "unableToLoad": "تعذر تحميل مساحة العمل",
+        "openToDeliver": "افتح هذا العقد في الرسائل لتسليم العمل.",
+        "openToRequestChanges": "افتح هذا العقد في الرسائل لطلب تعديلات.",
+        "openToReleasePay": "افتح هذا العقد في الرسائل لتحرير الدفع.",
+        "openToDispute": "افتح هذا العقد في الرسائل لفتح نزاع."
     }
 };
 

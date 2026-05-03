@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import {
     AlertCircle,
     CalendarDays,
@@ -16,10 +16,30 @@ import {
     MoreHorizontal,
     PackageCheck,
     ShieldAlert,
+    Shield,
     Star,
     User,
     Wallet,
+    Timer,
 } from 'lucide-react';
+
+// ── Countdown hook ───────────────────────────────────────────────────────────
+function useCountdown(targetIso: string | null | undefined) {
+    const calc = useCallback(() => {
+        if (!targetIso) return null;
+        const diff = new Date(targetIso).getTime() - Date.now();
+        if (diff <= 0) return { days: 0, hours: 0, minutes: 0, expired: true };
+        const totalMin = Math.floor(diff / 60000);
+        return { days: Math.floor(totalMin / 1440), hours: Math.floor((totalMin % 1440) / 60), minutes: totalMin % 60, expired: false };
+    }, [targetIso]);
+    const [tick, setTick] = useState(calc);
+    useEffect(() => {
+        if (!targetIso) return;
+        const id = setInterval(() => setTick(calc()), 60000);
+        return () => clearInterval(id);
+    }, [targetIso, calc]);
+    return tick;
+}
 
 interface ContractMilestone {
     id?: string | null;
@@ -113,6 +133,7 @@ interface WorkspaceModel {
     revLeft: number;
     revMax: number;
     revUsed: number;
+    isEscrowFunded: boolean;
     showFreelancerDeliver: boolean;
     showClientReview: boolean;
     showReviewConfirmation: boolean;
@@ -171,6 +192,7 @@ const roleTheme = (role: 'client' | 'freelancer') => role === 'client'
         primaryBtn: 'bg-[#E8A020] hover:bg-[#f0aa28] text-[#0D0D0E]',
         focusRingColor: 'focus-visible:ring-[#E8A020]',
         tabAccent: 'bg-[#E8A020]',
+        tabActiveBg: 'bg-[#E8A020]/15',
     }
     : {
         accent: '#9B8FF0',        // soft violet
@@ -184,6 +206,7 @@ const roleTheme = (role: 'client' | 'freelancer') => role === 'client'
         primaryBtn: 'bg-[#9B8FF0] hover:bg-[#a99cf5] text-[#0D0D0E]',
         focusRingColor: 'focus-visible:ring-[#9B8FF0]',
         tabAccent: 'bg-[#9B8FF0]',
+        tabActiveBg: 'bg-[#9B8FF0]/15',
     };
 
 const resolveStatus = (status: string) => {
@@ -240,6 +263,7 @@ export default function ContractDetailsSidebar({
         const isRevision = st === 'revision_requested';
         const isPendingPayment = st === 'pending_payment';
         const isCompleted = st === 'completed';
+        const isEscrowFunded = Boolean(contract.fundedAt);
         const showFreelancerDeliver = userRole === 'freelancer' && (isActive || isRevision) && !deliverySubmitted;
         const showClientReview = userRole === 'client' && isUnderReview && deliverySubmitted;
         const showLeaveReview = isCompleted && !hasLeftReview;
@@ -248,55 +272,94 @@ export default function ContractDetailsSidebar({
         const otherParty = userRole === 'client' ? contract.freelancer : contract.client;
 
         const nextMove = (() => {
+            // ── ESCROW GATE (pending_payment) ────────────────────────────────
+            if (isPendingPayment) {
+                if (userRole === 'client' && !isEscrowFunded) {
+                    return {
+                        icon: <Wallet className="h-5 w-5" />,
+                        title: 'Fund escrow to start',
+                        body: `Secure ${fmtAmount(contract.amount)} in escrow. The freelancer will be notified and work begins immediately. Funds are only released when you approve the final delivery.`,
+                        primaryLabel: 'Fund escrow',
+                        tone: 'border-l-[1.5px] border-l-[#E8A020] border-[rgba(255,255,255,0.07)] bg-[#3D2A00]/50 text-[#F0EFE8]',
+                    };
+                }
+                if (userRole === 'freelancer' && !isEscrowFunded) {
+                    return {
+                        icon: <Lock className="h-5 w-5" />,
+                        title: 'Waiting for escrow',
+                        body: 'The client needs to secure funds before you begin. You will be notified the moment escrow is funded and work can start.',
+                        primaryLabel: null,
+                        tone: 'border-l-[1.5px] border-l-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]',
+                    };
+                }
+                // Funded but contract not yet active
+                return {
+                    icon: <CheckCircle className="h-5 w-5" />,
+                    title: userRole === 'freelancer' ? 'Escrow funded — start working' : 'Escrow funded',
+                    body: userRole === 'freelancer'
+                        ? `${fmtAmount(contract.amount)} is secured. Deliver your work when ready and submit for payment.`
+                        : 'Funds are secured. The freelancer has been notified and work is underway.',
+                    primaryLabel: userRole === 'freelancer' ? 'Submit delivery' : null,
+                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[rgba(255,255,255,0.07)] bg-[#0F6E56]/35 text-[#F0EFE8]',
+                };
+            }
+            // ── FREELANCER DELIVER ───────────────────────────────────────────
             if (showFreelancerDeliver) {
                 return {
                     icon: <PackageCheck className="h-5 w-5" />,
                     title: isRevision ? 'Submit revised delivery' : 'Submit delivery',
-                    body: 'Attach review files and protected final files. Final assets stay locked until acceptance.',
-                    primaryLabel: 'Submit delivery',
+                    body: 'Attach review files and protected final files. Final assets stay locked until the client approves and releases payment.',
+                    primaryLabel: isRevision ? 'Resubmit delivery' : 'Submit delivery',
                     tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[rgba(255,255,255,0.07)] bg-[#0F6E56]/35 text-[#F0EFE8]',
                 };
             }
+            // ── CLIENT REVIEW (delivery_submitted) ──────────────────────────
             if (showClientReview) {
                 return {
                     icon: <FileCheck2 className="h-5 w-5" />,
                     title: 'Review submitted work',
-                    body: 'Inspect review assets, then approve, request revision, or dispute before releasing payment.',
+                    body: 'Inspect review assets, then approve to release payment and unlock final files, request a revision, or open a dispute.',
                     primaryLabel: 'Approve & release',
                     tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[rgba(255,255,255,0.07)] bg-[#0F6E56]/35 text-[#F0EFE8]',
                 };
             }
-            if (showLeaveReview) {
-                return {
-                    icon: <Star className="h-5 w-5" />,
-                    title: 'Leave a review',
-                    body: 'The contract is complete. Add a rating to close the trust loop.',
-                    primaryLabel: 'Leave review',
-                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[rgba(255,255,255,0.07)] bg-[#0F6E56]/35 text-[#F0EFE8]',
-                };
-            }
-            if (isCompleted) {
-                return {
-                    icon: <CheckCircle className="h-5 w-5" />,
-                    title: 'Contract closed',
-                    body: 'Payment was released and the thread is read-only. This workspace is now a record.',
-                    primaryLabel: null,
-                    tone: 'border-l-[1.5px] border-l-[#7F77DD] border-[rgba(255,255,255,0.07)] bg-[#3C3489]/35 text-[#F0EFE8]',
-                };
-            }
+            // ── FREELANCER WAITING FOR REVIEW ────────────────────────────────
             if (userRole === 'freelancer' && isUnderReview) {
                 return {
-                    icon: <Clock className="h-5 w-5" />,
-                    title: 'Waiting for client review',
-                    body: `Final files remain protected. Review due: ${fmtDate(contract.reviewDueAt, 'Not set')}.`,
+                    icon: <Timer className="h-5 w-5" />,
+                    title: 'Awaiting client review',
+                    body: contract.reviewDueAt
+                        ? `Your funds are protected. If the client takes no action, payment auto-releases on ${fmtDate(contract.reviewDueAt)}.`
+                        : 'Final files remain locked and protected until the client approves.',
                     primaryLabel: null,
                     tone: 'border-l-[1.5px] border-l-[#BA7517] border-[rgba(255,255,255,0.07)] bg-[#633806]/35 text-[#F0EFE8]',
                 };
             }
+            // ── LEAVE REVIEW ─────────────────────────────────────────────────
+            if (showLeaveReview) {
+                return {
+                    icon: <Star className="h-5 w-5" />,
+                    title: 'Leave a review',
+                    body: 'The contract is complete. Add a rating to build trust and close the loop.',
+                    primaryLabel: 'Leave review',
+                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[rgba(255,255,255,0.07)] bg-[#0F6E56]/35 text-[#F0EFE8]',
+                };
+            }
+            // ── COMPLETED ────────────────────────────────────────────────────
+            if (isCompleted) {
+                return {
+                    icon: <CheckCircle className="h-5 w-5" />,
+                    title: 'Contract closed',
+                    body: 'Payment was released and final files are now available. This workspace is a permanent record.',
+                    primaryLabel: null,
+                    tone: 'border-l-[1.5px] border-l-[#7F77DD] border-[rgba(255,255,255,0.07)] bg-[#3C3489]/35 text-[#F0EFE8]',
+                };
+            }
+            // ── ACTIVE / FALLBACK ─────────────────────────────────────────────
             return {
                 icon: <Clock className="h-5 w-5" />,
-                title: isPendingPayment ? 'Payment pending' : 'No action required',
-                body: isPendingPayment ? 'Funding must be confirmed before work begins.' : 'Keep the conversation open while work continues.',
+                title: 'Work in progress',
+                body: 'Keep the conversation open while work continues.',
                 primaryLabel: null,
                 tone: 'border-l-[1.5px] border-l-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]',
             };
@@ -315,6 +378,7 @@ export default function ContractDetailsSidebar({
             revLeft,
             revMax,
             revUsed,
+            isEscrowFunded,
             showFreelancerDeliver,
             showClientReview,
             showReviewConfirmation,
@@ -377,53 +441,59 @@ export default function ContractDetailsSidebar({
             {/* Role-colored top stripe */}
             <div className={`h-[3px] w-full bg-gradient-to-r ${rt.headerStripe}`} />
 
-            <header className="sticky top-0 z-30 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/96 px-5 py-3.5 backdrop-blur-xl">
-                <div className="flex items-center justify-between gap-3">
-                    {/* Left: avatar + title + status */}
-                    <div className="flex min-w-0 items-center gap-3">
-                        <div className="relative shrink-0">
-                            <PartyAvatar party={model.otherParty} size="lg" />
-                            {/* Online dot as role indicator */}
-                            <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#0D0D0E] ${rt.accentBg}`} />
+            {/* ── Premium header ── */}
+            <header className="sticky top-0 z-30 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/96 backdrop-blur-xl">
+                {/* Main header row */}
+                <div className="flex items-start gap-4 px-6 pb-4 pt-5">
+                    {/* Avatar */}
+                    <div className="relative shrink-0">
+                        <PartyAvatar party={model.otherParty} size="lg" />
+                        <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#0D0D0E] ${rt.accentBg}`} />
+                    </div>
+
+                    {/* Title block */}
+                    <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <h2 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-[#F0EFE8]">
+                                {contract.job?.title || 'Untitled contract'}
+                            </h2>
+                            <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide ${model.status.tone}`}>
+                                {model.status.icon}{model.status.label}
+                            </span>
                         </div>
-                        <div className="min-w-0">
-                            <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                <h2 className="truncate text-[16px] font-semibold tracking-[-0.02em] text-[#F0EFE8]">
-                                    {contract.job?.title || 'Untitled contract'}
-                                </h2>
-                                <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide ${model.status.tone}`}>
-                                    {model.status.icon}{model.status.label}
-                                </span>
-                            </div>
-                            <div className="mt-0.5 flex items-center gap-2">
-                                <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${rt.roleBadge}`}>
-                                    {rt.roleLabel}
-                                </span>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${rt.roleBadge}`}>
+                                {rt.roleLabel}
+                            </span>
+                            <span className="text-[12px] text-[#55534F]">
+                                with {model.otherParty?.full_name || 'counterparty'}
+                            </span>
+                            {contract.job?.deadline ? (
                                 <span className="text-[12px] text-[#55534F]">
-                                    with {model.otherParty?.full_name || 'counterparty'}
+                                    Due {fmtDate(contract.job.deadline)}
                                 </span>
-                            </div>
+                            ) : null}
                         </div>
                     </div>
 
-                    {/* Right: amount chip + date chip */}
-                    <div className="flex shrink-0 items-center gap-2">
-                        <div className="hidden flex-col items-end sm:flex">
-                            <span className={`text-[18px] font-bold tracking-[-0.02em] ${rt.accentText}`}>
-                                {fmtAmount(contract.amount)}
-                            </span>
-                            <span className="text-[11px] text-[#55534F]">
-                                {fmtDate(contract.job?.deadline, 'No deadline')}
+                    {/* Amount block — prominent right side */}
+                    <div className="hidden shrink-0 flex-col items-end sm:flex">
+                        <span className={`text-[22px] font-bold tracking-[-0.03em] ${rt.accentText}`}>
+                            {fmtAmount(contract.amount)}
+                        </span>
+                        <div className="mt-1 flex items-center gap-1.5">
+                            <Shield className="h-3 w-3 text-[#1D9E75]" />
+                            <span className="text-[11px] text-[#1D9E75]">
+                                {model.isEscrowFunded ? 'In escrow' : 'Pending escrow'}
                             </span>
                         </div>
-                        <InfoChip icon={<Wallet className="h-3.5 w-3.5" />} label={fmtAmount(contract.amount)} className="sm:hidden" />
                     </div>
                 </div>
             </header>
 
-            {/* Tab bar */}
-            <nav className="sticky top-[68px] z-20 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/95 px-5 backdrop-blur-xl">
-                <div className="flex h-10 items-end gap-6 overflow-x-auto" role="tablist" aria-label="Contract workspace sections">
+            {/* ── Tab bar ── */}
+            <nav className="sticky top-[102px] z-20 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/95 px-6 backdrop-blur-xl">
+                <div className="flex h-11 items-center gap-1 overflow-x-auto" role="tablist" aria-label="Contract workspace sections">
                     {tabs.map((tab, index) => (
                         <button
                             key={tab.id}
@@ -434,15 +504,14 @@ export default function ContractDetailsSidebar({
                             aria-controls={`contract-workspace-panel-${tab.id}`}
                             onClick={() => setActiveTab(tab.id)}
                             onKeyDown={(event) => handleTabKeyDown(event, index)}
-                            className={`relative flex h-10 shrink-0 items-center gap-1.5 text-[13px] font-medium transition-colors duration-100 ${focusRing} ${rt.focusRingColor} ${
-                                activeTab === tab.id ? 'text-[#F0EFE8]' : 'text-[#55534F] hover:text-[#8A8880]'
+                            className={`relative flex h-7 shrink-0 items-center gap-1.5 rounded-[7px] px-3 text-[13px] font-medium transition-colors duration-100 ${focusRing} ${rt.focusRingColor} ${
+                                activeTab === tab.id
+                                    ? `${rt.tabActiveBg} ${rt.accentText}`
+                                    : 'text-[#55534F] hover:bg-white/5 hover:text-[#8A8880]'
                             }`}
                         >
                             {tab.icon}
                             <span>{tab.label}</span>
-                            {activeTab === tab.id
-                                ? <span className={`absolute bottom-0 left-0 h-[2px] w-full rounded-full ${rt.tabAccent}`} />
-                                : null}
                         </button>
                     ))}
                 </div>
@@ -463,9 +532,6 @@ export default function ContractDetailsSidebar({
                             <ContractPulse model={model} rt={rt} />
                             <NextMoveCard model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onReview={onReview} setActiveTab={setActiveTab} />
                         </section>
-                        {!model.showReviewConfirmation
-                            ? <ActionDeck model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onReview={onReview} />
-                            : null}
                     </div>
                 ) : null}
                 {activeTab === 'files' ? <FilesTab model={model} fileFilter={fileFilter} setFileFilter={setFileFilter} userRole={userRole} onPreviewFile={openPreview} onDeliver={onDeliver} rt={rt} /> : null}
@@ -568,11 +634,16 @@ function ContractPulse({ model, rt }: { model: WorkspaceModel; rt: RoleTheme }) 
     );
 }
 
-function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, onReview, setActiveTab }: ActionProps & { setActiveTab: (tab: WorkspaceTab) => void }) {
-    const action = model.showFreelancerDeliver ? onDeliver
+function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, onRequestChanges, onDispute, onReview, setActiveTab }: ActionProps & { setActiveTab: (tab: WorkspaceTab) => void }) {
+    // Which primary action fires when the primary button is clicked
+    const isPendingEscrow = model.st === 'pending_payment' && !model.isEscrowFunded && model.nextMove.primaryLabel === 'Fund escrow';
+    const action = isPendingEscrow ? undefined
+        : model.showFreelancerDeliver || (model.st === 'pending_payment' && model.isEscrowFunded && model.nextMove.primaryLabel) ? onDeliver
         : model.showClientReview ? onAcceptAndPay
         : model.showLeaveReview ? onReview
         : null;
+
+    const showSecondaryActions = model.showClientReview;
 
     return (
         <section className={`rounded-[10px] border px-4 py-4 ${model.nextMove.tone}`}>
@@ -586,13 +657,53 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
                     <p className="mt-1 text-[13px] leading-relaxed text-[#8A8880]">{model.nextMove.body}</p>
                 </div>
             </div>
+
+            {/* ── Escrow funded indicator ── */}
+            {model.st === 'pending_payment' && model.isEscrowFunded ? (
+                <div className="mt-3 flex items-center gap-2 rounded-[8px] border border-[#1D9E75]/30 bg-[#0F6E56]/20 px-3 py-2">
+                    <CheckCircle className="h-3.5 w-3.5 shrink-0 text-[#1D9E75]" />
+                    <span className="text-[12px] font-medium text-[#1D9E75]">Escrow funded — funds secured by platform</span>
+                </div>
+            ) : null}
+
+            {/* ── Escrow unfunded warning for client ── */}
+            {isPendingEscrow ? (
+                <div className="mt-3 flex items-center gap-2 rounded-[8px] border border-[#E8A020]/30 bg-[#3D2A00]/40 px-3 py-2">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[#E8A020]" />
+                    <span className="text-[12px] font-medium text-[#E8A020]">No work begins until escrow is funded</span>
+                </div>
+            ) : null}
+
             <div className="mt-4 flex flex-wrap items-center gap-2">
+                {/* Primary CTA */}
                 {action && model.nextMove.primaryLabel ? (
                     <button type="button" onClick={action} disabled={Boolean(isActionLoading)}
                         className={`rounded-[10px] px-4 py-2 text-[14px] font-semibold transition-colors disabled:opacity-60 ${rt.primaryBtn} ${focusRing} ${rt.focusRingColor}`}>
-                        {model.nextMove.primaryLabel}
+                        {isActionLoading ? 'Processing…' : model.nextMove.primaryLabel}
+                    </button>
+                ) : isPendingEscrow ? (
+                    <button type="button" disabled title="Payment integration required"
+                        className={`rounded-[10px] px-4 py-2 text-[14px] font-semibold opacity-60 cursor-not-allowed ${rt.primaryBtn}`}>
+                        Fund escrow
                     </button>
                 ) : null}
+
+                {/* Secondary: Request revision (client review state only) */}
+                {showSecondaryActions ? (
+                    <GhostButton
+                        onClick={onRequestChanges}
+                        disabled={isActionLoading || model.revLeft <= 0}
+                        icon={<GitPullRequest className="h-4 w-4" />}
+                        label={model.revLeft <= 0 ? 'Revision limit reached' : `Request revision (${model.revLeft} left)`}
+                    />
+                ) : null}
+
+                {/* Dispute — shown for client review + active */}
+                {model.canDispute ? (
+                    <DangerButton onClick={onDispute} disabled={Boolean(isActionLoading)} icon={<ShieldAlert className="h-4 w-4" />} label="Open dispute" />
+                ) : null}
+
+                {/* View history — always available */}
                 <button type="button" onClick={() => setActiveTab('activity')}
                     className={`rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[13px] font-medium text-[#8A8880] transition-colors hover:text-[#F0EFE8] ${focusRing} ${rt.focusRingColor}`}>
                     View history
@@ -671,29 +782,100 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
 }
 
 function MilestonesTab({ model, rt, userRole }: { model: WorkspaceModel; rt: RoleTheme; userRole: 'client' | 'freelancer' }) {
+    // Escrow lifecycle phases — always shown even with 0 DB milestones
+    const escrowPhases = [
+        {
+            key: 'funded',
+            label: 'Escrow Funded',
+            sub: 'Client secures funds',
+            done: model.isEscrowFunded || ['active', 'delivery_submitted', 'revision_requested', 'completed'].includes(model.st),
+        },
+        {
+            key: 'active',
+            label: 'Work in Progress',
+            sub: 'Freelancer working',
+            done: ['active', 'delivery_submitted', 'revision_requested', 'completed'].includes(model.st),
+        },
+        {
+            key: 'submitted',
+            label: 'Delivery Submitted',
+            sub: 'Work sent for review',
+            done: ['delivery_submitted', 'revision_requested', 'completed'].includes(model.st) || Boolean(model.st === 'revision_requested'),
+        },
+        {
+            key: 'approved',
+            label: 'Client Approved',
+            sub: 'Review accepted',
+            done: model.st === 'completed',
+        },
+        {
+            key: 'released',
+            label: 'Payment Released',
+            sub: 'Funds sent to freelancer',
+            done: model.st === 'completed',
+        },
+    ];
+
     return (
         <section className={`${surface} ${surfaceHover} px-4 py-[14px]`}>
             <div className="flex items-center justify-between gap-3">
                 <div>
                     <p className={labelClass}>Milestones</p>
-                    <h3 className="mt-1 text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">{model.completedMilestones}/{model.milestones.length} completed</h3>
+                    <h3 className="mt-1 text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">Escrow lifecycle</h3>
                 </div>
-                {userRole === 'freelancer' && model.milestones.length === 0 ? (
-                    <button type="button" disabled className={`rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[13px] font-medium text-[#55534F] ${focusRing}`}>+ Add milestone</button>
-                ) : null}
             </div>
 
-            {model.milestones.length === 0 ? (
-                <div className="mt-4">
-                    <CompactEmpty icon={<GitPullRequest className="h-4 w-4" />} title="No milestones defined" text="This contract is tracked through delivery, review, payment, and activity events." />
+            {/* Escrow timeline */}
+            <div className="mt-5 overflow-x-auto pb-2">
+                <div className="relative flex min-w-max gap-0 px-1">
+                    {/* Connecting line */}
+                    <div className="absolute left-5 right-5 top-4 h-px bg-white/10" />
+                    <div
+                        className={`absolute left-5 top-4 h-px transition-all duration-700 ${rt.accentBg}`}
+                        style={{ width: `calc(${(escrowPhases.filter(p => p.done).length / (escrowPhases.length - 1)) * 100}% - 2.5rem)` }}
+                    />
+                    {escrowPhases.map((phase, idx) => (
+                        <div key={phase.key} className={`relative flex w-36 shrink-0 flex-col items-center gap-2 pt-0 ${
+                            idx === 0 ? 'items-start' : idx === escrowPhases.length - 1 ? 'items-end' : 'items-center'
+                        }`}>
+                            <div className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 ${
+                                phase.done
+                                    ? `${rt.accentBg} border-transparent text-[#0D0D0E]`
+                                    : model.st !== 'completed' && escrowPhases[idx - 1]?.done
+                                    ? `border-[${rt.accent}] bg-transparent text-[${rt.accent}]`
+                                    : 'border-white/10 bg-[var(--color-bg-elevated)] text-[#55534F]'
+                            }`}>
+                                {phase.done
+                                    ? <CheckCircle className="h-4 w-4" />
+                                    : <span className="text-[11px] font-bold">{idx + 1}</span>
+                                }
+                            </div>
+                            <div className={`text-center ${
+                                idx === 0 ? 'text-left' : idx === escrowPhases.length - 1 ? 'text-right' : 'text-center'
+                            }`}>
+                                <p className={`text-[12px] font-semibold ${
+                                    phase.done ? 'text-[#F0EFE8]' : 'text-[#55534F]'
+                                }`}>{phase.label}</p>
+                                <p className="mt-0.5 text-[11px] text-[#55534F]">{phase.sub}</p>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            ) : (
+            </div>
+
+            {/* DB milestones (if any) */}
+            {model.milestones.length > 0 ? (
                 <div className="mt-6 overflow-x-auto pb-2">
+                    <p className={`mb-3 ${labelClass}`}>Contract milestones ({model.completedMilestones}/{model.milestones.length} done)</p>
                     <div className="relative flex min-w-max gap-5 px-1">
                         <div className="absolute left-5 right-5 top-5 h-px bg-white/10" />
                         <div className={`absolute left-5 top-5 h-px ${rt.accentBg}`} style={{ width: `calc(${model.progressPct}% - 2.5rem)` }} />
                         {model.milestones.map((milestone, index) => <TimelineMilestone key={milestone.id || index} milestone={milestone} index={index} rt={rt} />)}
                     </div>
+                </div>
+            ) : (
+                <div className="mt-4">
+                    <CompactEmpty icon={<GitPullRequest className="h-4 w-4" />} title="No custom milestones" text="This contract uses the standard escrow lifecycle above." />
                 </div>
             )}
         </section>

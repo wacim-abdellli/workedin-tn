@@ -3,6 +3,7 @@ import { Header, Footer } from '../components/layout';
 import { supabaseAnon } from '../lib/supabase';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import RevealOnScroll from '../components/ui/RevealOnScroll';
+import { useTranslation } from '../i18n';
 
 import HeroSection from '../components/home/HeroSection';
 
@@ -14,6 +15,7 @@ const TestimonialsSection = lazy(() => import('../components/home/TestimonialsSe
 const CTASection = lazy(() => import('../components/home/CTASection'));
 
 function Home() {
+    const { language } = useTranslation();
     const [stats, setStats] = useState({
         earnings: 0,
         jobs: 0,

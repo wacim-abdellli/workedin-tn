@@ -1,4 +1,4 @@
-﻿import { forwardRef, useState, useRef, useEffect } from 'react';
+import { forwardRef, useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
 interface SelectOption {
@@ -118,7 +118,10 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                             transition-all
                             duration-200
                             hover:border-[var(--color-border-strong)]
-                            focus:outline-none 
+                            focus:outline-none
+                            focus-visible:ring-2
+                            focus-visible:ring-[var(--workspace-primary)]
+                            focus-visible:ring-offset-2
                             focus:border-[var(--workspace-primary)]
                             ${error ? 'border-red-500 focus:border-red-500' : ''}
                             text-left
