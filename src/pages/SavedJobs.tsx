@@ -57,20 +57,20 @@ interface SavedItemsProps {
   isLoading?: boolean;
 }
 
-const formatTimeAgo = (value: string) => {
+const formatTimeAgo = (value: string, tx: (key: string, params?: any, fallback?: string) => string) => {
   const then = new Date(value).getTime();
   if (!Number.isFinite(then)) {
-    return 'Posted recently';
+    return tx('common.postedRecently', undefined, 'Posted recently');
   }
 
   const diffMs = Date.now() - then;
   const diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 
-  if (diffDays === 0) return 'Posted today';
-  if (diffDays === 1) return 'Posted 1 day ago';
-  if (diffDays < 7) return `Posted ${diffDays} days ago`;
+  if (diffDays === 0) return tx('common.postedToday', undefined, 'Posted today');
+  if (diffDays === 1) return tx('common.posted1DayAgo', undefined, 'Posted 1 day ago');
+  if (diffDays < 7) return tx('common.postedDaysAgo', { days: diffDays }, `Posted ${diffDays} days ago`);
   const weeks = Math.floor(diffDays / 7);
-  return `Posted ${weeks} week${weeks > 1 ? 's' : ''} ago`;
+  return tx('common.postedWeeksAgo', { weeks }, `Posted ${weeks} week${weeks > 1 ? 's' : ''} ago`);
 };
 
 const getInitials = (name: string) => {
@@ -88,10 +88,10 @@ export function SavedItems({
 }: SavedItemsProps) {
   const { tx } = useTranslation();
   const isFreelancer = role === 'freelancer';
-  const title = isFreelancer ? 'Saved Jobs' : 'Saved Talent';
+  const title = isFreelancer ? tx('pages.savedJobs.title', undefined, 'Saved Jobs') : tx('pages.savedJobs.savedTalent', undefined, 'Saved Talent');
   const subtitle = isFreelancer
-    ? 'Keep track of jobs you want to apply for.'
-    : 'Keep track of top freelancers for your projects.';
+    ? tx('pages.savedJobs.subtitle', undefined, 'Keep track of jobs you want to apply for.')
+    : tx('pages.savedJobs.subtitleTalent', undefined, 'Keep track of top freelancers for your projects.');
 
   const roleItems = isFreelancer ? savedJobs : savedTalent;
 
@@ -128,7 +128,7 @@ export function SavedItems({
                 type="button"
                 className={`text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${actionButtonClass}`}
               >
-                {isFreelancer ? 'Browse Jobs' : 'Browse Freelancers'}
+                {isFreelancer ? tx('pages.savedJobs.browseJobs', undefined, 'Browse Jobs') : tx('pages.savedJobs.browseFreelancers', undefined, 'Browse Freelancers')}
               </button>
             </div>
           ) : isFreelancer ? (
@@ -253,12 +253,12 @@ export default function SavedJobsPage() {
         .map((job) => ({
           id: job.id,
           title: job.title,
-          jobType: (job.job_type === 'hourly' ? 'Hourly' : 'Fixed-price') as SavedJobItem['jobType'],
+          jobType: (job.job_type === 'hourly' ? tx('common.hourly', undefined, 'Hourly') : tx('common.fixedPrice', undefined, 'Fixed-price')) as SavedJobItem['jobType'],
           budget:
             job.job_type === 'hourly'
               ? `${job.hourly_rate ?? 0} TND/hr`
               : `${job.budget_min ?? 0} - ${job.budget_max ?? 0} TND`,
-          postedAgo: formatTimeAgo(job.posted_at),
+          postedAgo: formatTimeAgo(job.posted_at, tx),
         }));
     },
     enabled: role === 'freelancer' && Boolean(user?.id),
@@ -342,9 +342,9 @@ export default function SavedJobsPage() {
 
         return {
           id: freelancer.id,
-          name: freelancer.full_name || 'Freelancer',
-          title: profile?.title || 'Freelancer',
-          location: freelancer.location || 'Tunisia',
+          name: freelancer.full_name || tx('common.freelancer', undefined, 'Freelancer'),
+          title: profile?.title || tx('common.freelancer', undefined, 'Freelancer'),
+          location: freelancer.location || tx('common.tunisia', undefined, 'Tunisia'),
           rating: successRate > 0 ? Math.min(5, successRate / 20) : 0,
           hourlyRate: Number(profile?.hourly_rate ?? 0),
         };

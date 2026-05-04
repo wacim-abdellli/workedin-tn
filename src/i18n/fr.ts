@@ -1348,6 +1348,18 @@ export const fr: Translations = {
         "thumbnailUrl": "URL de l'image miniature",
         "projectUrl": "URL du projet",
         "completionDate": "Date de réalisation",
+        "freelancer": "Freelance",
+        "client": "Client",
+        "hourly": "Horaire",
+        "fixedPrice": "Prix fixe",
+        "skill": "Compétence",
+        "tunisia": "Tunisie",
+        "general": "Général",
+        "postedRecently": "Publié récemment",
+        "postedToday": "Publié aujourd'hui",
+        "posted1DayAgo": "Publié il y a 1 jour",
+        "postedDaysAgo": "Publié il y a {{days}} jours",
+        "postedWeeksAgo": "Publié il y a {{weeks}} semaine{{weeks > 1 ? 's' : ''}}",
         "searchProposals": "Rechercher dans les propositions...",
         "hourlyExample": "Ex : 20",
         "hoursExample": "Ex : 10-20",
@@ -1558,6 +1570,62 @@ export const fr: Translations = {
             "contractPayment": "Paiement du contrat",
             "clientId": "Client #{{id}}",
             "notAvailable": "N/D"
+        },
+        "savedJobs": {
+            "title": "Missions sauvegardées",
+            "savedTalent": "Talents sauvegardés",
+            "subtitle": "Gardez une trace des missions auxquelles vous souhaitez postuler.",
+            "subtitleTalent": "Gardez une trace des meilleurs freelances pour vos projets.",
+            "empty": {
+                "title": "Rien de sauvegardé pour le moment"
+            },
+            "browseJobs": "Parcourir les missions",
+            "browseFreelancers": "Parcourir les freelances",
+            "labels": {
+                "budget": "Budget :"
+            }
+        },
+        "jobBoard": {
+            "budgetNotSpecified": "Budget non spécifié",
+            "toasts": {
+                "removedFromSaved": "Retiré des missions sauvegardées",
+                "savedJob": "Mission sauvegardée",
+                "savedJobsUpdateError": "Impossible de mettre à jour les missions sauvegardées"
+            }
+        },
+        "settings": {
+            "account": {
+                "currentWorkspace": "Espace de travail actuel",
+                "accountType": "Type de compte",
+                "identity": "Identité",
+                "identityVerified": "Identité vérifiée",
+                "verificationUnderReview": "Vérification en cours",
+                "notVerified": "Non vérifié",
+                "quickActions": "Actions rapides"
+            },
+            "notifications": {
+                "newJobMatches": "Nouvelles missions correspondantes",
+                "newJobMatchesDesc": "Recevez une notification lorsque des missions correspondent à vos compétences",
+                "newMessages": "Nouveaux messages",
+                "newMessagesDesc": "Recevez une notification lorsque vous recevez de nouveaux messages",
+                "payments": "Paiements",
+                "paymentsDesc": "Recevez une notification lorsque vous envoyez ou recevez des paiements",
+                "reviews": "Avis",
+                "reviewsDesc": "Recevez une notification lorsque vous recevez un nouvel avis",
+                "offersAndUpdates": "Offres et mises à jour",
+                "offersAndUpdatesDesc": "Conseils et mises à jour de WorkedIn"
+            }
+        },
+        "leaveReview": {
+            "rating": {
+                "poor": "Médiocre",
+                "fair": "Passable",
+                "good": "Bien",
+                "veryGood": "Très bien",
+                "excellent": "Excellent"
+            },
+            "submitted": "Avis soumis avec succès !",
+            "error": "Échec de la soumission de l'avis. Réessayez."
         },
         "authCallback": {
             "signingIn": "Connexion en cours",

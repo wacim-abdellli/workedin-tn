@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   BadgeCheck,
@@ -136,15 +136,15 @@ function formatTimeAgo(dateInput: string): string {
   return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
 }
 
-function toSkillLabel(skill: string | Skill, language: 'ar' | 'fr' | 'en'): string {
+function toSkillLabel(skill: string | Skill, language: 'ar' | 'fr' | 'en', tx: (key: string, params?: any, fallback?: string) => string): string {
   if (typeof skill === 'string') return skill;
 
-  if (language === 'ar') return skill.name_ar || skill.name_en || 'Skill';
-  if (language === 'fr') return skill.name_fr || skill.name_en || 'Skill';
-  return skill.name_en || 'Skill';
+  if (language === 'ar') return skill.name_ar || skill.name_en || tx('common.skill', undefined, 'Skill');
+  if (language === 'fr') return skill.name_fr || skill.name_en || tx('common.skill', undefined, 'Skill');
+  return skill.name_en || tx('common.skill', undefined, 'Skill');
 }
 
-function getBudgetLabel(job: Job): string {
+function getBudgetLabel(job: Job, tx: (key: string, params?: any, fallback?: string) => string): string {
   if (job.job_type === 'hourly') {
     return `${job.hourly_rate ?? 0} TND/h`;
   }
@@ -153,7 +153,7 @@ function getBudgetLabel(job: Job): string {
     return `${job.budget_min ?? 0}-${job.budget_max ?? 0} TND`;
   }
 
-  return 'Budget not specified';
+  return tx('pages.jobBoard.budgetNotSpecified', undefined, 'Budget not specified');
 }
 
 function getCategoryLabel(category: string): string {
@@ -389,7 +389,7 @@ function JobBoard() {
     },
     onSuccess: ({ isSaved }) => {
       queryClient.invalidateQueries({ queryKey: ['saved-jobs', user?.id] });
-      showToast(isSaved ? 'Removed from saved jobs' : 'Saved job', 'success');
+      showToast(isSaved ? tx('pages.jobBoard.toasts.removedFromSaved', undefined, 'Removed from saved jobs') : tx('pages.jobBoard.toasts.savedJob', undefined, 'Saved job'), 'success');
     },
     onError: () => {
       showToast(tx('pages.jobBoard.toasts.savedJobsUpdateError', undefined, 'Could not update saved jobs'), 'error');
@@ -729,7 +729,7 @@ function JobBoard() {
                 {visibleJobs.map((job) => {
                   const isSaved = savedJobIds.has(job.id);
                   const isAlreadyApplied = isFreelancerViewer && proposalJobIds.has(job.id);
-                  const skillLabels = (job.required_skills || []).map((s) => toSkillLabel(s, language)).filter(Boolean).slice(0, 5);
+                  const skillLabels = (job.required_skills || []).map((s) => toSkillLabel(s, language, tx)).filter(Boolean).slice(0, 5);
                   const postedAgo = formatTimeAgo(job.posted_at);
                   const clientName = job.client?.full_name || 'Client';
                   const ratingValue = typeof (job.client as { rating?: number } | undefined)?.rating === 'number'
@@ -750,131 +750,122 @@ function JobBoard() {
                           navigate(`/jobs/${job.id}`);
                         }
                       }}
-                      className="group relative rounded-2xl border border-surface surface-card p-5 sm:p-6 cursor-pointer transition-all duration-200 hover:border-[var(--workspace-primary)] hover:-translate-y-0.5"
+                      className="group relative rounded-xl border border-surface surface-card p-4 sm:p-5 cursor-pointer transition-all duration-200 hover:border-[var(--workspace-primary)] hover:shadow-[0_4px_20px_-4px_color-mix(in_srgb,var(--workspace-primary)_20%,transparent)] hover:-translate-y-0.5"
                     >
                       {/* Subtle glow on hover */}
                       <div
-                        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                        style={{ background: 'linear-gradient(135deg,rgba(139,92,246,0.04) 0%,transparent 60%)' }}
+                        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                        style={{ background: 'linear-gradient(135deg,rgba(139,92,246,0.03) 0%,transparent 60%)' }}
                       />
 
-                      <div className="relative flex flex-col md:flex-row gap-4 md:items-start md:justify-between">
-                        {/* Left */}
-                        <div className="min-w-0 flex-1">
-                          {/* Type pill + title */}
-                          <div className="flex items-start gap-2.5 mb-2">
-                            <span
-                              className="shrink-0 mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                              style={{
-                                background: isFixed ? 'rgba(59,130,246,0.12)' : 'rgba(16,185,129,0.12)',
-                                color: isFixed ? '#2563eb' : '#16a34a',
-                                border: `1px solid ${isFixed ? 'rgba(59,130,246,0.22)' : 'rgba(16,185,129,0.22)'}`,
-                              }}
-                            >
-                              {isFixed ? 'Fixed' : 'Hourly'}
+                      <div className="relative flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+                        {/* Main Content Area */}
+                        <div className="min-w-0 flex-1 flex flex-col">
+                          {/* Top Row: Title & Budget */}
+                          <div className="flex items-start justify-between gap-3 mb-1.5">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <h3 className="text-sm font-bold text-on-surface transition-colors line-clamp-1 [overflow-wrap:anywhere]"
+                                style={{ color: 'var(--color-text-primary)' }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                              >
+                                {job.title || 'Untitled job'}
+                              </h3>
+                              <span
+                                className="shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded"
+                                style={{
+                                  background: isFixed ? 'rgba(59,130,246,0.1)' : 'rgba(16,185,129,0.1)',
+                                  color: isFixed ? '#3b82f6' : '#10b981',
+                                  border: `1px solid ${isFixed ? 'rgba(59,130,246,0.2)' : 'rgba(16,185,129,0.2)'}`,
+                                }}
+                              >
+                                {isFixed ? 'Fixed' : 'Hourly'}
+                              </span>
+                            </div>
+                            
+                            {/* Budget */}
+                            <span className="shrink-0 text-sm font-black whitespace-nowrap" style={{ color: 'var(--workspace-primary,#8b5cf6)' }}>
+                              {getBudgetLabel(job, tx)}
                             </span>
-                            <h3 className="text-base font-bold text-on-surface transition-colors line-clamp-1 [overflow-wrap:anywhere]"
-                              style={{ color: 'var(--color-text-primary)' }}
-                              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
-                              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
-                            >
-                              {job.title || 'Untitled job'}
-                            </h3>
                           </div>
 
                           {/* Description */}
-                          <p className="text-sm text-on-surface-muted line-clamp-2 mb-3 [overflow-wrap:anywhere]">
+                          <p className="text-xs text-on-surface-muted line-clamp-1 mb-2.5 [overflow-wrap:anywhere] leading-relaxed pr-4">
                             {job.description || 'No description provided.'}
                           </p>
 
-                          {/* Meta chips */}
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-on-surface-subtle mb-3">
-                            <span className="font-semibold" style={{ color: 'var(--workspace-primary,#8b5cf6)' }}>
-                              {getBudgetLabel(job)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {postedAgo}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <BadgeCheck className={`w-3 h-3 ${job.client?.payment_verified ? 'text-emerald-500' : 'text-on-surface-subtle'}`} />
-                              {job.client?.payment_verified ? 'Payment verified' : 'Payment unverified'}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              {job.client?.location || 'Tunis'}
-                            </span>
-                          </div>
+                          {/* Bottom Row: Meta & Actions */}
+                          <div className="flex flex-wrap items-center justify-between gap-3 mt-auto">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-on-surface-subtle">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3 opacity-70" />
+                                  {postedAgo}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <BadgeCheck className={`w-3 h-3 ${job.client?.payment_verified ? 'text-emerald-500' : 'opacity-70'}`} />
+                                  {job.client?.payment_verified ? 'Verified' : 'Unverified'}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Star className="w-3 h-3 text-amber-500 fill-amber-400/60" />
+                                  <span>{clientName} ({ratingValue})</span>
+                                </span>
 
-                          {/* Skill tags */}
-                          <div className="flex flex-wrap gap-1.5">
-                            {skillLabels.length > 0
-                              ? skillLabels.map((skill) => (
-                                  <span
-                                    key={`${job.id}-${skill}`}
-                                    className="text-[11px] px-2.5 py-0.5 rounded-full border border-surface surface-sunken text-on-surface-muted"
-                                  >
-                                    {skill}
+                                {/* Minimal Skill tags */}
+                                <div className="hidden sm:flex items-center gap-1 ml-2 border-l border-surface pl-3">
+                                  {skillLabels.length > 0 ? (
+                                    <>
+                                      {skillLabels.slice(0, 3).map((skill) => (
+                                          <span key={`${job.id}-${skill}`} className="text-[10px] px-1.5 py-0.5 rounded border border-surface surface-sunken text-on-surface-muted">
+                                            {skill}
+                                          </span>
+                                      ))}
+                                      {skillLabels.length > 3 && (
+                                          <span className="text-[10px] text-on-surface-subtle">+{skillLabels.length - 3}</span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded border border-surface surface-sunken text-on-surface-muted">General</span>
+                                  )}
+                                </div>
+                            </div>
+
+                            {/* Actions Group */}
+                            <div className="flex items-center gap-2 shrink-0">
+                                {isAlreadyApplied && (
+                                  <span className="hidden sm:inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                    ✓ Applied
                                   </span>
-                                ))
-                              : (
-                                <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-surface surface-sunken text-on-surface-subtle">General</span>
-                              )
-                            }
-                          </div>
-                        </div>
-
-                        {/* Right actions */}
-                        <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
-                          {/* Applied badge */}
-                          {isAlreadyApplied && (
-                            <span 
-                              className="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-semibold"
-                              style={{ 
-                                borderColor: 'color-mix(in srgb, var(--workspace-primary) 25%, transparent)',
-                                background: 'var(--workspace-primary-dim)',
-                                color: 'var(--workspace-primary-mid)'
-                              }}
-                            >
-                              ✓ Applied
-                            </span>
-                          )}
-                          <div className="flex items-center gap-1 text-xs text-on-surface-subtle">
-                            <Star className="w-3 h-3 text-amber-500 fill-amber-400/60" />
-                            <span>{clientName} ({ratingValue})</span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              aria-label={isSaved ? 'Unsave job' : 'Save job'}
-                              onClick={async (e) => { e.stopPropagation(); await handleToggleSave(job); }}
-                              className="group/save flex h-8 w-8 items-center justify-center rounded-xl border border-surface surface-sunken transition-all hover:border-rose-500/40 hover:bg-rose-500/10"
-                            >
-                              <Heart className={`w-3.5 h-3.5 transition-colors ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-on-surface-subtle group-hover/save:text-rose-500'}`} />
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); navigate(`/jobs/${job.id}`); }}
-                              className={`h-8 px-4 rounded-xl text-xs font-bold transition-all active:scale-[0.97] ${
-                                isAlreadyApplied
-                                  ? 'text-on-surface-muted border border-surface surface-sunken hover-surface'
-                                  : ''
-                              }`}
-                              style={isAlreadyApplied
-                                ? undefined
-                                : {
-                                  background: 'linear-gradient(135deg,var(--workspace-primary) 0%,color-mix(in srgb,var(--workspace-primary) 70%,transparent) 100%)',
-                                  color: 'var(--workspace-primary-text)'
-                                }}
-                              onMouseEnter={(e) => !isAlreadyApplied && (e.currentTarget.style.filter = 'brightness(1.1)')}
-                              onMouseLeave={(e) => !isAlreadyApplied && (e.currentTarget.style.filter = 'brightness(1)')}
-                            >
-                              {isAlreadyApplied
-                                ? tx('pages.jobBoard.actions.applied', undefined, 'Applied')
-                                : tx('pages.jobBoard.actions.applyNow', undefined, 'Apply Now')}
-                            </button>
+                                )}
+                                <button
+                                  type="button"
+                                  aria-label={isSaved ? 'Unsave job' : 'Save job'}
+                                  onClick={async (e) => { e.stopPropagation(); await handleToggleSave(job); }}
+                                  className="h-7 w-7 flex items-center justify-center rounded-lg border border-surface surface-sunken transition-all hover:bg-[var(--color-bg-muted)] group/save"
+                                >
+                                  <Heart className={`w-3.5 h-3.5 transition-colors ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-on-surface-muted group-hover/save:text-rose-500'}`} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); navigate(`/jobs/${job.id}`); }}
+                                  className={`h-7 px-3 rounded-lg text-[11px] font-bold transition-all active:scale-[0.97] ${
+                                    isAlreadyApplied
+                                      ? 'text-on-surface-muted border border-surface surface-sunken hover-surface'
+                                      : ''
+                                  }`}
+                                  style={isAlreadyApplied
+                                    ? undefined
+                                    : {
+                                      background: 'linear-gradient(135deg,var(--workspace-primary) 0%,color-mix(in srgb,var(--workspace-primary) 70%,transparent) 100%)',
+                                      color: 'var(--workspace-primary-text)'
+                                    }}
+                                  onMouseEnter={(e) => !isAlreadyApplied && (e.currentTarget.style.filter = 'brightness(1.1)')}
+                                  onMouseLeave={(e) => !isAlreadyApplied && (e.currentTarget.style.filter = 'brightness(1)')}
+                                >
+                                  {isAlreadyApplied
+                                    ? tx('pages.jobBoard.actions.applied', undefined, 'Applied')
+                                    : tx('pages.jobBoard.actions.applyNow', undefined, 'Apply')}
+                                </button>
+                            </div>
                           </div>
                         </div>
                       </div>

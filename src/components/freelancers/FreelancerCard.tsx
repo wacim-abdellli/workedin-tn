@@ -15,9 +15,10 @@ export interface Freelancer {
 interface FreelancerCardProps {
   freelancer: Freelancer; viewMode?: 'grid' | 'list';
   isSaved?: boolean; onToggleSave?: (id: string) => void;
+  isOnline?: boolean;
 }
 
-function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onToggleSave }: FreelancerCardProps) {
+function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onToggleSave, isOnline = false }: FreelancerCardProps) {
   const navigate = useNavigate();
   const { tx } = useTranslation();
   const [from, to] = getAvatarGradient(freelancer.name);
@@ -34,6 +35,9 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
       : null,
     freelancer.jobs_completed <= 3
       ? { icon: Shield, label: tx('pages.freelancerCard.badges.newTalent', undefined, 'New'), color: '#a78bfa' }
+      : null,
+    freelancer.is_available
+      ? { icon: Zap, label: tx('pages.freelancerCard.badges.availableNow', undefined, 'Available Now'), color: '#f472b6' }
       : null,
   ].filter(Boolean) as Array<{ icon: typeof Shield; label: string; color: string }>;
 
@@ -52,7 +56,7 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
               : <div className="h-full w-full flex items-center justify-center text-base font-bold text-white" style={{ background: `linear-gradient(135deg,${from},${to})` }}>{getInitials(freelancer.name)}</div>
             }
           </div>
-          {freelancer.is_available && (
+          {isOnline && (
             <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[#0f0f15]" />
           )}
         </div>
@@ -133,7 +137,7 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
             : <div className="h-full w-full flex items-center justify-center text-lg font-bold text-white" style={{ background: `linear-gradient(135deg,${from},${to})` }}>{getInitials(freelancer.name)}</div>
           }
         </div>
-        {freelancer.is_available && (
+        {isOnline && (
           <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-[#0f0f15]" />
         )}
       </div>
@@ -170,11 +174,11 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
       <div className="grid grid-cols-2 gap-2 mb-4">
         <div className="rounded-xl bg-black/20 border border-white/6 p-2.5 text-center">
           <p className="text-base font-black text-white">{freelancer.hourly_rate}<span className="text-[10px] font-normal text-white/35 ml-0.5">TND</span></p>
-          <p className="text-[10px] text-white/35 mt-0.5">per hour</p>
+          <p className="text-[10px] text-white/35 mt-0.5">{tx('pages.freelancerCard.perHour', undefined, 'per hour')}</p>
         </div>
         <div className="rounded-xl bg-black/20 border border-white/6 p-2.5 text-center">
           <p className="text-base font-black" style={{ color: 'var(--workspace-primary,#8b5cf6)' }}>{freelancer.success_rate}%</p>
-          <p className="text-[10px] text-white/35 mt-0.5">success</p>
+          <p className="text-[10px] text-white/35 mt-0.5">{tx('pages.freelancerCard.success', undefined, 'success')}</p>
         </div>
       </div>
 

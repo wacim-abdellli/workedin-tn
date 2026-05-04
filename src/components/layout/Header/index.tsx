@@ -92,16 +92,12 @@ export default function Header() {
         iconActive: "#c4b5fd",
         borderActive: "rgba(139, 92, 246, 0.52)",
         surfaceActive: "rgba(76, 29, 149, 0.24)",
-        badgeStart: "#8b5cf6",
-        badgeEnd: "#6d28d9",
         badgeGlow: "rgba(124, 58, 237, 0.58)",
       }
     : {
         iconActive: "#fcd34d",
         borderActive: "rgba(245, 158, 11, 0.56)",
         surfaceActive: "rgba(120, 53, 15, 0.28)",
-        badgeStart: "#f59e0b",
-        badgeEnd: "#d97706",
         badgeGlow: "rgba(245, 158, 11, 0.6)",
       };
 
@@ -333,15 +329,14 @@ export default function Header() {
                       >
                         <MessageSquare className="h-4 w-4" />
                         {unreadCount > 0 && (
-                          <span
-                            className="absolute -right-1 -top-1 inline-flex h-[17px] min-w-[17px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white"
-                            style={{
-                              background: `linear-gradient(135deg, ${messageBadgePalette.badgeStart} 0%, ${messageBadgePalette.badgeEnd} 100%)`,
-                              boxShadow: `0 0 0 2px var(--color-background-elevated), 0 8px 16px -11px ${messageBadgePalette.badgeGlow}`,
-                            }}
-                          >
-                            {unreadCount > 99 ? "99+" : unreadCount}
-                          </span>
+                        <span
+                          className="absolute -right-1 -top-1 inline-flex h-[17px] min-w-[17px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white ring-2 ring-background shadow-md"
+                          style={{
+                            background: "var(--workspace-primary)",
+                          }}
+                        >
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
                         )}
                       </button>
 

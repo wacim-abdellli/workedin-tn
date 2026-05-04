@@ -1,4 +1,4 @@
-﻿ import { useCallback, useMemo, useState } from 'react';
+ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bookmark, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, UserCircle2, X } from 'lucide-react';
@@ -15,6 +15,7 @@ import { useToast } from '../components/ui/Toast';
 import { useTranslation } from '../i18n';
 import * as profilesService from '../services/profiles';
 import { canSaveFreelancer, getAccessMessage } from '../lib/marketplaceAccess';
+import { usePresence } from '../hooks/usePresence';
 
 type FreelancerCategory =
     | 'Design'
@@ -97,6 +98,11 @@ export default function FindFreelancers() {
         isAuthenticated: !!user,
         profile,
         freelancerProfile,
+    });
+
+    const { isOnline } = usePresence({
+        userId: user?.id,
+        isOnlineForMessages: profile?.is_online_for_messages ?? false,
     });
 
     // Fetch real freelancers from DB
@@ -365,9 +371,10 @@ export default function FindFreelancers() {
         ? Math.round(filteredFreelancers.reduce((sum, freelancer) => sum + freelancer.hourly_rate, 0) / filteredFreelancers.length)
         : 0;
 
-    const topRating = filteredFreelancers.length
-        ? Math.max(...filteredFreelancers.map((freelancer) => freelancer.rating)).toFixed(1)
-        : '0.0';
+    const maxRating = filteredFreelancers.length
+        ? Math.max(...filteredFreelancers.map((freelancer) => freelancer.rating))
+        : 0;
+    const topRating = maxRating > 0 ? maxRating.toFixed(1) : '—';
 
     return (
         <div className="min-h-screen page-bg-base scroll-smooth">
@@ -562,6 +569,7 @@ export default function FindFreelancers() {
                                             freelancer={freelancer} viewMode={viewMode}
                                             isSaved={savedFreelancerIds.has(freelancer.id)}
                                             onToggleSave={toggleSaved}
+                                            isOnline={isOnline(freelancer.id)}
                                         />
                                     </div>
                                 ))}

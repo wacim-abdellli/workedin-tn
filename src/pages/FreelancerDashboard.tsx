@@ -419,7 +419,7 @@ function FreelancerDashboardPage() {
   );
 
   const completionValue = profileCompletion;
-  const firstName = profile?.full_name?.split(" ")[0] || "Freelancer";
+  const firstName = profile?.full_name?.split(" ")[0] || tx("common.freelancer", undefined, "Freelancer");
   const activeContractsCount = stats?.activeContracts ?? 0;
   const pendingProposalsCount = stats?.pendingProposals ?? 0;
   const profileViewsCount = stats?.profileViews ?? 0;

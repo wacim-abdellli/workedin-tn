@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Share2, Edit, MoreVertical, Loader2 } from 'lucide-react';
 import { Header } from '../components/layout';
@@ -17,6 +17,7 @@ import { useTranslation } from '../i18n';
 import { useMutation } from '@tanstack/react-query';
 import { ROUTES, getJobEditRoute } from '../lib/routes';
 import { generateAIRecommendations, type AIRecommendations } from '../services/aiRecommendations';
+import { insertNotification } from '../services/notifications';
 
 interface JobData {
     id: string;
@@ -636,6 +637,17 @@ export default function JobProposals() {
                 15000
             );
             if (error) throw error;
+
+            const proposal = proposals.find(p => p.id === proposalId);
+            if (proposal && job) {
+                void insertNotification({
+                    user_id: proposal.freelancer_id,
+                    type: 'proposal' as any,
+                    title: 'Proposal Declined',
+                    body: `Your proposal for "${job.title}" was declined.`,
+                    link: `/jobs/${job.id}`
+                }).catch(e => logger.warn('Failed to send decline notification', e));
+            }
 
             setProposals(prev => prev.map(p => p.id === proposalId ? { ...p, status: 'rejected' as ProposalStatus } : p));
             setShortlistedIds(prev => prev.filter(id => id !== proposalId));

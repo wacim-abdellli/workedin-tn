@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { sendContractMessage } from '../services/messages';
+import { releaseEscrow } from '../services/dhmad';
 import type { ContractStatus } from '../types';
 import {
     canClientAcceptForStatus,
@@ -26,6 +27,7 @@ interface ContractData {
     dispute_reason?: string;
     revision_requests_count?: number;
     max_revision_rounds?: number;
+    dhmad_escrow_id?: string;
 }
 
 interface UseContractStateOptions {
@@ -163,6 +165,8 @@ export function useContractState({
                 const { data: deliveryResult, error: deliveryError } = await supabase.rpc('submit_contract_delivery_atomic', {
                     p_contract_id: contractId,
                     p_delivery_note: nextDeliveryNote,
+                    p_review_assets: [],
+                    p_final_assets: [],
                 });
 
                 if (deliveryError) throw deliveryError;
@@ -206,6 +210,18 @@ export function useContractState({
             try {
                 const receiverId = getCounterpartyId(contract, userRole);
                 if (!receiverId) throw new Error('Unable to determine message recipient');
+
+                // If this contract has a Dhmad escrow, release it via Dhmad API.
+                // The webhook will eventually confirm, but we also run the RPC
+                // below to optimisticly complete it in the DB immediately.
+                if (contract.dhmad_escrow_id) {
+                    try {
+                        await releaseEscrow(contract.dhmad_escrow_id, contractId);
+                    } catch (err) {
+                        logger.error('Failed to release Dhmad escrow:', err);
+                        throw new Error('فشل تحرير الدفعة. يرجى المحاولة مرة أخرى.');
+                    }
+                }
 
                 const { error: releaseError } = await supabase.rpc('release_contract_payment_atomic', {
                     p_contract_id: contractId,

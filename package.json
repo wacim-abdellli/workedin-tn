@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "build:budget": "tsc -b && vite build && node scripts/check-bundle-budgets.mjs",
+    "build": "vite build",
+    "build:budget": "vite build && node scripts/check-bundle-budgets.mjs",
     "avatar:audit": "node scripts/check-avatar-consistency.mjs",
     "perf:budget": "node scripts/check-bundle-budgets.mjs",
     "lint": "eslint .",

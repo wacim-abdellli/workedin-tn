@@ -378,25 +378,21 @@ export function UserMenu({ isDesktopCondensed = false }: UserMenuProps) {
                 aria-checked={isOnlineForMessages}
                 onClick={() => void handleToggleOnline()}
                 disabled={isTogglingOnline}
-                className="group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors duration-100 focus:outline-none hover:bg-[var(--color-background-subtle)] disabled:opacity-60"
+                className="group mb-1 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition-colors duration-100 focus:outline-none hover:bg-[var(--color-background-subtle)] disabled:opacity-60"
               >
-                <div className="flex h-7 w-7 items-center justify-center shrink-0">
-                  {/* Just the green status dot aligned with icons below */}
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full transition-colors duration-200 ${isOnlineForMessages ? "bg-[#14a800]" : "bg-[var(--color-text-tertiary)] opacity-40"}`}
-                  />
-                </div>
                 <span
-                  className="flex-1 text-[13px] font-medium"
+                  className={`h-2.5 w-2.5 shrink-0 rounded-full transition-colors duration-200 ${isOnlineForMessages ? "bg-[#14a800]" : "bg-[var(--color-text-tertiary)] opacity-50"}`}
+                />
+                <span
+                  className="flex-1 text-[13px] font-semibold"
                   style={{ color: "var(--color-text-primary)" }}
                 >
                   Online for messages
                 </span>
-                {/* Toggle pill */}
                 <div
                   className="relative shrink-0 h-[20px] w-[36px] rounded-full transition-colors duration-200"
                   style={{
-                    background: isOnlineForMessages ? "#14a800" : "var(--color-border-default, #3a3a3a)",
+                    background: isOnlineForMessages ? "#14a800" : "color-mix(in srgb, var(--color-text-tertiary) 32%, transparent)",
                   }}
                 >
                   <span

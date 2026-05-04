@@ -147,8 +147,8 @@
      ---------------------------------------------------------- */
 
   --color-text-primary: var(--neutral-900);
-  --color-text-secondary: var(--neutral-600);
-  --color-text-tertiary: var(--neutral-500);
+  --color-text-secondary: var(--neutral-700);
+  --color-text-tertiary: var(--neutral-600);
   --color-text-disabled: var(--neutral-400);
   --color-text-inverse: #ffffff;
 
@@ -156,9 +156,9 @@
      4. BORDER TOKENS
      ---------------------------------------------------------- */
 
-  --color-border-subtle: var(--neutral-200);
-  --color-border-default: var(--neutral-300);
-  --color-border-strong: var(--neutral-400);
+  --color-border-subtle: var(--neutral-300);
+  --color-border-default: var(--neutral-400);
+  --color-border-strong: var(--neutral-500);
 
   /* ----------------------------------------------------------
      5. WORKSPACE TOKENS  —  default = Freelancer (Purple)
@@ -174,15 +174,15 @@
   --workspace-primary-dim: rgba(147, 51, 234, 0.12);
   --workspace-primary-text: #ffffff;
 
-  /* Secondary / contrast color */
-  --workspace-secondary: var(--amber-600);
-  --workspace-secondary-hover: var(--amber-700);
-  --workspace-secondary-light: var(--amber-50);
-  --workspace-secondary-dim: rgba(217, 119, 6, 0.12);
+  /* Secondary tokens stay inside the active workspace hue. */
+  --workspace-secondary: var(--purple-600);
+  --workspace-secondary-hover: var(--purple-700);
+  --workspace-secondary-light: var(--purple-50);
+  --workspace-secondary-dim: rgba(147, 51, 234, 0.12);
 
   /* Accent color */
-  --workspace-accent: var(--amber-500);
-  --workspace-accent-hover: var(--amber-600);
+  --workspace-accent: var(--purple-500);
+  --workspace-accent-hover: var(--purple-600);
 
   /* Glow / shadow */
   --workspace-shadow: rgba(147, 51, 234, 0.25);
@@ -265,7 +265,7 @@
   --shadow-2xl: 0 24px 64px rgba(0, 0, 0, 0.14);
 
   --shadow-glow-primary: var(--workspace-glow);
-  --shadow-glow-accent: 0 0 32px rgba(217, 119, 6, 0.25);
+  --shadow-glow-accent: var(--workspace-glow);
 
   /* ----------------------------------------------------------
      11. LEGACY ALIASES
@@ -344,7 +344,7 @@
   /* Glow — stronger in dark */
   --workspace-glow: 0 0 40px rgba(147, 51, 234, 0.45);
   --shadow-glow-primary: var(--workspace-glow);
-  --shadow-glow-accent: 0 0 40px rgba(217, 119, 6, 0.35);
+  --shadow-glow-accent: var(--workspace-glow);
 
   /* Status backgrounds — dark-safe */
   --color-status-success-bg: rgba(16, 185, 129, 0.15);
@@ -378,32 +378,36 @@
   --workspace-primary-dim: rgba(217, 119, 6, 0.12);
   --workspace-primary-text: #ffffff;
 
-  --workspace-secondary: var(--purple-600);
-  --workspace-secondary-hover: var(--purple-700);
-  --workspace-secondary-light: var(--purple-50);
-  --workspace-secondary-dim: rgba(147, 51, 234, 0.12);
+  --workspace-secondary: var(--amber-600);
+  --workspace-secondary-hover: var(--amber-700);
+  --workspace-secondary-light: var(--amber-50);
+  --workspace-secondary-dim: rgba(217, 119, 6, 0.12);
 
-  --workspace-accent: var(--purple-500);
-  --workspace-accent-hover: var(--purple-600);
+  --workspace-accent: var(--amber-500);
+  --workspace-accent-hover: var(--amber-600);
 
   --workspace-shadow: rgba(217, 119, 6, 0.25);
   --workspace-glow: 0 0 32px rgba(217, 119, 6, 0.3);
 
   --workspace-primary-shadow: var(--workspace-shadow);
   --shadow-glow-primary: var(--workspace-glow);
+  --shadow-glow-accent: var(--workspace-glow);
 
   /* Re-alias brand tokens so components using --color-brand-primary also switch */
   --color-brand-primary: var(--amber-600);
   --color-brand-primary-hover: var(--amber-700);
   --color-brand-primary-active: var(--amber-800);
   --color-brand-primary-light: var(--amber-50);
+  --color-brand-accent: var(--amber-600);
+  --color-brand-accent-hover: var(--amber-700);
 }
 
 .dark .workspace-client {
   --workspace-primary-light: rgba(245, 158, 11, 0.12);
-  --workspace-secondary-light: rgba(147, 51, 234, 0.12);
+  --workspace-secondary-light: rgba(245, 158, 11, 0.12);
   --workspace-glow: 0 0 40px rgba(217, 119, 6, 0.45);
   --shadow-glow-primary: var(--workspace-glow);
+  --shadow-glow-accent: var(--workspace-glow);
   --color-brand-primary-light: rgba(245, 158, 11, 0.12);
 }
 

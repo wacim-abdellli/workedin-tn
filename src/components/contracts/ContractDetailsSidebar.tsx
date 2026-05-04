@@ -78,6 +78,7 @@ interface ContractSidebarData {
     revisionRequestsCount?: number | null;
     maxRevisionRounds?: number | null;
     fundedAt?: string | null;
+    escrowFunded?: boolean;
     deliverySubmittedAt?: string | null;
     reviewDueAt?: string | null;
     reviewFiles?: ContractDeliveryAsset[];
@@ -112,6 +113,7 @@ interface ContractDetailsSidebarProps {
     onRequestChanges: () => void;
     onAcceptAndPay: () => void;
     onDispute: () => void;
+    onFundEscrow?: () => void;
     onReview: () => void;
     hasLeftReview: boolean;
     onOpenSharedFile?: (file: ContractSharedFile) => void;
@@ -231,6 +233,7 @@ export default function ContractDetailsSidebar({
     onRequestChanges,
     onAcceptAndPay,
     onDispute,
+    onFundEscrow,
     onReview,
     hasLeftReview,
     onOpenSharedFile,
@@ -263,7 +266,7 @@ export default function ContractDetailsSidebar({
         const isRevision = st === 'revision_requested';
         const isPendingPayment = st === 'pending_payment';
         const isCompleted = st === 'completed';
-        const isEscrowFunded = Boolean(contract.fundedAt);
+        const isEscrowFunded = contract.escrowFunded === true || Boolean(contract.fundedAt);
         const showFreelancerDeliver = userRole === 'freelancer' && (isActive || isRevision) && !deliverySubmitted;
         const showClientReview = userRole === 'client' && isUnderReview && deliverySubmitted;
         const showLeaveReview = isCompleted && !hasLeftReview;
@@ -432,7 +435,7 @@ export default function ContractDetailsSidebar({
     const rt = roleTheme(userRole);
 
     return (
-        <div className="min-h-[70vh] bg-[var(--color-bg-base)] text-[#F0EFE8]">
+        <div className="flex min-h-[calc(100vh-var(--header-height,64px)-48px)] flex-col bg-[var(--color-bg-base)] text-[#F0EFE8]">
             <style>{`
                 @keyframes contractTabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
                 @keyframes pulseRole{0%,100%{opacity:1}50%{opacity:0.6}}
@@ -523,20 +526,20 @@ export default function ContractDetailsSidebar({
                 id={`contract-workspace-panel-${activeTab}`}
                 role="tabpanel"
                 aria-labelledby={`contract-workspace-tab-${activeTab}`}
-                className="animate-[contractTabIn_160ms_ease-out] p-5"
+                className="flex-1 animate-[contractTabIn_160ms_ease-out] px-4 py-5 sm:px-8 sm:py-6"
             >
+                <div className="mx-auto max-w-5xl">
                 {activeTab === 'overview' ? (
                     <div className="space-y-4">
                         {model.showReviewConfirmation ? <CompletedSummary model={model} rt={rt} /> : null}
-                        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)]">
-                            <ContractPulse model={model} rt={rt} />
-                            <NextMoveCard model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onReview={onReview} setActiveTab={setActiveTab} />
-                        </section>
+                        <NextMoveCard model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onFundEscrow={onFundEscrow} onReview={onReview} setActiveTab={setActiveTab} />
+                        <ContractPulse model={model} rt={rt} />
                     </div>
                 ) : null}
                 {activeTab === 'files' ? <FilesTab model={model} fileFilter={fileFilter} setFileFilter={setFileFilter} userRole={userRole} onPreviewFile={openPreview} onDeliver={onDeliver} rt={rt} /> : null}
                 {activeTab === 'milestones' ? <MilestonesTab model={model} userRole={userRole} rt={rt} /> : null}
                 {activeTab === 'activity' ? <ActivityTab events={activityEvents} model={model} contract={contract} rt={rt} /> : null}
+                </div>
             </main>
 
             {previewFile ? (
@@ -574,6 +577,7 @@ type ActionProps = {
     onRequestChanges: () => void;
     onAcceptAndPay: () => void;
     onDispute: () => void;
+    onFundEscrow?: () => void;
     onReview: () => void;
 };
 
@@ -600,42 +604,36 @@ function CompletedSummary({ model, rt }: { model: WorkspaceModel; rt: RoleTheme 
 function ContractPulse({ model, rt }: { model: WorkspaceModel; rt: RoleTheme }) {
     const stats = [
         { label: 'Milestones', value: `${model.completedMilestones}/${model.milestones.length || 0}`, hint: 'completed' },
-        { label: 'Files shared', value: model.allFileCount, hint: `${model.reviewFiles.length} review · ${model.finalFiles.length + model.lockedFinalFilesCount} final` },
+        { label: 'Files', value: String(model.allFileCount), hint: `${model.reviewFiles.length} review · ${model.finalFiles.length + model.lockedFinalFilesCount} final` },
         { label: 'Revisions', value: `${model.revUsed}/${model.revMax}`, hint: 'used' },
     ];
-
     return (
-        <section className="rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-                <p className={labelClass}>At a glance</p>
-                <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${model.status.tone}`}>{model.status.icon}{model.status.label}</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
+        <section className="flex flex-col gap-3">
+            {/* Stats strip */}
+            <div className="grid grid-cols-3 gap-3">
                 {stats.map((stat) => (
-                    <div key={stat.label} className="rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-elevated)] px-3 py-3">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#55534F]">{stat.label}</p>
-                        <p className={`mt-1.5 text-[22px] font-bold tracking-[-0.02em] ${rt.accentText}`}>{stat.value}</p>
-                        <p className="text-[11px] text-[#55534F]">{stat.hint}</p>
+                    <div key={stat.label} className="rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-4">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#55534F]">{stat.label}</p>
+                        <p className={`mt-2 text-[28px] font-bold leading-none tracking-[-0.03em] ${rt.accentText}`}>{stat.value}</p>
+                        <p className="mt-1.5 text-[12px] text-[#55534F]">{stat.hint}</p>
                     </div>
                 ))}
             </div>
-
-            <div className="mt-3">
-                <div className="mb-1.5 flex items-center justify-between">
-                    <span className="text-[12px] text-[#55534F]">Progress</span>
-                    <span className={`font-mono text-[12px] font-semibold ${rt.accentText}`}>{model.progressPct}%</span>
+            {/* Progress bar */}
+            <div className="rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-3">
+                <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[12px] font-medium text-[#55534F]">Overall progress</span>
+                    <span className={`font-mono text-[13px] font-bold ${rt.accentText}`}>{model.progressPct}%</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-bg-muted)]">
-                    <div className={`h-full rounded-full transition-all duration-500 ${rt.accentBg}`} style={{ width: `${model.progressPct}%` }} />
+                <div className="h-2 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
+                    <div className={`h-full rounded-full transition-all duration-700 ${rt.accentBg}`} style={{ width: `${model.progressPct}%` }} />
                 </div>
             </div>
         </section>
     );
 }
 
-function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, onRequestChanges, onDispute, onReview, setActiveTab }: ActionProps & { setActiveTab: (tab: WorkspaceTab) => void }) {
-    // Which primary action fires when the primary button is clicked
+function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, onRequestChanges, onDispute, onFundEscrow, onReview, setActiveTab }: ActionProps & { setActiveTab: (tab: WorkspaceTab) => void }) {
     const isPendingEscrow = model.st === 'pending_payment' && !model.isEscrowFunded && model.nextMove.primaryLabel === 'Fund escrow';
     const action = isPendingEscrow ? undefined
         : model.showFreelancerDeliver || (model.st === 'pending_payment' && model.isEscrowFunded && model.nextMove.primaryLabel) ? onDeliver
@@ -645,50 +643,64 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
 
     const showSecondaryActions = model.showClientReview;
 
+    // Derive a strong accent color for the hero icon bg
+    const iconBg = model.st === 'completed' ? 'bg-[#7F77DD]/20'
+        : model.st === 'delivery_submitted' && model.showClientReview ? `${rt.accentBg}/20`
+        : model.st === 'pending_payment' && !model.isEscrowFunded ? 'bg-[#E8A020]/20'
+        : 'bg-white/5';
+
     return (
-        <section className={`rounded-[10px] border px-4 py-4 ${model.nextMove.tone}`}>
-            <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-white/5">
-                    {model.nextMove.icon}
+        <section className={`overflow-hidden rounded-[16px] border ${model.nextMove.tone}`}>
+            {/* Hero top: icon + label + title */}
+            <div className="px-6 pb-5 pt-6">
+                <div className="flex items-start gap-5">
+                    {/* Large icon */}
+                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] ${iconBg}`}>
+                        <span className="[&>svg]:h-7 [&>svg]:w-7">{model.nextMove.icon}</span>
+                    </div>
+                    <div className="min-w-0 flex-1 pt-0.5">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#55534F]">Your next move</p>
+                        <h3 className="mt-1.5 text-[20px] font-bold leading-[1.2] tracking-[-0.02em] text-[#F0EFE8]">{model.nextMove.title}</h3>
+                        <p className="mt-2 text-[14px] leading-relaxed text-[#8A8880]">{model.nextMove.body}</p>
+                    </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                    <p className={labelClass}>Next move</p>
-                    <h3 className="mt-1 text-[15px] font-semibold text-[#F0EFE8]">{model.nextMove.title}</h3>
-                    <p className="mt-1 text-[13px] leading-relaxed text-[#8A8880]">{model.nextMove.body}</p>
-                </div>
+
+                {/* Escrow funded indicator */}
+                {model.st === 'pending_payment' && model.isEscrowFunded ? (
+                    <div className="mt-4 flex items-center gap-2 rounded-[10px] border border-[#1D9E75]/30 bg-[#0F6E56]/20 px-4 py-2.5">
+                        <CheckCircle className="h-4 w-4 shrink-0 text-[#1D9E75]" />
+                        <span className="text-[13px] font-medium text-[#1D9E75]">Escrow funded — funds secured by platform</span>
+                    </div>
+                ) : null}
+
+                {/* Escrow unfunded warning */}
+                {isPendingEscrow ? (
+                    <div className="mt-4 flex items-center gap-2 rounded-[10px] border border-[#E8A020]/30 bg-[#3D2A00]/40 px-4 py-2.5">
+                        <AlertCircle className="h-4 w-4 shrink-0 text-[#E8A020]" />
+                        <span className="text-[13px] font-medium text-[#E8A020]">No work begins until escrow is funded</span>
+                    </div>
+                ) : null}
             </div>
 
-            {/* ── Escrow funded indicator ── */}
-            {model.st === 'pending_payment' && model.isEscrowFunded ? (
-                <div className="mt-3 flex items-center gap-2 rounded-[8px] border border-[#1D9E75]/30 bg-[#0F6E56]/20 px-3 py-2">
-                    <CheckCircle className="h-3.5 w-3.5 shrink-0 text-[#1D9E75]" />
-                    <span className="text-[12px] font-medium text-[#1D9E75]">Escrow funded — funds secured by platform</span>
-                </div>
-            ) : null}
+            {/* Divider */}
+            <div className="mx-6 h-px bg-white/[0.06]" />
 
-            {/* ── Escrow unfunded warning for client ── */}
-            {isPendingEscrow ? (
-                <div className="mt-3 flex items-center gap-2 rounded-[8px] border border-[#E8A020]/30 bg-[#3D2A00]/40 px-3 py-2">
-                    <AlertCircle className="h-3.5 w-3.5 shrink-0 text-[#E8A020]" />
-                    <span className="text-[12px] font-medium text-[#E8A020]">No work begins until escrow is funded</span>
-                </div>
-            ) : null}
-
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+            {/* Action buttons */}
+            <div className="flex flex-wrap items-center gap-2 px-6 py-4">
                 {/* Primary CTA */}
                 {action && model.nextMove.primaryLabel ? (
                     <button type="button" onClick={action} disabled={Boolean(isActionLoading)}
-                        className={`rounded-[10px] px-4 py-2 text-[14px] font-semibold transition-colors disabled:opacity-60 ${rt.primaryBtn} ${focusRing} ${rt.focusRingColor}`}>
+                        className={`rounded-[10px] px-5 py-2.5 text-[15px] font-bold transition-colors disabled:opacity-60 ${rt.primaryBtn} ${focusRing} ${rt.focusRingColor}`}>
                         {isActionLoading ? 'Processing…' : model.nextMove.primaryLabel}
                     </button>
                 ) : isPendingEscrow ? (
-                    <button type="button" disabled title="Payment integration required"
-                        className={`rounded-[10px] px-4 py-2 text-[14px] font-semibold opacity-60 cursor-not-allowed ${rt.primaryBtn}`}>
-                        Fund escrow
+                    <button type="button" onClick={() => onFundEscrow?.()}
+                        className={`rounded-[10px] px-5 py-2.5 text-[15px] font-bold transition-colors ${rt.primaryBtn} ${focusRing} ${rt.focusRingColor}`}>
+                        Fund escrow now
                     </button>
                 ) : null}
 
-                {/* Secondary: Request revision (client review state only) */}
+                {/* Request revision */}
                 {showSecondaryActions ? (
                     <GhostButton
                         onClick={onRequestChanges}
@@ -698,15 +710,15 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
                     />
                 ) : null}
 
-                {/* Dispute — shown for client review + active */}
+                {/* Dispute */}
                 {model.canDispute ? (
                     <DangerButton onClick={onDispute} disabled={Boolean(isActionLoading)} icon={<ShieldAlert className="h-4 w-4" />} label="Open dispute" />
                 ) : null}
 
-                {/* View history — always available */}
+                {/* View history */}
                 <button type="button" onClick={() => setActiveTab('activity')}
-                    className={`rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[13px] font-medium text-[#8A8880] transition-colors hover:text-[#F0EFE8] ${focusRing} ${rt.focusRingColor}`}>
-                    View history
+                    className={`ml-auto rounded-[10px] px-3 py-2 text-[13px] font-medium text-[#55534F] transition-colors hover:text-[#8A8880] ${focusRing} ${rt.focusRingColor}`}>
+                    View history →
                 </button>
             </div>
         </section>

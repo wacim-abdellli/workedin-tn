@@ -1346,6 +1346,18 @@ export const ar = {
         "thumbnailUrl": "رابط صورة العرض (URL)",
         "projectUrl": "رابط المشروع",
         "completionDate": "تاريخ الإنجاز",
+        "freelancer": "مستقل",
+        "client": "عميل",
+        "hourly": "بالساعة",
+        "fixedPrice": "سعر ثابت",
+        "skill": "مهارة",
+        "tunisia": "تونس",
+        "general": "عام",
+        "postedRecently": "نُشر مؤخراً",
+        "postedToday": "نُشر اليوم",
+        "posted1DayAgo": "نُشر منذ يوم",
+        "postedDaysAgo": "نُشر منذ {{days}} أيام",
+        "postedWeeksAgo": "نُشر منذ {{weeks}} أسبوع",
         "searchProposals": "بحث في العروض...",
         "hourlyExample": "مثال: 20",
         "hoursExample": "مثال: 10-20",
@@ -1556,6 +1568,62 @@ export const ar = {
             "contractPayment": "دفعة عقد",
             "clientId": "عميل #{{id}}",
             "notAvailable": "غير متوفر"
+        },
+        "savedJobs": {
+            "title": "الوظائف المحفوظة",
+            "savedTalent": "المواهب المحفوظة",
+            "subtitle": "تتبع الوظائف التي تريد التقدم لها.",
+            "subtitleTalent": "تتبع أفضل المستقلين لمشاريعك.",
+            "empty": {
+                "title": "لا توجد عناصر محفوظة بعد"
+            },
+            "browseJobs": "تصفح الوظائف",
+            "browseFreelancers": "تصفح المستقلين",
+            "labels": {
+                "budget": "الميزانية:"
+            }
+        },
+        "jobBoard": {
+            "budgetNotSpecified": "الميزانية غير محددة",
+            "toasts": {
+                "removedFromSaved": "تمت الإزالة من الوظائف المحفوظة",
+                "savedJob": "تم حفظ الوظيفة",
+                "savedJobsUpdateError": "تعذر تحديث الوظائف المحفوظة"
+            }
+        },
+        "settings": {
+            "account": {
+                "currentWorkspace": "مساحة العمل الحالية",
+                "accountType": "نوع الحساب",
+                "identity": "الهوية",
+                "identityVerified": "الهوية موثقة",
+                "verificationUnderReview": "التحقق قيد المراجعة",
+                "notVerified": "غير موثق",
+                "quickActions": "إجراءات سريعة"
+            },
+            "notifications": {
+                "newJobMatches": "وظائف جديدة مطابقة",
+                "newJobMatchesDesc": "احصل على إشعار عندما تتطابق الوظائف مع مهاراتك",
+                "newMessages": "رسائل جديدة",
+                "newMessagesDesc": "احصل على إشعار عند استلام رسائل جديدة",
+                "payments": "المدفوعات",
+                "paymentsDesc": "احصل على إشعار عند إرسال أو استلام مدفوعات",
+                "reviews": "التقييمات",
+                "reviewsDesc": "احصل على إشعار عند استلام تقييم جديد",
+                "offersAndUpdates": "العروض والتحديثات",
+                "offersAndUpdatesDesc": "نصائح وتحديثات من WorkedIn"
+            }
+        },
+        "leaveReview": {
+            "rating": {
+                "poor": "ضعيف",
+                "fair": "مقبول",
+                "good": "جيد",
+                "veryGood": "جيد جداً",
+                "excellent": "ممتاز"
+            },
+            "submitted": "تم إرسال التقييم بنجاح!",
+            "error": "فشل إرسال التقييم. حاول مرة أخرى."
         },
         "authCallback": {
             "signingIn": "جارٍ تسجيل دخولك",

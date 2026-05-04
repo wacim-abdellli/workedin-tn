@@ -81,9 +81,9 @@
   --color-text-inverse: #ffffff;
 
   /* ===== SEMANTIC TOKENS - Borders (Light Mode) ===== */
-  --color-border-subtle: var(--neutral-200);
-  --color-border-default: var(--neutral-300);
-  --color-border-strong: var(--neutral-400);
+  --color-border-subtle: var(--neutral-300);
+  --color-border-default: var(--neutral-400);
+  --color-border-strong: var(--neutral-500);
 
   /* ===== SEMANTIC TOKENS - Interactive States ===== */
   --color-interactive-default: var(--purple-600);

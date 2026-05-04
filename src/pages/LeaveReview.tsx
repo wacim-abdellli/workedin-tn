@@ -47,12 +47,17 @@ interface StarRatingProps {
   readonly?: boolean;
 }
 
-const RATING_LABELS: Record<number, string> = {
-  1: "Poor",
-  2: "Fair",
-  3: "Good",
-  4: "Very Good",
-  5: "Excellent",
+const getRatingLabel = (rating: number, tx: (key: string, params?: any, fallback?: string) => string): string => {
+  const labels: Record<number, { key: string; fallback: string }> = {
+    1: { key: "pages.leaveReview.rating.poor", fallback: "Poor" },
+    2: { key: "pages.leaveReview.rating.fair", fallback: "Fair" },
+    3: { key: "pages.leaveReview.rating.good", fallback: "Good" },
+    4: { key: "pages.leaveReview.rating.veryGood", fallback: "Very Good" },
+    5: { key: "pages.leaveReview.rating.excellent", fallback: "Excellent" },
+  };
+  
+  const label = labels[rating];
+  return label ? tx(label.key, undefined, label.fallback) : "";
 };
 
 function getJobTitle(jobs: ContractForReview["jobs"]): string {
@@ -235,7 +240,7 @@ export default function LeaveReview() {
         queryKey: ["existing-review", contractId, user?.id],
       });
       showToast(
-        tx("review.submitted", undefined, "Review submitted successfully!"),
+        tx("pages.leaveReview.submitted", undefined, "Review submitted successfully!"),
         "success",
       );
       navigate(`/contracts/${contractId}`);
@@ -243,7 +248,7 @@ export default function LeaveReview() {
     onError: (error) => {
       const message = error instanceof Error && error.message
         ? error.message
-        : tx("review.error", undefined, "Failed to submit review. Try again.");
+        : tx("pages.leaveReview.error", undefined, "Failed to submit review. Try again.");
       showToast(
         message,
         "error",
@@ -436,7 +441,7 @@ export default function LeaveReview() {
                   className="text-sm font-medium"
                   style={{ color: "var(--color-text-secondary)" }}
                 >
-                  {RATING_LABELS[existingReview.rating] ?? ""}
+                  {getRatingLabel(existingReview.rating, tx)}
                 </p>
               </div>
 
@@ -493,7 +498,7 @@ export default function LeaveReview() {
                     opacity: hoveredRating || rating ? 1 : 0,
                   }}
                 >
-                  {RATING_LABELS[hoveredRating || rating] ?? ""}
+                  {getRatingLabel(hoveredRating || rating, tx)}
                 </p>
               </div>
 

@@ -1864,8 +1864,15 @@ html:not(.dark) .text-zinc-400,
 html:not(.dark) .text-zinc-500,
 html:not(.dark) .text-zinc-600,
 html:not(.dark) .text-slate-300,
-html:not(.dark) .text-slate-400 {
+html:not(.dark) .text-slate-400,
+html:not(.dark) .text-muted-foreground,
+html:not(.dark) .text-muted {
   color: var(--color-text-tertiary) !important;
+}
+
+/* Add foreground text utilities */
+html:not(.dark) .text-foreground {
+  color: var(--color-text-primary) !important;
 }
 
 /* Hover dark backgrounds */

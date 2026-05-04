@@ -1,10 +1,10 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { Loader2, CreditCard, Shield, AlertCircle } from 'lucide-react';
-import { initiatePayment } from '../../lib/flouci';
+import { createEscrow } from '@/services/dhmad';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../ui/Toast';
-import { formatCurrency, calculateTotalWithFee, tndToMillimes } from '../../lib/currencyUtils';
+import { formatCurrency, calculateTotalWithFee } from '../../lib/currencyUtils';
 import { PLATFORM_FEE_PERCENTAGE } from '../../types/payment';
 import type { FundEscrowProps } from '../../types/payment';
 import { useTranslation } from "../../i18n";
@@ -36,31 +36,27 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 throw new Error(tx('auth.loginRequired', undefined, 'You must be signed in'));
             }
 
-            // Convert to millimes for Flouci
-            const amountInMillimes = tndToMillimes(totalAmount);
-
-            // Build redirect URLs
-            const baseUrl = window.location.origin;
-            const successUrl = `${baseUrl}/payment/success?contract_id=${contract.id}`;
-            const failUrl = `${baseUrl}/payment/failed?contract_id=${contract.id}`;
-
-            // Initiate Flouci payment and create the pending transaction server-side.
-            const payment = await initiatePayment({
-                amount: amountInMillimes,
-                success_link: successUrl,
-                fail_link: failUrl,
-                session_timeout_secs: 1200,
-                developer_tracking_id: `contract_${contract.id}_${Date.now()}`,
+            // Initiate Dhmad escrow creation
+            const escrowResponse = await createEscrow({
+                amount: totalAmount, // Dhmad uses TND directly
+                buyer_id: user.id,
+                seller_id: contract.freelancer_id,
                 contract_id: contract.id,
-                transaction_amount: totalAmount,
+                description: `Escrow for contract ${contract.id}`,
             });
 
-            logger.log('[FundEscrow] Payment initiated:', payment.payment_id);
+            logger.log('[FundEscrow] Dhmad escrow created:', escrowResponse.escrow_id);
 
-            showToast(tx('payment.redirectingToPayment', undefined, 'Redirecting to payment page...'), 'success');
+            showToast(tx('payment.redirectingToPayment', undefined, 'Redirecting to secure payment...'), 'success');
 
-            // Redirect to Flouci payment page
-            window.location.href = payment.link;
+            if (escrowResponse.payment_url) {
+                // Redirect to Dhmad payment page
+                window.location.href = escrowResponse.payment_url;
+            } else {
+                // DEV fallback if payment_url is missing
+                const baseUrl = window.location.origin;
+                window.location.href = `${baseUrl}/payment/success?contract_id=${contract.id}`;
+            }
 
             onSuccess?.();
         } catch (error) {
@@ -160,7 +156,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             </button>
 
             <p className="text-center text-xs text-muted mt-4">
-                {tx('payment.flouciDescription')}</p>
+                {tx('payment.dhmadDescription', undefined, 'Payments are securely held in escrow by Dhmad.tn')}</p>
         </div>
     );
 };

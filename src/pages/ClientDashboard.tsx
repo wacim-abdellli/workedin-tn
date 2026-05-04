@@ -1,4 +1,4 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -332,16 +332,16 @@ function ClientDashboardPage() {
                                         className="h-12 w-12 rounded-full border object-cover ring-2"
                                         style={{ 
                                             borderColor: 'var(--color-border-default)',
-                                            ringColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
-                                        }}
+                                            '--tw-ring-color': 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
+                                        } as React.CSSProperties}
                                     />
                                 ) : (
                                     <div 
                                         className="h-12 w-12 rounded-full border bg-[var(--color-bg-elevated)] flex items-center justify-center ring-2"
                                         style={{ 
                                             borderColor: 'var(--color-border-default)',
-                                            ringColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
-                                        }}
+                                            '--tw-ring-color': 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
+                                        } as React.CSSProperties}
                                     >
                                         <Users className="h-5 w-5" style={{ color: 'var(--workspace-primary-mid)' }} />
                                     </div>
@@ -369,6 +369,40 @@ function ClientDashboardPage() {
                                     >
                                         {tx('dashboard.client.commandCenterSubtitle', undefined, 'Track projects, proposals, and spending.')}
                                     </p>
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            if (!profile?.id) return;
+                                            try {
+                                                const jobsToSeed = Array.from({ length: 10 }).map((_, i) => ({
+                                                    client_id: profile.id,
+                                                    title: `Test Job ${i + 1} - ${new Date().toLocaleTimeString()}`,
+                                                    description: 'This is a test job seeded automatically to help with testing the new flows and pagination. Need an expert freelancer.',
+                                                    budget_min: (i + 1) * 20,
+                                                    budget_max: (i + 1) * 50,
+                                                    category: 'development', // Lowercase enum
+                                                    required_skills: ['React', 'UI/UX'], // Correct column
+                                                    status: 'open',
+                                                    job_type: 'fixed_price', // Correct column
+                                                    experience_level: 'intermediate',
+                                                    duration: 'less_than_1_month', // Correct column
+                                                }));
+                                                const { error } = await supabase.from('jobs').insert(jobsToSeed);
+                                                if (error) {
+                                                    alert("Failed to seed jobs! Error: " + error.message);
+                                                    console.error("Supabase insert error:", error);
+                                                } else {
+                                                    window.location.reload();
+                                                }
+                                            } catch (err) {
+                                                console.error(err);
+                                                alert("Error seeding jobs");
+                                            }
+                                        }}
+                                        className="mt-2 rounded-lg bg-rose-500/20 px-3 py-1.5 text-xs font-bold text-rose-500 border border-rose-500/50 hover:bg-rose-500/30 transition-colors"
+                                    >
+                                        + Seed 10 Jobs (Test)
+                                    </button>
                                 </div>
                             </div>
 

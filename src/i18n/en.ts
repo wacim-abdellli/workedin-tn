@@ -1348,6 +1348,18 @@ export const en: Translations = {
         "thumbnailUrl": "Thumbnail image URL",
         "projectUrl": "Project URL",
         "completionDate": "Completion date",
+        "freelancer": "Freelancer",
+        "client": "Client",
+        "hourly": "Hourly",
+        "fixedPrice": "Fixed-price",
+        "skill": "Skill",
+        "tunisia": "Tunisia",
+        "general": "General",
+        "postedRecently": "Posted recently",
+        "postedToday": "Posted today",
+        "posted1DayAgo": "Posted 1 day ago",
+        "postedDaysAgo": "Posted {{days}} days ago",
+        "postedWeeksAgo": "Posted {{weeks}} week{{weeks > 1 ? 's' : ''}} ago",
         "searchProposals": "Search in proposals...",
         "hourlyExample": "Ex: 20",
         "hoursExample": "Ex: 10-20",
@@ -1558,6 +1570,62 @@ export const en: Translations = {
             "contractPayment": "Contract payment",
             "clientId": "Client #{{id}}",
             "notAvailable": "N/A"
+        },
+        "savedJobs": {
+            "title": "Saved Jobs",
+            "savedTalent": "Saved Talent",
+            "subtitle": "Keep track of jobs you want to apply for.",
+            "subtitleTalent": "Keep track of top freelancers for your projects.",
+            "empty": {
+                "title": "Nothing saved yet"
+            },
+            "browseJobs": "Browse Jobs",
+            "browseFreelancers": "Browse Freelancers",
+            "labels": {
+                "budget": "Budget:"
+            }
+        },
+        "jobBoard": {
+            "budgetNotSpecified": "Budget not specified",
+            "toasts": {
+                "removedFromSaved": "Removed from saved jobs",
+                "savedJob": "Saved job",
+                "savedJobsUpdateError": "Could not update saved jobs"
+            }
+        },
+        "settings": {
+            "account": {
+                "currentWorkspace": "Current workspace",
+                "accountType": "Account type",
+                "identity": "Identity",
+                "identityVerified": "Identity Verified",
+                "verificationUnderReview": "Verification Under Review",
+                "notVerified": "Not Verified",
+                "quickActions": "Quick Actions"
+            },
+            "notifications": {
+                "newJobMatches": "New job matches",
+                "newJobMatchesDesc": "Get notified when jobs match your skills",
+                "newMessages": "New messages",
+                "newMessagesDesc": "Get notified when you receive new messages",
+                "payments": "Payments",
+                "paymentsDesc": "Get notified when you send or receive payments",
+                "reviews": "Reviews",
+                "reviewsDesc": "Get notified when you receive a new review",
+                "offersAndUpdates": "Offers and updates",
+                "offersAndUpdatesDesc": "Tips and updates from WorkedIn"
+            }
+        },
+        "leaveReview": {
+            "rating": {
+                "poor": "Poor",
+                "fair": "Fair",
+                "good": "Good",
+                "veryGood": "Very Good",
+                "excellent": "Excellent"
+            },
+            "submitted": "Review submitted successfully!",
+            "error": "Failed to submit review. Try again."
         },
         "authCallback": {
             "signingIn": "Signing you in",
@@ -3931,7 +3999,38 @@ export const en: Translations = {
         "retry": "Retry",
         "loading": "Loading...",
         "error": "Error",
-        "success": "Success"
+        "success": "Success",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "view": "View",
+        "close": "Close",
+        "open": "Open",
+        "submit": "Submit",
+        "confirm": "Confirm",
+        "yes": "Yes",
+        "no": "No",
+        "all": "All",
+        "none": "None",
+        "search": "Search",
+        "filter": "Filter",
+        "sort": "Sort",
+        "you": "You",
+        "freelancer": "Freelancer",
+        "client": "Client",
+        "hourly": "Hourly",
+        "fixedPrice": "Fixed Price",
+        "available": "Available",
+        "busy": "Busy",
+        "offline": "Offline",
+        "active": "Active",
+        "inactive": "Inactive",
+        "completed": "Completed",
+        "pending": "Pending",
+        "cancelled": "Cancelled",
+        "approved": "Approved",
+        "rejected": "Rejected"
     },
     "contractWorkspace": {
         "clientView": "Client view",

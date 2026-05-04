@@ -1,31 +1,25 @@
 import { logger } from '@/lib/logger';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Loader2, CheckCircle, ArrowRight } from 'lucide-react';
-import { verifyPayment } from '../lib/flouci';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../i18n';
 import { formatCurrency } from '../lib/currencyUtils';
-import { sendPaymentReceivedEmail } from '../lib/email';
 
 type VerificationStatus = 'verifying' | 'success' | 'failed';
 
 /**
  * PaymentSuccess Page
- * Handles redirect after successful Flouci payment
+ * Handles redirect after successful Dhmad payment
  * 
  * FIXES APPLIED:
- * - Added idempotency check (prevents duplicate processing on refresh)
- * - Uses atomic payment completion via SQL function
- * - Fixed field name: 'amount' instead of 'budget'
+ * - Removed frontend Flouci verification (security risk)
+ * - Now polls the database waiting for the Dhmad webhook to mark escrow_funded = true
  */
 const PaymentSuccess = () => {
     const { dir, tx } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-
-    // Prevent double processing with ref
-    const processingRef = useRef(false);
 
     const [status, setStatus] = useState<VerificationStatus>('verifying');
     const [error, setError] = useState<string | null>(null);
@@ -33,163 +27,68 @@ const PaymentSuccess = () => {
     const [amount, setAmount] = useState<number>(0);
 
     useEffect(() => {
-        const verifyAndProcess = async () => {
-            // Prevent double execution
-            if (processingRef.current) return;
-            processingRef.current = true;
+        const contract_id = searchParams.get('contract_id');
+        setContractId(contract_id);
 
-            const payment_id = searchParams.get('payment_id');
-            const contract_id = searchParams.get('contract_id');
+        if (!contract_id) {
+            logger.error('[PaymentSuccess] No contract_id in URL');
+            setStatus('failed');
+            setError('معرف العقد غير موجود');
+            return;
+        }
 
-            logger.log('[PaymentSuccess] Verifying payment:', { payment_id, contract_id });
-            setContractId(contract_id);
+        let pollCount = 0;
+        const maxPolls = 15; // 30 seconds max (2s interval)
 
-            if (!payment_id) {
-                logger.error('[PaymentSuccess] No payment_id in URL');
-                setStatus('failed');
-                setError('معرف الدفع غير موجود');
-                return;
-            }
-
+        const pollContract = async () => {
             try {
-                // ================================================
-                // STEP 1: IDEMPOTENCY CHECK
-                // Check if payment was already processed
-                // ================================================
-                const { data: existingTransaction, error: transactionLookupError } = await supabase
-                    .from('transactions')
-                    .select('id, status, amount, contract_id, user_id, payment_gateway_id')
-                    .eq('payment_gateway_id', payment_id)
-                    .maybeSingle();
-
-                if (transactionLookupError) {
-                    throw transactionLookupError;
-                }
-
-                if (existingTransaction?.status === 'completed') {
-                    logger.log('[PaymentSuccess] Payment already processed (idempotent)');
-                    setAmount(existingTransaction.amount || 0);
-                    setStatus('success');
-
-                    // Redirect after delay
-                    setTimeout(() => {
-                        if (contract_id) {
-                            navigate(`/contracts/${contract_id}`);
-                        } else {
-                            navigate('/client/dashboard');
-                        }
-                    }, 3000);
-                    return; // EXIT - Already completed
-                }
-
-                // ================================================
-                // STEP 2: VERIFY WITH FLOUCI
-                // ================================================
-                if (!contract_id) {
-                    // No contract - just update transaction if exists
-                    const verification = await verifyPayment(payment_id);
-                    logger.log('[PaymentSuccess] Verification result:', verification);
-
-                    if (verification.status !== 'SUCCESS') {
-                        setStatus('failed');
-                        setError('لم يتم التحقق من الدفع');
-                        return;
-                    }
-
-                    if (existingTransaction) {
-                        await supabase
-                            .from('transactions')
-                            .update({
-                                status: 'completed',
-                                completed_at: new Date().toISOString(),
-                                payment_gateway_response: verification,
-                            })
-                            .eq('id', existingTransaction.id);
-                        setAmount(existingTransaction.amount || 0);
-                    }
-                    setStatus('success');
-                    setTimeout(() => navigate('/client/dashboard'), 4000);
-                    return;
-                }
-
-                if (!existingTransaction) {
-                    throw new Error('Pending payment transaction not found for this payment session');
-                }
-
-                // Get contract with correct field name (amount, not budget)
-                const { data: contract, error: contractFetchError } = await supabase
+                const { data: contract, error: fetchError } = await supabase
                     .from('contracts')
-                    .select('id, freelancer_id, amount, escrow_funded') // ✅ FIXED: 'amount' not 'budget'
+                    .select('id, amount, escrow_funded')
                     .eq('id', contract_id)
                     .single();
 
-                if (contractFetchError || !contract) {
-                    logger.error('[PaymentSuccess] Contract fetch error:', contractFetchError);
-                    setStatus('failed');
-                    setError('لم يتم العثور على العقد');
-                    return;
+                if (fetchError || !contract) {
+                    throw new Error('لم يتم العثور على العقد');
                 }
 
-                // Check if already funded
                 if (contract.escrow_funded) {
-                    logger.log('[PaymentSuccess] Contract already funded (idempotent)');
+                    logger.log('[PaymentSuccess] Escrow funded confirmed by webhook');
                     setAmount(contract.amount || 0);
                     setStatus('success');
-                    setTimeout(() => navigate(`/contracts/${contract_id}`), 3000);
-                    return;
+                    setTimeout(() => {
+                        navigate(`/contracts/${contract_id}`);
+                    }, 4000);
+                    return true; // Stop polling
                 }
-
-                if (!contract.freelancer_id) {
-                    throw new Error('Contract is missing a freelancer reference');
-                }
-
-                logger.log('[PaymentSuccess] Completing payment via secure verification flow...');
-
-                const verification = await verifyPayment(payment_id, {
-                    complete_payment: true,
-                    transaction_id: existingTransaction.id,
-                    contract_id,
-                    freelancer_id: contract.freelancer_id,
-                });
-
-                logger.log('[PaymentSuccess] Verification result:', verification);
-
-                if (verification.status !== 'SUCCESS') {
-                    setStatus('failed');
-                    setError('لم يتم التحقق من الدفع');
-                    return;
-                }
-
-                if (verification.completion?.success === false) {
-                    throw new Error(verification.completion.error || 'فشل في إتمام الدفع');
-                }
-
-                setAmount(contract.amount || 0);
-
-                // Fire payment received email — non-blocking
-                if (contract_id) {
-                    sendPaymentReceivedEmail(contract_id);
-                }
-
-                // ================================================
-                // SUCCESS!
-                // ================================================
-                setStatus('success');
-                logger.log('[PaymentSuccess] Payment verified and processed successfully');
-
-                // Redirect after 4 seconds
-                setTimeout(() => {
-                    navigate(`/contracts/${contract_id}`);
-                }, 4000);
-
+                
+                return false; // Keep polling
             } catch (err) {
-                logger.error('[PaymentSuccess] Error:', err);
-                setStatus('failed');
-                setError(err instanceof Error ? err.message : 'خطأ في التحقق من الدفع');
+                logger.error('[PaymentSuccess] Polling error:', err);
+                return false;
             }
         };
 
-        verifyAndProcess();
+        // Initial check
+        pollContract().then(success => {
+            if (!success) {
+                // Start polling interval
+                const interval = setInterval(async () => {
+                    pollCount++;
+                    const isSuccess = await pollContract();
+                    
+                    if (isSuccess) {
+                        clearInterval(interval);
+                    } else if (pollCount >= maxPolls) {
+                        clearInterval(interval);
+                        setStatus('failed');
+                        setError('انتهى وقت الانتظار. يرجى التحقق من حالة الدفع في لوحة التحكم.');
+                    }
+                }, 2000);
+
+                return () => clearInterval(interval);
+            }
+        });
     }, [searchParams, navigate]);
 
     return (

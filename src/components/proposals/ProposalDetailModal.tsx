@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     MessageSquare, Star, MapPin, Clock, Briefcase,
     Archive, CheckCircle, Loader2, User,
@@ -125,6 +125,7 @@ export default function ProposalDetailPane({
     const { tx } = useTranslation();
     const [activeTab, setActiveTab] = useState<Tab>('proposal');
     const [hireConfirm, setHireConfirm] = useState(false);
+    const [rejectConfirm, setRejectConfirm] = useState(false);
     const [archiveOpen, setArchiveOpen] = useState(false);
     const [isLoadingInsights, setIsLoadingInsights] = useState(false);
     const [resolvedBio, setResolvedBio] = useState('');
@@ -139,6 +140,7 @@ export default function ProposalDetailPane({
     useEffect(() => {
         setActiveTab('proposal');
         setHireConfirm(false);
+        setRejectConfirm(false);
         setArchiveOpen(false);
     }, [proposal?.id, proposal?.status]);
 
@@ -606,7 +608,7 @@ export default function ProposalDetailPane({
             </div>
 
             {/* ── STICKY BOTTOM ACTION BAR ── */}
-            <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 px-5 py-4 flex items-center justify-between gap-3 z-30 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] backdrop-blur-xl bg-[var(--color-bg-base)]/80">
+            <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 pl-5 pr-16 md:pr-20 py-4 flex items-center justify-between gap-3 z-30 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] bg-[var(--color-bg-elevated)]">
                  
                 {hireConfirm ? (
                     <div className="flex items-center gap-2 flex-1 flex-wrap">
@@ -622,72 +624,70 @@ export default function ProposalDetailPane({
                         </button>
                         <button type="button" onClick={() => { setHireConfirm(false); onHire(); }}
                             disabled={isHiring}
-                            className="flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-bold transition-all hover:bg-emerald-400 disabled:opacity-60 bg-emerald-500 text-[#0a0a0a] shadow-[0_4px_16px_-4px_rgba(34,197,94,0.5)]">
+                            className="flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-bold transition-all hover:bg-emerald-400 disabled:opacity-60 bg-emerald-500 text-[#0a0a0a]">
                             {isHiring ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                             Yes, Hire!
                         </button>
                     </div>
+                ) : rejectConfirm ? (
+                    <div className="flex items-center gap-2 flex-1 flex-wrap">
+                        <span className="text-sm font-bold text-rose-400">
+                            Decline this proposal?
+                        </span>
+                        <span className="text-xs text-[var(--color-text-primary)]/50 hidden sm:inline">
+                            The freelancer will be notified.
+                        </span>
+                        <button type="button" onClick={() => setRejectConfirm(false)}
+                            className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-[var(--color-text-primary)]/70 hover:bg-white/5 transition-colors ml-auto">
+                            Cancel
+                        </button>
+                        <button type="button" onClick={() => { setRejectConfirm(false); onReject(); }}
+                            className="flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-bold transition-all hover:bg-rose-500 bg-rose-600 text-white">
+                            <X className="w-4 h-4" />
+                            Yes, Decline
+                        </button>
+                    </div>
                 ) : (
-                    <div className="flex flex-1 items-center gap-3 overflow-x-auto scrollbar-hide py-1">
+                    <div className="flex flex-1 items-center justify-between gap-3 overflow-x-auto scrollbar-hide py-1">
+                        <div className="flex items-center gap-3">
+                            <button type="button" onClick={onMessage}
+                                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)]/70 hover:bg-white/5 transition-colors shrink-0">
+                                <MessageSquare className="w-4 h-4" />
+                                {tx('jobProposals.message', undefined, 'Chat')}
+                            </button>
+
+                            <button type="button" onClick={onShortlist}
+                                className={`flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-all hover:bg-white/5 shrink-0 ${isShortlisted ? 'border-amber-500/50 text-amber-400 bg-amber-500/10' : 'border-white/10 text-[var(--color-text-primary)]/70'}`}>
+                                <Star className={`w-4 h-4 ${isShortlisted ? 'fill-current' : ''}`} />
+                                {isShortlisted ? tx('jobProposals.saved', undefined, 'Saved') : tx('jobProposals.save', undefined, 'Save')}
+                            </button>
+
+                            {canReject && (
+                                <button
+                                    type="button"
+                                    onClick={() => setRejectConfirm(true)}
+                                    className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 px-4 py-2.5 text-sm font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition-colors shrink-0"
+                                >
+                                    <X className="w-4 h-4" />
+                                    {tx('jobProposals.modal.reject', undefined, 'Decline')}
+                                </button>
+                            )}
+
+                            <button type="button" onClick={() => { if (isArchived) onUnarchive(); else onArchive(); }}
+                                className={`flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors shrink-0 ${isArchived ? 'border-amber-500/30 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20' : 'border-white/10 text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)]/80 hover:bg-white/5'}`}>
+                                <Archive className="w-4 h-4" />
+                                {isArchived ? tx('jobProposals.modal.unarchive', undefined, 'Unarchive') : tx('jobProposals.modal.archive', undefined, 'Archive')}
+                            </button>
+                        </div>
+
                         <button type="button" onClick={() => setHireConfirm(true)}
                             disabled={isHiring || !canHire}
-                            className="flex items-center justify-center gap-2 rounded-lg px-8 py-2.5 text-sm font-bold transition-all hover:bg-amber-400 disabled:opacity-60 shrink-0 bg-amber-500 text-[#0a0a0a] shadow-[0_4px_16px_-4px_rgba(245,158,11,0.5)]">
+                            className="flex items-center justify-center gap-2 rounded-lg px-8 py-2.5 text-sm font-bold transition-all hover:bg-amber-400 disabled:opacity-60 shrink-0 bg-amber-500 text-[#0a0a0a]">
                             {isHiring ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                             {canHire
                                 ? tx('jobProposals.hire', undefined, 'Hire Now')
                                 : tx('jobProposals.hireDisabled', undefined, 'Cannot hire declined proposal')}
                         </button>
-
-                        <button type="button" onClick={onMessage}
-                            className="flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)]/70 hover:bg-white/5 transition-colors shrink-0">
-                            <MessageSquare className="w-4 h-4" />
-                            {tx('jobProposals.message', undefined, 'Chat')}
-                        </button>
-
-                        <button type="button" onClick={onShortlist}
-                            className={`flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-all hover:bg-white/5 shrink-0 ${isShortlisted ? 'border-amber-500/50 text-amber-400 bg-amber-500/10' : 'border-white/10 text-[var(--color-text-primary)]/70'}`}>
-                            <Star className={`w-4 h-4 ${isShortlisted ? 'fill-current' : ''}`} />
-                            {isShortlisted ? tx('jobProposals.saved', undefined, 'Saved') : tx('jobProposals.save', undefined, 'Save')}
-                        </button>
-
-                        {canReject && (
-                            <button
-                                type="button"
-                                onClick={onReject}
-                                className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 px-4 py-2.5 text-sm font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition-colors shrink-0"
-                            >
-                                <X className="w-4 h-4" />
-                                {tx('jobProposals.modal.reject', undefined, 'Decline')}
-                            </button>
-                        )}
-
-                        {/* Archive dropdown */}
-                        <div className="relative ms-auto shrink-0">
-                            <button type="button" onClick={() => setArchiveOpen(v => !v)}
-                                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)]/80 transition-colors">
-                                <Archive className="w-4 h-4" />
-                                More
-                                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${archiveOpen ? 'rotate-180' : ''}`} />
-                            </button>
-                            {archiveOpen && (
-                                <div className="absolute bottom-full right-0 mb-3 rounded-xl border border-white/10 bg-[var(--color-bg-base)] shadow-[0_8px_32px_rgba(0,0,0,0.8)] z-40 py-2 w-48">
-                                    {canReject && (
-                                        <button type="button" onClick={() => { setArchiveOpen(false); onReject(); }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-rose-400 hover:bg-white/5 transition-colors">
-                                            <X className="w-4 h-4" />
-                                            {tx('jobProposals.modal.reject', undefined, 'Decline Proposal')}
-                                        </button>
-                                    )}
-                                    <button type="button" onClick={() => { setArchiveOpen(false); if (isArchived) onUnarchive(); else onArchive(); }}
-                                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold hover:bg-white/5 transition-colors ${isArchived ? 'text-amber-400' : 'text-[var(--color-text-primary)]/70'}`}>
-                                        <Archive className="w-4 h-4" />
-                                        {isArchived
-                                            ? tx('jobProposals.modal.unarchive', undefined, 'Unarchive Proposal')
-                                            : tx('jobProposals.modal.archive', undefined, 'Archive Proposal')}
-                                    </button>
-                                </div>
-                            )}
-                        </div>
                     </div>
                 )}
             </div>

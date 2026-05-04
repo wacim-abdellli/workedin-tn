@@ -1,4 +1,4 @@
-﻿import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getJobEditRoute } from '@/lib/routes'
 import { FolderOpen } from 'lucide-react'
@@ -47,7 +47,7 @@ interface ContractStatusRow {
   updated_at?: string | null;
 }
 
-type JobListTab = 'all' | 'active' | 'attention' | 'finished';
+type JobListTab = 'all' | 'active' | 'proposals' | 'attention' | 'finished';
 type DerivedJobStatus = 'open' | 'in_progress' | 'needs_attention' | 'finished_success' | 'finished_unsuccessful';
 
 type EnrichedClientJob = ClientJobRow & {
@@ -229,6 +229,9 @@ export default function ClientJobs() {
     if (activeTab === 'active') {
       return allJobs.filter((job) => job.derivedStatus === 'open' || job.derivedStatus === 'in_progress');
     }
+    if (activeTab === 'proposals') {
+      return allJobs.filter((job) => (job.proposals?.[0]?.count || 0) > 0);
+    }
     if (activeTab === 'attention') {
       return allJobs.filter((job) => job.derivedStatus === 'needs_attention');
     }
@@ -266,6 +269,7 @@ export default function ClientJobs() {
   const tabLabel = (tab: JobListTab) => {
     if (tab === 'all') return tx('pages.clientJobs.all', undefined, 'All')
     if (tab === 'active') return tx('pages.clientJobs.active', undefined, 'Active')
+    if (tab === 'proposals') return tx('pages.clientJobs.withProposals', undefined, 'With Proposals')
     if (tab === 'attention') return tx('pages.clientJobs.needsAttention', undefined, 'Needs attention')
     return tx('pages.clientJobs.finished', undefined, 'Finished')
   }
@@ -438,7 +442,7 @@ export default function ClientJobs() {
 
         {/* Filter tabs */}
         <div className="flex overflow-x-auto scrollbar-hide mb-6 border-b border-white/5">
-          {(['all', 'active', 'attention', 'finished'] as const).map(tab => {
+          {(['all', 'active', 'proposals', 'attention', 'finished'] as const).map(tab => {
             const active = activeTab === tab;
             return (
               <button

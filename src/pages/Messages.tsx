@@ -961,6 +961,14 @@ function MessagesComponent() {
             return new Set();
         }
     });
+    const [unarchivedConversationIds, setUnarchivedConversationIds] = useState<Set<string>>(() => {
+        try {
+            const stored = localStorage.getItem('workedin_unarchived_conversations');
+            return stored ? new Set(JSON.parse(stored) as string[]) : new Set();
+        } catch {
+            return new Set();
+        }
+    });
     const [showMobileThread, setShowMobileThread] = useState(false);
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
@@ -1100,6 +1108,7 @@ function MessagesComponent() {
 
     const selectedContractId = selectedConversation?.contract_id || null;
     const selectedContractMeta = selectedContractId ? contractSessionMetaById[selectedContractId] : null;
+    const selectedWorkspaceContractId = selectedContractMeta?.linked_contract_id || selectedContractId;
     const isContractSession = Boolean(selectedContractId);
     const activeWorkspace = activeMode ?? profile?.active_mode;
     const isFreelancerWorkspace = activeWorkspace === 'freelancer';
@@ -4376,7 +4385,17 @@ function MessagesComponent() {
         setArchivedConversationIds((prev) => {
             const next = new Set(prev);
             next.add(conversationId);
-            try { localStorage.setItem('workedin_archived_conversations', JSON.stringify([...next])); } catch {}
+            try { localStorage.setItem('workedin_archived_conversations', JSON.stringify([...next])); } catch {
+                // localStorage can fail in private browsing or restricted environments.
+            }
+            return next;
+        });
+        setUnarchivedConversationIds((prev) => {
+            const next = new Set(prev);
+            next.delete(conversationId);
+            try { localStorage.setItem('workedin_unarchived_conversations', JSON.stringify([...next])); } catch {
+                // localStorage can fail in private browsing or restricted environments.
+            }
             return next;
         });
         // Deselect if currently open
@@ -4390,7 +4409,17 @@ function MessagesComponent() {
         setArchivedConversationIds((prev) => {
             const next = new Set(prev);
             next.delete(conversationId);
-            try { localStorage.setItem('workedin_archived_conversations', JSON.stringify([...next])); } catch {}
+            try { localStorage.setItem('workedin_archived_conversations', JSON.stringify([...next])); } catch {
+                // localStorage can fail in private browsing or restricted environments.
+            }
+            return next;
+        });
+        setUnarchivedConversationIds((prev) => {
+            const next = new Set(prev);
+            next.add(conversationId);
+            try { localStorage.setItem('workedin_unarchived_conversations', JSON.stringify([...next])); } catch {
+                // localStorage can fail in private browsing or restricted environments.
+            }
             return next;
         });
     }, []);
@@ -4402,7 +4431,8 @@ function MessagesComponent() {
             const isTerminalAndRead = TERMINAL_STATUSES.has(contractStatus) && c.unread_count === 0
                 && (showArchived || selectedConversation?.id !== c.id);
             const isManuallyArchived = archivedConversationIds.has(c.id);
-            const isArchived = isManuallyArchived || isTerminalAndRead;
+            const isManuallyUnarchived = unarchivedConversationIds.has(c.id);
+            const isArchived = isManuallyArchived || (isTerminalAndRead && !isManuallyUnarchived);
 
             // In archive view: show only archived items
             if (showArchived) return isArchived;
@@ -4418,7 +4448,7 @@ function MessagesComponent() {
             }
             return true;
         });
-    }, [conversations, contractStatusById, archivedConversationIds, showArchived, filter, searchQuery, selectedConversation?.id, getResolvedContractTitle]);
+    }, [conversations, contractStatusById, archivedConversationIds, unarchivedConversationIds, showArchived, filter, searchQuery, selectedConversation?.id, getResolvedContractTitle]);
 
     const displayConversations = useMemo(() => {
         const seenKeys = new Set<string>();
@@ -4841,7 +4871,10 @@ function MessagesComponent() {
                     <div className="py-1">
                         {displayConversations.map((conversation) => {
                             const isActive = selectedConversation?.id === conversation.id;
-                            const isArchived = archivedConversationIds.has(conversation.id);
+                            const contractStatus = conversation.contract_id ? contractStatusById[conversation.contract_id] ?? '' : '';
+                            const isTerminalAndRead = TERMINAL_STATUSES.has(contractStatus) && conversation.unread_count === 0;
+                            const isArchived = archivedConversationIds.has(conversation.id)
+                                || (isTerminalAndRead && !unarchivedConversationIds.has(conversation.id));
                             const previewText = getConversationLastPreviewText(conversation.id, conversation.last_message_text)
                                 || ((conversation.message_count ?? 0) > 0
                                     ? tx('pages.messages.attachmentLabel', undefined, 'Attachment')
@@ -4858,7 +4891,11 @@ function MessagesComponent() {
                                         title={isArchived ? tx('pages.messages.unarchive', undefined, 'Unarchive') : tx('pages.messages.archive', undefined, 'Archive')}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            isArchived ? unarchiveConversation(conversation.id) : archiveConversation(conversation.id);
+                                            if (isArchived) {
+                                                unarchiveConversation(conversation.id);
+                                            } else {
+                                                archiveConversation(conversation.id);
+                                            }
                                         }}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] items-center justify-center text-on-surface-subtle hover:text-on-surface transition-all opacity-0 group-hover/item:opacity-100 hidden md:flex"
                                         aria-label={isArchived ? 'Unarchive conversation' : 'Archive conversation'}
@@ -5092,10 +5129,10 @@ function MessagesComponent() {
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    {selectedConversation.contract_id ? (
+                                    {selectedWorkspaceContractId ? (
                                         <button
                                             type="button"
-                                            onClick={() => navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
+                                            onClick={() => navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
                                             aria-haspopup="false"
                                             className={`inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${accentClasses.contractToggleIdle}`}
                                         >
@@ -5206,10 +5243,10 @@ function MessagesComponent() {
                                                 <span className={`${contractCockpit.theme.accent} font-medium`}>{tx('pages.messages.contractDetails.review', {}, 'Review')}</span> {contractCockpit.reviewDueLabel}
                                             </span>
                                         ) : null}
-                                        {selectedConversation.contract_id ? (
+                                        {selectedWorkspaceContractId ? (
                                             <button
                                                 type="button"
-                                                onClick={() => navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
+                                                onClick={() => navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
                                                 className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-on-surface transition hover:bg-white/10"
                                             >
                                                 {tx('pages.messages.contractDetails.workspace', {}, 'Workspace')} ↗
@@ -5521,7 +5558,7 @@ function MessagesComponent() {
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => selectedConversation?.contract_id && navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
+                                    onClick={() => selectedWorkspaceContractId && navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
                                     className="inline-flex shrink-0 items-center gap-1.5 rounded-[8px] bg-[#1D9E75] px-3 py-1.5 text-[12px] font-bold text-white transition-colors hover:bg-[#24b889]"
                                 >
                                     Open Workspace ↗
@@ -5626,10 +5663,10 @@ function MessagesComponent() {
                                         {selectedConversationPolicy?.blockedReasonFallback || 'This conversation is read-only.'}
                                     </p>
                                 </div>
-                                {selectedConversation?.contract_id ? (
+                                {selectedWorkspaceContractId && !contractActionBar ? (
                                     <button
                                         type="button"
-                                        onClick={() => navigate(getContractWorkspaceRoute(selectedConversation.contract_id!))}
+                                        onClick={() => navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
                                         className="shrink-0 rounded-[10px] border border-white/[0.07] bg-[#161719] px-3 py-1.5 text-[13px] font-medium text-[#8A8880] transition-colors hover:border-white/[0.12] hover:bg-[#1a1b1e] hover:text-[#F0EFE8]"
                                     >
                                         View workspace ↗

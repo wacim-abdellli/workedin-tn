@@ -90,17 +90,17 @@ function AccountSettings({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="surface-sunken border rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
           <p className="text-xs text-on-surface-subtle mb-1">{tx('pages.settings.account.currentWorkspace', undefined, 'Current workspace')}</p>
-          <p className="text-sm font-semibold text-on-surface">{activeMode === 'freelancer' ? 'Freelancer' : 'Client'}</p>
+          <p className="text-sm font-semibold text-on-surface">{activeMode === 'freelancer' ? tx('common.freelancer', undefined, 'Freelancer') : tx('common.client', undefined, 'Client')}</p>
         </div>
         <div className="surface-sunken border rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
           <p className="text-xs text-on-surface-subtle mb-1">{tx('pages.settings.account.accountType', undefined, 'Account type')}</p>
           <p className="text-sm font-semibold text-on-surface">{accountType}</p>
         </div>
         <div className="surface-sunken border rounded-xl p-4 transition-colors" style={{ borderColor: tokens.accentBorder }}>
-          <p className="text-xs text-on-surface-subtle mb-1">Identity</p>
+          <p className="text-xs text-on-surface-subtle mb-1">{tx('pages.settings.account.identity', undefined, 'Identity')}</p>
           <p className={`text-sm font-semibold inline-flex items-center gap-2 ${identityVerified ? 'text-green-500' : identityPending ? 'text-amber-500' : 'text-on-surface-muted'}`}>
             <Check className="w-4 h-4" />
-            {identityVerified ? 'Identity Verified' : identityPending ? 'Verification Under Review' : 'Not Verified'}
+            {identityVerified ? tx('pages.settings.account.identityVerified', undefined, 'Identity Verified') : identityPending ? tx('pages.settings.account.verificationUnderReview', undefined, 'Verification Under Review') : tx('pages.settings.account.notVerified', undefined, 'Not Verified')}
           </p>
         </div>
       </div>
@@ -200,11 +200,11 @@ function NotificationSettingsTab({
   }, [showToast, userId]);
 
   const items: Array<{ key: NotificationKey; title: string; description: string }> = [
-    { key: 'new_job', title: 'New job matches', description: 'Get notified when jobs match your skills' },
-    { key: 'messages', title: 'New messages', description: 'Get notified when you receive new messages' },
-    { key: 'payments', title: 'Payments', description: 'Get notified when you send or receive payments' },
-    { key: 'reviews', title: 'Reviews', description: 'Get notified when you receive a new review' },
-    { key: 'marketing', title: 'Offers and updates', description: 'Tips and updates from WorkedIn' },
+    { key: 'new_job', title: tx('pages.settings.notifications.newJobMatches', undefined, 'New job matches'), description: tx('pages.settings.notifications.newJobMatchesDesc', undefined, 'Get notified when jobs match your skills') },
+    { key: 'messages', title: tx('pages.settings.notifications.newMessages', undefined, 'New messages'), description: tx('pages.settings.notifications.newMessagesDesc', undefined, 'Get notified when you receive new messages') },
+    { key: 'payments', title: tx('pages.settings.notifications.payments', undefined, 'Payments'), description: tx('pages.settings.notifications.paymentsDesc', undefined, 'Get notified when you send or receive payments') },
+    { key: 'reviews', title: tx('pages.settings.notifications.reviews', undefined, 'Reviews'), description: tx('pages.settings.notifications.reviewsDesc', undefined, 'Get notified when you receive a new review') },
+    { key: 'marketing', title: tx('pages.settings.notifications.offersAndUpdates', undefined, 'Offers and updates'), description: tx('pages.settings.notifications.offersAndUpdatesDesc', undefined, 'Tips and updates from WorkedIn') },
   ];
 
   const persistNotifications = async (nextState: NotificationState) => {

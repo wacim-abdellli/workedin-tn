@@ -1,7 +1,8 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { AlertTriangle, RefreshCw, Check, X, Eye, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { releaseEscrow, refundEscrow } from '@/services/dhmad';
 import Button from '../../components/ui/Button';
 import { useTranslation } from '@/i18n';
 import { adminInsetClass, adminPanelClass, adminPillClass } from './adminTheme';
@@ -17,7 +18,7 @@ interface DisputeRecord {
         milestones?: { total?: number; completed?: number } | null;
         messages?: { attachment_message_count?: number; protected_event_count?: number } | null;
     } | null;
-    contract: { id: string; amount: number; job: { title: string } } | null;
+    contract: { id: string; amount: number; dhmad_escrow_id?: string; job: { title: string } } | null;
     opener: { full_name: string; email: string } | null;
 }
 
@@ -33,7 +34,7 @@ export default function DisputesTab() {
         queryFn: async (): Promise<DisputeRecord[]> => {
             const { data, error } = await supabase
                 .from('disputes')
-                .select('id,contract_id,opened_at,reason,status,evidence_captured_at,evidence_snapshot,contract:contracts!disputes_contract_id_fkey(id,amount,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
+                .select('id,contract_id,opened_at,reason,status,evidence_captured_at,evidence_snapshot,contract:contracts!disputes_contract_id_fkey(id,amount,dhmad_escrow_id,job:jobs(title)),opener:profiles!disputes_opened_by_fkey(full_name,email)')
                 .eq('status', 'open')
                 .order('opened_at', { ascending: true });
             if (error) throw error;
@@ -42,7 +43,14 @@ export default function DisputesTab() {
     });
 
     const resolveMutation = useMutation({
-        mutationFn: async ({ disputeId, resolution, note }: { disputeId: string; resolution: string; note?: string }) => {
+        mutationFn: async ({ disputeId, contractId, dhmadEscrowId, resolution, note }: { disputeId: string; contractId: string; dhmadEscrowId?: string; resolution: string; note?: string }) => {
+            if (dhmadEscrowId) {
+                if (resolution === 'resolved_freelancer') {
+                    await releaseEscrow(dhmadEscrowId, contractId);
+                } else if (resolution === 'resolved_client') {
+                    await refundEscrow(dhmadEscrowId, contractId, note || 'Dispute resolved for client');
+                }
+            }
             const { error } = await supabase.rpc('resolve_dispute', { p_dispute_id: disputeId, p_resolution: resolution, p_admin_note: note || null });
             if (error) throw error;
         },
@@ -51,9 +59,9 @@ export default function DisputesTab() {
         },
     });
 
-    const handleResolve = (disputeId: string, resolution: string, note?: string) => {
+    const handleResolve = (disputeId: string, contractId: string, dhmadEscrowId: string | undefined, resolution: string, note?: string) => {
         setResolvingId(disputeId);
-        resolveMutation.mutate({ disputeId, resolution, note }, { onSettled: () => setResolvingId(null) });
+        resolveMutation.mutate({ disputeId, contractId, dhmadEscrowId, resolution, note }, { onSettled: () => setResolvingId(null) });
     };
 
     const panelClass = adminPanelClass;
@@ -131,11 +139,11 @@ export default function DisputesTab() {
                                             <Button size="sm" variant="outline" onClick={() => window.open(`/contracts/${d.contract_id}`, '_blank')}>
                                                 <Eye className="w-4 h-4 ml-1" />{tr('عرض العقد', 'View contract', 'Voir le contrat')}
                                             </Button>
-                                            <Button size="sm" variant="primary" disabled={resolvingId === d.id} onClick={() => handleResolve(d.id, 'resolved_freelancer', tr('نزاع لصالح المستقل', 'Dispute resolved for freelancer', 'Litige resolu en faveur du freelance'))}>
+                                            <Button size="sm" variant="primary" disabled={resolvingId === d.id} onClick={() => handleResolve(d.id, d.contract_id, d.contract?.dhmad_escrow_id, 'resolved_freelancer', tr('نزاع لصالح المستقل', 'Dispute resolved for freelancer', 'Litige resolu en faveur du freelance'))}>
                                                 {resolvingId === d.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 ml-1" />}
                                                 {tr('لصالح المستقل', 'For freelancer', 'Pour le freelance')}
                                             </Button>
-                                            <Button size="sm" variant="ghost" className="text-[var(--color-status-info)] hover:bg-[var(--color-status-info-subtle)]" disabled={resolvingId === d.id} onClick={() => handleResolve(d.id, 'resolved_client', tr('نزاع لصالح العميل', 'Dispute resolved for client', 'Litige resolu en faveur du client'))}>
+                                            <Button size="sm" variant="ghost" className="text-[var(--color-status-info)] hover:bg-[var(--color-status-info-subtle)]" disabled={resolvingId === d.id} onClick={() => handleResolve(d.id, d.contract_id, d.contract?.dhmad_escrow_id, 'resolved_client', tr('نزاع لصالح العميل', 'Dispute resolved for client', 'Litige resolu en faveur du client'))}>
                                                 <X className="w-4 h-4 ml-1" />{tr('لصالح العميل', 'For client', 'Pour le client')}
                                             </Button>
                                         </div>

@@ -1,0 +1,8 @@
+- generic [ref=e3]:
+  - button "Scroll to top":
+    - img
+  - generic:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "Skip to navigation" [ref=e5] [cursor=pointer]:
+      - /url: "#main-nav"

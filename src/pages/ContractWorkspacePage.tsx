@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, MessageSquare, Users, PackageCheck, GitPullRequest, ShieldAlert, CheckCircle } from 'lucide-react';
+import { ArrowLeft, AlertCircle, MessageSquare, Users, PackageCheck, GitPullRequest, ShieldAlert, X } from 'lucide-react';
 import { Header } from '../components/layout';
 import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
+import FundEscrow from '../components/payments/FundEscrow';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
@@ -15,6 +16,7 @@ import { useContractState } from '../hooks/useContractState';
 
 type ContractRow = {
     id: string;
+    proposal_id?: string | null;
     status: string | null;
     title: string | null;
     amount: number | null;
@@ -22,6 +24,7 @@ type ContractRow = {
     revision_requests_count: number | null;
     max_revision_rounds: number | null;
     funded_at: string | null;
+    escrow_funded?: boolean | null;
     delivery_submitted_at: string | null;
     review_due_at: string | null;
     client_id: string | null;
@@ -57,6 +60,46 @@ type SharedFile = {
     uploadedAt?: string | null;
     senderName?: string;
 };
+
+const CONTRACT_SELECT_COLUMNS = [
+    'id, proposal_id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, escrow_funded, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
+    'id, proposal_id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, escrow_funded, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
+    'id, proposal_id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
+    'id, proposal_id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
+    'id, proposal_id, status, title, amount, client_id, freelancer_id, job_id',
+    'id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, escrow_funded, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
+    'id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
+    'id, status, title, amount, client_id, freelancer_id, job_id',
+];
+
+async function fetchContractByColumn(
+    column: 'id' | 'proposal_id' | 'job_id',
+    value: string,
+): Promise<{ data: ContractRow | null; error: unknown }> {
+    let lastError: unknown = null;
+
+    for (const selectColumns of CONTRACT_SELECT_COLUMNS) {
+        if ((column === 'proposal_id' && !selectColumns.includes('proposal_id'))
+            || (column === 'job_id' && !selectColumns.includes('job_id'))) {
+            continue;
+        }
+
+        const { data, error } = await supabase
+            .from('contracts')
+            .select(selectColumns)
+            .eq(column, value)
+            .limit(1)
+            .maybeSingle();
+
+        if (!error) {
+            return { data: data as ContractRow | null, error: null };
+        }
+
+        lastError = error;
+    }
+
+    return { data: null, error: lastError };
+}
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 function WorkspaceSkeleton() {
@@ -118,6 +161,7 @@ export default function ContractWorkspacePage() {
     const [changesNote, setChangesNote] = useState('');
     const [disputeOpen, setDisputeOpen] = useState(false);
     const [disputeReason, setDisputeReason] = useState('');
+    const [fundEscrowOpen, setFundEscrowOpen] = useState(false);
     const deliverTextareaRef = useRef<HTMLTextAreaElement>(null);
     const changesTextareaRef = useRef<HTMLTextAreaElement>(null);
     const disputeTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -134,6 +178,7 @@ export default function ContractWorkspacePage() {
         () => normalizeContractStatus(contract?.status) ?? 'unknown',
         [contract?.status],
     );
+    const resolvedContractId = contract?.id ?? contractId ?? '';
 
     const deliverySubmitted = Boolean(
         latestDelivery?.submitted_at || contract?.delivery_submitted_at,
@@ -150,28 +195,32 @@ export default function ContractWorkspacePage() {
         setError(null);
 
         try {
-            // ── 1. Load contract row ──
-            let { data: contractData, error: contractError } = await supabase
-                .from('contracts')
-                .select(
-                    'id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
-                )
-                .eq('id', contractId)
-                .maybeSingle();
-
-            if (contractError && String(contractError.message).includes('total_amount')) {
-                const { data: legacyData, error: legacyError } = await supabase
-                    .from('contracts')
-                    .select(
-                        'id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
-                    )
-                    .eq('id', contractId)
-                    .maybeSingle();
-                contractData = legacyData as ContractRow | null;
-                contractError = legacyError;
-            }
+            // ── 1. Load contract row — first try as a direct contract UUID ──
+            const urlParamId = contractId ?? '';
+            const { data: directContractData, error: contractError } = await fetchContractByColumn('id', urlParamId);
+            let contractData = directContractData;
 
             if (contractError) throw contractError;
+
+            // ── Fallback: URL param might be a legacy proposal/job ID ──
+            if (!contractData) {
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(urlParamId);
+                if (isUuid) {
+                    const proposalLookup = await fetchContractByColumn('proposal_id', urlParamId);
+                    if (proposalLookup.error) {
+                        console.warn('[ContractWorkspacePage] Proposal fallback failed:', proposalLookup.error);
+                    }
+                    contractData = proposalLookup.data;
+
+                    if (!contractData) {
+                        const jobLookup = await fetchContractByColumn('job_id', urlParamId);
+                        if (jobLookup.error) {
+                            console.warn('[ContractWorkspacePage] Job fallback failed:', jobLookup.error);
+                        }
+                        contractData = jobLookup.data;
+                    }
+                }
+            }
             if (!contractData) { setError(tx('contractWorkspace.notFound', {}, 'Contract not found or you do not have access.')); return; }
             if (contractData.client_id !== user.id && contractData.freelancer_id !== user.id) {
                 setError(tx('contractWorkspace.notParticipant', {}, 'You are not a participant in this contract.')); return;
@@ -179,33 +228,52 @@ export default function ContractWorkspacePage() {
 
             setContract(contractData as ContractRow);
 
+            // Use the real DB contract ID for all downstream queries —
+            // critical when the URL param was a legacy proposal/job reference
+            const realId = contractData.id;
+
             // ── 2. Load job title + deadline ──
             if (contractData.job_id) {
-                const { data: jobData } = await supabase
-                    .from('jobs').select('title, deadline').eq('id', contractData.job_id).maybeSingle();
-                if (jobData) {
-                    setJobTitle(jobData.title ?? null);
-                    setJobDeadline((jobData as any).deadline ?? null);
+                try {
+                    const { data: jobData } = await supabase
+                        .from('jobs').select('title, deadline').eq('id', contractData.job_id).maybeSingle();
+                    if (jobData) {
+                        setJobTitle(jobData.title ?? null);
+                        setJobDeadline((jobData as any).deadline ?? null);
+                    }
+                } catch (jobError) {
+                    console.warn('[ContractWorkspacePage] Failed to load job details:', jobError);
                 }
             }
 
             // ── 3. Latest delivery ──
-            const { data: deliveryData, error: deliveryError } = await supabase.rpc(
-                'get_latest_contract_delivery', { p_contract_id: contractId },
-            );
-            if (!deliveryError && deliveryData && typeof deliveryData === 'object' && 'id' in deliveryData) {
-                setLatestDelivery(deliveryData as LatestDelivery);
+            try {
+                const { data: deliveryData, error: deliveryError } = await supabase.rpc(
+                    'get_latest_contract_delivery', { p_contract_id: realId },
+                );
+                if (deliveryError) {
+                    console.warn('[ContractWorkspacePage] Failed to load latest delivery:', deliveryError);
+                } else if (deliveryData && typeof deliveryData === 'object' && 'id' in deliveryData) {
+                    setLatestDelivery(deliveryData as LatestDelivery);
+                }
+            } catch (deliveryError) {
+                console.warn('[ContractWorkspacePage] Failed to load latest delivery:', deliveryError);
             }
 
             // ── 4. Review status ──
-            const { data: reviewData } = await supabase
-                .from('reviews').select('id')
-                .eq('contract_id', contractId).eq('reviewer_id', user.id).maybeSingle();
-            setHasReviewed(Boolean(reviewData?.id));
+            try {
+                const { data: reviewData } = await supabase
+                    .from('reviews').select('id')
+                    .eq('contract_id', realId).eq('reviewer_id', user.id).maybeSingle();
+                setHasReviewed(Boolean(reviewData?.id));
+            } catch (reviewError) {
+                console.warn('[ContractWorkspacePage] Failed to load review status:', reviewError);
+                setHasReviewed(false);
+            }
 
             // ── 5. Shared files from conversation messages ──
             const { data: convData } = await supabase
-                .from('conversations').select('id').eq('contract_id', contractId).limit(1).maybeSingle();
+                .from('conversations').select('id').eq('contract_id', realId).limit(1).maybeSingle();
 
             if (convData?.id) {
                 const { data: messagesData } = await supabase
@@ -268,6 +336,7 @@ export default function ContractWorkspacePage() {
             revisionRequestsCount: contract.revision_requests_count ?? 0,
             maxRevisionRounds: contract.max_revision_rounds ?? 2,
             fundedAt: contract.funded_at ?? null,
+            escrowFunded: contract.escrow_funded === true,
             deliverySubmittedAt: contract.delivery_submitted_at ?? null,
             reviewDueAt: contract.review_due_at ?? latestDelivery?.review_due_at ?? null,
             reviewFiles,
@@ -300,7 +369,7 @@ export default function ContractWorkspacePage() {
         isAccepting,
         isDisputing,
     } = useContractState({
-        contractId: contractId ?? '',
+        contractId: resolvedContractId,
         userId: user?.id ?? '',
         userRole,
     });
@@ -310,31 +379,15 @@ export default function ContractWorkspacePage() {
     // ─── Navigation helpers ──────────────────────────────────────────────────
     const handleGoBack = () => { if (window.history.length > 1) navigate(-1); else navigate(ROUTES.messages); };
     const handleGoToMessages = () => {
-        if (!contractId) { navigate(ROUTES.messages); return; }
-        navigate(`${ROUTES.messages}?contract=${encodeURIComponent(contractId)}`);
+        if (!resolvedContractId) { navigate(ROUTES.messages); return; }
+        navigate(`${ROUTES.messages}?contract=${encodeURIComponent(resolvedContractId)}`);
     };
 
     // ─── Action handlers (real RPCs) ─────────────────────────────────────────
     const handleDeliver = () => {
-        setDeliverNote('');
-        setDeliverOpen(true);
-        setTimeout(() => deliverTextareaRef.current?.focus(), 60);
-    };
-
-    const handleSubmitDelivery = async () => {
-        if (!deliverNote.trim()) return;
-        try {
-            await deliverWork(deliverNote.trim());
-            setDeliverOpen(false);
-            setDeliverNote('');
-            await loadWorkspace();
-            showToast(tx('contractWorkspace.deliverySubmitted', {}, 'Delivery submitted! The client will review your work.'), 'success');
-        } catch (err) {
-            showToast((err as Error).message || tx('contractWorkspace.deliveryFailed', {}, 'Failed to submit delivery.'), 'error');
-        }
-    };
-
-    const handleAcceptAndPay = async () => {
+        if (!resolvedContractId) return;
+        navigate(`${ROUTES.messages}?contract=${encodeURIComponent(resolvedContractId)}`, { state: { openDeliverModal: true } });
+    };const handleAcceptAndPay = async () => {
         if (!window.confirm(tx('contractWorkspace.confirmRelease', {}, 'Approve work and release payment to the freelancer? This cannot be undone.'))) return;
         try {
             await acceptWork();
@@ -468,7 +521,8 @@ export default function ContractWorkspacePage() {
                                 onRequestChanges={handleRequestChanges}
                                 onAcceptAndPay={handleAcceptAndPay}
                                 onDispute={handleOpenDispute}
-                                onReview={() => { if (contractId) navigate(`/contracts/${contractId}/review`); }}
+                                onFundEscrow={() => setFundEscrowOpen(true)}
+                                onReview={() => { if (resolvedContractId) navigate(`/contracts/${resolvedContractId}/review`); }}
                                 hasLeftReview={hasReviewed}
                             />
                         </div>
@@ -476,38 +530,28 @@ export default function ContractWorkspacePage() {
                 ) : null}
             </main>
 
-            {/* ─── Deliver Work Modal ───────────────────────────────────────── */}
-            {deliverOpen ? (
-                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-deliver-title">
-                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]">
-                        <div className="mb-4 flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#9B8FF0]/15">
-                                <PackageCheck className="h-5 w-5 text-[#9B8FF0]" />
-                            </div>
-                            <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Submit delivery</p>
-                                <h2 id="modal-deliver-title" className="text-[16px] font-semibold text-[#F0EFE8]">Describe your delivery</h2>
-                            </div>
+            {/* ─── Fund Escrow Modal ───────────────────────────────────────── */}
+            {fundEscrowOpen && contract ? (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Fund escrow">
+                    <div className="w-full max-w-md">
+                        <div className="mb-3 flex items-center justify-between">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#55534F]">Fund escrow</p>
+                            <button type="button" onClick={() => setFundEscrowOpen(false)}
+                                className="rounded-[8px] border border-white/[0.07] bg-[#161719] p-1.5 text-[#55534F] transition-colors hover:text-[#F0EFE8]">
+                                <X className="h-4 w-4" />
+                            </button>
                         </div>
-                        <textarea
-                            ref={deliverTextareaRef}
-                            value={deliverNote}
-                            onChange={e => setDeliverNote(e.target.value)}
-                            placeholder="What did you complete? Add any notes for the client (e.g. file locations, version notes, passwords)…"
-                            rows={4}
-                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-[#9B8FF0]/60 focus:outline-none focus:ring-1 focus:ring-[#9B8FF0]/40"
+                        <FundEscrow
+                            contract={{
+                                id: contract.id,
+                                client_id: contract.client_id ?? '',
+                                freelancer_id: contract.freelancer_id ?? '',
+                                budget: contract.amount ?? 0,
+                                escrow_funded: contract.escrow_funded === true,
+                            }}
+                            onSuccess={() => { setFundEscrowOpen(false); void loadWorkspace(); }}
+                            onError={() => setFundEscrowOpen(false)}
                         />
-                        <p className="mt-2 text-[12px] text-[#55534F]">Review files and final source files must be uploaded from the Messages thread. This note is sent alongside them.</p>
-                        <div className="mt-4 flex justify-end gap-2">
-                            <button type="button" onClick={() => setDeliverOpen(false)} disabled={isDelivering}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
-                                Cancel
-                            </button>
-                            <button type="button" onClick={() => void handleSubmitDelivery()} disabled={isDelivering || !deliverNote.trim()}
-                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#9B8FF0] px-4 py-2 text-[14px] font-semibold text-[#0D0D0E] transition-colors hover:bg-[#a99cf5] disabled:opacity-50">
-                                {isDelivering ? 'Submitting…' : 'Submit delivery'}
-                            </button>
-                        </div>
                     </div>
                 </div>
             ) : null}
@@ -587,4 +631,3 @@ export default function ContractWorkspacePage() {
         </div>
     );
 }
-
