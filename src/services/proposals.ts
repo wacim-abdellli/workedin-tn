@@ -19,17 +19,8 @@ export interface DailyProposalUsage {
     used: number;
     remaining: number;
     limit: number;
+    resetAt: string | null;
 }
-
-const getDayWindow = (date = new Date()) => {
-    const dayStart = new Date(date);
-    dayStart.setHours(0, 0, 0, 0);
-
-    const dayEnd = new Date(dayStart);
-    dayEnd.setDate(dayEnd.getDate() + 1);
-
-    return { dayStart, dayEnd };
-};
 
 /** Safely extract a human-readable message from any error shape */
 function extractMessage(err: unknown, fallback = 'An error occurred'): string {
@@ -52,34 +43,37 @@ export async function getDailyProposalUsage(
     freelancerId: string,
     date = new Date(),
 ): Promise<DailyProposalUsage> {
-    const { dayStart, dayEnd } = getDayWindow(date);
+    const now = new Date(date);
+    const windowStart = new Date(now.getTime() - 48 * 60 * 60 * 1000); // 48 hours ago
 
     // Use count without head:true to avoid 400 on some Supabase RLS configurations
-    let query = supabase
+    const { data, error } = await supabase
         .from('proposals')
-        .select('id')
+        .select('created_at')
         .eq('freelancer_id', freelancerId)
-        .gte('created_at', dayStart.toISOString());
-
-    if (typeof (query as unknown as { lt?: unknown }).lt === 'function') {
-        query = (query as unknown as { lt: (column: string, value: string) => typeof query }).lt('created_at', dayEnd.toISOString());
-    } else {
-        query = query.lte('created_at', dayEnd.toISOString());
-    }
-
-    const { data, error } = await query;
+        .gte('created_at', windowStart.toISOString())
+        .order('created_at', { ascending: true }); // oldest first
 
     if (error) {
         // If we can't count (e.g. RLS blocks it), assume 0 used — don't crash
         console.warn('[proposals] getDailyProposalUsage error (non-fatal):', extractMessage(error));
-        return { used: 0, remaining: DAILY_PROPOSAL_LIMIT, limit: DAILY_PROPOSAL_LIMIT };
+        return { used: 0, remaining: DAILY_PROPOSAL_LIMIT, limit: DAILY_PROPOSAL_LIMIT, resetAt: null };
     }
 
     const used = data?.length ?? 0;
+    let resetAt: string | null = null;
+
+    if (used > 0) {
+        // The oldest proposal in this 48h window will be the first to "fall off"
+        const oldestTime = new Date(data[0].created_at).getTime();
+        resetAt = new Date(oldestTime + 48 * 60 * 60 * 1000).toISOString();
+    }
+
     return {
         used,
         remaining: Math.max(DAILY_PROPOSAL_LIMIT - used, 0),
         limit: DAILY_PROPOSAL_LIMIT,
+        resetAt,
     };
 }
 

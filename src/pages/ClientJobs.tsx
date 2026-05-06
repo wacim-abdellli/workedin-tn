@@ -558,7 +558,7 @@ export default function ClientJobs() {
                         ? tx('pages.clientJobs.viewResult', undefined, 'View result')
                         : tx('pages.clientJobs.openContract', undefined, 'Workspace')}
                     </button>
-                  ) : job.proposals && job.proposals[0]?.count > 0 && (
+                  ) : (
                     <button 
                       onClick={() => navigate(`/client/jobs/${job.id}/proposals`)}
                       className="inline-flex items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition-colors"

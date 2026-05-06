@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, FileText, Sparkles, User, Search, MessageSquare } from "lucide-react";
@@ -215,7 +215,7 @@ function FreelancerDashboardPage() {
         supabase
           .from("contracts")
           .select(
-            "id, title, status, total_amount, client:public_profiles!contracts_client_id_fkey(id, full_name, avatar_url)",
+            "id, title, status, total_amount, client_id, created_at",
           )
           .eq("freelancer_id", userId)
           .eq("status", "active")
@@ -233,6 +233,30 @@ function FreelancerDashboardPage() {
           .limit(4),
       ]);
 
+      const clientIds = new Set<string>();
+      if (activeContractsListRes.data) {
+        activeContractsListRes.data.forEach(c => {
+            if (c.client_id) clientIds.add(c.client_id);
+        });
+      }
+
+      const profilesById: Record<string, { full_name: string | null; avatar_url: string | null }> = {};
+      if (clientIds.size > 0) {
+          const { data: profilesData } = await supabase
+              .from('public_profiles')
+              .select('id, full_name, avatar_url')
+              .in('id', Array.from(clientIds));
+          
+          profilesData?.forEach(p => {
+              profilesById[p.id] = p;
+          });
+      }
+
+      const activeContractsMapped = (activeContractsListRes.data ?? []).map(c => ({
+          ...c,
+          client: profilesById[c.client_id] || null
+      }));
+
       return {
         activeContracts: contractsCountRes.count ?? 0,
         pendingProposals: proposalsRes.count ?? 0,
@@ -245,8 +269,7 @@ function FreelancerDashboardPage() {
         milestones: (milestonesRes.data ?? []) as DashboardMilestone[],
         recentProposals: (recentProposalsRes.data ??
           []) as unknown as DashboardStats["recentProposals"],
-        activeContractsList: (activeContractsListRes.data ??
-          []) as unknown as DashboardStats["activeContractsList"],
+        activeContractsList: activeContractsMapped as unknown as DashboardStats["activeContractsList"],
       };
     },
     staleTime: 60_000,

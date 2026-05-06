@@ -1,74 +1,60 @@
-# Khedmetna.tn
+# WorkedIn TN
 
-Khedmetna.tn is a Tunisian freelance marketplace built with React, TypeScript, Vite, Supabase, and Playwright.
+WorkedIn TN is a Tunisian freelance marketplace built with React, TypeScript, Vite, Supabase, and Playwright.
 
-This is the canonical repository entrypoint.
+This repository contains the production web client, design tokens, test suites, and operational scripts for the WorkedIn TN product. Some legacy files in the repo may contain older project names (for example `Khedma`/`Khedmetna`); the runtime source of truth is the `src/` code (not legacy README text).
 
-## Canonical Docs
+Quick links
+- App entry: [src/main.tsx](src/main.tsx)
+- App shell: [src/App.tsx](src/App.tsx)
+- Routes: [src/routes/index.tsx](src/routes/index.tsx)
+- Auth & profile: [src/contexts/AuthContext.tsx](src/contexts/AuthContext.tsx)
+- Supabase client: [src/lib/supabase.ts](src/lib/supabase.ts)
+- Design tokens: [design-system/README.md](design-system/README.md)
+- E2E docs: [e2e/README.md](e2e/README.md)
 
-- `README.md`
-  - project overview and day-1 commands
-- `REPOSITORY_GOVERNANCE.md`
-  - canonical docs, scripts, pages, and deprecated artifacts
-- `RELEASE_POLICY.md`
-  - mandatory release checklist, sign-off roles, and release-control command
-- `INCIDENT_READINESS.md`
-  - incident severity, error taxonomy, alert routes, and rollback checklist
-- `audit/STRICT_FULL_AUDIT_DOSSIER.md`
-  - master audit backlog and phase definitions
-- `audit/*.md`
-  - current enforced policy and verification artifacts
-- `audit/CONTRACT_WORKFLOW_SECURITY_QA.md`
-  - end-to-end verification matrix for the secured contract workflow
-- `audit/CONTRACT_WORKFLOW_ROLLOUT_CHECKLIST.md`
-  - migration order and deploy verification for the secured contract workflow
-- `DEPLOYMENT_GUIDE_PRODUCTION.md`
-  - production deployment and verification
-- `scripts/README.md`
-  - canonical script registry
-- `e2e/README.md`
-  - end-to-end test architecture and operator guidance
-
-If a root markdown file is not listed above and carries a legacy banner, treat it as historical context only.
-
-## Canonical Commands
+## Day‑1 Commands
 
 ```bash
 npm install
 npm run dev
 npm run test:run
-npm run audit:strict
-npm run release:control -- --base-url <release-candidate-url>
 ```
 
-Additional enforced quality/security commands:
+Quality & verification (CI/maintainers):
 
 ```bash
+npm run audit:strict
 npm run deps:audit
-npm run headers:verify -- --base-url <url>
-npm run tokens:compliance -- --staged
-npm run test:e2e:a11y:strict
-npm run test:e2e:visual
+npm run build:budget
+npm run test:e2e
 ```
 
-## Canonical App Structure
+## High-level structure
 
-- `src/routes/`
-  - canonical route graph and route ownership
-- `src/pages/`
-  - route-backed page entrypoints only
-- `src/components/`
-  - shared UI and feature components
-- `src/lib/`
-  - shared client utilities, policies, and query/cache setup
-- `supabase/`
-  - migrations, verification SQL, and Edge Functions
+- `src/` – application code (preferred source of truth)
+  - `src/routes/` – route graph and route definitions
+  - `src/pages/` – route-backed page entrypoints
+  - `src/components/` – UI components and layout
+  - `src/lib/` – shared utilities, policy modules, and infra wiring
+- `design-system/` – token sources and token compiler
+- `e2e/` – Playwright end-to-end tests and setup
+- `scripts/` – operational scripts (audit, token checks, release control)
+- `supabase/` – DB migrations, RLS, and helper SQL
 
-## Current Governance Rule
+## Important operational rules
 
-- Prefer canonical docs over historical summaries.
-- Prefer package/workflow-wired scripts over ad hoc fixer scripts.
-- Prefer route-backed page files referenced from `src/routes/`.
-- Do not add alternate page files like `*-NEW.tsx` or one-off root summary docs for ongoing work.
+- Prefer `src/` code and the governance docs (`REPOSITORY_GOVERNANCE.md`, `RELEASE_POLICY.md`, `INCIDENT_READINESS.md`, `scripts/README.md`) as the canonical sources.
+- Do not rely on legacy top-level docs for runtime behavior; they may contain historical names or retired guidance.
+- When changing auth, profile, or routing code, preserve the workspace hydration and cache behavior to avoid workspace flip-flops.
 
-See `REPOSITORY_GOVERNANCE.md` for the audited source-of-truth list.
+## For new contributors / agents
+
+Start here:
+
+1. Read `src/main.tsx` and `src/App.tsx` to understand bootstrap order and providers.
+2. Inspect `src/routes/index.tsx` and `src/routes/routeDefinitions.tsx` for route guards and wrappers.
+3. Review `src/contexts/AuthContext.tsx` and `src/lib/workspaceRoutes.ts` for workspace and onboarding behavior.
+4. Run unit tests and the e2e suite (`npm run test:run`, `npm run test:e2e`) before proposing workflow or routing changes.
+
+If you want a compact agent-friendly brief or an architecture map (file→responsibility), ask and I will generate it.

@@ -1,6 +1,6 @@
 import { logger } from "@/lib/logger";
 import { supabase } from "../lib/supabase";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Box,
@@ -243,6 +243,34 @@ function JobLinkPlatformIcon({ platform }: { platform: JobLinkPlatform }) {
   return <Globe className="h-4 w-4" />;
 }
 
+function CountdownTimer({ resetAt }: { resetAt: string | null }) {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    if (!resetAt) {
+      setTimeLeft("");
+      return;
+    }
+    const update = () => {
+      const target = new Date(resetAt).getTime();
+      const now = new Date().getTime();
+      const diff = Math.max(0, target - now);
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft(`${hours}h ${mins}m ${secs}s`);
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [resetAt]);
+
+  return <span>{timeLeft}</span>;
+}
+
 // Main Component
 function JobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -364,6 +392,7 @@ function JobDetail() {
     used: 0,
     remaining: 6,
     limit: 6,
+    resetAt: null,
   };
   const canSubmitToday = dailyProposalUsage.remaining > 0;
   const dailyUsagePercent =
@@ -498,7 +527,7 @@ function JobDetail() {
         tx(
           "jobDetail.dailyApplyLimitReached",
           { limit: dailyProposalUsage.limit },
-          `You reached your daily limit of ${dailyProposalUsage.limit} applications. Try again tomorrow.`,
+          `You reached your 48h limit of ${dailyProposalUsage.limit} applications. Try again later.`,
         ),
         "warning",
       );
@@ -1036,7 +1065,7 @@ function JobDetail() {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:w-[300px] shrink-0 space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <div className="lg:w-[300px] shrink-0 space-y-4">
 
             {/* Action Card */}
             <div className="rounded-2xl border border-white/5 bg-gradient-to-b from-white/[0.04] to-transparent p-5 space-y-4 shadow-xl">
@@ -1145,74 +1174,22 @@ function JobDetail() {
                   </button>
 
                   {freelancerProfile && (
-                    <div
-                      className="rounded-2xl p-4"
-                      style={{
-                        background: canSubmitToday
-                          ? 'linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(15,23,42,0.7) 100%)'
-                          : 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(15,23,42,0.7) 100%)',
-                        border: `1px solid ${canSubmitToday ? 'rgba(59,130,246,0.28)' : 'rgba(239,68,68,0.28)'}`,
-                      }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold text-white/85">
-                            {tx('jobDetail.dailyApplyLimitTitle', undefined, 'Daily application limit')}
-                          </p>
-                          <p className="text-[11px] text-white/50 mt-1 leading-relaxed">
-                            {canSubmitToday
-                              ? tx('jobDetail.dailyApplyRemainingHint', { remaining: dailyProposalUsage.remaining }, `${dailyProposalUsage.remaining} remaining today`)
-                              : tx('jobDetail.dailyApplyResetHint', undefined, 'Resets tomorrow')}
-                          </p>
-                        </div>
-                        <span
-                          className="shrink-0 rounded-full px-3 py-1 text-[11px] font-bold"
-                          style={{
-                            background: canSubmitToday ? 'rgba(59,130,246,0.2)' : 'rgba(239,68,68,0.2)',
-                            color: canSubmitToday ? '#93c5fd' : '#fca5a5',
-                          }}
-                        >
-                          {canSubmitToday ? tx('jobDetail.dailyApplyAvailable', undefined, 'Available today') : tx('jobDetail.dailyApplyReached', undefined, 'Limit reached')}
-                        </span>
-                      </div>
-
-                      <div className="mt-3.5">
-                        <div className="h-1.5 w-full rounded-full bg-black/25 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all"
-                            style={{
-                              width: `${dailyUsagePercent}%`,
-                              background: canSubmitToday
-                                ? 'linear-gradient(90deg, #60a5fa, #3b82f6)'
-                                : 'linear-gradient(90deg, #f97316, #ef4444)',
-                            }}
-                          />
-                        </div>
-                        <div className="mt-1.5 flex items-center justify-between text-[10px] text-white/45">
-                          <span>
-                            {tx('jobDetail.used', undefined, 'Used')} {dailyProposalUsage.used}/{dailyProposalUsage.limit}
-                          </span>
-                          <span>
-                            {tx('jobDetail.remaining', undefined, 'Left')}: {dailyProposalUsage.remaining}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                        {[
-                          { label: tx('jobDetail.used', undefined, 'Used'), value: dailyProposalUsage.used },
-                          { label: tx('jobDetail.limit', undefined, 'Limit'), value: dailyProposalUsage.limit },
-                          { label: tx('jobDetail.remaining', undefined, 'Left'), value: dailyProposalUsage.remaining },
-                        ].map(({ label, value }) => (
-                          <div
-                            key={label}
-                            className="rounded-xl p-2.5 bg-black/20 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
-                          >
-                            <p className="text-[10px] font-semibold uppercase tracking-wide text-white/40 mb-1">{label}</p>
-                            <p className="text-lg font-black text-white">{value}</p>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="flex flex-col items-center justify-center pt-1.5 pb-1">
+                      {canSubmitToday ? (
+                        <p className="text-[11px] font-medium text-white/50 flex items-center gap-1.5">
+                          <span className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            dailyProposalUsage.remaining > 2 ? "bg-emerald-400/80 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-amber-400/80 shadow-[0_0_8px_rgba(251,191,36,0.5)]"
+                          )}></span>
+                          {tx('jobDetail.inlineRemainingHint', { remaining: dailyProposalUsage.remaining }, `${dailyProposalUsage.remaining} applications available`)}
+                        </p>
+                      ) : (
+                        <p className="text-[11px] font-medium text-rose-400/80 flex items-center gap-1.5">
+                          <Clock className="w-3 h-3" />
+                          {tx('jobDetail.inlineRechargingHint', undefined, 'Recharging in')}
+                          {dailyProposalUsage.resetAt && <span className="font-bold tracking-wider"><CountdownTimer resetAt={dailyProposalUsage.resetAt} /></span>}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

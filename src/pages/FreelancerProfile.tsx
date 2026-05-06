@@ -30,7 +30,7 @@ import {
     DollarSign,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Header } from '../components/layout';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '@/components/ui/Toast';
@@ -486,25 +486,12 @@ function ProfileView({
     onOpenContact,
     onHireNow,
     onSaveAvatar,
-    onSaveBasics,
-    onSaveBio,
-    onSaveSkills,
-    onSaveTools,
     onRefreshWorkSamples,
 }: ProfilePageProps & {
     freelancer: FreelancerData;
     onOpenContact: () => void;
     onHireNow: () => void;
     onSaveAvatar: (file: File) => Promise<void>;
-    onSaveBasics: (payload: {
-        fullName: string;
-        title: string;
-        hourlyRate: number;
-        availability: FreelancerData['availability'];
-    }) => Promise<void>;
-    onSaveBio: (bio: string) => Promise<void>;
-    onSaveSkills: (skills: string[]) => Promise<void>;
-    onSaveTools: (tools: string[]) => Promise<void>;
     onRefreshWorkSamples: () => Promise<void>;
 }) {
     const navigate = useNavigate();
@@ -512,35 +499,10 @@ function ProfileView({
     const { tx } = useTranslation();
     const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
-    const [editingBasics, setEditingBasics] = useState(false);
-    const [editingBio, setEditingBio] = useState(false);
-    const [editingSkills, setEditingSkills] = useState(false);
-    const [editingTools, setEditingTools] = useState(false);
-
-    const [fullNameDraft, setFullNameDraft] = useState(freelancer.full_name || '');
-    const [titleDraft, setTitleDraft] = useState(freelancer.title || '');
-    const [hourlyRateDraft, setHourlyRateDraft] = useState(
-        freelancer.hourly_rate > 0 ? String(freelancer.hourly_rate) : '',
-    );
-    const [availabilityDraft, setAvailabilityDraft] = useState<FreelancerData['availability']>(
-        freelancer.availability || 'available',
-    );
-    const [bioDraft, setBioDraft] = useState(freelancer.bio || '');
-    const [selectedSkillNames, setSelectedSkillNames] = useState<string[]>([]);
-    const [selectedToolNames, setSelectedToolNames] = useState<string[]>([]);
-    const [skillSearchQuery, setSkillSearchQuery] = useState('');
-    const [toolSearchQuery, setToolSearchQuery] = useState('');
-
     const [savingAvatar, setSavingAvatar] = useState(false);
-    const [savingBasics, setSavingBasics] = useState(false);
-    const [savingBio, setSavingBio] = useState(false);
-    const [savingSkills, setSavingSkills] = useState(false);
-    const [savingTools, setSavingTools] = useState(false);
     const [activeWorkSampleId, setActiveWorkSampleId] = useState<string | null>(null);
     const [activeWorkImageIndex, setActiveWorkImageIndex] = useState(0);
     const [deletingWorkSampleId, setDeletingWorkSampleId] = useState<string | null>(null);
-
-    const isSavingAnySection = savingAvatar || savingBasics || savingBio || savingSkills || savingTools;
 
     const workSamples = freelancer.work_samples;
 
@@ -815,80 +777,7 @@ function ProfileView({
         showPreviousWorkSample,
     ]);
 
-    const saveBasics = async () => {
-        const normalizedName = fullNameDraft.trim();
-        const normalizedTitle = titleDraft.trim();
-        const parsedRate = Number(hourlyRateDraft);
-
-        if (!normalizedName) {
-            showToast(tx('pages.freelancerProfile.validation.fullNameRequired', undefined, 'Full name is required'), 'warning');
-            return;
-        }
-
-        if (!Number.isFinite(parsedRate) || parsedRate < 0) {
-            showToast(tx('pages.freelancerProfile.validation.validHourlyRate', undefined, 'Please enter a valid hourly rate'), 'warning');
-            return;
-        }
-
-        try {
-            setSavingBasics(true);
-            await onSaveBasics({
-                fullName: normalizedName,
-                title: normalizedTitle,
-                hourlyRate: parsedRate,
-                availability: availabilityDraft,
-            });
-            setEditingBasics(false);
-            showToast(tx('pages.freelancerProfile.toasts.profileUpdated', undefined, 'Profile details updated'), 'success');
-        } catch (error) {
-            logger.error('Failed to save profile details', error);
-            showToast(tx('pages.freelancerProfile.toasts.profileUpdateError', undefined, 'Could not update profile details'), 'error');
-        } finally {
-            setSavingBasics(false);
-        }
-    };
-
-    const saveBio = async () => {
-        try {
-            setSavingBio(true);
-            await onSaveBio(bioDraft);
-            setEditingBio(false);
-            showToast(tx('pages.freelancerProfile.toasts.bioUpdated', undefined, 'Bio updated'), 'success');
-        } catch (error) {
-            logger.error('Failed to save bio', error);
-            showToast(tx('pages.freelancerProfile.toasts.bioUpdateError', undefined, 'Could not update bio'), 'error');
-        } finally {
-            setSavingBio(false);
-        }
-    };
-
-    const saveSkills = async () => {
-        try {
-            setSavingSkills(true);
-            await onSaveSkills(selectedSkillNames);
-            setEditingSkills(false);
-            showToast(tx('pages.freelancerProfile.toasts.skillsUpdated', undefined, 'Skills updated'), 'success');
-        } catch (error) {
-            logger.error('Failed to save skills', error);
-            showToast(tx('pages.freelancerProfile.toasts.skillsUpdateError', undefined, 'Could not update skills'), 'error');
-        } finally {
-            setSavingSkills(false);
-        }
-    };
-
-    const saveTools = async () => {
-        try {
-            setSavingTools(true);
-            await onSaveTools(selectedToolNames);
-            setEditingTools(false);
-            showToast(tx('pages.freelancerProfile.toasts.toolsUpdated', undefined, 'Tools updated'), 'success');
-        } catch (error) {
-            logger.error('Failed to save tools', error);
-            showToast(tx('pages.freelancerProfile.toasts.toolsUpdateError', undefined, 'Could not update tools'), 'error');
-        } finally {
-            setSavingTools(false);
-        }
-    };
+    const isSavingAnySection = savingAvatar;
 
     const handleAvatarUploadSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -964,52 +853,21 @@ function ProfileView({
     { icon: <TrendingUp className="w-3.5 h-3.5" />, label: `${freelancer.stats.success_rate}% success` },
   ];
 
-  const heroActions = isOwner && !editingBasics ? (
-    <button
-      type="button"
-      onClick={openBasicsEditor}
-      className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-xl border transition-all duration-150"
-      style={{ 
-        color: 'var(--color-text-secondary)', 
-        borderColor: 'var(--color-border-subtle)'
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-    >
-      <Edit2 className="w-3.5 h-3.5" />
-      {tx('pages.freelancerProfile.actions.editProfile', undefined, 'Edit profile')}
-    </button>
-  ) : isOwner && editingBasics ? (
-    <div className="flex items-center gap-2">
+  const heroActions = isOwner ? (
       <button
         type="button"
-        onClick={() => { resetBasicsDraft(); setEditingBasics(false); }}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all"
+        onClick={() => navigate('/settings?tab=freelancer')}
+        className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-xl border transition-all duration-150"
         style={{ 
           color: 'var(--color-text-secondary)', 
-          borderColor: 'var(--color-border-default)'
+          borderColor: 'var(--color-border-subtle)'
         }}
         onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
       >
-        <X className="w-3.5 h-3.5" />
-        {tx('common.cancel', undefined, 'Cancel')}
+        <Edit2 className="w-3.5 h-3.5" />
+        {tx('pages.freelancerProfile.actions.editProfile', undefined, 'Edit profile')}
       </button>
-      <button
-        type="button"
-        onClick={saveBasics}
-        disabled={savingBasics}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all disabled:opacity-70"
-        style={{ 
-          color: 'var(--workspace-primary)',
-          borderColor: 'color-mix(in srgb, var(--workspace-primary) 40%, transparent)',
-          background: 'var(--workspace-primary-dim)'
-        }}
-      >
-        {savingBasics ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-        {savingBasics ? tx('common.saving', undefined, 'Saving...') : tx('common.save', undefined, 'Save')}
-      </button>
-    </div>
   ) : undefined;
 
   return (
@@ -1106,156 +964,22 @@ function ProfileView({
 
 
                     <ProfileSection
-                        title="Introduction"
-                        animationDelay={80}
-                        onEdit={isOwner && !editingBio ? () => setEditingBio(true) : undefined}
-                        editLabel="Edit"
-                    >
-                        {editingBio && isOwner ? (
-                            <div className="space-y-3">
-                                <textarea
-                                    rows={4}
-                                    value={bioDraft}
-                                    onChange={(event) => setBioDraft(event.target.value)}
-                                    className="w-full resize-none rounded-xl border text-sm px-4 py-3 transition-all focus:outline-none placeholder:text-[var(--color-text-tertiary)]"
-                                    style={{
-                                        background: "var(--color-background-base)",
-                                        borderColor: "var(--color-border-default)",
-                                        color: "var(--color-text-primary)",
-                                    }}
-                                    onFocus={e => { e.currentTarget.style.borderColor = accentColor; }}
-                                    onBlur={e => { e.currentTarget.style.borderColor = "var(--color-border-default)"; }}
-                                />
-                                <div className="flex justify-end gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setBioDraft(freelancer.bio || ''); setEditingBio(false); }}
-                                        className="text-xs font-semibold px-4 py-2 rounded-xl border transition-all"
-                                        style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(255,255,255,0.12)" }}
-                                        disabled={savingBio}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={saveBio}
-                                        disabled={savingBio}
-                                        className="text-xs font-semibold px-4 py-2 rounded-xl text-white transition-all flex items-center gap-2 disabled:opacity-70"
-                                        style={{ background: accentColor }}
-                                    >
-                                        {savingBio ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                                        {savingBio ? 'Saving...' : 'Save bio'}
-                                    </button>
-                                </div>
-                            </div>
-                        ) : freelancer.bio ? (
-                            <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-                                {freelancer.bio}
-                            </p>
-                        ) : (
-                            <ProfileEmptySlot message="No bio added yet." />
-                        )}
-                    </ProfileSection>
-
-                    <ProfileSection
-                        title={tx('pages.freelancerProfile.sections.coreStrengths', undefined, 'Core strengths')}
-                        animationDelay={160}
-                        onEdit={isOwner && !editingSkills ? () => setEditingSkills(true) : undefined}
-                        editLabel="Edit"
-                    >
-                        {editingSkills && isOwner ? (
-                            <div className="space-y-4">
-                                <CompactMultiSelectEditor
-                                    title="Skills"
-                                    searchQuery={skillSearchQuery}
-                                    onSearchChange={setSkillSearchQuery}
-                                    options={skillPickerOptions}
-                                    selectedValues={selectedSkillNames}
-                                    onToggle={toggleSkillOption}
-                                    accentColor={accentColor}
-                                    maxSelected={15}
-                                />
-                                <div className="flex justify-end gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setSelectedSkillNames(freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean)); setSkillSearchQuery(''); setEditingSkills(false); }}
-                                        className="text-xs font-semibold px-4 py-2 rounded-xl border transition-all"
-                                        style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(255,255,255,0.12)" }}
-                                        disabled={savingSkills}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={saveSkills}
-                                        disabled={savingSkills || selectedSkillNames.length === 0}
-                                        className="text-xs font-semibold px-4 py-2 rounded-xl text-white transition-all flex items-center gap-2 disabled:opacity-70"
-                                        style={{ background: accentColor }}
-                                    >
-                                        {savingSkills ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                                        {savingSkills ? 'Saving...' : 'Save skills'}
-                                    </button>
-                                </div>
-                            </div>
-                        ) : strengths.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                                {strengths.map((item) => (
-                                    <ProfileTag key={item} label={item} accentColor={accentColor} />
-                                ))}
-                            </div>
-                        ) : (
-                            <ProfileEmptySlot message="No skills added yet." />
-                        )}
-                    </ProfileSection>
-
-                    <ProfileSection
                         title="Tools"
                         animationDelay={240}
-                        onEdit={isOwner && !editingTools ? () => setEditingTools(true) : undefined}
+                        onEdit={isOwner ? () => navigate('/settings?tab=freelancer') : undefined}
                         editLabel="Edit"
                     >
-                        {editingTools && isOwner ? (
-                            <div className="space-y-4">
-                                <CompactMultiSelectEditor
-                                    title="Tools"
-                                    searchQuery={toolSearchQuery}
-                                    onSearchChange={setToolSearchQuery}
-                                    options={toolPickerOptions}
-                                    selectedValues={selectedToolNames}
-                                    onToggle={toggleToolOption}
-                                    accentColor={accentColor}
-                                    maxSelected={15}
-                                />
-                                <div className="flex justify-end gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setSelectedToolNames(freelancer.tools); setToolSearchQuery(''); setEditingTools(false); }}
-                                        className="text-xs font-semibold px-4 py-2 rounded-xl border transition-all"
-                                        style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(255,255,255,0.12)" }}
-                                        disabled={savingTools}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={saveTools}
-                                        disabled={savingTools || selectedToolNames.length === 0}
-                                        className="text-xs font-semibold px-4 py-2 rounded-xl text-white transition-all flex items-center gap-2 disabled:opacity-70"
-                                        style={{ background: accentColor }}
-                                    >
-                                        {savingTools ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                                        {savingTools ? 'Saving...' : 'Save tools'}
-                                    </button>
-                                </div>
-                            </div>
-                        ) : tools.length > 0 ? (
+                        {tools.length > 0 ? (
                             <div className="flex flex-wrap gap-2">
                                 {tools.map((item) => (
                                     <ProfileTag key={item} label={item} accentColor="var(--workspace-primary)" />
                                 ))}
                             </div>
                         ) : (
-                            <ProfileEmptySlot message="No tools added yet." />
+                            <ProfileEmptySlot 
+                                message="No tools added yet."
+                                cta={isOwner ? <Link to="/settings?tab=freelancer" className="text-xs font-medium" style={{ color: accentColor }}>+ Add tools</Link> : undefined} 
+                            />
                         )}
                     </ProfileSection>
 
@@ -2124,7 +1848,7 @@ export default function FreelancerProfile() {
                 ]);
 
                 const profileRow = profileData as FreelancerProfilePublicRow | null;
-                if (profileError || !profileRow?.profile) throw profileError || new Error('Freelancer not found');
+                if (profileError || !profileRow?.profile) throw new Error(profileError?.message || 'Freelancer not found');
 
                 const rawSkills: FreelancerSkillValue[] = Array.isArray(profileRow.skills) ? profileRow.skills : [];
                 const skills = rawSkills.map((skillValue, index) => {
@@ -2181,7 +1905,7 @@ export default function FreelancerProfile() {
                         cin: profileRow.cin_verified || false,
                         phone: (profileRow as { phone_verified?: boolean }).phone_verified || false,
                         email: true,
-                        payment: false,
+                        payment: (profileRow as { payment_verified?: boolean }).payment_verified || false,
                     },
                     work_samples: portfolioRows.map((item) => {
                         const {

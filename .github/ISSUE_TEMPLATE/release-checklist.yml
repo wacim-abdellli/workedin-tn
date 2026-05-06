@@ -22,7 +22,7 @@ body:
     id: base_url
     attributes:
       label: Release candidate base URL
-      placeholder: https://khedma-tn.vercel.app
+      placeholder: https://workedin.vercel.app
     validations:
       required: true
 

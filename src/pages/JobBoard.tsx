@@ -500,7 +500,7 @@ function JobBoard() {
 
           {/* ── Sidebar Filters ── */}
           <aside className="lg:col-span-1">
-            <div className="sticky top-8">
+            <div className="">
               <div className="surface-card border rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="flex items-center gap-2 text-sm font-bold text-on-surface">

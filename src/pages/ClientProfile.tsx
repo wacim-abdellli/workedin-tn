@@ -64,6 +64,8 @@ interface ClientProfileData {
   legal_preferences: Record<string, unknown> | null;
   created_at: string;
   cin_verified: boolean | null;
+  phone_verified: boolean | null;
+  payment_verified: boolean | null;
 }
 
 interface ClientStats {
@@ -200,6 +202,10 @@ function normalizeClientProfileData(data: Record<string, unknown>): ClientProfil
         : new Date().toISOString(),
     cin_verified:
       typeof data.cin_verified === "boolean" ? data.cin_verified : null,
+    phone_verified:
+      typeof data.phone_verified === "boolean" ? data.phone_verified : null,
+    payment_verified:
+      typeof data.payment_verified === "boolean" ? data.payment_verified : null,
   };
 }
 
@@ -248,10 +254,7 @@ export default function ClientProfile() {
   const location = useLocation();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [bioDraft, setBioDraft] = useState("");
-  const [locationDraft, setLocationDraft] = useState("");
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
   const [isStartingConversation, setIsStartingConversation] = useState(false);
 
   const isPublicPreview = useMemo(() => {
@@ -385,76 +388,7 @@ export default function ClientProfile() {
     user?.id,
   ]);
 
-  useEffect(() => {
-    if (!client) {
-      return;
-    }
 
-    setBioDraft(getClientIntro(client));
-    setLocationDraft(normalizeGovernorateValue(client.location));
-    setIsEditingProfile(false);
-  }, [client, isPublicPreview]);
-
-  const saveOwnProfile = async () => {
-    if (!isOwnProfile || !user?.id) {
-      return;
-    }
-
-    const nextBio = bioDraft.trim();
-    const nextLocation = locationDraft.trim();
-    const currentCommunicationPreferences = {
-      ...toRecord(profile?.communication_preferences),
-      ...toRecord(client?.communication_preferences),
-    };
-    const nextCommunicationPreferences: Record<string, unknown> = {
-      ...currentCommunicationPreferences,
-    };
-
-    if (nextBio) {
-      nextCommunicationPreferences.profile_intro = nextBio;
-    } else {
-      delete nextCommunicationPreferences.profile_intro;
-    }
-
-    setIsSavingProfile(true);
-
-    try {
-      await updateProfile({
-        location: nextLocation || undefined,
-        communication_preferences: nextCommunicationPreferences,
-      });
-
-      queryClient.setQueryData<ClientProfileData>(["client-profile", clientId, user?.id ?? null], (prev) => {
-        if (!prev) {
-          return prev;
-        }
-
-        return {
-          ...prev,
-          location: nextLocation || null,
-          communication_preferences: nextCommunicationPreferences,
-        };
-      });
-
-      setIsEditingProfile(false);
-      showToast(
-        tx("pages.clientProfile.toasts.profileUpdated", undefined, "Client profile updated"),
-        "success",
-      );
-    } catch (error) {
-      logger.error("Failed to update client profile", error);
-      showToast(
-        tx(
-          "pages.clientProfile.toasts.profileUpdateFailed",
-          undefined,
-          "Failed to update client profile",
-        ),
-        "error",
-      );
-    } finally {
-      setIsSavingProfile(false);
-    }
-  };
 
   const handleStartConversation = async () => {
     if (!user) {
@@ -627,40 +561,15 @@ export default function ClientProfile() {
   ];
 
   const heroActions = isOwnProfile ? (
-    !isEditingProfile ? (
       <button
         type="button"
-        onClick={() => setIsEditingProfile(true)}
+        onClick={() => navigate('/settings?tab=profile')}
         className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-xl border transition-all duration-150 hover:bg-white/5"
         style={{ color: "rgba(255,255,255,0.55)", borderColor: "rgba(255,255,255,0.12)" }}
       >
         <Edit2 className="w-3.5 h-3.5" />
         {tx("clientProfile.editProfile", undefined, "Edit Profile")}
       </button>
-    ) : (
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => { setBioDraft(clientIntro); setLocationDraft(normalizeGovernorateValue(client.location)); setIsEditingProfile(false); }}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border"
-          style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(255,255,255,0.12)" }}
-          disabled={isSavingProfile}
-        >
-          <X className="w-3.5 h-3.5" />
-          {tx("common.cancel", undefined, "Cancel")}
-        </button>
-        <button
-          type="button"
-          onClick={() => void saveOwnProfile()}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border"
-          style={{ color: accentColor, borderColor: "rgba(245,158,11,0.40)", background: "rgba(245,158,11,0.10)" }}
-          disabled={isSavingProfile}
-        >
-          {isSavingProfile ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-          {isSavingProfile ? tx("common.saving", undefined, "Saving...") : tx("common.save", undefined, "Save")}
-        </button>
-      </div>
-    )
   ) : null;
 
   return (
@@ -747,66 +656,8 @@ export default function ClientProfile() {
               <ProfileSection
                 title={tx("clientProfile.about", undefined, "About")}
                 animationDelay={0}
-                onEdit={isOwnProfile && !isEditingProfile ? () => setIsEditingProfile(true) : undefined}
-                editLabel={tx("clientProfile.editProfile", undefined, "Edit")}
               >
-                {isEditingProfile ? (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>
-                        {tx("clientProfile.location", undefined, "Location")}
-                      </label>
-                      <CustomSelect
-                        id="client-profile-location"
-                        value={locationDraft}
-                        onChange={(value) => setLocationDraft(value)}
-                        options={governorateOptions}
-                        placeholder={tx("clientProfile.locationPlaceholder", undefined, "Select governorate")}
-                        variant="client"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>
-                        {tx("clientProfile.about", undefined, "About")}
-                      </label>
-                      <textarea
-                        value={bioDraft}
-                        onChange={(e) => setBioDraft(e.target.value)}
-                        rows={4}
-                        placeholder={tx("clientProfile.bioPlaceholder", undefined, "Tell freelancers about your company or hiring needs")}
-                        className="w-full resize-none rounded-xl border text-sm px-4 py-3 transition-all focus:outline-none placeholder:text-[var(--color-text-tertiary)]"
-                        style={{
-                          background: "var(--color-background-base)",
-                          borderColor: "var(--color-border-default)",
-                          color: "var(--color-text-primary)",
-                        }}
-                        onFocus={e => { e.currentTarget.style.borderColor = accentColor; }}
-                        onBlur={e => { e.currentTarget.style.borderColor = "var(--color-border-default)"; }}
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => { setBioDraft(clientIntro); setLocationDraft(normalizeGovernorateValue(client.location)); setIsEditingProfile(false); }}
-                        className="text-xs font-semibold px-4 py-2 rounded-xl border transition-all"
-                        style={{ color: "rgba(255,255,255,0.6)", borderColor: "rgba(255,255,255,0.12)" }}
-                        disabled={isSavingProfile}
-                      >
-                        {tx("common.cancel", undefined, "Cancel")}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void saveOwnProfile()}
-                        className="text-xs font-semibold px-4 py-2 rounded-xl text-white transition-all flex items-center gap-2"
-                        style={{ background: accentColor }}
-                        disabled={isSavingProfile}
-                      >
-                        {isSavingProfile && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                        {isSavingProfile ? tx("common.saving", undefined, "Saving...") : tx("common.save", undefined, "Save")}
-                      </button>
-                    </div>
-                  </div>
-                ) : clientIntro ? (
+                {clientIntro ? (
                   <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
                     {clientIntro}
                   </p>
@@ -814,89 +665,113 @@ export default function ClientProfile() {
                   <ProfileEmptySlot
                     message={tx("clientProfile.noIntro", undefined, "No introduction added yet.")}
                     cta={isOwnProfile ? (
-                      <button onClick={() => setIsEditingProfile(true)} className="text-xs font-medium" style={{ color: accentColor }}>
+                      <Link to="/settings?tab=profile" className="text-xs font-medium" style={{ color: accentColor }}>
                         + Add introduction
-                      </button>
+                      </Link>
                     ) : undefined}
                   />
                 )}
               </ProfileSection>
 
               {/* Company info */}
-              {(client.company_name || client.company_industry || client.company_size || client.company_role || client.company_website || (Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0)) && (
+              {(isOwnProfile || client.company_name || client.company_industry || client.company_size || client.company_role || client.company_website || (Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0)) && (
                 <ProfileSection
                   title={tx("clientProfile.companyInfo", undefined, "Company")}
                   icon={<Briefcase className="w-3.5 h-3.5" />}
                   animationDelay={80}
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    {[
-                      { label: tx("profile.companyName", undefined, "Company"), value: client.company_name },
-                      { label: tx("profile.companyIndustry", undefined, "Industry"), value: client.company_industry },
-                      { label: tx("profile.companySize", undefined, "Size"), value: client.company_size },
-                      { label: tx("profile.companyRole", undefined, "Your role"), value: client.company_role },
-                    ].filter(r => r.value).map(row => (
-                      <div
-                        key={row.label}
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 border"
-                        style={{ background: "var(--color-background-elevated)", borderColor: "var(--color-border-subtle)" }}
-                      >
-                        <span className="text-xs font-medium shrink-0" style={{ color: "var(--color-text-tertiary)" }}>{row.label}</span>
-                        <span className="font-semibold truncate" style={{ color: "var(--color-text-primary)" }}>{row.value}</span>
-                      </div>
-                    ))}
-                    {client.company_website && (
-                      <div
-                        className="sm:col-span-2 flex items-center gap-3 rounded-xl px-4 py-3 border"
-                        style={{ background: "var(--color-background-elevated)", borderColor: "var(--color-border-subtle)" }}
-                      >
-                        <Globe className="w-4 h-4 shrink-0" style={{ color: "var(--color-text-tertiary)" }} />
-                        <a
-                          href={client.company_website}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-sm font-medium hover:underline break-all"
-                          style={{ color: accentColor }}
-                        >
-                          {client.company_website}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                  {Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0 && (
-                    <div className="mt-4">
-                      <p className="text-xs font-medium mb-2" style={{ color: "var(--color-text-tertiary)" }}>Hiring needs</p>
-                      <div className="flex flex-wrap gap-2">
-                        {client.hiring_needs.map(need => (
-                          <ProfileTag key={need} label={need} accentColor={accentColor} />
+                  {(client.company_name || client.company_industry || client.company_size || client.company_role || client.company_website || (Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0)) ? (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        {[
+                          { label: tx("profile.companyName", undefined, "Company"), value: client.company_name },
+                          { label: tx("profile.companyIndustry", undefined, "Industry"), value: client.company_industry },
+                          { label: tx("profile.companySize", undefined, "Size"), value: client.company_size },
+                          { label: tx("profile.companyRole", undefined, "Your role"), value: client.company_role },
+                        ].filter(r => r.value).map(row => (
+                          <div
+                            key={row.label}
+                            className="flex items-center gap-3 rounded-xl px-4 py-3 border"
+                            style={{ background: "var(--color-background-elevated)", borderColor: "var(--color-border-subtle)" }}
+                          >
+                            <span className="text-xs font-medium shrink-0" style={{ color: "var(--color-text-tertiary)" }}>{row.label}</span>
+                            <span className="font-semibold truncate" style={{ color: "var(--color-text-primary)" }}>{row.value}</span>
+                          </div>
                         ))}
+                        {client.company_website && (
+                          <div
+                            className="sm:col-span-2 flex items-center gap-3 rounded-xl px-4 py-3 border"
+                            style={{ background: "var(--color-background-elevated)", borderColor: "var(--color-border-subtle)" }}
+                          >
+                            <Globe className="w-4 h-4 shrink-0" style={{ color: "var(--color-text-tertiary)" }} />
+                            <a
+                              href={client.company_website}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-sm font-medium hover:underline break-all"
+                              style={{ color: accentColor }}
+                            >
+                              {client.company_website}
+                            </a>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                      {Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0 && (
+                        <div className="mt-4">
+                          <p className="text-xs font-medium mb-2" style={{ color: "var(--color-text-tertiary)" }}>Hiring needs</p>
+                          <div className="flex flex-wrap gap-2">
+                            {client.hiring_needs.map(need => (
+                              <ProfileTag key={need} label={need} accentColor={accentColor} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <ProfileEmptySlot
+                      message={tx("clientProfile.noCompanyInfo", undefined, "No company details added yet.")}
+                      cta={isOwnProfile ? (
+                        <Link to="/settings" className="text-xs font-medium" style={{ color: accentColor }}>
+                          + Add company details
+                        </Link>
+                      ) : undefined}
+                    />
                   )}
                 </ProfileSection>
               )}
 
               {/* Hiring preferences */}
-              {(client.project_budget_preference || client.project_timeline_preference || communicationSummary || screeningSummary || legalSummary) && (
+              {(isOwnProfile || client.project_budget_preference || client.project_timeline_preference || communicationSummary || screeningSummary || legalSummary) && (
                 <ProfileSection
                   title={tx("clientProfile.hiringPreferences", undefined, "Hiring Preferences")}
                   icon={<Target className="w-3.5 h-3.5" />}
                   animationDelay={160}
                 >
-                  <dl className="space-y-3 text-sm">
-                    {[
-                      { label: tx("profile.budgetPreference", undefined, "Budget"), value: client.project_budget_preference },
-                      { label: tx("profile.timelinePreference", undefined, "Timeline"), value: client.project_timeline_preference },
-                      { label: tx("profile.communicationPreferences", undefined, "Communication"), value: communicationSummary },
-                      { label: tx("profile.screeningPreferences", undefined, "Screening"), value: screeningSummary },
-                      { label: tx("profile.legalPreferences", undefined, "Legal"), value: legalSummary },
-                    ].filter(r => r.value).map(row => (
-                      <div key={row.label} className="flex items-start gap-3">
-                        <dt className="w-28 shrink-0 font-medium" style={{ color: "var(--color-text-tertiary)" }}>{row.label}</dt>
-                        <dd className="leading-relaxed" style={{ color: "var(--color-text-primary)" }}>{row.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
+                  {(client.project_budget_preference || client.project_timeline_preference || communicationSummary || screeningSummary || legalSummary) ? (
+                    <dl className="space-y-3 text-sm">
+                      {[
+                        { label: tx("profile.budgetPreference", undefined, "Budget"), value: client.project_budget_preference },
+                        { label: tx("profile.timelinePreference", undefined, "Timeline"), value: client.project_timeline_preference },
+                        { label: tx("profile.communicationPreferences", undefined, "Communication"), value: communicationSummary },
+                        { label: tx("profile.screeningPreferences", undefined, "Screening"), value: screeningSummary },
+                        { label: tx("profile.legalPreferences", undefined, "Legal"), value: legalSummary },
+                      ].filter(r => r.value).map(row => (
+                        <div key={row.label} className="flex items-start gap-3">
+                          <dt className="w-28 shrink-0 font-medium" style={{ color: "var(--color-text-tertiary)" }}>{row.label}</dt>
+                          <dd className="leading-relaxed" style={{ color: "var(--color-text-primary)" }}>{row.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : (
+                    <ProfileEmptySlot
+                      message={tx("clientProfile.noHiringPreferences", undefined, "No hiring preferences added yet.")}
+                      cta={isOwnProfile ? (
+                        <Link to="/settings" className="text-xs font-medium" style={{ color: accentColor }}>
+                          + Add preferences
+                        </Link>
+                      ) : undefined}
+                    />
+                  )}
                 </ProfileSection>
               )}
 
@@ -985,8 +860,8 @@ export default function ClientProfile() {
               ]}
               verifications={[
                 { label: tx("clientProfile.verifiedClient", undefined, "Identity Verified"), passed: Boolean(client.cin_verified) },
-                { label: "Phone Verified", passed: false },
-                { label: "Payment Method", passed: false },
+                { label: "Phone Verified", passed: Boolean(client.phone_verified) },
+                { label: "Payment Method", passed: Boolean(client.payment_verified) },
               ]}
               ownerActions={isOwnProfile ? [
                 {

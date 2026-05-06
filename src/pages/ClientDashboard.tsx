@@ -184,21 +184,21 @@ function ClientDashboardPage() {
                     .select(`
                         id, title, budget_min, budget_max, status, created_at,
                         proposals_count,
-                        contracts(id, status, freelancer:public_profiles!freelancer_id(full_name))
+                        contracts(id, status, freelancer_id)
                     `)
                     .eq('client_id', userId)
                     .order('created_at', { ascending: false })
                     .limit(6),
                 supabase
                     .from('contracts')
-                    .select('id, title, status, total_amount, created_at, freelancer:public_profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url)')
+                    .select('id, title, status, total_amount, created_at, freelancer_id')
                     .eq('client_id', userId)
                     .eq('status', 'active')
                     .order('created_at', { ascending: false })
                     .limit(5),
                 supabase
                     .from('proposals')
-                    .select('id, job_id, bid_amount, created_at, job:jobs!inner(title, client_id), freelancer:public_profiles!proposals_freelancer_id_fkey(full_name, avatar_url)')
+                    .select('id, job_id, bid_amount, created_at, freelancer_id, job:jobs!inner(title, client_id)')
                     .eq('job.client_id', userId)
                     .eq('status', 'pending')
                     .order('created_at', { ascending: false })
@@ -206,6 +206,51 @@ function ClientDashboardPage() {
             ]);
 
             const jobSummaryRows = jobsSummaryRes.data ?? [];
+
+            const freelancerIds = new Set<string>();
+            if (activeContractsRes.data) {
+                activeContractsRes.data.forEach(c => freelancerIds.add(c.freelancer_id));
+            }
+            if (proposalsRes.data) {
+                proposalsRes.data.forEach(p => freelancerIds.add(p.freelancer_id));
+            }
+            if (jobsRes.data) {
+                jobsRes.data.forEach(j => {
+                    j.contracts?.forEach(c => {
+                        if (c.freelancer_id) freelancerIds.add(c.freelancer_id);
+                    });
+                });
+            }
+
+            const profilesById: Record<string, { full_name: string | null; avatar_url: string | null }> = {};
+            if (freelancerIds.size > 0) {
+                const { data: profilesData } = await supabase
+                    .from('public_profiles')
+                    .select('id, full_name, avatar_url')
+                    .in('id', Array.from(freelancerIds));
+                
+                profilesData?.forEach(p => {
+                    profilesById[p.id] = p;
+                });
+            }
+
+            const jobsMapped = (jobsRes.data ?? []).map(job => ({
+                ...job,
+                contracts: job.contracts?.map(c => ({
+                    ...c,
+                    freelancer: profilesById[c.freelancer_id] || null
+                }))
+            }));
+
+            const activeContractsMapped = (activeContractsRes.data ?? []).map(c => ({
+                ...c,
+                freelancer: profilesById[c.freelancer_id] || null
+            }));
+
+            const proposalsMapped = (proposalsRes.data ?? []).map(p => ({
+                ...p,
+                freelancer: profilesById[p.freelancer_id] || null
+            }));
 
             return {
                 activeJobs: activeJobsRes.count ?? 0,
@@ -218,17 +263,17 @@ function ClientDashboardPage() {
                     (sum, job) => sum + Number(job.proposals_count ?? 0),
                     0,
                 ),
-                jobs: (jobsRes.data ?? []) as unknown as DashboardJob[],
-                activeContracts: (activeContractsRes.data ??
-                    []) as unknown as ActiveContract[],
-                proposals: (proposalsRes.data ?? []) as unknown as RecentProposal[],
+                totalJobs: jobSummaryRows.length,
+                jobs: jobsMapped as unknown as DashboardJob[],
+                activeContracts: activeContractsMapped as unknown as ActiveContract[],
+                proposals: proposalsMapped as unknown as RecentProposal[],
             };
         },
         staleTime: 60_000,
     });
 
     const statsData = {
-        totalJobs: stats?.jobs?.length ?? 0,
+        totalJobs: stats?.totalJobs ?? 0,
         activeJobs: stats?.activeJobs ?? 0,
         totalProposals: stats?.totalProposals ?? 0,
         totalSpent: stats?.totalSpent ?? 0,

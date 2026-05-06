@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, ChevronLeft, Send, Star } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -199,8 +199,8 @@ export default function LeaveReview() {
           `
             id, status, freelancer_id, client_id,
             jobs(title),
-            freelancer:public_profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url),
-            client:public_profiles!contracts_client_id_fkey(id, full_name, avatar_url)
+            freelancer:profiles!contracts_freelancer_id_fkey(id, full_name, avatar_url),
+            client:profiles!contracts_client_id_fkey(id, full_name, avatar_url)
           `,
         )
         .eq("id", contractId!)

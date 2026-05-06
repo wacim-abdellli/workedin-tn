@@ -10,7 +10,7 @@
 WITH inferred_contracts AS (
     SELECT
         m.conversation_id,
-        MIN(m.contract_id) AS contract_id
+        MIN(m.contract_id::text)::uuid AS contract_id
     FROM public.messages m
     WHERE m.conversation_id IS NOT NULL
       AND m.contract_id IS NOT NULL
