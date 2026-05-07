@@ -1,6 +1,7 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWorkspaceStore } from '@/lib/workspaceState';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import type { AppNotification } from '@/hooks/useRealtimeNotifications';
 
@@ -24,7 +25,35 @@ const NotificationsContext = createContext<NotificationsContextType>({
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
-    const value = useRealtimeNotifications(user?.id);
+    const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
+    const { notifications, unreadCount, ...rest } = useRealtimeNotifications(user?.id);
+
+    const filteredNotifications = useMemo(() => {
+        return notifications.filter(n => {
+            const haystack = `${n.title} ${n.body}`.toLowerCase();
+            
+            // Client exclusive notifications
+            const isClientNotif = (n.type === 'proposal' || n.type === 'new_proposal') && 
+                (haystack.includes('عرض جديد') || haystack.includes('new proposal') || haystack.includes('submitted a proposal'));
+                
+            // Freelancer exclusive notifications
+            const isFreelancerNotif = n.type === 'proposal' && 
+                (haystack.includes('تم قبول العرض') || haystack.includes('proposal accepted') || haystack.includes('your proposal'));
+
+            if (activeWorkspace === 'client' && isFreelancerNotif) return false;
+            if (activeWorkspace === 'freelancer' && isClientNotif) return false;
+            
+            return true;
+        });
+    }, [notifications, activeWorkspace]);
+
+    const filteredUnreadCount = filteredNotifications.filter(n => !n.is_read).length;
+
+    const value = {
+        ...rest,
+        notifications: filteredNotifications,
+        unreadCount: filteredUnreadCount,
+    };
 
     return (
         <NotificationsContext.Provider value={value}>
