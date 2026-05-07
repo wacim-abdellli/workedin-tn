@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, MessageSquare, Users, PackageCheck, GitPullRequest, ShieldAlert, X } from 'lucide-react';
+import { ArrowLeft, AlertCircle, MessageSquare, Users, PackageCheck, GitPullRequest, ShieldAlert, X, Upload, Paperclip, Trash2, XCircle } from 'lucide-react';
 import { Header } from '../components/layout';
 import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
 import FundEscrow from '../components/payments/FundEscrow';
@@ -149,8 +149,10 @@ export default function ContractWorkspacePage() {
     const [jobTitle, setJobTitle] = useState<string | null>(null);
     const [jobDeadline, setJobDeadline] = useState<string | null>(null);
     const [latestDelivery, setLatestDelivery] = useState<LatestDelivery | null>(null);
+    const [lastRevisionNote, setLastRevisionNote] = useState<string | null>(null);
     const [sharedFiles, setSharedFiles] = useState<SharedFile[]>([]);
     const [hasReviewed, setHasReviewed] = useState(false);
+    const [counterpartyProfile, setCounterpartyProfile] = useState<{ full_name: string; avatar_url: string | null }>({ full_name: '', avatar_url: null });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -162,6 +164,13 @@ export default function ContractWorkspacePage() {
     const [disputeOpen, setDisputeOpen] = useState(false);
     const [disputeReason, setDisputeReason] = useState('');
     const [fundEscrowOpen, setFundEscrowOpen] = useState(false);
+    const [confirmReleaseOpen, setConfirmReleaseOpen] = useState(false);
+    const [cancelOpen, setCancelOpen] = useState(false);
+    const [cancelReason, setCancelReason] = useState('');
+    const [reviewFiles, setReviewFiles] = useState<File[]>([]);
+    const [finalFiles, setFinalFiles] = useState<File[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
     const deliverTextareaRef = useRef<HTMLTextAreaElement>(null);
     const changesTextareaRef = useRef<HTMLTextAreaElement>(null);
     const disputeTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -228,6 +237,30 @@ export default function ContractWorkspacePage() {
 
             setContract(contractData as ContractRow);
 
+            // ── Fetch counterparty profile ──
+            const cpRole = contractData.client_id === user.id ? 'freelancer' : 'client';
+            const counterpartyId = cpRole === 'freelancer' ? contractData.freelancer_id : contractData.client_id;
+            if (counterpartyId) {
+                try {
+                    const { data: cpData } = await supabase
+                        .from('public_profiles')
+                        .select('full_name, avatar_url')
+                        .eq('id', counterpartyId)
+                        .maybeSingle();
+                    if (cpData) {
+                        setCounterpartyProfile({
+                            full_name: cpData.full_name || (cpRole === 'freelancer' ? 'Freelancer' : 'Client'),
+                            avatar_url: cpData.avatar_url ?? null,
+                        });
+                    } else {
+                        setCounterpartyProfile({ full_name: cpRole === 'freelancer' ? 'Freelancer' : 'Client', avatar_url: null });
+                    }
+                } catch (e) {
+                    console.warn('[ContractWorkspacePage] Failed to load counterparty profile:', e);
+                    setCounterpartyProfile({ full_name: cpRole === 'freelancer' ? 'Freelancer' : 'Client', avatar_url: null });
+                }
+            }
+
             // Use the real DB contract ID for all downstream queries —
             // critical when the URL param was a legacy proposal/job reference
             const realId = contractData.id;
@@ -271,11 +304,24 @@ export default function ContractWorkspacePage() {
                 setHasReviewed(false);
             }
 
-            // ── 5. Shared files from conversation messages ──
+            // ── 5. Shared files and revision notes from conversation ──
             const { data: convData } = await supabase
                 .from('conversations').select('id').eq('contract_id', realId).limit(1).maybeSingle();
 
             if (convData?.id) {
+                const { data: revMsgData } = await supabase
+                    .from('messages')
+                    .select('content')
+                    .eq('conversation_id', convData.id)
+                    .eq('message_type', 'feedback')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                if (revMsgData?.content) {
+                    setLastRevisionNote(revMsgData.content.replace(/^Changes requested:\s*/i, '').trim());
+                }
+
                 const { data: messagesData } = await supabase
                     .from('messages')
                     .select('id, sender_id, attachments, created_at')
@@ -316,6 +362,23 @@ export default function ContractWorkspacePage() {
 
     useEffect(() => { void loadWorkspace(); }, [loadWorkspace]);
 
+    // ─── Real-time contract status subscription ──────────────────────────────
+    useEffect(() => {
+        if (!resolvedContractId) return;
+        const channel = supabase
+            .channel(`contract-watch:${resolvedContractId}`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'contracts',
+                filter: `id=eq.${resolvedContractId}`,
+            }, () => {
+                void loadWorkspace();
+            })
+            .subscribe();
+        return () => { supabase.removeChannel(channel); };
+    }, [resolvedContractId, loadWorkspace]);
+
     const contractSidebarData = useMemo(() => {
         if (!contract) return null;
         const resolvedTitle = (typeof contract.title === 'string' && contract.title.trim() ? contract.title.trim() : null) ?? jobTitle ?? 'Contract';
@@ -349,15 +412,36 @@ export default function ContractWorkspacePage() {
             })),
             lockedFinalFilesCount,
             job: { title: resolvedTitle, deadline: jobDeadline },
+            lastRevisionNote,
             milestones: [],
             sharedFiles,
-            client: userRole === 'client' ? selfProfile : { full_name: 'Client', avatar_url: null },
-            freelancer: userRole === 'freelancer' ? selfProfile : { full_name: 'Freelancer', avatar_url: null },
+            client: userRole === 'client' ? selfProfile : counterpartyProfile,
+            freelancer: userRole === 'freelancer' ? selfProfile : counterpartyProfile,
         };
-    }, [contract, jobTitle, jobDeadline, latestDelivery, sharedFiles, userRole, profile]);
+    }, [contract, jobTitle, jobDeadline, latestDelivery, sharedFiles, lastRevisionNote, userRole, profile, counterpartyProfile]);
 
-    // Intentionally empty — activity events will be populated by real-time hooks in a future pass
-    const activityEvents = useMemo<ContractActivityEvent[]>(() => [], []);
+    // ─── Activity events synthesized from contract timestamps ─────────────────
+    const activityEvents = useMemo<ContractActivityEvent[]>(() => {
+        if (!contract) return [];
+        const events: ContractActivityEvent[] = [];
+        if (contract.funded_at) {
+            events.push({ id: 'funded', text: 'Escrow funded — work can begin', timestamp: contract.funded_at, actorRole: 'client', kind: 'payment' });
+        }
+        if (contract.delivery_submitted_at) {
+            events.push({ id: 'delivered', text: 'Work delivered for review', timestamp: contract.delivery_submitted_at, actorRole: 'freelancer', kind: 'delivery' });
+        }
+        if (contract.review_due_at) {
+            events.push({ id: 'review-due', text: `Review due by ${new Date(contract.review_due_at).toLocaleDateString()}`, timestamp: contract.review_due_at, actorRole: 'system', kind: 'system', system: true });
+        }
+        if ((contract.revision_requests_count ?? 0) > 0) {
+            events.push({ id: 'revision', text: `Revision requested (${contract.revision_requests_count}/${contract.max_revision_rounds ?? 2})`, timestamp: null, actorRole: 'client', kind: 'revision' });
+        }
+        return events.sort((a, b) => {
+            if (!a.timestamp) return 1;
+            if (!b.timestamp) return -1;
+            return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+        });
+    }, [contract]);
 
     // ─── Contract action hook ────────────────────────────────────────────────
     const {
@@ -365,16 +449,19 @@ export default function ContractWorkspacePage() {
         acceptWork,
         requestChanges,
         openDispute,
+        cancelContract,
         isDelivering,
         isAccepting,
         isDisputing,
+        isCancelling,
+        canCancel,
     } = useContractState({
         contractId: resolvedContractId,
         userId: user?.id ?? '',
         userRole,
     });
 
-    const isActionLoading = isDelivering || isAccepting || isDisputing;
+    const isActionLoading = isDelivering || isAccepting || isDisputing || isCancelling;
 
     // ─── Navigation helpers ──────────────────────────────────────────────────
     const handleGoBack = () => { if (window.history.length > 1) navigate(-1); else navigate(ROUTES.messages); };
@@ -385,10 +472,89 @@ export default function ContractWorkspacePage() {
 
     // ─── Action handlers (real RPCs) ─────────────────────────────────────────
     const handleDeliver = () => {
-        if (!resolvedContractId) return;
-        navigate(`${ROUTES.messages}?contract=${encodeURIComponent(resolvedContractId)}`, { state: { openDeliverModal: true } });
-    };const handleAcceptAndPay = async () => {
-        if (!window.confirm(tx('contractWorkspace.confirmRelease', {}, 'Approve work and release payment to the freelancer? This cannot be undone.'))) return;
+        setDeliverNote('');
+        setReviewFiles([]);
+        setFinalFiles([]);
+        setUploadProgress({ current: 0, total: 0 });
+        setDeliverOpen(true);
+        setTimeout(() => deliverTextareaRef.current?.focus(), 60);
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, isFinal: boolean) => {
+        if (!e.target.files) return;
+        const newFiles = Array.from(e.target.files);
+        const validFiles = newFiles.filter(file => {
+            if (file.size > 100 * 1024 * 1024) {
+                showToast(`File "${file.name}" exceeds 100MB limit.`, 'error');
+                return false;
+            }
+            return true;
+        });
+        if (isFinal) {
+            setFinalFiles(prev => [...prev, ...validFiles]);
+        } else {
+            setReviewFiles(prev => [...prev, ...validFiles]);
+        }
+        e.target.value = '';
+    };
+
+    const handleSubmitDelivery = async () => {
+        if (!deliverNote.trim()) return;
+        if (reviewFiles.length === 0) { showToast('At least one review file (preview) is required.', 'error'); return; }
+        if (finalFiles.length === 0) { showToast('At least one final file is required.', 'error'); return; }
+
+        setIsUploading(true);
+        try {
+            const uid = user?.id;
+            const cid = resolvedContractId;
+            if (!uid || !cid) throw new Error('Missing user or contract ID');
+
+            const uploadFile = async (file: File, kind: 'review' | 'final') => {
+                const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                const path = `${uid}/${cid}/submissions/${kind}/${Date.now()}_${safeName}`;
+                const { error: uploadErr } = await supabase.storage.from('contract-files').upload(path, file, { upsert: false });
+                if (uploadErr) throw new Error(`Upload failed for ${file.name}: ${uploadErr.message}`);
+                setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
+                return {
+                    name: file.name,
+                    storage_path: path,
+                    storage_bucket: 'contract-files',
+                    mime_type: file.type || '',
+                    size_bytes: String(file.size),
+                };
+            };
+
+            const totalFiles = reviewFiles.length + finalFiles.length;
+            setUploadProgress({ current: 0, total: totalFiles });
+
+            // Upload sequentially or in small batches if total files are many.
+            // Using a simple loop to update progress reliably
+            const reviewAssets = [];
+            for (const f of reviewFiles) reviewAssets.push(await uploadFile(f, 'review'));
+            
+            const finalAssets = [];
+            for (const f of finalFiles) finalAssets.push(await uploadFile(f, 'final'));
+
+            setIsUploading(false);
+            await deliverWork(deliverNote.trim(), reviewAssets, finalAssets);
+            setDeliverOpen(false);
+            setDeliverNote('');
+            setReviewFiles([]);
+            setFinalFiles([]);
+            await loadWorkspace();
+            showToast(tx('contractWorkspace.deliverySubmitted', {}, 'Delivery submitted! The client will review your work.'), 'success');
+        } catch (err) {
+            setIsUploading(false);
+            showToast((err as Error).message || tx('contractWorkspace.deliveryFailed', {}, 'Failed to submit delivery.'), 'error');
+        }
+    };
+
+    const handleAcceptAndPay = () => {
+        setConfirmReleaseOpen(true);
+    };
+
+    const handleConfirmRelease = async () => {
+        setConfirmReleaseOpen(false);
         try {
             await acceptWork();
             await loadWorkspace();
@@ -433,6 +599,24 @@ export default function ContractWorkspacePage() {
             showToast(tx('contractWorkspace.disputeOpened', {}, 'Dispute opened. Our team will review the case.'), 'info');
         } catch (err) {
             showToast((err as Error).message || tx('contractWorkspace.disputeFailed', {}, 'Failed to open dispute.'), 'error');
+        }
+    };
+
+    const handleCancel = () => {
+        setCancelReason('');
+        setCancelOpen(true);
+    };
+
+    const handleSubmitCancel = async () => {
+        if (!cancelReason.trim()) return;
+        try {
+            await cancelContract(cancelReason.trim());
+            setCancelOpen(false);
+            setCancelReason('');
+            await loadWorkspace();
+            showToast('Contract cancelled successfully.', 'success');
+        } catch (err) {
+            showToast((err as Error).message || 'Failed to cancel contract.', 'error');
         }
     };
 
@@ -518,9 +702,27 @@ export default function ContractWorkspacePage() {
                                 isActionLoading={isActionLoading}
                                 activityEvents={activityEvents}
                                 onDeliver={handleDeliver}
+                                onOpenSharedFile={async (file) => {
+                                    const bucket = (file as any).storageBucket || 'contract-files';
+                                    const path = (file as any).storagePath || '';
+                                    if (file.url && !path) {
+                                        window.open(file.url, '_blank', 'noopener');
+                                        return;
+                                    }
+                                    if (!path) { showToast('File path not available.', 'error'); return; }
+                                    try {
+                                        const { data, error: urlErr } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
+                                        if (urlErr) throw urlErr;
+                                        if (data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener');
+                                    } catch (err) {
+                                        showToast('Unable to open file. Access may be restricted.', 'error');
+                                        console.error('[ContractWorkspacePage] File open failed:', err);
+                                    }
+                                }}
                                 onRequestChanges={handleRequestChanges}
                                 onAcceptAndPay={handleAcceptAndPay}
                                 onDispute={handleOpenDispute}
+                                onCancel={handleCancel}
                                 onFundEscrow={() => setFundEscrowOpen(true)}
                                 onReview={() => { if (resolvedContractId) navigate(`/contracts/${resolvedContractId}/review`); }}
                                 hasLeftReview={hasReviewed}
@@ -532,8 +734,8 @@ export default function ContractWorkspacePage() {
 
             {/* ─── Fund Escrow Modal ───────────────────────────────────────── */}
             {fundEscrowOpen && contract ? (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Fund escrow">
-                    <div className="w-full max-w-md">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Fund escrow" onClick={() => setFundEscrowOpen(false)}>
+                    <div className="w-full max-w-md" onClick={e => e.stopPropagation()}>
                         <div className="mb-3 flex items-center justify-between">
                             <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#55534F]">Fund escrow</p>
                             <button type="button" onClick={() => setFundEscrowOpen(false)}
@@ -558,8 +760,8 @@ export default function ContractWorkspacePage() {
 
             {/* ─── Request Changes Modal ────────────────────────────────────── */}
             {changesOpen ? (
-                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-changes-title">
-                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]">
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-changes-title" onClick={() => setChangesOpen(false)}>
+                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
                         <div className="mb-4 flex items-center gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#E8A020]/15">
                                 <GitPullRequest className="h-5 w-5 text-[#E8A020]" />
@@ -593,8 +795,8 @@ export default function ContractWorkspacePage() {
 
             {/* ─── Open Dispute Modal ───────────────────────────────────────── */}
             {disputeOpen ? (
-                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-dispute-title">
-                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]">
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-dispute-title" onClick={() => setDisputeOpen(false)}>
+                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
                         <div className="mb-4 flex items-center gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-red-500/15">
                                 <ShieldAlert className="h-5 w-5 text-red-400" />
@@ -623,6 +825,188 @@ export default function ContractWorkspacePage() {
                             <button type="button" onClick={() => void handleSubmitDispute()} disabled={isDisputing || !disputeReason.trim()}
                                 className="inline-flex items-center gap-2 rounded-[10px] border border-red-500/40 bg-red-900/60 px-4 py-2 text-[14px] font-semibold text-red-200 transition-colors hover:bg-red-900 disabled:opacity-50">
                                 {isDisputing ? 'Opening dispute…' : 'Open dispute'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {/* ─── Cancel Contract Modal ──────────────────────────────────── */}
+            {cancelOpen ? (
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-cancel-title" onClick={() => setCancelOpen(false)}>
+                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
+                        <div className="mb-4 flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-orange-500/15">
+                                <XCircle className="h-5 w-5 text-orange-400" />
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Cancel contract</p>
+                                <h2 id="modal-cancel-title" className="text-[16px] font-semibold text-[#F0EFE8]">Why are you cancelling?</h2>
+                            </div>
+                        </div>
+                        {contract?.escrow_funded ? (
+                            <div className="mb-3 rounded-[8px] border border-orange-500/20 bg-orange-500/10 px-3 py-2">
+                                <p className="text-[12px] text-orange-300 leading-relaxed">
+                                    ⚠️ Escrow has been funded. Cancelling will trigger an <strong>automatic refund</strong> to the client.
+                                </p>
+                            </div>
+                        ) : null}
+                        <textarea
+                            value={cancelReason}
+                            onChange={e => setCancelReason(e.target.value)}
+                            placeholder="Explain why you're cancelling this contract…"
+                            rows={3}
+                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-orange-500/60 focus:outline-none focus:ring-1 focus:ring-orange-500/40"
+                        />
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button type="button" onClick={() => setCancelOpen(false)} disabled={isCancelling}
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
+                                Go back
+                            </button>
+                            <button type="button" onClick={() => void handleSubmitCancel()} disabled={isCancelling || !cancelReason.trim()}
+                                className="inline-flex items-center gap-2 rounded-[10px] border border-orange-500/40 bg-orange-900/60 px-4 py-2 text-[14px] font-semibold text-orange-200 transition-colors hover:bg-orange-900 disabled:opacity-50">
+                                {isCancelling ? 'Cancelling…' : 'Cancel contract'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {/* ─── Submit Delivery Modal ───────────────────────────────────── */}
+            {deliverOpen ? (
+                <div 
+                    className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" 
+                    role="dialog" 
+                    aria-modal="true" 
+                    aria-labelledby="modal-deliver-title"
+                    onClick={() => setDeliverOpen(false)}
+                >
+                    <div 
+                        className="w-full max-w-lg rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)] max-h-[90vh] overflow-y-auto"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="mb-4 flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#9B8FF0]/15">
+                                <PackageCheck className="h-5 w-5 text-[#9B8FF0]" />
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Submit delivery</p>
+                                <h2 id="modal-deliver-title" className="text-[16px] font-semibold text-[#F0EFE8]">Package your delivery</h2>
+                            </div>
+                        </div>
+                        <textarea
+                            ref={deliverTextareaRef}
+                            value={deliverNote}
+                            onChange={e => setDeliverNote(e.target.value)}
+                            placeholder="Describe what you've completed, any important notes for the client…"
+                            rows={3}
+                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-[#9B8FF0]/60 focus:outline-none focus:ring-1 focus:ring-[#9B8FF0]/40"
+                        />
+
+                        {/* Review Files Upload */}
+                        <div className="mt-4">
+                            <div className="mb-2 flex items-center justify-between">
+                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#9B8FF0]">Review files <span className="text-[#55534F] font-normal normal-case">— client sees immediately</span></p>
+                                <span className="text-[11px] text-[#55534F]">{reviewFiles.length} file{reviewFiles.length !== 1 ? 's' : ''}</span>
+                            </div>
+                            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-[#9B8FF0]/30 bg-[#9B8FF0]/5 px-4 py-4 transition-colors hover:border-[#9B8FF0]/50 hover:bg-[#9B8FF0]/10">
+                                <Upload className="h-5 w-5 text-[#9B8FF0]/60" />
+                                <span className="text-[13px] text-[#8A8880]">Drop previews, screenshots, watermarked versions</span>
+                                <span className="text-[11px] text-[#55534F]">Max 100 MB per file · any type</span>
+                                <input type="file" multiple className="hidden" onChange={e => handleFileSelect(e, false)} />
+                            </label>
+                            {reviewFiles.length > 0 ? (
+                                <ul className="mt-2 space-y-1">
+                                    {reviewFiles.map((f, i) => (
+                                        <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-[8px] bg-[#0D0D0E] px-3 py-2">
+                                            <Paperclip className="h-3.5 w-3.5 shrink-0 text-[#9B8FF0]" />
+                                            <span className="min-w-0 flex-1 truncate text-[13px] text-[#F0EFE8]">{f.name}</span>
+                                            <span className="shrink-0 text-[11px] text-[#55534F]">{(f.size / 1048576).toFixed(1)} MB</span>
+                                            <button type="button" onClick={() => setReviewFiles(prev => prev.filter((_, j) => j !== i))} className="shrink-0 text-[#55534F] hover:text-red-400">
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : null}
+                        </div>
+
+                        {/* Final Files Upload */}
+                        <div className="mt-4">
+                            <div className="mb-2 flex items-center justify-between">
+                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#1D9E75]">Final files <span className="text-[#55534F] font-normal normal-case">— locked until payment</span></p>
+                                <span className="text-[11px] text-[#55534F]">{finalFiles.length} file{finalFiles.length !== 1 ? 's' : ''}</span>
+                            </div>
+                            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-[#1D9E75]/30 bg-[#1D9E75]/5 px-4 py-4 transition-colors hover:border-[#1D9E75]/50 hover:bg-[#1D9E75]/10">
+                                <Upload className="h-5 w-5 text-[#1D9E75]/60" />
+                                <span className="text-[13px] text-[#8A8880]">Source files, full-res assets, unwatermarked work</span>
+                                <span className="text-[11px] text-[#55534F]">Max 100 MB per file · stays locked until approval</span>
+                                <input type="file" multiple className="hidden" onChange={e => handleFileSelect(e, true)} />
+                            </label>
+                            {finalFiles.length > 0 ? (
+                                <ul className="mt-2 space-y-1">
+                                    {finalFiles.map((f, i) => (
+                                        <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-[8px] bg-[#0D0D0E] px-3 py-2">
+                                            <Paperclip className="h-3.5 w-3.5 shrink-0 text-[#1D9E75]" />
+                                            <span className="min-w-0 flex-1 truncate text-[13px] text-[#F0EFE8]">{f.name}</span>
+                                            <span className="shrink-0 text-[11px] text-[#55534F]">{(f.size / 1048576).toFixed(1)} MB</span>
+                                            <button type="button" onClick={() => setFinalFiles(prev => prev.filter((_, j) => j !== i))} className="shrink-0 text-[#55534F] hover:text-red-400">
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : null}
+                        </div>
+
+                        <div className="mt-3 rounded-[8px] border border-white/[0.05] bg-[#0D0D0E] px-3 py-2">
+                            <p className="text-[12px] text-[#55534F] leading-relaxed">
+                                🛡️ Review files are visible immediately. Final files stay <strong className="text-[#F0EFE8]">locked</strong> until the client approves and releases payment. The client has 3 days to review.
+                            </p>
+                        </div>
+
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button type="button" onClick={() => setDeliverOpen(false)} disabled={isDelivering || isUploading}
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
+                                Cancel
+                            </button>
+                            <button type="button" onClick={() => void handleSubmitDelivery()} disabled={isDelivering || isUploading || !deliverNote.trim() || reviewFiles.length === 0 || finalFiles.length === 0}
+                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#9B8FF0] px-4 py-2 text-[14px] font-semibold text-[#0D0D0E] transition-colors hover:bg-[#a99cf5] disabled:opacity-50">
+                                {isUploading 
+                                    ? `Uploading ${uploadProgress.current} / ${uploadProgress.total}…` 
+                                    : isDelivering ? 'Submitting…' : `Submit delivery (${reviewFiles.length + finalFiles.length} files)`}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {/* ─── Confirm Release Payment Modal ──────────────────────────── */}
+            {confirmReleaseOpen ? (
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-release-title" onClick={() => setReleasePaymentOpen(false)}>
+                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
+                        <div className="mb-4 flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#1D9E75]/15">
+                                <PackageCheck className="h-5 w-5 text-[#1D9E75]" />
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Release payment</p>
+                                <h2 id="modal-release-title" className="text-[16px] font-semibold text-[#F0EFE8]">Approve & release funds?</h2>
+                            </div>
+                        </div>
+                        <div className="mb-4 rounded-[10px] border border-[#1D9E75]/20 bg-[#0F6E56]/10 px-4 py-3">
+                            <p className="text-[13px] leading-relaxed text-[#8A8880]">
+                                This will release the escrowed funds to the freelancer and unlock all final delivery files. <strong className="text-[#F0EFE8]">This action cannot be undone.</strong>
+                            </p>
+                        </div>
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button type="button" onClick={() => setConfirmReleaseOpen(false)} disabled={isAccepting}
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
+                                Cancel
+                            </button>
+                            <button type="button" onClick={() => void handleConfirmRelease()} disabled={isAccepting}
+                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#1D9E75] px-4 py-2 text-[14px] font-semibold text-[#F0EFE8] transition-colors hover:bg-[#24b889] disabled:opacity-50">
+                                {isAccepting ? 'Releasing…' : 'Approve & release'}
                             </button>
                         </div>
                     </div>
