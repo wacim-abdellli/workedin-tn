@@ -970,6 +970,7 @@ function MessagesComponent() {
         }
     });
     const [showMobileThread, setShowMobileThread] = useState(false);
+    const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
     const [isLoadingConversations, setIsLoadingConversations] = useState(true);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isSending, setIsSending] = useState(false);
@@ -5404,7 +5405,7 @@ function MessagesComponent() {
                                                                                     <button
                                                                                         key={index}
                                                                                         type="button"
-                                                                                        onClick={() => { void handleOpenAttachment(att); }}
+                                                                                        onClick={() => { setLightboxImageUrl(attachmentUrl); }}
                                                                                         aria-label={tx('pages.messages.a11y.openImageAttachment', undefined, 'Open image attachment')}
                                                                                         className="block w-full max-w-sm rounded-xl overflow-hidden"
                                                                                     >
@@ -6151,6 +6152,39 @@ function MessagesComponent() {
                     </div>
                 </div>
             </Modal>
+
+            {/* ─── Image Lightbox Modal ─────────────────────────────────── */}
+            {lightboxImageUrl && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+                    onClick={() => setLightboxImageUrl(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Image preview"
+                >
+                    <div className="relative max-w-4xl max-h-[90vh] flex items-center justify-center" onClick={e => e.stopPropagation()}>
+                        {/* Close button */}
+                        <button
+                            type="button"
+                            onClick={() => setLightboxImageUrl(null)}
+                            className="absolute -top-12 -right-12 sm:top-0 sm:right-0 p-2 rounded-full hover:bg-white/10 transition-colors z-10"
+                            aria-label="Close image preview"
+                        >
+                            <X className="h-6 w-6 text-white" />
+                        </button>
+
+                        {/* Image */}
+                        <img
+                            src={lightboxImageUrl}
+                            alt="Preview"
+                            className="max-w-full max-h-[90vh] rounded-xl object-contain"
+                            onError={e => {
+                                e.currentTarget.style.display = 'none';
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
         </>
     );
 }
