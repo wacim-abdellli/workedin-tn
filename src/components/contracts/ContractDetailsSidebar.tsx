@@ -85,6 +85,7 @@ interface ContractSidebarData {
     finalFiles?: ContractDeliveryAsset[];
     lockedFinalFilesCount?: number;
     job?: { title?: string | null; deadline?: string | null };
+    lastRevisionNote?: string | null;
     milestones?: ContractMilestone[];
     sharedFiles?: ContractSharedFile[];
     freelancer?: { full_name?: string; avatar_url?: string | null };
@@ -144,6 +145,11 @@ interface WorkspaceModel {
     nextMove: { icon: ReactNode; title: string; body: string; primaryLabel: string | null; tone: string };
     otherParty?: { full_name?: string; avatar_url?: string | null } | null;
     allFileCount: number;
+    lastRevisionNote: string | null;
+    reviewDueAt: string | null;
+    amount: number | null;
+    fundedAt: string | null;
+    deliverySubmittedAt: string | null;
 }
 
 const ns = (s: string | null | undefined) => String(s || '').trim().toLowerCase();
@@ -274,6 +280,12 @@ export default function ContractDetailsSidebar({
         const canDispute = isActive || isUnderReview || isRevision || isPendingPayment;
         const otherParty = userRole === 'client' ? contract.freelancer : contract.client;
 
+        const reviewDueAt = contract.reviewDueAt ?? null;
+        const lastRevisionNote = contract.lastRevisionNote ?? null;
+        const amount = contract.amount ?? null;
+        const fundedAt = contract.fundedAt ?? null;
+        const deliverySubmittedAt = contract.deliverySubmittedAt ?? null;
+
         const nextMove = (() => {
             // ── ESCROW GATE (pending_payment) ────────────────────────────────
             if (isPendingPayment) {
@@ -390,6 +402,11 @@ export default function ContractDetailsSidebar({
             nextMove,
             otherParty,
             allFileCount: sharedFiles.length + reviewFiles.length + finalFiles.length + lockedFinalFilesCount,
+            lastRevisionNote,
+            reviewDueAt,
+            amount,
+            fundedAt,
+            deliverySubmittedAt,
         };
     }, [contract, currentStatus, deliverySubmitted, hasLeftReview, userRole]);
 
@@ -495,7 +512,7 @@ export default function ContractDetailsSidebar({
             </header>
 
             {/* ── Tab bar ── */}
-            <nav className="sticky top-[102px] z-20 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/95 px-6 backdrop-blur-xl">
+            <nav className="sticky top-[var(--header-height,102px)] z-20 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/98 px-6 backdrop-blur-xl">
                 <div className="flex h-11 items-center gap-1 overflow-x-auto" role="tablist" aria-label="Contract workspace sections">
                     {tabs.map((tab, index) => (
                         <button
@@ -526,13 +543,13 @@ export default function ContractDetailsSidebar({
                 id={`contract-workspace-panel-${activeTab}`}
                 role="tabpanel"
                 aria-labelledby={`contract-workspace-tab-${activeTab}`}
-                className="flex-1 animate-[contractTabIn_160ms_ease-out] px-4 py-5 sm:px-8 sm:py-6"
+                className="flex-1 animate-[contractTabIn_160ms_ease-out] overflow-y-auto px-4 py-5 sm:px-8 sm:py-6"
             >
                 <div className="mx-auto max-w-5xl">
                 {activeTab === 'overview' ? (
                     <div className="space-y-4">
-                        {model.showReviewConfirmation ? <CompletedSummary model={model} rt={rt} /> : null}
-                        <NextMoveCard model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onFundEscrow={onFundEscrow} onReview={onReview} setActiveTab={setActiveTab} />
+                        {model.st === 'completed' ? <CompletedSummary model={model} rt={rt} onReview={onReview} /> : null}
+                        {model.st !== 'completed' || model.showLeaveReview ? <NextMoveCard model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onFundEscrow={onFundEscrow} onReview={onReview} setActiveTab={setActiveTab} /> : null}
                         <ContractPulse model={model} rt={rt} />
                     </div>
                 ) : null}
@@ -581,7 +598,7 @@ type ActionProps = {
     onReview: () => void;
 };
 
-function CompletedSummary({ model, rt }: { model: WorkspaceModel; rt: RoleTheme }) {
+function CompletedSummary({ model, rt, onReview }: { model: WorkspaceModel; rt: RoleTheme; onReview: () => void }) {
     return (
         <section className="rounded-[10px] border border-[#7F77DD]/30 bg-[#3C3489]/20 px-4 py-4">
             <div className="flex items-start gap-3">
@@ -590,13 +607,25 @@ function CompletedSummary({ model, rt }: { model: WorkspaceModel; rt: RoleTheme 
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className={labelClass}>Contract closed</p>
-                    <h3 className="mt-1 text-[15px] font-semibold text-[#F0EFE8]">Work accepted · Payment released</h3>
-                    <p className="mt-0.5 text-[13px] text-[#8A8880]">This workspace is now a read-only record.</p>
+                    <h3 className="mt-1 text-[15px] font-semibold text-[#F0EFE8]">
+                        {fmtAmount(model.amount)} released to freelancer
+                    </h3>
+                    <div className="mt-2 flex flex-col gap-1 text-[13px] text-[#8A8880]">
+                        {model.fundedAt && <p>• Escrow funded: {fmtDate(model.fundedAt)}</p>}
+                        {model.deliverySubmittedAt && <p>• Delivery submitted: {fmtDate(model.deliverySubmittedAt)}</p>}
+                    </div>
                 </div>
                 <span className={`rounded-full border px-2.5 py-1 font-mono text-[12px] ${rt.roleBadge}`}>
                     {model.revUsed}/{model.revMax} rev used
                 </span>
             </div>
+            {model.showLeaveReview ? (
+                <div className="mt-4 flex justify-end">
+                    <button type="button" onClick={onReview} className="text-[13px] font-medium text-[#F0EFE8] underline transition-colors hover:text-[#9B8FF0]">
+                        Leave a review to complete the record
+                    </button>
+                </div>
+            ) : null}
         </section>
     );
 }
@@ -633,6 +662,24 @@ function ContractPulse({ model, rt }: { model: WorkspaceModel; rt: RoleTheme }) 
     );
 }
 
+function ReviewCountdown({ targetIso }: { targetIso: string }) {
+    const tick = useCountdown(targetIso);
+    if (!tick || tick.expired) return (
+        <div className="mt-3 inline-flex items-center gap-2 rounded-[8px] bg-[#A32D2D]/20 px-3 py-1.5 border border-[#A32D2D]/30">
+            <Timer className="h-4 w-4 text-[#A32D2D]" />
+            <span className="text-[13px] font-medium text-[#A32D2D]">Review period expired</span>
+        </div>
+    );
+    return (
+        <div className="mt-3 inline-flex items-center gap-2 rounded-[8px] bg-[#BA7517]/20 px-3 py-1.5 border border-[#BA7517]/30">
+            <Timer className="h-4 w-4 text-[#BA7517]" />
+            <span className="text-[13px] font-medium text-[#BA7517]">
+                Review due in {tick.days}d {tick.hours}h {tick.minutes}m
+            </span>
+        </div>
+    );
+}
+
 function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, onRequestChanges, onDispute, onFundEscrow, onReview, setActiveTab }: ActionProps & { setActiveTab: (tab: WorkspaceTab) => void }) {
     const isPendingEscrow = model.st === 'pending_payment' && !model.isEscrowFunded && model.nextMove.primaryLabel === 'Fund escrow';
     const action = isPendingEscrow ? undefined
@@ -662,6 +709,19 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
                         <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#55534F]">Your next move</p>
                         <h3 className="mt-1.5 text-[20px] font-bold leading-[1.2] tracking-[-0.02em] text-[#F0EFE8]">{model.nextMove.title}</h3>
                         <p className="mt-2 text-[14px] leading-relaxed text-[#8A8880]">{model.nextMove.body}</p>
+                        
+                        {/* Task 3.2: Show Revision Feedback */}
+                        {model.st === 'revision_requested' && model.lastRevisionNote ? (
+                            <div className="mt-3 rounded-[10px] border border-[#BA7517]/30 bg-[#633806]/20 p-3">
+                                <p className="text-[12px] font-semibold text-[#BA7517] uppercase tracking-wider mb-1">Client Feedback</p>
+                                <p className="text-[14px] text-[#F0EFE8] whitespace-pre-wrap">{model.lastRevisionNote}</p>
+                            </div>
+                        ) : null}
+                        
+                        {/* Task 3.1: Countdown Timer on Delivery Review */}
+                        {model.showClientReview && model.reviewDueAt ? (
+                            <ReviewCountdown targetIso={model.reviewDueAt} />
+                        ) : null}
                     </div>
                 </div>
 
