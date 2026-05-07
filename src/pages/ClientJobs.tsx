@@ -213,7 +213,6 @@ export default function ClientJobs() {
         const proposalsCount = proposalCountsByJob.get(job.id) ?? 0;
         return {
           ...job,
-          proposals: [{ count: proposalsCount }],
           latestContract,
           derivedStatus: deriveJobStatus(job.status, latestContract, proposalsCount),
         };
@@ -255,6 +254,7 @@ export default function ClientJobs() {
       finished,
       finishedSuccess,
       finishedUnsuccessful,
+      jobsWithProposals: allJobs.filter((job) => (job.proposals?.[0]?.count || 0) > 0).length,
       proposals: allJobs.reduce((acc, curr) => acc + (curr.proposals?.[0]?.count || 0), 0),
     };
   }, [allJobs]);
@@ -267,11 +267,11 @@ export default function ClientJobs() {
   }
 
   const tabLabel = (tab: JobListTab) => {
-    if (tab === 'all') return tx('pages.clientJobs.all', undefined, 'All')
-    if (tab === 'active') return tx('pages.clientJobs.active', undefined, 'Active')
-    if (tab === 'proposals') return tx('pages.clientJobs.withProposals', undefined, 'With Proposals')
-    if (tab === 'attention') return tx('pages.clientJobs.needsAttention', undefined, 'Needs attention')
-    return tx('pages.clientJobs.finished', undefined, 'Finished')
+    if (tab === 'all') return `${tx('pages.clientJobs.all', undefined, 'All')} (${allJobs.length})`
+    if (tab === 'active') return `${tx('pages.clientJobs.active', undefined, 'Active')} (${stats.open + stats.inProgress})`
+    if (tab === 'proposals') return `${tx('pages.clientJobs.withProposals', undefined, 'With Proposals')} (${stats.jobsWithProposals})`
+    if (tab === 'attention') return `${tx('pages.clientJobs.needsAttention', undefined, 'Needs attention')} (${stats.needsAttention})`
+    return `${tx('pages.clientJobs.finished', undefined, 'Finished')} (${stats.finished})`
   }
 
   const statusLabel = (job: EnrichedClientJob) => {
@@ -419,19 +419,19 @@ export default function ClientJobs() {
 
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-4 min-h-[78px]">
             <p className="text-xs text-white/50 font-bold uppercase tracking-wider">{tx('pages.clientJobs.open', undefined, 'Open')}</p>
             <p className="text-2xl font-black text-amber-500 mt-1">{stats.open}</p>
           </div>
-          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-4 min-h-[78px]">
             <p className="text-xs text-white/50 font-bold uppercase tracking-wider">{tx('pages.clientJobs.inProgress', undefined, 'In progress')}</p>
             <p className="text-2xl font-black text-sky-400 mt-1">{stats.inProgress}</p>
           </div>
-          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-4 min-h-[78px]">
             <p className="text-xs text-white/50 font-bold uppercase tracking-wider">{tx('pages.clientJobs.needsAttention', undefined, 'Needs attention')}</p>
             <p className="text-2xl font-black text-rose-400 mt-1">{stats.needsAttention}</p>
           </div>
-          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-5">
+          <div className="rounded-xl border border-white/5 bg-[var(--color-bg-base)] p-4 min-h-[78px]">
             <p className="text-xs text-white/50 font-bold uppercase tracking-wider">{tx('pages.clientJobs.finished', undefined, 'Finished')}</p>
             <p className="text-2xl font-black text-emerald-400 mt-1">{stats.finished}</p>
             <p className="text-[10px] font-semibold text-white/30 mt-1 uppercase tracking-widest">
@@ -506,12 +506,17 @@ export default function ClientJobs() {
             {jobs.map((job, index) => (
               <div 
                 key={job.id}
-                className={`p-6 hover:bg-white/[0.02] transition-colors flex flex-col lg:flex-row lg:items-start justify-between gap-6 group ${index < jobs.length - 1 ? "border-b border-white/5" : ""}`}
+                className={`p-4 hover:bg-white/[0.02] transition-colors flex flex-col lg:flex-row lg:items-start justify-between gap-4 group ${index < jobs.length - 1 ? "border-b border-white/5" : ""}`}
               >
                 <div className="min-w-0 flex-1">
-                  <h3 className="mb-2 text-base font-bold text-white group-hover:text-amber-400 transition-colors truncate">
-                    {job.title}
-                  </h3>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition-colors truncate">
+                      {job.title}
+                    </h3>
+                    <span className="ml-2 inline-flex items-center rounded-full bg-white/5 border border-white/8 px-2 py-0.5 text-[11px] font-semibold text-amber-400">
+                      {job.proposals?.[0]?.count ?? 0}
+                    </span>
+                  </div>
                   <div className="flex flex-wrap items-center gap-2 mb-3">
                     <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-bold text-white/60 uppercase tracking-wider">
                       {job.category || tx('pages.clientJobs.uncategorized', undefined, 'Uncategorized')}
@@ -521,7 +526,7 @@ export default function ClientJobs() {
                     </span>
                   </div>
                   
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-3">
                     <p className="text-xs font-bold text-white">
                       {formatBudget(job)}
                     </p>
@@ -544,7 +549,7 @@ export default function ClientJobs() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 sm:flex-col sm:items-end shrink-0">
+                <div className="flex items-center gap-2 sm:flex-col sm:items-end shrink-0 w-full lg:w-auto">
                   {job.latestContract?.id ? (
                     <button
                       onClick={() => navigate(`/workspace/${job.latestContract?.id}`, {

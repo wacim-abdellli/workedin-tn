@@ -67,8 +67,8 @@ export function getDisplayNotification(notification: AppNotification, tx: Tx): A
     // "تم قبول العرض"
     if (notification.type === 'proposal' && includesAny(haystack, ['تم قبول العرض', 'proposal accepted'])) {
         const jobTitle = extractMatch(body, [
-            /(.+?)\s+تم قبول عرضك على المشروع/,
-            /(.+?)\s+proposal accepted/i
+            /تم قبول عرضك على المشروع:\s+(.+)/,
+            /proposal accepted on\s+(.+)/i
         ]) || 'your project';
 
         return {
@@ -79,11 +79,11 @@ export function getDisplayNotification(notification: AppNotification, tx: Tx): A
     }
 
     // 4. New Proposal (Freelancer to Client)
-    // "عرض جديد على وظيفتك" -> "Freelancer قدّم عرضاً على JobTitle"
-    if (notification.type === 'proposal' && includesAny(haystack, ['عرض جديد على وظيفتك', 'new proposal'])) {
-        const matchAr = body.match(/(.+?)\s+قدّم عرضاً على\s+"(.+?)"/);
-        const freelancerName = matchAr ? matchAr[1] : 'A freelancer';
-        const jobTitle = matchAr ? matchAr[2] : 'your project';
+    if ((notification.type === 'proposal' || notification.type === 'new_proposal') && 
+        includesAny(haystack, ['عرض جديد', 'new proposal'])) {
+        const matchAr = body.match(/(.+?)\s*(?:قدّم عرضاً على|"submitted a proposal on")\s*(?:"|')?(.+?)(?:"|')?$/i);
+        const freelancerName = matchAr ? matchAr[1].trim() : 'A freelancer';
+        const jobTitle = matchAr ? matchAr[2].trim() : 'your project';
 
         return {
             ...notification,
