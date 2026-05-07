@@ -106,7 +106,7 @@ function WorkspaceSkeleton() {
     return (
         <div className="animate-pulse space-y-0">
             {/* header */}
-            <div className="border-b border-white/[0.06] bg-[#0D0D0E] px-5 py-3.5">
+            <div className="border-b border-white/[0.06] bg-[var(--color-bg-base)] px-5 py-3.5">
                 <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-[10px] bg-white/5" />
                     <div className="space-y-1.5">
@@ -117,7 +117,7 @@ function WorkspaceSkeleton() {
                 </div>
             </div>
             {/* tabs */}
-            <div className="flex h-10 items-end gap-6 border-b border-white/[0.06] bg-[#0D0D0E] px-5">
+            <div className="flex h-10 items-end gap-6 border-b border-white/[0.06] bg-[var(--color-bg-base)] px-5">
                 {['Overview', 'Files', 'Milestones', 'Activity'].map(t => (
                     <div key={t} className="h-3 w-14 rounded-full bg-white/5" />
                 ))}
@@ -623,50 +623,17 @@ export default function ContractWorkspacePage() {
     const jobTitle_ = contractSidebarData?.job?.title;
 
     return (
-        <div className="flex min-h-screen flex-col bg-[#0A0A0B]">
+        <div className="flex h-[100dvh] flex-col bg-[var(--color-bg-base)] overflow-hidden">
             <Header />
 
             {/* Role-colored gradient line */}
             {!isLoading && !error ? (
-                <div className={`h-[2px] w-full bg-gradient-to-r ${roleAccent.stripe} to-transparent`} />
+                <div className={`shrink-0 h-[2px] w-full bg-gradient-to-r ${roleAccent.stripe} to-transparent`} />
             ) : null}
 
-            {/* Breadcrumb bar */}
-            <div className="sticky top-[var(--header-height,64px)] z-30 flex h-12 shrink-0 items-center gap-3 border-b border-white/[0.06] bg-[#0D0D0E]/92 px-4 backdrop-blur-xl sm:px-6">
-                <button type="button" onClick={handleGoBack}
-                    className="inline-flex items-center gap-1.5 rounded-[8px] border border-white/[0.07] bg-[#161719] px-3 py-1.5 text-[13px] font-medium text-[#8A8880] transition-colors hover:border-white/[0.12] hover:text-[#F0EFE8]">
-                    <ArrowLeft className="h-3.5 w-3.5" />
-                    {tx('common.back', {}, 'Back')}
-                </button>
-
-                <div className="h-3.5 w-px bg-white/[0.08]" />
-
-                <button type="button" onClick={handleGoToMessages}
-                    className="inline-flex items-center gap-1.5 text-[13px] text-[#55534F] transition-colors hover:text-[#F0EFE8]">
-                    <MessageSquare className="h-3.5 w-3.5" />
-                    {tx('nav.messages', {}, 'Messages')}
-                </button>
-
-                <div className="flex-1" />
-
-                {!isLoading && !error ? (
-                    <div className="flex items-center gap-2">
-                        {jobTitle_ ? (
-                            <p className="hidden max-w-[220px] truncate text-[13px] text-[#8A8880] sm:block">
-                                {jobTitle_}
-                            </p>
-                        ) : null}
-                        <span className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${roleAccent.badge}`}>
-                            <Users className="h-2.5 w-2.5" />
-                            {roleAccent.label}
-                        </span>
-                    </div>
-                ) : null}
-            </div>
-
-            <main className="flex-1">
+            <main className="flex-1 flex flex-col overflow-y-auto relative">
                 {isLoading ? (
-                    <div className="mx-auto max-w-5xl">
+                    <div className="mx-auto w-full max-w-5xl px-4 py-6">
                         <WorkspaceSkeleton />
                     </div>
                 ) : error ? (
@@ -676,59 +643,57 @@ export default function ContractWorkspacePage() {
                                 <AlertCircle className="h-7 w-7 text-red-400" />
                             </div>
                             <div>
-                                <h2 className="text-[18px] font-semibold text-[#F0EFE8]">{tx('contractWorkspace.unableToLoad', {}, 'Unable to load workspace')}</h2>
-                                <p className="mt-1.5 text-[14px] leading-relaxed text-[#8A8880]">{error}</p>
+                                <h2 className="text-[18px] font-semibold text-[var(--color-text-primary)]">{tx('contractWorkspace.unableToLoad', {}, 'Unable to load workspace')}</h2>
+                                <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--color-text-secondary)]">{error}</p>
                             </div>
                             <div className="flex items-center justify-center gap-2">
                                 <button type="button" onClick={() => void loadWorkspace()}
-                                    className="inline-flex items-center gap-2 rounded-[10px] bg-[#1D9E75] px-4 py-2.5 text-[14px] font-semibold text-[#F0EFE8] transition-colors hover:bg-[#24b889]">
+                                    className="inline-flex items-center gap-2 rounded-[10px] bg-[var(--workspace-primary)] px-4 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-[var(--workspace-primary-hover)]">
                                     {tx('common.retry', {}, 'Retry')}
                                 </button>
                                 <button type="button" onClick={handleGoBack}
-                                    className="inline-flex items-center gap-2 rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2.5 text-[14px] font-medium text-[#8A8880] transition-colors hover:text-[#F0EFE8]">
+                                    className="inline-flex items-center gap-2 rounded-[10px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-4 py-2.5 text-[14px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-muted)]">
                                     <ArrowLeft className="h-4 w-4" /> {tx('common.goBack', {}, 'Go back')}
                                 </button>
                             </div>
                         </div>
                     </div>
                 ) : contractSidebarData ? (
-                    <div className="mx-auto max-w-5xl sm:px-4 sm:py-6">
-                        <div className="overflow-hidden sm:rounded-[14px] sm:shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
-                            <ContractDetailsSidebar
-                                contract={contractSidebarData}
-                                userRole={userRole}
-                                currentStatus={currentStatus}
-                                deliverySubmitted={deliverySubmitted}
-                                isActionLoading={isActionLoading}
-                                activityEvents={activityEvents}
-                                onDeliver={handleDeliver}
-                                onOpenSharedFile={async (file) => {
-                                    const bucket = (file as any).storageBucket || 'contract-files';
-                                    const path = (file as any).storagePath || '';
-                                    if (file.url && !path) {
-                                        window.open(file.url, '_blank', 'noopener');
-                                        return;
-                                    }
-                                    if (!path) { showToast('File path not available.', 'error'); return; }
-                                    try {
-                                        const { data, error: urlErr } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
-                                        if (urlErr) throw urlErr;
-                                        if (data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener');
-                                    } catch (err) {
-                                        showToast('Unable to open file. Access may be restricted.', 'error');
-                                        console.error('[ContractWorkspacePage] File open failed:', err);
-                                    }
-                                }}
-                                onRequestChanges={handleRequestChanges}
-                                onAcceptAndPay={handleAcceptAndPay}
-                                onDispute={handleOpenDispute}
-                                onCancel={handleCancel}
-                                onFundEscrow={() => setFundEscrowOpen(true)}
-                                onReview={() => { if (resolvedContractId) navigate(`/contracts/${resolvedContractId}/review`); }}
-                                hasLeftReview={hasReviewed}
-                            />
-                        </div>
-                    </div>
+                    <ContractDetailsSidebar
+                        contract={contractSidebarData}
+                        userRole={userRole}
+                        currentStatus={currentStatus}
+                        deliverySubmitted={deliverySubmitted}
+                        isActionLoading={isActionLoading}
+                        activityEvents={activityEvents}
+                        onDeliver={handleDeliver}
+                        onOpenSharedFile={async (file) => {
+                            const bucket = (file as any).storageBucket || 'contract-files';
+                            const path = (file as any).storagePath || '';
+                            if (file.url && !path) {
+                                window.open(file.url, '_blank', 'noopener');
+                                return;
+                            }
+                            if (!path) { showToast('File path not available.', 'error'); return; }
+                            try {
+                                const { data, error: urlErr } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
+                                if (urlErr) throw urlErr;
+                                if (data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener');
+                            } catch (err) {
+                                showToast('Unable to open file. Access may be restricted.', 'error');
+                                console.error('[ContractWorkspacePage] File open failed:', err);
+                            }
+                        }}
+                        onRequestChanges={handleRequestChanges}
+                        onAcceptAndPay={handleAcceptAndPay}
+                        onDispute={handleOpenDispute}
+                        onCancel={handleCancel}
+                        onFundEscrow={() => setFundEscrowOpen(true)}
+                        onReview={() => { if (resolvedContractId) navigate(`/contracts/${resolvedContractId}/review`); }}
+                        hasLeftReview={hasReviewed}
+                        onGoBack={handleGoBack}
+                        onGoToMessages={handleGoToMessages}
+                    />
                 ) : null}
             </main>
 
@@ -737,9 +702,9 @@ export default function ContractWorkspacePage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Fund escrow" onClick={() => setFundEscrowOpen(false)}>
                     <div className="w-full max-w-md" onClick={e => e.stopPropagation()}>
                         <div className="mb-3 flex items-center justify-between">
-                            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#55534F]">Fund escrow</p>
+                            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-tertiary)]">Fund escrow</p>
                             <button type="button" onClick={() => setFundEscrowOpen(false)}
-                                className="rounded-[8px] border border-white/[0.07] bg-[#161719] p-1.5 text-[#55534F] transition-colors hover:text-[#F0EFE8]">
+                                className="rounded-[8px] border border-white/[0.07] bg-[#161719] p-1.5 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-primary)]">
                                 <X className="h-4 w-4" />
                             </button>
                         </div>
@@ -767,8 +732,8 @@ export default function ContractWorkspacePage() {
                                 <GitPullRequest className="h-5 w-5 text-[#E8A020]" />
                             </div>
                             <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Request revision</p>
-                                <h2 id="modal-changes-title" className="text-[16px] font-semibold text-[#F0EFE8]">What needs to change?</h2>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Request revision</p>
+                                <h2 id="modal-changes-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">What needs to change?</h2>
                             </div>
                         </div>
                         <textarea
@@ -777,15 +742,15 @@ export default function ContractWorkspacePage() {
                             onChange={e => setChangesNote(e.target.value)}
                             placeholder="Be specific — describe exactly what needs to be revised so the freelancer can act immediately…"
                             rows={4}
-                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-[#E8A020]/60 focus:outline-none focus:ring-1 focus:ring-[#E8A020]/40"
+                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[var(--color-bg-base)] px-4 py-3 text-[14px] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:border-[#E8A020]/60 focus:outline-none focus:ring-1 focus:ring-[#E8A020]/40"
                         />
                         <div className="mt-4 flex justify-end gap-2">
                             <button type="button" onClick={() => setChangesOpen(false)}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8]">
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
                                 Cancel
                             </button>
                             <button type="button" onClick={() => void handleSubmitChanges()} disabled={!changesNote.trim()}
-                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#E8A020] px-4 py-2 text-[14px] font-semibold text-[#0D0D0E] transition-colors hover:bg-[#f0aa28] disabled:opacity-50">
+                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#E8A020] px-4 py-2 text-[14px] font-semibold text-[var(--color-bg-base)] transition-colors hover:bg-[#f0aa28] disabled:opacity-50">
                                 Send revision request
                             </button>
                         </div>
@@ -802,8 +767,8 @@ export default function ContractWorkspacePage() {
                                 <ShieldAlert className="h-5 w-5 text-red-400" />
                             </div>
                             <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Open dispute</p>
-                                <h2 id="modal-dispute-title" className="text-[16px] font-semibold text-[#F0EFE8]">Describe the issue</h2>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Open dispute</p>
+                                <h2 id="modal-dispute-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">Describe the issue</h2>
                             </div>
                         </div>
                         <div className="mb-4 rounded-[10px] border border-red-500/20 bg-red-500/10 px-4 py-3">
@@ -815,11 +780,11 @@ export default function ContractWorkspacePage() {
                             onChange={e => setDisputeReason(e.target.value)}
                             placeholder="Explain clearly what went wrong, what you expected, and what you received…"
                             rows={4}
-                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-red-500/60 focus:outline-none focus:ring-1 focus:ring-red-500/40"
+                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[var(--color-bg-base)] px-4 py-3 text-[14px] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:border-red-500/60 focus:outline-none focus:ring-1 focus:ring-red-500/40"
                         />
                         <div className="mt-4 flex justify-end gap-2">
                             <button type="button" onClick={() => setDisputeOpen(false)} disabled={isDisputing}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40">
                                 Cancel
                             </button>
                             <button type="button" onClick={() => void handleSubmitDispute()} disabled={isDisputing || !disputeReason.trim()}
@@ -840,8 +805,8 @@ export default function ContractWorkspacePage() {
                                 <XCircle className="h-5 w-5 text-orange-400" />
                             </div>
                             <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Cancel contract</p>
-                                <h2 id="modal-cancel-title" className="text-[16px] font-semibold text-[#F0EFE8]">Why are you cancelling?</h2>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Cancel contract</p>
+                                <h2 id="modal-cancel-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">Why are you cancelling?</h2>
                             </div>
                         </div>
                         {contract?.escrow_funded ? (
@@ -856,11 +821,11 @@ export default function ContractWorkspacePage() {
                             onChange={e => setCancelReason(e.target.value)}
                             placeholder="Explain why you're cancelling this contract…"
                             rows={3}
-                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-orange-500/60 focus:outline-none focus:ring-1 focus:ring-orange-500/40"
+                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[var(--color-bg-base)] px-4 py-3 text-[14px] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:border-orange-500/60 focus:outline-none focus:ring-1 focus:ring-orange-500/40"
                         />
                         <div className="mt-4 flex justify-end gap-2">
                             <button type="button" onClick={() => setCancelOpen(false)} disabled={isCancelling}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40">
                                 Go back
                             </button>
                             <button type="button" onClick={() => void handleSubmitCancel()} disabled={isCancelling || !cancelReason.trim()}
@@ -890,8 +855,8 @@ export default function ContractWorkspacePage() {
                                 <PackageCheck className="h-5 w-5 text-[#9B8FF0]" />
                             </div>
                             <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Submit delivery</p>
-                                <h2 id="modal-deliver-title" className="text-[16px] font-semibold text-[#F0EFE8]">Package your delivery</h2>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Submit delivery</p>
+                                <h2 id="modal-deliver-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">Package your delivery</h2>
                             </div>
                         </div>
                         <textarea
@@ -900,29 +865,29 @@ export default function ContractWorkspacePage() {
                             onChange={e => setDeliverNote(e.target.value)}
                             placeholder="Describe what you've completed, any important notes for the client…"
                             rows={3}
-                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[#0D0D0E] px-4 py-3 text-[14px] text-[#F0EFE8] placeholder-[#55534F] focus:border-[#9B8FF0]/60 focus:outline-none focus:ring-1 focus:ring-[#9B8FF0]/40"
+                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[var(--color-bg-base)] px-4 py-3 text-[14px] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:border-[#9B8FF0]/60 focus:outline-none focus:ring-1 focus:ring-[#9B8FF0]/40"
                         />
 
                         {/* Review Files Upload */}
                         <div className="mt-4">
                             <div className="mb-2 flex items-center justify-between">
-                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#9B8FF0]">Review files <span className="text-[#55534F] font-normal normal-case">— client sees immediately</span></p>
-                                <span className="text-[11px] text-[#55534F]">{reviewFiles.length} file{reviewFiles.length !== 1 ? 's' : ''}</span>
+                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#9B8FF0]">Review files <span className="text-[var(--color-text-tertiary)] font-normal normal-case">— client sees immediately</span></p>
+                                <span className="text-[11px] text-[var(--color-text-tertiary)]">{reviewFiles.length} file{reviewFiles.length !== 1 ? 's' : ''}</span>
                             </div>
                             <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-[#9B8FF0]/30 bg-[#9B8FF0]/5 px-4 py-4 transition-colors hover:border-[#9B8FF0]/50 hover:bg-[#9B8FF0]/10">
                                 <Upload className="h-5 w-5 text-[#9B8FF0]/60" />
-                                <span className="text-[13px] text-[#8A8880]">Drop previews, screenshots, watermarked versions</span>
-                                <span className="text-[11px] text-[#55534F]">Max 100 MB per file · any type</span>
+                                <span className="text-[13px] text-[var(--color-text-secondary)]">Drop previews, screenshots, watermarked versions</span>
+                                <span className="text-[11px] text-[var(--color-text-tertiary)]">Max 100 MB per file · any type</span>
                                 <input type="file" multiple className="hidden" onChange={e => handleFileSelect(e, false)} />
                             </label>
                             {reviewFiles.length > 0 ? (
                                 <ul className="mt-2 space-y-1">
                                     {reviewFiles.map((f, i) => (
-                                        <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-[8px] bg-[#0D0D0E] px-3 py-2">
+                                        <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-[8px] bg-[var(--color-bg-base)] px-3 py-2">
                                             <Paperclip className="h-3.5 w-3.5 shrink-0 text-[#9B8FF0]" />
-                                            <span className="min-w-0 flex-1 truncate text-[13px] text-[#F0EFE8]">{f.name}</span>
-                                            <span className="shrink-0 text-[11px] text-[#55534F]">{(f.size / 1048576).toFixed(1)} MB</span>
-                                            <button type="button" onClick={() => setReviewFiles(prev => prev.filter((_, j) => j !== i))} className="shrink-0 text-[#55534F] hover:text-red-400">
+                                            <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--color-text-primary)]">{f.name}</span>
+                                            <span className="shrink-0 text-[11px] text-[var(--color-text-tertiary)]">{(f.size / 1048576).toFixed(1)} MB</span>
+                                            <button type="button" onClick={() => setReviewFiles(prev => prev.filter((_, j) => j !== i))} className="shrink-0 text-[var(--color-text-tertiary)] hover:text-red-400">
                                                 <Trash2 className="h-3.5 w-3.5" />
                                             </button>
                                         </li>
@@ -934,23 +899,23 @@ export default function ContractWorkspacePage() {
                         {/* Final Files Upload */}
                         <div className="mt-4">
                             <div className="mb-2 flex items-center justify-between">
-                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#1D9E75]">Final files <span className="text-[#55534F] font-normal normal-case">— locked until payment</span></p>
-                                <span className="text-[11px] text-[#55534F]">{finalFiles.length} file{finalFiles.length !== 1 ? 's' : ''}</span>
+                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#1D9E75]">Final files <span className="text-[var(--color-text-tertiary)] font-normal normal-case">— locked until payment</span></p>
+                                <span className="text-[11px] text-[var(--color-text-tertiary)]">{finalFiles.length} file{finalFiles.length !== 1 ? 's' : ''}</span>
                             </div>
                             <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-[#1D9E75]/30 bg-[#1D9E75]/5 px-4 py-4 transition-colors hover:border-[#1D9E75]/50 hover:bg-[#1D9E75]/10">
                                 <Upload className="h-5 w-5 text-[#1D9E75]/60" />
-                                <span className="text-[13px] text-[#8A8880]">Source files, full-res assets, unwatermarked work</span>
-                                <span className="text-[11px] text-[#55534F]">Max 100 MB per file · stays locked until approval</span>
+                                <span className="text-[13px] text-[var(--color-text-secondary)]">Source files, full-res assets, unwatermarked work</span>
+                                <span className="text-[11px] text-[var(--color-text-tertiary)]">Max 100 MB per file · stays locked until approval</span>
                                 <input type="file" multiple className="hidden" onChange={e => handleFileSelect(e, true)} />
                             </label>
                             {finalFiles.length > 0 ? (
                                 <ul className="mt-2 space-y-1">
                                     {finalFiles.map((f, i) => (
-                                        <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-[8px] bg-[#0D0D0E] px-3 py-2">
+                                        <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-[8px] bg-[var(--color-bg-base)] px-3 py-2">
                                             <Paperclip className="h-3.5 w-3.5 shrink-0 text-[#1D9E75]" />
-                                            <span className="min-w-0 flex-1 truncate text-[13px] text-[#F0EFE8]">{f.name}</span>
-                                            <span className="shrink-0 text-[11px] text-[#55534F]">{(f.size / 1048576).toFixed(1)} MB</span>
-                                            <button type="button" onClick={() => setFinalFiles(prev => prev.filter((_, j) => j !== i))} className="shrink-0 text-[#55534F] hover:text-red-400">
+                                            <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--color-text-primary)]">{f.name}</span>
+                                            <span className="shrink-0 text-[11px] text-[var(--color-text-tertiary)]">{(f.size / 1048576).toFixed(1)} MB</span>
+                                            <button type="button" onClick={() => setFinalFiles(prev => prev.filter((_, j) => j !== i))} className="shrink-0 text-[var(--color-text-tertiary)] hover:text-red-400">
                                                 <Trash2 className="h-3.5 w-3.5" />
                                             </button>
                                         </li>
@@ -959,19 +924,19 @@ export default function ContractWorkspacePage() {
                             ) : null}
                         </div>
 
-                        <div className="mt-3 rounded-[8px] border border-white/[0.05] bg-[#0D0D0E] px-3 py-2">
-                            <p className="text-[12px] text-[#55534F] leading-relaxed">
-                                🛡️ Review files are visible immediately. Final files stay <strong className="text-[#F0EFE8]">locked</strong> until the client approves and releases payment. The client has 3 days to review.
+                        <div className="mt-3 rounded-[8px] border border-white/[0.05] bg-[var(--color-bg-base)] px-3 py-2">
+                            <p className="text-[12px] text-[var(--color-text-tertiary)] leading-relaxed">
+                                🛡️ Review files are visible immediately. Final files stay <strong className="text-[var(--color-text-primary)]">locked</strong> until the client approves and releases payment. The client has 3 days to review.
                             </p>
                         </div>
 
                         <div className="mt-4 flex justify-end gap-2">
                             <button type="button" onClick={() => setDeliverOpen(false)} disabled={isDelivering || isUploading}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40">
                                 Cancel
                             </button>
                             <button type="button" onClick={() => void handleSubmitDelivery()} disabled={isDelivering || isUploading || !deliverNote.trim() || reviewFiles.length === 0 || finalFiles.length === 0}
-                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#9B8FF0] px-4 py-2 text-[14px] font-semibold text-[#0D0D0E] transition-colors hover:bg-[#a99cf5] disabled:opacity-50">
+                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#9B8FF0] px-4 py-2 text-[14px] font-semibold text-[var(--color-bg-base)] transition-colors hover:bg-[#a99cf5] disabled:opacity-50">
                                 {isUploading 
                                     ? `Uploading ${uploadProgress.current} / ${uploadProgress.total}…` 
                                     : isDelivering ? 'Submitting…' : `Submit delivery (${reviewFiles.length + finalFiles.length} files)`}
@@ -990,22 +955,22 @@ export default function ContractWorkspacePage() {
                                 <PackageCheck className="h-5 w-5 text-[#1D9E75]" />
                             </div>
                             <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]">Release payment</p>
-                                <h2 id="modal-release-title" className="text-[16px] font-semibold text-[#F0EFE8]">Approve & release funds?</h2>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Release payment</p>
+                                <h2 id="modal-release-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">Approve & release funds?</h2>
                             </div>
                         </div>
                         <div className="mb-4 rounded-[10px] border border-[#1D9E75]/20 bg-[#0F6E56]/10 px-4 py-3">
-                            <p className="text-[13px] leading-relaxed text-[#8A8880]">
-                                This will release the escrowed funds to the freelancer and unlock all final delivery files. <strong className="text-[#F0EFE8]">This action cannot be undone.</strong>
+                            <p className="text-[13px] leading-relaxed text-[var(--color-text-secondary)]">
+                                This will release the escrowed funds to the freelancer and unlock all final delivery files. <strong className="text-[var(--color-text-primary)]">This action cannot be undone.</strong>
                             </p>
                         </div>
                         <div className="mt-4 flex justify-end gap-2">
                             <button type="button" onClick={() => setConfirmReleaseOpen(false)} disabled={isAccepting}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] disabled:opacity-40">
+                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40">
                                 Cancel
                             </button>
                             <button type="button" onClick={() => void handleConfirmRelease()} disabled={isAccepting}
-                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#1D9E75] px-4 py-2 text-[14px] font-semibold text-[#F0EFE8] transition-colors hover:bg-[#24b889] disabled:opacity-50">
+                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#1D9E75] px-4 py-2 text-[14px] font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[#24b889] disabled:opacity-50">
                                 {isAccepting ? 'Releasing…' : 'Approve & release'}
                             </button>
                         </div>

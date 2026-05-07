@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-    MessageSquare, Star, MapPin, Clock, Briefcase,
+    MessageSquare, Star, Bookmark, MapPin, Clock, Briefcase,
     Archive, CheckCircle, Loader2, User,
     DollarSign, TrendingUp, Shield, FileText, Download,
     ChevronDown, X,
@@ -658,7 +658,7 @@ export default function ProposalDetailPane({
 
                             <button type="button" onClick={onShortlist}
                                 className={`flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-all hover:bg-white/5 shrink-0 ${isShortlisted ? 'border-amber-500/50 text-amber-400 bg-amber-500/10' : 'border-white/10 text-[var(--color-text-primary)]/70'}`}>
-                                <Star className={`w-4 h-4 ${isShortlisted ? 'fill-current' : ''}`} />
+                                <Bookmark className={`w-4 h-4 ${isShortlisted ? 'fill-current' : ''}`} />
                                 {isShortlisted ? tx('jobProposals.saved', undefined, 'Saved') : tx('jobProposals.save', undefined, 'Save')}
                             </button>
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import {
     AlertCircle,
+    ArrowLeft,
     CalendarDays,
     CheckCircle,
     ChevronRight,
@@ -13,6 +14,7 @@ import {
     GitPullRequest,
     Image,
     Lock,
+    MessageSquare,
     MoreHorizontal,
     PackageCheck,
     ShieldAlert,
@@ -114,10 +116,13 @@ interface ContractDetailsSidebarProps {
     onRequestChanges: () => void;
     onAcceptAndPay: () => void;
     onDispute: () => void;
+    onCancel?: () => void;
     onFundEscrow?: () => void;
     onReview: () => void;
     hasLeftReview: boolean;
     onOpenSharedFile?: (file: ContractSharedFile) => void;
+    onGoBack?: () => void;
+    onGoToMessages?: () => void;
 }
 
 type WorkspaceTab = 'overview' | 'files' | 'milestones' | 'activity';
@@ -179,12 +184,12 @@ const fmtAmount = (amount: number | null | undefined) => {
     return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number.isFinite(n) ? n : 0)} TND`;
 };
 
-const surface = 'border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] rounded-[10px]';
-const surfaceHover = 'transition-colors duration-[80ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)]';
-const labelClass = 'text-[11px] font-semibold uppercase tracking-[0.08em] text-[#55534F]';
-const bodyClass = 'text-[14px] font-normal leading-[1.6] text-[#8A8880]';
-const monoClass = 'font-mono text-[13px] text-[#8A8880]';
-const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D0D0E]';
+const surface = 'border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] rounded-[12px] shadow-sm';
+const surfaceHover = 'transition-all duration-200 hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] hover:shadow-md';
+const labelClass = 'text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]';
+const bodyClass = 'text-[14px] font-normal leading-[1.6] text-[var(--color-text-secondary)]';
+const monoClass = 'font-mono text-[13px] text-[var(--color-text-secondary)]';
+const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-base)]';
 
 // Role-aware theme — amber = client (paying), violet = freelancer (delivering)
 const roleTheme = (role: 'client' | 'freelancer') => role === 'client'
@@ -197,7 +202,7 @@ const roleTheme = (role: 'client' | 'freelancer') => role === 'client'
         roleLabel: 'Client',
         roleBadge: 'border-[#E8A020]/60 bg-[#E8A020]/10 text-[#E8A020]',
         headerStripe: 'from-[#E8A020]/20 to-transparent',
-        primaryBtn: 'bg-[#E8A020] hover:bg-[#f0aa28] text-[#0D0D0E]',
+        primaryBtn: 'bg-[#E8A020] hover:bg-[#f0aa28] text-[var(--color-bg-base)]',
         focusRingColor: 'focus-visible:ring-[#E8A020]',
         tabAccent: 'bg-[#E8A020]',
         tabActiveBg: 'bg-[#E8A020]/15',
@@ -211,7 +216,7 @@ const roleTheme = (role: 'client' | 'freelancer') => role === 'client'
         roleLabel: 'Freelancer',
         roleBadge: 'border-[#9B8FF0]/60 bg-[#9B8FF0]/10 text-[#9B8FF0]',
         headerStripe: 'from-[#9B8FF0]/15 to-transparent',
-        primaryBtn: 'bg-[#9B8FF0] hover:bg-[#a99cf5] text-[#0D0D0E]',
+        primaryBtn: 'bg-[#9B8FF0] hover:bg-[#a99cf5] text-[var(--color-bg-base)]',
         focusRingColor: 'focus-visible:ring-[#9B8FF0]',
         tabAccent: 'bg-[#9B8FF0]',
         tabActiveBg: 'bg-[#9B8FF0]/15',
@@ -219,13 +224,13 @@ const roleTheme = (role: 'client' | 'freelancer') => role === 'client'
 
 const resolveStatus = (status: string) => {
     const st = ns(status);
-    if (st === 'active') return { label: 'Active', tone: 'border-[#1D9E75] bg-[#0F6E56]/45 text-[#F0EFE8] animate-[pulse_2s_ease-in-out_infinite]', accent: 'bg-[#1D9E75]', icon: <Clock className="h-3.5 w-3.5" /> };
-    if (st === 'delivery_submitted') return { label: 'Review', tone: 'border-[#BA7517] bg-[#633806]/65 text-[#F0EFE8]', accent: 'bg-[#BA7517]', icon: <FileCheck2 className="h-3.5 w-3.5" /> };
-    if (st === 'revision_requested') return { label: 'Revision', tone: 'border-[#BA7517] bg-[#633806]/65 text-[#F0EFE8]', accent: 'bg-[#BA7517]', icon: <GitPullRequest className="h-3.5 w-3.5" /> };
-    if (st === 'completed') return { label: 'Completed', tone: 'border-[#7F77DD] bg-[#3C3489]/70 text-[#F0EFE8]', accent: 'bg-[#7F77DD]', icon: <CheckCircle className="h-3.5 w-3.5" /> };
-    if (st === 'disputed') return { label: 'Disputed', tone: 'border-[#A32D2D] bg-[#501313]/75 text-[#F0EFE8]', accent: 'bg-[#A32D2D]', icon: <ShieldAlert className="h-3.5 w-3.5" /> };
-    if (st === 'pending_payment') return { label: 'Pending', tone: 'border-[#185FA5] bg-[#042C53]/75 text-[#F0EFE8]', accent: 'bg-[#185FA5]', icon: <Wallet className="h-3.5 w-3.5" /> };
-    return { label: 'Syncing', tone: 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]', accent: 'bg-[#55534F]', icon: <AlertCircle className="h-3.5 w-3.5" /> };
+    if (st === 'active') return { label: 'Active', tone: 'border-[#1D9E75] bg-[#0F6E56]/45 text-[var(--color-text-primary)] animate-[pulse_2s_ease-in-out_infinite]', accent: 'bg-[#1D9E75]', icon: <Clock className="h-3.5 w-3.5" /> };
+    if (st === 'delivery_submitted') return { label: 'Review', tone: 'border-[#BA7517] bg-[#633806]/65 text-[var(--color-text-primary)]', accent: 'bg-[#BA7517]', icon: <FileCheck2 className="h-3.5 w-3.5" /> };
+    if (st === 'revision_requested') return { label: 'Revision', tone: 'border-[#BA7517] bg-[#633806]/65 text-[var(--color-text-primary)]', accent: 'bg-[#BA7517]', icon: <GitPullRequest className="h-3.5 w-3.5" /> };
+    if (st === 'completed') return { label: 'Completed', tone: 'border-[#7F77DD] bg-[#3C3489]/70 text-[var(--color-text-primary)]', accent: 'bg-[#7F77DD]', icon: <CheckCircle className="h-3.5 w-3.5" /> };
+    if (st === 'disputed') return { label: 'Disputed', tone: 'border-[#A32D2D] bg-[#501313]/75 text-[var(--color-text-primary)]', accent: 'bg-[#A32D2D]', icon: <ShieldAlert className="h-3.5 w-3.5" /> };
+    if (st === 'pending_payment') return { label: 'Pending', tone: 'border-[#185FA5] bg-[#042C53]/75 text-[var(--color-text-primary)]', accent: 'bg-[#185FA5]', icon: <Wallet className="h-3.5 w-3.5" /> };
+    return { label: 'Syncing', tone: 'border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]', accent: 'bg-[var(--color-text-tertiary)]', icon: <AlertCircle className="h-3.5 w-3.5" /> };
 };
 
 export default function ContractDetailsSidebar({
@@ -239,10 +244,13 @@ export default function ContractDetailsSidebar({
     onRequestChanges,
     onAcceptAndPay,
     onDispute,
+    onCancel,
     onFundEscrow,
     onReview,
     hasLeftReview,
     onOpenSharedFile,
+    onGoBack,
+    onGoToMessages,
 }: ContractDetailsSidebarProps) {
     const [activeTab, setActiveTab] = useState<WorkspaceTab>('overview');
     const [fileFilter, setFileFilter] = useState<FileFilter>('all');
@@ -295,7 +303,7 @@ export default function ContractDetailsSidebar({
                         title: 'Fund escrow to start',
                         body: `Secure ${fmtAmount(contract.amount)} in escrow. The freelancer will be notified and work begins immediately. Funds are only released when you approve the final delivery.`,
                         primaryLabel: 'Fund escrow',
-                        tone: 'border-l-[1.5px] border-l-[#E8A020] border-[rgba(255,255,255,0.07)] bg-[#3D2A00]/50 text-[#F0EFE8]',
+                        tone: 'border-l-[1.5px] border-l-[#E8A020] border-[var(--color-border-subtle)] bg-[#3D2A00]/50 text-[var(--color-text-primary)]',
                     };
                 }
                 if (userRole === 'freelancer' && !isEscrowFunded) {
@@ -304,7 +312,7 @@ export default function ContractDetailsSidebar({
                         title: 'Waiting for escrow',
                         body: 'The client needs to secure funds before you begin. You will be notified the moment escrow is funded and work can start.',
                         primaryLabel: null,
-                        tone: 'border-l-[1.5px] border-l-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]',
+                        tone: 'border-l-[1.5px] border-l-[rgba(255,255,255,0.12)] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]',
                     };
                 }
                 // Funded but contract not yet active
@@ -315,7 +323,7 @@ export default function ContractDetailsSidebar({
                         ? `${fmtAmount(contract.amount)} is secured. Deliver your work when ready and submit for payment.`
                         : 'Funds are secured. The freelancer has been notified and work is underway.',
                     primaryLabel: userRole === 'freelancer' ? 'Submit delivery' : null,
-                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[rgba(255,255,255,0.07)] bg-[#0F6E56]/35 text-[#F0EFE8]',
+                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[var(--color-border-subtle)] bg-[#0F6E56]/35 text-[var(--color-text-primary)]',
                 };
             }
             // ── FREELANCER DELIVER ───────────────────────────────────────────
@@ -325,7 +333,7 @@ export default function ContractDetailsSidebar({
                     title: isRevision ? 'Submit revised delivery' : 'Submit delivery',
                     body: 'Attach review files and protected final files. Final assets stay locked until the client approves and releases payment.',
                     primaryLabel: isRevision ? 'Resubmit delivery' : 'Submit delivery',
-                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[rgba(255,255,255,0.07)] bg-[#0F6E56]/35 text-[#F0EFE8]',
+                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[var(--color-border-subtle)] bg-[#0F6E56]/35 text-[var(--color-text-primary)]',
                 };
             }
             // ── CLIENT REVIEW (delivery_submitted) ──────────────────────────
@@ -335,7 +343,7 @@ export default function ContractDetailsSidebar({
                     title: 'Review submitted work',
                     body: 'Inspect review assets, then approve to release payment and unlock final files, request a revision, or open a dispute.',
                     primaryLabel: 'Approve & release',
-                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[rgba(255,255,255,0.07)] bg-[#0F6E56]/35 text-[#F0EFE8]',
+                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[var(--color-border-subtle)] bg-[#0F6E56]/35 text-[var(--color-text-primary)]',
                 };
             }
             // ── FREELANCER WAITING FOR REVIEW ────────────────────────────────
@@ -347,7 +355,7 @@ export default function ContractDetailsSidebar({
                         ? `Your funds are protected. If the client takes no action, payment auto-releases on ${fmtDate(contract.reviewDueAt)}.`
                         : 'Final files remain locked and protected until the client approves.',
                     primaryLabel: null,
-                    tone: 'border-l-[1.5px] border-l-[#BA7517] border-[rgba(255,255,255,0.07)] bg-[#633806]/35 text-[#F0EFE8]',
+                    tone: 'border-l-[2px] border-l-[#BA7517] border-[var(--color-border-subtle)] bg-gradient-to-br from-[#633806]/35 to-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-md',
                 };
             }
             // ── LEAVE REVIEW ─────────────────────────────────────────────────
@@ -357,7 +365,7 @@ export default function ContractDetailsSidebar({
                     title: 'Leave a review',
                     body: 'The contract is complete. Add a rating to build trust and close the loop.',
                     primaryLabel: 'Leave review',
-                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[rgba(255,255,255,0.07)] bg-[#0F6E56]/35 text-[#F0EFE8]',
+                    tone: 'border-l-[2px] border-l-[#1D9E75] border-[var(--color-border-subtle)] bg-gradient-to-br from-[#0F6E56]/35 to-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-md',
                 };
             }
             // ── COMPLETED ────────────────────────────────────────────────────
@@ -367,7 +375,7 @@ export default function ContractDetailsSidebar({
                     title: 'Contract closed',
                     body: 'Payment was released and final files are now available. This workspace is a permanent record.',
                     primaryLabel: null,
-                    tone: 'border-l-[1.5px] border-l-[#7F77DD] border-[rgba(255,255,255,0.07)] bg-[#3C3489]/35 text-[#F0EFE8]',
+                    tone: 'border-l-[2px] border-l-[#7F77DD] border-[var(--color-border-subtle)] bg-gradient-to-br from-[#3C3489]/35 to-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-md',
                 };
             }
             // ── ACTIVE / FALLBACK ─────────────────────────────────────────────
@@ -376,7 +384,7 @@ export default function ContractDetailsSidebar({
                 title: 'Work in progress',
                 body: 'Keep the conversation open while work continues.',
                 primaryLabel: null,
-                tone: 'border-l-[1.5px] border-l-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]',
+                tone: 'border-l-[2px] border-l-[var(--color-border-subtle)] border-[var(--color-border-subtle)] bg-gradient-to-br from-[var(--color-bg-elevated)] to-[var(--color-bg-base)] text-[var(--color-text-secondary)] shadow-md',
             };
         })();
 
@@ -452,7 +460,7 @@ export default function ContractDetailsSidebar({
     const rt = roleTheme(userRole);
 
     return (
-        <div className="flex min-h-[calc(100vh-var(--header-height,64px)-48px)] flex-col bg-[var(--color-bg-base)] text-[#F0EFE8]">
+        <div className="flex w-full flex-col bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">
             <style>{`
                 @keyframes contractTabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
                 @keyframes pulseRole{0%,100%{opacity:1}50%{opacity:0.6}}
@@ -461,20 +469,41 @@ export default function ContractDetailsSidebar({
             {/* Role-colored top stripe */}
             <div className={`h-[3px] w-full bg-gradient-to-r ${rt.headerStripe}`} />
 
-            {/* ── Premium header ── */}
-            <header className="sticky top-0 z-30 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/96 backdrop-blur-xl">
+            {/* ── Premium Unified Header ── */}
+            <header className="sticky top-0 z-30 flex flex-col border-b border-[var(--color-border-subtle)] bg-[#0A0A0B]/95 backdrop-blur-md">
+                {/* Breadcrumbs Row */}
+                <div className="flex h-12 shrink-0 items-center gap-3 border-b border-white/[0.04] px-6">
+                    {onGoBack && (
+                        <button type="button" onClick={onGoBack}
+                            className="inline-flex items-center gap-1.5 rounded-[8px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-3 py-1.5 text-[13px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-muted)]">
+                            <ArrowLeft className="h-3.5 w-3.5" />
+                            Back
+                        </button>
+                    )}
+
+                    <div className="h-3.5 w-px bg-white/[0.08]" />
+
+                    {onGoToMessages && (
+                        <button type="button" onClick={onGoToMessages}
+                            className="inline-flex items-center gap-1.5 text-[13px] text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-primary)]">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            Messages
+                        </button>
+                    )}
+                </div>
+
                 {/* Main header row */}
-                <div className="flex items-start gap-4 px-6 pb-4 pt-5">
+                <div className="flex shrink-0 items-start gap-4 px-6 pb-4 pt-5">
                     {/* Avatar */}
                     <div className="relative shrink-0">
                         <PartyAvatar party={model.otherParty} size="lg" />
-                        <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#0D0D0E] ${rt.accentBg}`} />
+                        <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[var(--color-bg-base)] ${rt.accentBg}`} />
                     </div>
 
                     {/* Title block */}
                     <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <h2 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-[#F0EFE8]">
+                            <h2 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
                                 {contract.job?.title || 'Untitled contract'}
                             </h2>
                             <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide ${model.status.tone}`}>
@@ -485,11 +514,11 @@ export default function ContractDetailsSidebar({
                             <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${rt.roleBadge}`}>
                                 {rt.roleLabel}
                             </span>
-                            <span className="text-[12px] text-[#55534F]">
+                            <span className="text-[12px] text-[var(--color-text-tertiary)]">
                                 with {model.otherParty?.full_name || 'counterparty'}
                             </span>
                             {contract.job?.deadline ? (
-                                <span className="text-[12px] text-[#55534F]">
+                                <span className="text-[12px] text-[var(--color-text-tertiary)]">
                                     Due {fmtDate(contract.job.deadline)}
                                 </span>
                             ) : null}
@@ -509,11 +538,9 @@ export default function ContractDetailsSidebar({
                         </div>
                     </div>
                 </div>
-            </header>
 
-            {/* ── Tab bar ── */}
-            <nav className="sticky top-[var(--header-height,102px)] z-20 border-b border-[rgba(255,255,255,0.06)] bg-[var(--color-bg-base)]/98 px-6 backdrop-blur-xl">
-                <div className="flex h-11 items-center gap-1 overflow-x-auto" role="tablist" aria-label="Contract workspace sections">
+                {/* ── Tab bar ── */}
+                <nav className="flex h-11 shrink-0 items-center gap-1 overflow-x-auto px-6" role="tablist" aria-label="Contract workspace sections">
                     {tabs.map((tab, index) => (
                         <button
                             key={tab.id}
@@ -527,15 +554,15 @@ export default function ContractDetailsSidebar({
                             className={`relative flex h-7 shrink-0 items-center gap-1.5 rounded-[7px] px-3 text-[13px] font-medium transition-colors duration-100 ${focusRing} ${rt.focusRingColor} ${
                                 activeTab === tab.id
                                     ? `${rt.tabActiveBg} ${rt.accentText}`
-                                    : 'text-[#55534F] hover:bg-white/5 hover:text-[#8A8880]'
+                                    : 'text-[var(--color-text-tertiary)] hover:bg-white/5 hover:text-[var(--color-text-secondary)]'
                             }`}
                         >
                             {tab.icon}
                             <span>{tab.label}</span>
                         </button>
                     ))}
-                </div>
-            </nav>
+                </nav>
+            </header>
 
             {/* Tab panels */}
             <main
@@ -543,13 +570,13 @@ export default function ContractDetailsSidebar({
                 id={`contract-workspace-panel-${activeTab}`}
                 role="tabpanel"
                 aria-labelledby={`contract-workspace-tab-${activeTab}`}
-                className="flex-1 animate-[contractTabIn_160ms_ease-out] overflow-y-auto px-4 py-5 sm:px-8 sm:py-6"
+                className="flex-1 animate-[contractTabIn_160ms_ease-out] px-4 py-8 sm:px-8 sm:py-10"
             >
-                <div className="mx-auto max-w-5xl">
+                <div className="mx-auto w-full max-w-4xl">
                 {activeTab === 'overview' ? (
-                    <div className="space-y-4">
+                    <div className="flex flex-col gap-6">
                         {model.st === 'completed' ? <CompletedSummary model={model} rt={rt} onReview={onReview} /> : null}
-                        {model.st !== 'completed' || model.showLeaveReview ? <NextMoveCard model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onFundEscrow={onFundEscrow} onReview={onReview} setActiveTab={setActiveTab} /> : null}
+                        {model.st !== 'completed' || model.showLeaveReview ? <NextMoveCard model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onCancel={onCancel} onFundEscrow={onFundEscrow} onReview={onReview} setActiveTab={setActiveTab} /> : null}
                         <ContractPulse model={model} rt={rt} />
                     </div>
                 ) : null}
@@ -565,17 +592,17 @@ export default function ContractDetailsSidebar({
                         <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                                 <p className={labelClass}>File preview</p>
-                                <h3 className="mt-1 truncate text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">{previewFile.name}</h3>
+                                <h3 className="mt-1 truncate text-[18px] font-medium tracking-[-0.01em] text-[var(--color-text-primary)]">{previewFile.name}</h3>
                                 <p className={monoClass}>{[previewFile.senderName, fmtDate(previewFile.uploadedAt, 'Unknown'), fmtSize(previewFile.size)].filter(Boolean).join(' · ') || 'Protected contract file'}</p>
                             </div>
-                            <button ref={previewCloseRef} type="button" onClick={() => setPreviewFile(null)} className={`rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[13px] font-medium text-[#8A8880] hover:text-[#F0EFE8] ${focusRing}`}>Close</button>
+                            <button ref={previewCloseRef} type="button" onClick={() => setPreviewFile(null)} className={`rounded-[10px] border-[0.5px] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[13px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] ${focusRing}`}>Close</button>
                         </div>
-                        <div className="mt-4 rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-base)] p-4">
+                        <div className="mt-4 rounded-[10px] border-[0.5px] border-[var(--color-border-subtle)] bg-[var(--color-bg-base)] p-4">
                             <p className={bodyClass}>Preview opens in a secure focused step first. Use Open file to view or download the asset according to contract access rules.</p>
                         </div>
                         <div className="mt-4 flex justify-end gap-2">
-                            <button type="button" onClick={() => setPreviewFile(null)} className={`rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[14px] font-medium text-[#8A8880] hover:text-[#F0EFE8] ${focusRing}`}>Cancel</button>
-                            <button type="button" onClick={() => { const file = previewFile; setPreviewFile(null); onOpenSharedFile?.(file); }} className={`rounded-[10px] bg-[#1D9E75] px-3 py-2 text-[14px] font-medium text-[#F0EFE8] hover:bg-[#24b889] ${focusRing}`}>Open file</button>
+                            <button type="button" onClick={() => setPreviewFile(null)} className={`rounded-[10px] border-[0.5px] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] ${focusRing}`}>Cancel</button>
+                            <button type="button" onClick={() => { const file = previewFile; setPreviewFile(null); onOpenSharedFile?.(file); }} className={`rounded-[10px] bg-[#1D9E75] px-3 py-2 text-[14px] font-medium text-[var(--color-text-primary)] hover:bg-[#24b889] ${focusRing}`}>Open file</button>
                         </div>
                     </div>
                 </div>
@@ -594,6 +621,7 @@ type ActionProps = {
     onRequestChanges: () => void;
     onAcceptAndPay: () => void;
     onDispute: () => void;
+    onCancel?: () => void;
     onFundEscrow?: () => void;
     onReview: () => void;
 };
@@ -607,10 +635,10 @@ function CompletedSummary({ model, rt, onReview }: { model: WorkspaceModel; rt: 
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className={labelClass}>Contract closed</p>
-                    <h3 className="mt-1 text-[15px] font-semibold text-[#F0EFE8]">
+                    <h3 className="mt-1 text-[15px] font-semibold text-[var(--color-text-primary)]">
                         {fmtAmount(model.amount)} released to freelancer
                     </h3>
-                    <div className="mt-2 flex flex-col gap-1 text-[13px] text-[#8A8880]">
+                    <div className="mt-2 flex flex-col gap-1 text-[13px] text-[var(--color-text-secondary)]">
                         {model.fundedAt && <p>• Escrow funded: {fmtDate(model.fundedAt)}</p>}
                         {model.deliverySubmittedAt && <p>• Delivery submitted: {fmtDate(model.deliverySubmittedAt)}</p>}
                     </div>
@@ -621,7 +649,7 @@ function CompletedSummary({ model, rt, onReview }: { model: WorkspaceModel; rt: 
             </div>
             {model.showLeaveReview ? (
                 <div className="mt-4 flex justify-end">
-                    <button type="button" onClick={onReview} className="text-[13px] font-medium text-[#F0EFE8] underline transition-colors hover:text-[#9B8FF0]">
+                    <button type="button" onClick={onReview} className="text-[13px] font-medium text-[var(--color-text-primary)] underline transition-colors hover:text-[#9B8FF0]">
                         Leave a review to complete the record
                     </button>
                 </div>
@@ -637,25 +665,31 @@ function ContractPulse({ model, rt }: { model: WorkspaceModel; rt: RoleTheme }) 
         { label: 'Revisions', value: `${model.revUsed}/${model.revMax}`, hint: 'used' },
     ];
     return (
-        <section className="flex flex-col gap-3">
-            {/* Stats strip */}
-            <div className="grid grid-cols-3 gap-3">
+        <section className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {stats.map((stat) => (
-                    <div key={stat.label} className="rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-4">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#55534F]">{stat.label}</p>
-                        <p className={`mt-2 text-[28px] font-bold leading-none tracking-[-0.03em] ${rt.accentText}`}>{stat.value}</p>
-                        <p className="mt-1.5 text-[12px] text-[#55534F]">{stat.hint}</p>
+                    <div key={stat.label} className="relative overflow-hidden rounded-[16px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-6 transition-all hover:border-[rgba(255,255,255,0.1)] hover:bg-[var(--color-bg-muted)]">
+                        <p className="text-[12px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">{stat.label}</p>
+                        <div className="mt-3 flex items-baseline gap-2">
+                            <span className={`text-[32px] font-black leading-none tracking-tight ${rt.accentText}`}>{stat.value}</span>
+                        </div>
+                        <p className="mt-2 text-[13px] font-medium text-[var(--color-text-secondary)]">{stat.hint}</p>
+                        {/* Decorative background glow */}
+                        <div className={`absolute -right-4 -top-4 h-24 w-24 rounded-full opacity-[0.03] blur-2xl ${rt.accentBg}`} />
                     </div>
                 ))}
             </div>
             {/* Progress bar */}
-            <div className="rounded-[12px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-3">
-                <div className="mb-2 flex items-center justify-between">
-                    <span className="text-[12px] font-medium text-[#55534F]">Overall progress</span>
-                    <span className={`font-mono text-[13px] font-bold ${rt.accentText}`}>{model.progressPct}%</span>
+            <div className="rounded-[16px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-6">
+                <div className="mb-3 flex items-end justify-between">
+                    <div>
+                        <h4 className="text-[14px] font-bold text-[var(--color-text-primary)]">Contract Progress</h4>
+                        <p className="mt-0.5 text-[13px] text-[var(--color-text-tertiary)]">Based on completed milestones</p>
+                    </div>
+                    <span className={`text-[24px] font-black tracking-tight ${rt.accentText}`}>{model.progressPct}%</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
-                    <div className={`h-full rounded-full transition-all duration-700 ${rt.accentBg}`} style={{ width: `${model.progressPct}%` }} />
+                <div className="h-3 w-full overflow-hidden rounded-full bg-[#0A0A0B] shadow-inner ring-1 ring-inset ring-white/5">
+                    <div className={`h-full rounded-full transition-all duration-1000 ease-out ${rt.accentBg}`} style={{ width: `${model.progressPct}%` }} />
                 </div>
             </div>
         </section>
@@ -680,7 +714,7 @@ function ReviewCountdown({ targetIso }: { targetIso: string }) {
     );
 }
 
-function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, onRequestChanges, onDispute, onFundEscrow, onReview, setActiveTab }: ActionProps & { setActiveTab: (tab: WorkspaceTab) => void }) {
+function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, onRequestChanges, onDispute, onCancel, onFundEscrow, onReview, setActiveTab }: ActionProps & { setActiveTab: (tab: WorkspaceTab) => void }) {
     const isPendingEscrow = model.st === 'pending_payment' && !model.isEscrowFunded && model.nextMove.primaryLabel === 'Fund escrow';
     const action = isPendingEscrow ? undefined
         : model.showFreelancerDeliver || (model.st === 'pending_payment' && model.isEscrowFunded && model.nextMove.primaryLabel) ? onDeliver
@@ -697,24 +731,27 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
         : 'bg-white/5';
 
     return (
-        <section className={`overflow-hidden rounded-[16px] border ${model.nextMove.tone}`}>
+        <section className={`relative overflow-hidden rounded-[20px] border ${model.nextMove.tone}`}>
+            {/* Subtle top glow */}
+            <div className="absolute inset-x-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
             {/* Hero top: icon + label + title */}
-            <div className="px-6 pb-5 pt-6">
-                <div className="flex items-start gap-5">
+            <div className="p-8 sm:p-10">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8">
                     {/* Large icon */}
-                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[14px] ${iconBg}`}>
-                        <span className="[&>svg]:h-7 [&>svg]:w-7">{model.nextMove.icon}</span>
+                    <div className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-[20px] ${iconBg} shadow-inner ring-1 ring-white/10`}>
+                        <span className="[&>svg]:h-10 [&>svg]:w-10">{model.nextMove.icon}</span>
                     </div>
-                    <div className="min-w-0 flex-1 pt-0.5">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#55534F]">Your next move</p>
-                        <h3 className="mt-1.5 text-[20px] font-bold leading-[1.2] tracking-[-0.02em] text-[#F0EFE8]">{model.nextMove.title}</h3>
-                        <p className="mt-2 text-[14px] leading-relaxed text-[#8A8880]">{model.nextMove.body}</p>
+                    <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-bold uppercase tracking-[0.15em] text-[var(--color-text-tertiary)] mb-2">Current Status</p>
+                        <h3 className="text-[28px] sm:text-[32px] font-black leading-tight tracking-tight text-[var(--color-text-primary)]">{model.nextMove.title}</h3>
+                        <p className="mt-2 text-[16px] leading-relaxed text-[var(--color-text-secondary)] max-w-xl">{model.nextMove.body}</p>
                         
                         {/* Task 3.2: Show Revision Feedback */}
                         {model.st === 'revision_requested' && model.lastRevisionNote ? (
                             <div className="mt-3 rounded-[10px] border border-[#BA7517]/30 bg-[#633806]/20 p-3">
                                 <p className="text-[12px] font-semibold text-[#BA7517] uppercase tracking-wider mb-1">Client Feedback</p>
-                                <p className="text-[14px] text-[#F0EFE8] whitespace-pre-wrap">{model.lastRevisionNote}</p>
+                                <p className="text-[14px] text-[var(--color-text-primary)] whitespace-pre-wrap">{model.lastRevisionNote}</p>
                             </div>
                         ) : null}
                         
@@ -743,10 +780,10 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
             </div>
 
             {/* Divider */}
-            <div className="mx-6 h-px bg-white/[0.06]" />
+            <div className="h-px w-full bg-[var(--color-border-subtle)]" />
 
             {/* Action buttons */}
-            <div className="flex flex-wrap items-center gap-2 px-6 py-4">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 p-6 sm:px-10 sm:py-6 bg-[#0A0A0B]/40">
                 {/* Primary CTA */}
                 {action && model.nextMove.primaryLabel ? (
                     <button type="button" onClick={action} disabled={Boolean(isActionLoading)}
@@ -775,9 +812,19 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
                     <DangerButton onClick={onDispute} disabled={Boolean(isActionLoading)} icon={<ShieldAlert className="h-4 w-4" />} label="Open dispute" />
                 ) : null}
 
+                {/* Cancel contract */}
+                {(model.st === 'pending_payment' || model.st === 'active') && onCancel ? (
+                    <GhostButton
+                        onClick={onCancel}
+                        disabled={Boolean(isActionLoading)}
+                        icon={<AlertCircle className="h-4 w-4" />}
+                        label="Cancel contract"
+                    />
+                ) : null}
+
                 {/* View history */}
                 <button type="button" onClick={() => setActiveTab('activity')}
-                    className={`ml-auto rounded-[10px] px-3 py-2 text-[13px] font-medium text-[#55534F] transition-colors hover:text-[#8A8880] ${focusRing} ${rt.focusRingColor}`}>
+                    className={`ml-auto rounded-[10px] px-3 py-2 text-[13px] font-medium text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)] ${focusRing} ${rt.focusRingColor}`}>
                     View history →
                 </button>
             </div>
@@ -792,10 +839,10 @@ function ActionDeck({ model, rt, isActionLoading, onDeliver, onRequestChanges, o
     if (!hasActions) return null;
 
     return (
-        <section className="rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-4">
+        <section className="rounded-[10px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-4">
             <div className="mb-3 flex items-center justify-between gap-3">
                 <p className={labelClass}>Quick actions</p>
-                <span className="rounded-full border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-2.5 py-0.5 font-mono text-[11px] text-[#8A8880]">{model.revLeft} rev left</span>
+                <span className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-2.5 py-0.5 font-mono text-[11px] text-[var(--color-text-secondary)]">{model.revLeft} rev left</span>
             </div>
             <div className="flex flex-wrap gap-2">
                 {model.showFreelancerDeliver ? <PrimaryButton rt={rt} onClick={onDeliver} disabled={isActionLoading} icon={<PackageCheck className="h-4 w-4" />} label="Submit delivery" /> : null}
@@ -824,15 +871,15 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p className={labelClass}>File Manager</p>
-                    <h3 className="mt-1 text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">Shared, review, and final assets</h3>
+                    <h3 className="mt-1 text-[18px] font-medium tracking-[-0.01em] text-[var(--color-text-primary)]">Shared, review, and final assets</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {filters.map((filter) => (
                         <button key={filter.id} type="button" onClick={() => setFileFilter(filter.id)}
                             className={`rounded-full border px-3 py-1 text-[12px] font-medium transition-colors ${focusRing} ${rt.focusRingColor} ${
                                 fileFilter === filter.id
-                                    ? `${rt.accentBg} border-transparent text-[#0D0D0E] font-semibold`
-                                    : 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880] hover:text-[#F0EFE8]'
+                                    ? `${rt.accentBg} border-transparent text-[var(--color-bg-base)] font-semibold`
+                                    : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                             }`}>
                             {filter.label}
                         </button>
@@ -893,7 +940,7 @@ function MilestonesTab({ model, rt, userRole }: { model: WorkspaceModel; rt: Rol
             <div className="flex items-center justify-between gap-3">
                 <div>
                     <p className={labelClass}>Milestones</p>
-                    <h3 className="mt-1 text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">Escrow lifecycle</h3>
+                    <h3 className="mt-1 text-[18px] font-medium tracking-[-0.01em] text-[var(--color-text-primary)]">Escrow lifecycle</h3>
                 </div>
             </div>
 
@@ -912,10 +959,10 @@ function MilestonesTab({ model, rt, userRole }: { model: WorkspaceModel; rt: Rol
                         }`}>
                             <div className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 ${
                                 phase.done
-                                    ? `${rt.accentBg} border-transparent text-[#0D0D0E]`
+                                    ? `${rt.accentBg} border-transparent text-[var(--color-bg-base)]`
                                     : model.st !== 'completed' && escrowPhases[idx - 1]?.done
                                     ? `border-[${rt.accent}] bg-transparent text-[${rt.accent}]`
-                                    : 'border-white/10 bg-[var(--color-bg-elevated)] text-[#55534F]'
+                                    : 'border-white/10 bg-[var(--color-bg-elevated)] text-[var(--color-text-tertiary)]'
                             }`}>
                                 {phase.done
                                     ? <CheckCircle className="h-4 w-4" />
@@ -926,9 +973,9 @@ function MilestonesTab({ model, rt, userRole }: { model: WorkspaceModel; rt: Rol
                                 idx === 0 ? 'text-left' : idx === escrowPhases.length - 1 ? 'text-right' : 'text-center'
                             }`}>
                                 <p className={`text-[12px] font-semibold ${
-                                    phase.done ? 'text-[#F0EFE8]' : 'text-[#55534F]'
+                                    phase.done ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-tertiary)]'
                                 }`}>{phase.label}</p>
-                                <p className="mt-0.5 text-[11px] text-[#55534F]">{phase.sub}</p>
+                                <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">{phase.sub}</p>
                             </div>
                         </div>
                     ))}
@@ -956,16 +1003,16 @@ function MilestonesTab({ model, rt, userRole }: { model: WorkspaceModel; rt: Rol
 
 function FilesEmptyState({ userRole, canDeliver, onDeliver }: { userRole: 'client' | 'freelancer'; canDeliver: boolean; onDeliver: () => void }) {
     return (
-        <div className="flex items-center justify-between gap-3 rounded-[10px] border-[0.5px] border-dashed border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-[14px]">
+        <div className="flex items-center justify-between gap-3 rounded-[10px] border-[0.5px] border-dashed border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-[14px]">
             <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#55534F]"><FolderOpen className="h-4 w-4" /></div>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-tertiary)]"><FolderOpen className="h-4 w-4" /></div>
                 <div className="min-w-0">
-                    <p className="text-[14px] font-medium text-[#8A8880]">No files shared yet</p>
-                    <p className="mt-0.5 text-[13px] text-[#55534F]">{userRole === 'freelancer' ? 'Upload a delivery when work is ready.' : 'Files will appear after the freelancer delivers or shares assets.'}</p>
+                    <p className="text-[14px] font-medium text-[var(--color-text-secondary)]">No files shared yet</p>
+                    <p className="mt-0.5 text-[13px] text-[var(--color-text-tertiary)]">{userRole === 'freelancer' ? 'Upload a delivery when work is ready.' : 'Files will appear after the freelancer delivers or shares assets.'}</p>
                 </div>
             </div>
             {userRole === 'freelancer' && canDeliver ? (
-                <button type="button" onClick={onDeliver} className={`shrink-0 rounded-[10px] bg-[#1D9E75] px-3 py-2 text-[13px] font-medium text-[#F0EFE8] hover:bg-[#24b889] ${focusRing}`}>
+                <button type="button" onClick={onDeliver} className={`shrink-0 rounded-[10px] bg-[#1D9E75] px-3 py-2 text-[13px] font-medium text-[var(--color-text-primary)] hover:bg-[#24b889] ${focusRing}`}>
                     Upload delivery
                 </button>
             ) : null}
@@ -987,7 +1034,7 @@ function ActivityTab({ events, model, contract, rt }: { events: ContractActivity
         <section className={`${surface} ${surfaceHover} px-4 py-[14px]`}>
             <div>
                 <p className={labelClass}>Activity</p>
-                <h3 className="mt-1 text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">Contract event history</h3>
+                <h3 className="mt-1 text-[18px] font-medium tracking-[-0.01em] text-[var(--color-text-primary)]">Contract event history</h3>
             </div>
             <div className="mt-3 space-y-2">
                 {list.length > 0 ? list.map(event => <ActivityRow key={event.id} event={event} />) : (
@@ -1003,36 +1050,36 @@ function DeliveryFileRow({ file, type, userRole, onPreviewFile }: { file: Contra
     const isReleased = file.accessState === 'released';
     const isLocked = isFinal && !isReleased;
     const canOpen = !isLocked || userRole === 'freelancer';
-    const rowTone = !isFinal ? 'border-l-[#BA7517]' : isReleased ? 'border-l-[#7F77DD]' : 'border-l-[#55534F]';
+    const rowTone = !isFinal ? 'border-l-[#BA7517]' : isReleased ? 'border-l-[#7F77DD]' : 'border-l-[var(--color-text-tertiary)]';
     const badge = !isFinal ? 'Review Asset' : isReleased ? 'Released' : 'Pending';
-    const badgeTone = !isFinal ? 'border-[#BA7517] bg-[#633806]/65 text-[#F0EFE8]' : isReleased ? 'border-[#7F77DD] bg-[#3C3489]/70 text-[#F0EFE8]' : 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]';
+    const badgeTone = !isFinal ? 'border-[#BA7517] bg-[#633806]/65 text-[var(--color-text-primary)]' : isReleased ? 'border-[#7F77DD] bg-[#3C3489]/70 text-[var(--color-text-primary)]' : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]';
     const contractFile = { id: file.id, name: file.name, url: '', type: file.mimeType ?? null, size: file.sizeBytes ?? null, storageBucket: file.storageBucket ?? 'contract-files', storagePath: file.storagePath };
 
     return (
-        <button type="button" onClick={() => canOpen ? onPreviewFile(contractFile) : undefined} disabled={!canOpen} className={`group flex w-full items-center gap-2 rounded-[10px] border-[0.5px] border-l-[3px] border-[rgba(255,255,255,0.07)] ${rowTone} bg-[var(--color-bg-elevated)] px-4 py-[14px] text-left transition-colors duration-[60ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] disabled:cursor-default ${focusRing}`}>
+        <button type="button" onClick={() => canOpen ? onPreviewFile(contractFile) : undefined} disabled={!canOpen} className={`group flex w-full items-center gap-2 rounded-[10px] border-[0.5px] border-l-[3px] border-[var(--color-border-subtle)] ${rowTone} bg-[var(--color-bg-elevated)] px-4 py-[14px] text-left transition-colors duration-[60ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] disabled:cursor-default ${focusRing}`}>
             <FileIcon name={file.name} mimeType={file.mimeType} />
             <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-medium text-[#F0EFE8]">{file.name}</p>
+                <p className="truncate text-[14px] font-medium text-[var(--color-text-primary)]">{file.name}</p>
                 <p className={monoClass}>Freelancer · {fmtSize(file.sizeBytes) || 'Size unknown'}</p>
             </div>
             <span className={`hidden shrink-0 rounded-full border px-2 py-1 text-[11px] font-medium uppercase tracking-[0.06em] sm:inline-flex ${badgeTone}`}>{badge}</span>
-            {canOpen ? <span className="hidden translate-x-1 text-[13px] font-medium text-[#8A8880] opacity-0 transition-all duration-[60ms] group-hover:translate-x-0 group-hover:text-[#F0EFE8] group-hover:opacity-100 sm:inline">Preview</span> : null}
-            {canOpen ? <ChevronRight className="h-4 w-4 text-[#55534F] transition-colors duration-[60ms] group-hover:text-[#F0EFE8]" /> : <Lock className="h-4 w-4 text-[#55534F]" />}
+            {canOpen ? <span className="hidden translate-x-1 text-[13px] font-medium text-[var(--color-text-secondary)] opacity-0 transition-all duration-[60ms] group-hover:translate-x-0 group-hover:text-[var(--color-text-primary)] group-hover:opacity-100 sm:inline">Preview</span> : null}
+            {canOpen ? <ChevronRight className="h-4 w-4 text-[var(--color-text-tertiary)] transition-colors duration-[60ms] group-hover:text-[var(--color-text-primary)]" /> : <Lock className="h-4 w-4 text-[var(--color-text-tertiary)]" />}
         </button>
     );
 }
 
 function SharedFileRow({ file, onPreviewFile }: { file: ContractSharedFile; onPreviewFile: (file: ContractSharedFile) => void }) {
     return (
-        <button type="button" onClick={() => onPreviewFile(file)} className={`group flex w-full items-center gap-2 rounded-[10px] border-[0.5px] border-l-[3px] border-[rgba(255,255,255,0.07)] border-l-[#185FA5] bg-[var(--color-bg-elevated)] px-4 py-[14px] text-left transition-colors duration-[60ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] disabled:cursor-default ${focusRing}`}>
+        <button type="button" onClick={() => onPreviewFile(file)} className={`group flex w-full items-center gap-2 rounded-[10px] border-[0.5px] border-l-[3px] border-[var(--color-border-subtle)] border-l-[#185FA5] bg-[var(--color-bg-elevated)] px-4 py-[14px] text-left transition-colors duration-[60ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] disabled:cursor-default ${focusRing}`}>
             <FileIcon name={file.name} mimeType={file.type} />
             <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-medium text-[#F0EFE8]">{file.name}</p>
+                <p className="truncate text-[14px] font-medium text-[var(--color-text-primary)]">{file.name}</p>
                 <p className={monoClass}>{[file.senderName || 'Client upload', fmtDate(file.uploadedAt, 'Unknown'), fmtSize(file.size)].filter(Boolean).join(' · ')}</p>
             </div>
-            <span className="hidden shrink-0 rounded-full border border-[#185FA5] bg-[#042C53]/75 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.06em] text-[#F0EFE8] sm:inline-flex">Shared</span>
-            <span className="hidden translate-x-1 text-[13px] font-medium text-[#8A8880] opacity-0 transition-all duration-[60ms] group-hover:translate-x-0 group-hover:text-[#F0EFE8] group-hover:opacity-100 sm:inline">Preview</span>
-            <ChevronRight className="h-4 w-4 text-[#55534F] transition-colors duration-[60ms] group-hover:text-[#F0EFE8]" />
+            <span className="hidden shrink-0 rounded-full border border-[#185FA5] bg-[#042C53]/75 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.06em] text-[var(--color-text-primary)] sm:inline-flex">Shared</span>
+            <span className="hidden translate-x-1 text-[13px] font-medium text-[var(--color-text-secondary)] opacity-0 transition-all duration-[60ms] group-hover:translate-x-0 group-hover:text-[var(--color-text-primary)] group-hover:opacity-100 sm:inline">Preview</span>
+            <ChevronRight className="h-4 w-4 text-[var(--color-text-tertiary)] transition-colors duration-[60ms] group-hover:text-[var(--color-text-primary)]" />
         </button>
     );
 }
@@ -1042,7 +1089,7 @@ function ActivityRow({ event }: { event: ContractActivityEvent }) {
     if (isSystem) {
         return (
             <div className="flex justify-center">
-                <div className="rounded-full border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-1.5 text-center text-[13px] font-medium text-[#8A8880]">
+                <div className="rounded-full border-[0.5px] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-3 py-1.5 text-center text-[13px] font-medium text-[var(--color-text-secondary)]">
                     {event.text}{event.timestamp ? ` — ${fmtTime(event.timestamp)}` : ''}
                 </div>
             </div>
@@ -1054,8 +1101,8 @@ function ActivityRow({ event }: { event: ContractActivityEvent }) {
             <PartyAvatar party={{ full_name: event.actorName || undefined, avatar_url: event.actorAvatarUrl }} />
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-[14px] font-medium text-[#F0EFE8]">{event.actorName || (event.actorRole === 'client' ? 'Client' : 'Freelancer')}</p>
-                    {event.actorRole ? <span className="rounded-full border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-2 py-0.5 text-[11px] font-medium text-[#8A8880]">{event.actorRole}</span> : null}
+                    <p className="text-[14px] font-medium text-[var(--color-text-primary)]">{event.actorName || (event.actorRole === 'client' ? 'Client' : 'Freelancer')}</p>
+                    {event.actorRole ? <span className="rounded-full border-[0.5px] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-text-secondary)]">{event.actorRole}</span> : null}
                     {event.timestamp ? <span className={monoClass}>{fmtTime(event.timestamp)}</span> : null}
                 </div>
                 <p className={bodyClass}>{event.text}</p>
@@ -1070,15 +1117,15 @@ function TimelineMilestone({ milestone, index, rt }: { milestone: ContractMilest
     return (
         <div className="relative w-48 shrink-0 pt-10">
             <div className={`absolute left-0 top-1 flex h-9 w-9 items-center justify-center rounded-full border ${
-                done ? `${rt.accentBg} border-transparent text-[#0D0D0E]` : 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#55534F]'
+                done ? `${rt.accentBg} border-transparent text-[var(--color-bg-base)]` : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-tertiary)]'
             }`}>
                 {done ? <CheckCircle className="h-4 w-4" /> : <span className="text-[13px] font-semibold">{index + 1}</span>}
             </div>
-            <div className="rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-3">
-                <p className="truncate text-[13px] font-semibold text-[#F0EFE8]">{title}</p>
-                <p className="mt-0.5 text-[11px] text-[#55534F]">{fmtDate(milestone.due_date)}</p>
+            <div className="rounded-[10px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-3 py-3">
+                <p className="truncate text-[13px] font-semibold text-[var(--color-text-primary)]">{title}</p>
+                <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">{fmtDate(milestone.due_date)}</p>
                 <span className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-                    done ? `${rt.accentBorder} ${rt.accentFill} ${rt.accentText}` : 'border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#55534F]'
+                    done ? `${rt.accentBorder} ${rt.accentFill} ${rt.accentText}` : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-tertiary)]'
                 }`}>{done ? 'Done' : 'Open'}</span>
             </div>
         </div>
@@ -1086,18 +1133,18 @@ function TimelineMilestone({ milestone, index, rt }: { milestone: ContractMilest
 }
 
 function InfoChip({ icon, label, hideOnMobile, className }: { icon: ReactNode; label: string; hideOnMobile?: boolean; className?: string }) {
-    return <span className={`items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-2.5 py-1 font-mono text-[12px] text-[#8A8880] ${hideOnMobile ? 'hidden sm:inline-flex' : 'inline-flex'} ${className ?? ''}`}>{icon}{label}</span>;
+    return <span className={`items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-2.5 py-1 font-mono text-[12px] text-[var(--color-text-secondary)] ${hideOnMobile ? 'hidden sm:inline-flex' : 'inline-flex'} ${className ?? ''}`}>{icon}{label}</span>;
 }
 
 function FileIcon({ name, mimeType }: { name?: string | null; mimeType?: string | null }) {
     const value = `${name || ''} ${mimeType || ''}`.toLowerCase();
     const Icon = value.includes('image') || /\.(png|jpe?g|gif|webp|svg)$/i.test(value) ? Image : value.includes('zip') || value.includes('archive') ? FileArchive : FileText;
-    return <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]"><Icon className="h-4 w-4" /></div>;
+    return <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]"><Icon className="h-4 w-4" /></div>;
 }
 
 function LockedFinalNotice({ count }: { count: number }) {
     return (
-        <div className="flex items-start gap-3 rounded-[10px] border-[0.5px] border-l-[3px] border-[#BA7517] border-l-[#BA7517] bg-[#633806]/35 px-4 py-[14px] text-[#F0EFE8]">
+        <div className="flex items-start gap-3 rounded-[10px] border-[0.5px] border-l-[3px] border-[#BA7517] border-l-[#BA7517] bg-[#633806]/35 px-4 py-[14px] text-[var(--color-text-primary)]">
             <Lock className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
                 <p className="text-[14px] font-medium">{count} final {count === 1 ? 'file is' : 'files are'} pending release</p>
@@ -1109,9 +1156,9 @@ function LockedFinalNotice({ count }: { count: number }) {
 
 function CompactEmpty({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
     return (
-        <div className="flex items-center gap-3 rounded-[10px] border-[0.5px] border-dashed border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-4 py-[14px]">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#55534F]">{icon}</div>
-            <div><p className="text-[14px] font-medium text-[#8A8880]">{title}</p><p className="mt-0.5 text-[13px] text-[#55534F]">{text}</p></div>
+        <div className="flex items-center gap-3 rounded-[10px] border-[0.5px] border-dashed border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-[14px]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border-[0.5px] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-tertiary)]">{icon}</div>
+            <div><p className="text-[14px] font-medium text-[var(--color-text-secondary)]">{title}</p><p className="mt-0.5 text-[13px] text-[var(--color-text-tertiary)]">{text}</p></div>
         </div>
     );
 }
@@ -1119,7 +1166,7 @@ function CompactEmpty({ icon, title, text }: { icon: ReactNode; title: string; t
 function PartyAvatar({ party, size = 'md' }: { party?: { full_name?: string; avatar_url?: string | null } | null; size?: 'md' | 'lg' }) {
     const dim = size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
     return (
-        <div className={`relative flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] text-[#8A8880]`}>
+        <div className={`relative flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]`}>
             {party?.avatar_url ? <img src={party.avatar_url} alt={party.full_name || 'User'} className="h-full w-full object-cover" /> : <User className="h-4 w-4" />}
         </div>
     );
@@ -1130,11 +1177,11 @@ function PrimaryButton({ rt, onClick, disabled, icon, label }: { rt: RoleTheme; 
 }
 
 function GhostButton({ onClick, disabled, icon, label }: { onClick?: () => void; disabled?: boolean; icon: ReactNode; label: string }) {
-    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-2 rounded-[10px] border-[0.5px] border-[rgba(255,255,255,0.07)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[14px] font-medium text-[#8A8880] transition-colors duration-[80ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] hover:text-[#F0EFE8] disabled:opacity-35 ${focusRing}`}>{icon}{label}</button>;
+    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-2 rounded-[10px] border-[0.5px] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-3 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] transition-colors duration-[80ms] hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text-primary)] disabled:opacity-35 ${focusRing}`}>{icon}{label}</button>;
 }
 
 function DangerButton({ onClick, disabled, icon, label }: { onClick?: () => void; disabled?: boolean; icon: ReactNode; label: string }) {
-    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-2 rounded-[10px] border-[0.5px] border-[#A32D2D] bg-[#501313]/75 px-3 py-2 text-[14px] font-medium text-[#F0EFE8] transition-colors duration-[80ms] hover:bg-[#6a1919] disabled:opacity-50 ${focusRing}`}>{icon}{label}</button>;
+    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-2 rounded-[10px] border-[0.5px] border-[#A32D2D] bg-[#501313]/75 px-3 py-2 text-[14px] font-medium text-[var(--color-text-primary)] transition-colors duration-[80ms] hover:bg-[#6a1919] disabled:opacity-50 ${focusRing}`}>{icon}{label}</button>;
 }
 
 

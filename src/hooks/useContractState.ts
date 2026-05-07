@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { sendContractMessage } from '../services/messages';
-import { releaseEscrow } from '../services/dhmad';
+import { releaseEscrow, refundEscrow } from '../services/dhmad';
 import type { ContractStatus } from '../types';
 import {
     canClientAcceptForStatus,
@@ -48,9 +48,12 @@ interface UseContractStateReturn {
     canDeliver: boolean;
     canAccept: boolean;
     canDispute: boolean;
+    canCancel: boolean;
     isDelivering: boolean;
     isAccepting: boolean;
     isDisputing: boolean;
+    isCancelling: boolean;
+    cancelContract: (reason: string) => Promise<void>;
     refresh: () => Promise<void>;
 }
 
@@ -71,6 +74,7 @@ export function useContractState({
     const [isDelivering, setIsDelivering] = useState(false);
     const [isAccepting, setIsAccepting] = useState(false);
     const [isDisputing, setIsDisputing] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
 
     const refresh = useCallback(async () => {
         if (!contractId) return;
@@ -142,7 +146,7 @@ export function useContractState({
     );
 
     const deliverWork = useCallback(
-        async (note: string) => {
+        async (note: string, reviewAssets: Array<Record<string, string>> = [], finalAssets: Array<Record<string, string>> = []) => {
             if (userRole !== 'freelancer') {
                 throw new Error('Only freelancers can deliver work');
             }
@@ -165,8 +169,8 @@ export function useContractState({
                 const { data: deliveryResult, error: deliveryError } = await supabase.rpc('submit_contract_delivery_atomic', {
                     p_contract_id: contractId,
                     p_delivery_note: nextDeliveryNote,
-                    p_review_assets: [],
-                    p_final_assets: [],
+                    p_review_assets: reviewAssets,
+                    p_final_assets: finalAssets,
                 });
 
                 if (deliveryError) throw deliveryError;
@@ -347,9 +351,62 @@ export function useContractState({
         [contract, contractId, queryClient, userId, userRole]
     );
 
+    const cancelContract = useCallback(
+        async (reason: string) => {
+            if (!contract) throw new Error('No contract loaded');
+
+            const cancellableStatuses: ContractStatus[] = ['pending_payment', 'active'];
+            if (!cancellableStatuses.includes(contract.status)) {
+                throw new Error('This contract cannot be cancelled in its current state');
+            }
+
+            setIsCancelling(true);
+            try {
+                const { data: result, error: rpcError } = await supabase.rpc('cancel_contract_atomic', {
+                    p_contract_id: contractId,
+                    p_reason: reason.trim() || null,
+                });
+
+                if (rpcError) throw rpcError;
+
+                // If escrow was funded, trigger Dhmad refund
+                if (result?.needs_refund && result?.dhmad_escrow_id) {
+                    try {
+                        await refundEscrow(result.dhmad_escrow_id, contractId, reason.trim() || 'Contract cancelled');
+                    } catch (refundErr) {
+                        logger.error('Dhmad refund failed after contract cancellation — manual refund needed', refundErr);
+                    }
+                }
+
+                // Send cancellation message to conversation
+                const receiverId = getCounterpartyId(contract, userRole);
+                if (receiverId) {
+                    const cancellationMessage = `[[system]] Contract cancelled: ${reason.trim() || 'No reason provided'}`;
+                    await sendContractMessage({
+                        contract_id: contractId,
+                        sender_id: userId,
+                        receiver_id: receiverId,
+                        content: cancellationMessage,
+                        message_type: 'system',
+                    }).catch(err => logger.warn('Cancel message failed', err));
+                }
+
+                setContract(current => current ? { ...current, status: 'cancelled' as ContractStatus } : current);
+
+                if (queryClient) {
+                    await queryClient.invalidateQueries({ queryKey: ['contract', contractId] });
+                }
+            } finally {
+                setIsCancelling(false);
+            }
+        },
+        [contract, contractId, queryClient, userId, userRole]
+    );
+
     const canDeliver = userRole === 'freelancer' && canFreelancerDeliverForStatus(contract?.status);
     const canAccept = userRole === 'client' && canClientAcceptForStatus(contract?.status, hasRecordedDeliveryEvidence(contract?.delivery_note));
     const canDispute = canOpenDisputeForStatus(contract?.status);
+    const canCancel = !!contract && ['pending_payment', 'active'].includes(contract.status);
 
     useEffect(() => {
         void refresh();
@@ -363,12 +420,15 @@ export function useContractState({
         acceptWork,
         requestChanges,
         openDispute,
+        cancelContract,
         canDeliver,
         canAccept,
         canDispute,
+        canCancel,
         isDelivering,
         isAccepting,
         isDisputing,
+        isCancelling,
         refresh,
     };
 }
