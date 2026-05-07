@@ -6163,15 +6163,35 @@ function MessagesComponent() {
                     aria-label="Image preview"
                 >
                     <div className="relative max-w-4xl max-h-[90vh] flex items-center justify-center" onClick={e => e.stopPropagation()}>
-                        {/* Close button */}
-                        <button
-                            type="button"
-                            onClick={() => setLightboxImageUrl(null)}
-                            className="absolute -top-12 -right-12 sm:top-0 sm:right-0 p-2 rounded-full hover:bg-white/10 transition-colors z-10"
-                            aria-label="Close image preview"
-                        >
-                            <X className="h-6 w-6 text-white" />
-                        </button>
+                        {/* Control buttons */}
+                        <div className="absolute -top-12 -right-12 sm:top-0 sm:right-0 flex items-center gap-2 p-2 z-10">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const link = document.createElement('a');
+                                    link.href = lightboxImageUrl;
+                                    link.download = 'image';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
+                                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                                aria-label="Download image"
+                                title="Download"
+                            >
+                                <Download className="h-6 w-6 text-white" />
+                            </button>
+                            
+                            <button
+                                type="button"
+                                onClick={() => setLightboxImageUrl(null)}
+                                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                                aria-label="Close image preview"
+                                title="Close"
+                            >
+                                <X className="h-6 w-6 text-white" />
+                            </button>
+                        </div>
 
                         {/* Image */}
                         <img
