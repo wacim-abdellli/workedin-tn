@@ -119,7 +119,7 @@ const deriveJobStatus = (
 
   if (contract) {
     if (normalizedContractStatus === 'pending_payment') return 'needs_attention';
-    if (normalizedContractStatus === 'delivery_submitted') return 'in_progress';
+    if (normalizedContractStatus === 'delivery_submitted') return 'needs_attention';
     if (normalizedContractStatus === 'completed') return 'finished_success';
     if (normalizedContractStatus === 'cancelled' || normalizedContractStatus === 'canceled') return 'finished_unsuccessful';
     if (normalizedContractStatus === 'disputed') return 'needs_attention';
@@ -279,10 +279,10 @@ export default function ClientJobs() {
     if (job.derivedStatus === 'open') return tx('pages.clientJobs.status.open', undefined, 'Open')
     if (job.derivedStatus === 'in_progress') return tx('pages.clientJobs.status.inProgress', undefined, 'In Progress')
     if (job.derivedStatus === 'needs_attention') {
-      const isDisputed = normalize(job.latestContract?.status) === 'disputed' || normalize(job.status) === 'disputed';
-      return isDisputed
-        ? tx('pages.clientJobs.status.disputed', undefined, 'Disputed')
-        : tx('pages.clientJobs.status.inReview', undefined, 'In Review');
+      const contractStatus = normalize(job.latestContract?.status);
+      if (contractStatus === 'disputed' || normalize(job.status) === 'disputed') return tx('pages.clientJobs.status.disputed', undefined, 'Disputed');
+      if (contractStatus === 'delivery_submitted') return tx('pages.clientJobs.status.reviewNeeded', undefined, 'Review Needed');
+      return tx('pages.clientJobs.status.actionRequired', undefined, 'Action Required');
     }
     return tx('pages.clientJobs.status.finished', undefined, 'Finished');
   }
@@ -295,7 +295,10 @@ export default function ClientJobs() {
       return tx('pages.clientJobs.result.unsuccessful', undefined, 'Result: Unsuccessful (contract cancelled)');
     }
     if (job.derivedStatus === 'needs_attention') {
-      return tx('pages.clientJobs.result.attention', undefined, 'Result: Needs resolution before closing');
+      if (normalize(job.latestContract?.status) === 'delivery_submitted') {
+        return tx('pages.clientJobs.result.deliveryReview', undefined, 'Result: Delivery submitted, awaiting your review');
+      }
+      return tx('pages.clientJobs.result.attention', undefined, 'Result: Action required before proceeding');
     }
     if (job.derivedStatus === 'in_progress') {
       return tx('pages.clientJobs.result.progress', undefined, 'Result: Work in progress');

@@ -333,152 +333,7 @@ function sanitizePortfolioTextFields(descriptionValue: string | null | undefined
     };
 }
 
-function CompactMultiSelectEditor({
-    title,
-    searchQuery,
-    onSearchChange,
-    options,
-    selectedValues,
-    onToggle,
-    accentColor,
-    maxSelected,
-}: {
-    title: string;
-    searchQuery: string;
-    onSearchChange: (value: string) => void;
-    options: PickerOption[];
-    selectedValues: string[];
-    onToggle: (value: string) => void;
-    accentColor: string;
-    maxSelected: number;
-}) {
-    const [activeCategory, setActiveCategory] = useState<string>('all');
 
-    const categories = useMemo(() => {
-        const values = Array.from(new Set(options.map((option) => option.category)));
-        return ['all', ...values];
-    }, [options]);
-
-    const filteredOptions = useMemo(() => {
-        const query = searchQuery.trim().toLowerCase();
-
-        return options.filter((option) => {
-            const matchesCategory = activeCategory === 'all' || option.category === activeCategory;
-            const matchesSearch = !query || option.name.toLowerCase().includes(query);
-            return matchesCategory && matchesSearch;
-        });
-    }, [activeCategory, options, searchQuery]);
-
-    return (
-        <div className="mt-3 rounded-xl border border-surface bg-[var(--color-bg-base)] p-3 space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(event) => onSearchChange(event.target.value)}
-                    placeholder={`Search ${title.toLowerCase()}...`}
-                    className="flex-1 border rounded-lg p-2.5 outline-none transition-all"
-                    style={{ 
-                        background: 'var(--color-bg-base)',
-                        borderColor: 'var(--color-border-default)',
-                        color: 'var(--color-text-primary)'
-                    }}
-                />
-                <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-full border w-fit"
-                    style={{
-                        borderColor: `color-mix(in srgb, ${accentColor} 35%, #262626)`,
-                        background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
-                        color: accentColor,
-                    }}
-                >
-                    {selectedValues.length}/{maxSelected}
-                </span>
-            </div>
-
-            <div className="flex gap-2 overflow-x-auto pb-1">
-                {categories.map((category) => {
-                    const isActive = category === activeCategory;
-                    return (
-                        <button
-                            key={category}
-                            type="button"
-                            onClick={() => setActiveCategory(category)}
-                            className="px-3 py-1.5 text-xs rounded-full border whitespace-nowrap transition-colors"
-                            style={{
-                                borderColor: isActive
-                                    ? `color-mix(in srgb, ${accentColor} 45%, #262626)`
-                                    : '#262626',
-                                background: isActive
-                                    ? `color-mix(in srgb, ${accentColor} 12%, transparent)`
-                                    : '#141414',
-                                color: isActive ? accentColor : '#9ca3af',
-                            }}
-                        >
-                            {category === 'all' ? 'All' : toCategoryLabel(category)}
-                        </button>
-                    );
-                })}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_220px] gap-3">
-                <div className="border border-surface rounded-xl p-2 bg-[var(--color-bg-subtle)] max-h-56 overflow-y-auto">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {filteredOptions.map((option) => {
-                            const isSelected = selectedValues.includes(option.name);
-
-                            return (
-                                <button
-                                    key={option.id}
-                                    type="button"
-                                    onClick={() => onToggle(option.name)}
-                                    className="w-full text-left px-3 py-2 rounded-lg border transition-all flex items-center justify-between"
-                                    style={{
-                                        borderColor: isSelected
-                                            ? `color-mix(in srgb, ${accentColor} 45%, transparent)`
-                                            : '#262626',
-                                        background: isSelected
-                                            ? `color-mix(in srgb, ${accentColor} 14%, transparent)`
-                                            : '#141414',
-                                        color: isSelected ? accentColor : '#e5e7eb',
-                                    }}
-                                >
-                                    <span className="text-sm font-medium">{option.name}</span>
-                                    {isSelected ? <Check className="w-4 h-4" /> : null}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div className="border border-surface rounded-xl p-2 bg-[var(--color-bg-subtle)] max-h-56 overflow-y-auto">
-                    <p className="text-xs font-semibold text-on-surface-muted mb-2">Selected {title}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                        {selectedValues.length === 0 ? (
-                            <p className="text-xs text-on-surface-subtle">No {title.toLowerCase()} selected.</p>
-                        ) : (
-                            selectedValues.map((value) => (
-                                <button
-                                    key={value}
-                                    type="button"
-                                    onClick={() => onToggle(value)}
-                                    className="text-xs px-2 py-1 rounded-full border"
-                                    style={{
-                                        borderColor: `color-mix(in srgb, ${accentColor} 40%, #262626)`,
-                                        color: accentColor,
-                                        background: `color-mix(in srgb, ${accentColor} 12%, transparent)`,
-                                    }}
-                                >
-                                    {value}
-                                </button>
-                            ))
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 function ProfileView({
     viewerRole,
@@ -526,104 +381,7 @@ function ProfileView({
 
     const activeWorkSampleImage = activeWorkSampleImages[activeWorkImageIndex] || '';
 
-    const availabilityOptions: Array<{ value: FreelancerData['availability']; label: string }> = [
-        { value: 'available', label: 'Available' },
-        { value: 'busy', label: 'Busy' },
-        { value: 'offline', label: 'Offline' },
-    ];
 
-    const resetBasicsDraft = useCallback(() => {
-        setFullNameDraft(freelancer.full_name || '');
-        setTitleDraft(freelancer.title || '');
-        setHourlyRateDraft(freelancer.hourly_rate > 0 ? String(freelancer.hourly_rate) : '');
-        setAvailabilityDraft(freelancer.availability || 'available');
-    }, [freelancer.availability, freelancer.full_name, freelancer.hourly_rate, freelancer.title]);
-
-    const openBasicsEditor = useCallback(() => {
-        resetBasicsDraft();
-        setEditingBasics(true);
-        if (typeof window !== 'undefined') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }, [resetBasicsDraft]);
-
-    useEffect(() => {
-        setBioDraft(freelancer.bio || '');
-    }, [freelancer.bio]);
-
-    useEffect(() => {
-        resetBasicsDraft();
-    }, [resetBasicsDraft]);
-
-    useEffect(() => {
-        setSelectedSkillNames(freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean));
-    }, [freelancer.skills]);
-
-    useEffect(() => {
-        setSelectedToolNames(freelancer.tools);
-    }, [freelancer.tools]);
-
-    const strengths = freelancer.skills.length > 0
-        ? freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean)
-        : ['Web Development', 'Web Research'];
-
-    const tools = freelancer.tools.length > 0
-        ? freelancer.tools
-        : ['Figma', 'Canva', 'VS Code', 'Docker', 'Vercel', 'MongoDB'];
-
-    const reviewBuckets = [5, 4, 3, 2, 1].map((score) => {
-        const total = freelancer.stats.reviews_count || 0;
-        const count = freelancer.reviews.filter((r) => Math.round(r.rating) === score).length;
-        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-
-        return { score, pct };
-    });
-
-    const accentColor = 'var(--workspace-primary)';
-
-    const skillPickerOptions = useMemo<PickerOption[]>(() => {
-        return PREDEFINED_SKILLS.map((skill) => ({
-            id: skill.id,
-            name: skill.name_en,
-            category: skill.category,
-        }));
-    }, []);
-
-    const toolPickerOptions = useMemo<PickerOption[]>(() => {
-        return PREDEFINED_TOOLS.map((tool) => ({
-            id: tool.id,
-            name: tool.name_en,
-            category: tool.category,
-        }));
-    }, []);
-
-    const toggleSkillOption = (skillName: string) => {
-        setSelectedSkillNames((prev) => {
-            if (prev.includes(skillName)) {
-                return prev.filter((item) => item !== skillName);
-            }
-
-            if (prev.length >= 15) {
-                return prev;
-            }
-
-            return [...prev, skillName];
-        });
-    };
-
-    const toggleToolOption = (toolName: string) => {
-        setSelectedToolNames((prev) => {
-            if (prev.includes(toolName)) {
-                return prev.filter((item) => item !== toolName);
-            }
-
-            if (prev.length >= 15) {
-                return prev;
-            }
-
-            return [...prev, toolName];
-        });
-    };
 
     const openWorkSampleViewer = useCallback((workSampleId: string) => {
         setActiveWorkSampleId(workSampleId);
@@ -777,6 +535,24 @@ function ProfileView({
         showPreviousWorkSample,
     ]);
 
+    const strengths = freelancer.skills.length > 0
+        ? freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean)
+        : ['Web Development', 'Web Research'];
+
+    const tools = freelancer.tools.length > 0
+        ? freelancer.tools
+        : ['Figma', 'Canva', 'VS Code', 'Docker', 'Vercel', 'MongoDB'];
+
+    const reviewBuckets = [5, 4, 3, 2, 1].map((score) => {
+        const total = freelancer.stats.reviews_count || 0;
+        const count = freelancer.reviews.filter((r) => Math.round(r.rating) === score).length;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+
+        return { score, pct };
+    });
+
+    const accentColor = 'var(--workspace-primary)';
+
     const isSavingAnySection = savingAvatar;
 
     const handleAvatarUploadSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -885,68 +661,6 @@ function ProfileView({
         onAvatarUpload={handleAvatarUploadSelection}
       />
 
-      {isOwner && editingBasics && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
-          <div className="surface-card border rounded-2xl p-5 mb-6 animate-in fade-in slide-in-from-top-2" style={{ borderColor: 'var(--color-border-subtle)' }}>
-            <h3 className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--color-text-secondary)' }}>Edit Basics</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>{tx('pages.freelancerProfile.form.fullName', undefined, 'Full name')}</label>
-                    <input
-                        type="text"
-                        value={fullNameDraft}
-                        onChange={(e) => setFullNameDraft(e.target.value)}
-                        className="w-full bg-[var(--color-background-base)] border rounded-xl text-sm px-4 py-2.5 outline-none transition-colors"
-                        style={{ 
-                            borderColor: 'var(--color-border-default)'
-                        }}
-                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--workspace-primary)'}
-                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--color-border-default)'}
-                    />
-                </div>
-                <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>{tx('pages.freelancerProfile.form.professionalTitle', undefined, 'Professional title')}</label>
-                    <input
-                        type="text"
-                        value={titleDraft}
-                        onChange={(e) => setTitleDraft(e.target.value)}
-                        className="w-full bg-[var(--color-background-base)] border rounded-xl text-sm px-4 py-2.5 outline-none transition-colors"
-                        style={{ 
-                            borderColor: 'var(--color-border-default)'
-                        }}
-                        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--workspace-primary)'}
-                        onBlur={(e) => e.currentTarget.style.borderColor = 'var(--color-border-default)'}
-                    />
-                </div>
-                <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>{tx('pages.freelancerProfile.form.hourlyRateTnd', undefined, 'Hourly rate (TND)')}</label>
-                    <input
-                        type="number"
-                        min={0}
-                        value={hourlyRateDraft}
-                        onChange={(e) => setHourlyRateDraft(e.target.value)}
-                        className="w-full bg-[var(--color-background-base)] border rounded-xl text-sm px-4 py-2.5 outline-none focus:border-[#8B5CF6] transition-colors"
-                        style={{ borderColor: 'var(--color-border-default)' }}
-                    />
-                </div>
-                <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--color-text-secondary)" }}>Availability</label>
-                    <select
-                        value={availabilityDraft}
-                        onChange={(e) => setAvailabilityDraft(e.target.value as FreelancerData['availability'])}
-                        className="w-full bg-[var(--color-background-base)] border rounded-xl text-sm px-4 py-2.5 outline-none focus:border-[#8B5CF6] transition-colors"
-                        style={{ borderColor: 'var(--color-border-default)' }}
-                    >
-                        {availabilityOptions.map((option) => (
-                            <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Stat bar ────────────────────────────────────────────────────── */}
       <ProfileStatBar
         variant="freelancer"
@@ -961,7 +675,6 @@ function ProfileView({
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 flex flex-col gap-5">
-
 
                     <ProfileSection
                         title="Tools"

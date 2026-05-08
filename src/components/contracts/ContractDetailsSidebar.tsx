@@ -184,8 +184,8 @@ const fmtAmount = (amount: number | null | undefined) => {
     return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number.isFinite(n) ? n : 0)} TND`;
 };
 
-const surface = 'border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] rounded-[12px] shadow-sm';
-const surfaceHover = 'transition-all duration-200 hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--color-bg-muted)] hover:shadow-md';
+const surface = 'border border-white/5 bg-[#161719] rounded-[16px] shadow-sm';
+const surfaceHover = 'transition-all duration-200 hover:border-white/10 hover:bg-[#1A1C1E] hover:shadow-md';
 const labelClass = 'text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]';
 const bodyClass = 'text-[14px] font-normal leading-[1.6] text-[var(--color-text-secondary)]';
 const monoClass = 'font-mono text-[13px] text-[var(--color-text-secondary)]';
@@ -303,7 +303,8 @@ export default function ContractDetailsSidebar({
                         title: 'Fund escrow to start',
                         body: `Secure ${fmtAmount(contract.amount)} in escrow. The freelancer will be notified and work begins immediately. Funds are only released when you approve the final delivery.`,
                         primaryLabel: 'Fund escrow',
-                        tone: 'border-l-[1.5px] border-l-[#E8A020] border-[var(--color-border-subtle)] bg-[#3D2A00]/50 text-[var(--color-text-primary)]',
+                        accentColor: 'text-[#E8A020]',
+                        iconColor: 'text-[#E8A020] bg-[#E8A020]/10 ring-[#E8A020]/20',
                     };
                 }
                 if (userRole === 'freelancer' && !isEscrowFunded) {
@@ -312,7 +313,8 @@ export default function ContractDetailsSidebar({
                         title: 'Waiting for escrow',
                         body: 'The client needs to secure funds before you begin. You will be notified the moment escrow is funded and work can start.',
                         primaryLabel: null,
-                        tone: 'border-l-[1.5px] border-l-[rgba(255,255,255,0.12)] border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]',
+                        accentColor: 'text-[var(--color-text-secondary)]',
+                        iconColor: 'text-white/60 bg-white/5 ring-white/10',
                     };
                 }
                 // Funded but contract not yet active
@@ -323,30 +325,30 @@ export default function ContractDetailsSidebar({
                         ? `${fmtAmount(contract.amount)} is secured. Deliver your work when ready and submit for payment.`
                         : 'Funds are secured. The freelancer has been notified and work is underway.',
                     primaryLabel: userRole === 'freelancer' ? 'Submit delivery' : null,
-                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[var(--color-border-subtle)] bg-[#0F6E56]/35 text-[var(--color-text-primary)]',
+                    accentColor: 'text-[#1D9E75]',
+                    iconColor: 'text-[#1D9E75] bg-[#1D9E75]/10 ring-[#1D9E75]/20',
                 };
             }
-            // ── FREELANCER DELIVER ───────────────────────────────────────────
             if (showFreelancerDeliver) {
                 return {
                     icon: <PackageCheck className="h-5 w-5" />,
                     title: isRevision ? 'Submit revised delivery' : 'Submit delivery',
                     body: 'Attach review files and protected final files. Final assets stay locked until the client approves and releases payment.',
                     primaryLabel: isRevision ? 'Resubmit delivery' : 'Submit delivery',
-                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[var(--color-border-subtle)] bg-[#0F6E56]/35 text-[var(--color-text-primary)]',
+                    accentColor: 'text-[#1D9E75]',
+                    iconColor: 'text-[#1D9E75] bg-[#1D9E75]/10 ring-[#1D9E75]/20',
                 };
             }
-            // ── CLIENT REVIEW (delivery_submitted) ──────────────────────────
             if (showClientReview) {
                 return {
                     icon: <FileCheck2 className="h-5 w-5" />,
                     title: 'Review submitted work',
                     body: 'Inspect review assets, then approve to release payment and unlock final files, request a revision, or open a dispute.',
                     primaryLabel: 'Approve & release',
-                    tone: 'border-l-[1.5px] border-l-[#1D9E75] border-[var(--color-border-subtle)] bg-[#0F6E56]/35 text-[var(--color-text-primary)]',
+                    accentColor: 'text-[#1D9E75]',
+                    iconColor: 'text-[#1D9E75] bg-[#1D9E75]/10 ring-[#1D9E75]/20',
                 };
             }
-            // ── FREELANCER WAITING FOR REVIEW ────────────────────────────────
             if (userRole === 'freelancer' && isUnderReview) {
                 return {
                     icon: <Timer className="h-5 w-5" />,
@@ -355,36 +357,37 @@ export default function ContractDetailsSidebar({
                         ? `Your funds are protected. If the client takes no action, payment auto-releases on ${fmtDate(contract.reviewDueAt)}.`
                         : 'Final files remain locked and protected until the client approves.',
                     primaryLabel: null,
-                    tone: 'border-l-[2px] border-l-[#BA7517] border-[var(--color-border-subtle)] bg-gradient-to-br from-[#633806]/35 to-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-md',
+                    accentColor: 'text-[#BA7517]',
+                    iconColor: 'text-[#E8A020] bg-[#E8A020]/10 ring-[#E8A020]/20',
                 };
             }
-            // ── LEAVE REVIEW ─────────────────────────────────────────────────
             if (showLeaveReview) {
                 return {
                     icon: <Star className="h-5 w-5" />,
                     title: 'Leave a review',
                     body: 'The contract is complete. Add a rating to build trust and close the loop.',
                     primaryLabel: 'Leave review',
-                    tone: 'border-l-[2px] border-l-[#1D9E75] border-[var(--color-border-subtle)] bg-gradient-to-br from-[#0F6E56]/35 to-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-md',
+                    accentColor: 'text-[#1D9E75]',
+                    iconColor: 'text-[#1D9E75] bg-[#1D9E75]/10 ring-[#1D9E75]/20',
                 };
             }
-            // ── COMPLETED ────────────────────────────────────────────────────
             if (isCompleted) {
                 return {
                     icon: <CheckCircle className="h-5 w-5" />,
                     title: 'Contract closed',
                     body: 'Payment was released and final files are now available. This workspace is a permanent record.',
                     primaryLabel: null,
-                    tone: 'border-l-[2px] border-l-[#7F77DD] border-[var(--color-border-subtle)] bg-gradient-to-br from-[#3C3489]/35 to-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-md',
+                    accentColor: 'text-[#7F77DD]',
+                    iconColor: 'text-[#9B8FF0] bg-[#9B8FF0]/10 ring-[#9B8FF0]/20',
                 };
             }
-            // ── ACTIVE / FALLBACK ─────────────────────────────────────────────
             return {
                 icon: <Clock className="h-5 w-5" />,
                 title: 'Work in progress',
                 body: 'Keep the conversation open while work continues.',
                 primaryLabel: null,
-                tone: 'border-l-[2px] border-l-[var(--color-border-subtle)] border-[var(--color-border-subtle)] bg-gradient-to-br from-[var(--color-bg-elevated)] to-[var(--color-bg-base)] text-[var(--color-text-secondary)] shadow-md',
+                accentColor: 'text-[var(--color-text-secondary)]',
+                iconColor: 'text-white/60 bg-white/5 ring-white/10',
             };
         })();
 
@@ -469,99 +472,107 @@ export default function ContractDetailsSidebar({
             {/* Role-colored top stripe */}
             <div className={`h-[3px] w-full bg-gradient-to-r ${rt.headerStripe}`} />
 
-            {/* ── Premium Unified Header ── */}
-            <header className="sticky top-0 z-30 flex flex-col border-b border-[var(--color-border-subtle)] bg-[#0A0A0B]/95 backdrop-blur-md">
-                {/* Breadcrumbs Row */}
-                <div className="flex h-12 shrink-0 items-center gap-3 border-b border-white/[0.04] px-6">
-                    {onGoBack && (
-                        <button type="button" onClick={onGoBack}
-                            className="inline-flex items-center gap-1.5 rounded-[8px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-subtle)] px-3 py-1.5 text-[13px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-muted)]">
-                            <ArrowLeft className="h-3.5 w-3.5" />
-                            Back
-                        </button>
-                    )}
-
-                    <div className="h-3.5 w-px bg-white/[0.08]" />
-
-                    {onGoToMessages && (
-                        <button type="button" onClick={onGoToMessages}
-                            className="inline-flex items-center gap-1.5 text-[13px] text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-primary)]">
-                            <MessageSquare className="h-3.5 w-3.5" />
-                            Messages
-                        </button>
-                    )}
-                </div>
-
-                {/* Main header row */}
-                <div className="flex shrink-0 items-start gap-4 px-6 pb-4 pt-5">
-                    {/* Avatar */}
-                    <div className="relative shrink-0">
-                        <PartyAvatar party={model.otherParty} size="lg" />
-                        <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[var(--color-bg-base)] ${rt.accentBg}`} />
-                    </div>
-
-                    {/* Title block */}
-                    <div className="min-w-0 flex-1">
-                        <div className="flex min-w-0 flex-wrap items-center gap-2">
-                            <h2 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-[var(--color-text-primary)]">
-                                {contract.job?.title || 'Untitled contract'}
-                            </h2>
-                            <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide ${model.status.tone}`}>
-                                {model.status.icon}{model.status.label}
-                            </span>
+            {/* ── Premium Unified Compact Header ── */}
+            <header className="sticky top-0 z-30 flex flex-col border-b border-white/[0.04] bg-[#0A0A0B]/95 backdrop-blur-md">
+                {/* Main Compact Row */}
+                <div className="flex shrink-0 items-center justify-between px-6 py-3">
+                    <div className="flex items-center gap-4 min-w-0">
+                        {/* Navigation Actions */}
+                        <div className="flex items-center gap-2 pr-4 border-r border-white/10 shrink-0">
+                            {onGoBack && (
+                                <button type="button" onClick={onGoBack} className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-white/[0.03] text-[var(--color-text-secondary)] hover:bg-white/[0.06] hover:text-white transition-colors border border-white/[0.02]">
+                                    <ArrowLeft className="h-4 w-4" />
+                                </button>
+                            )}
+                            {onGoToMessages && (
+                                <button type="button" onClick={onGoToMessages} className="flex h-8 items-center gap-1.5 rounded-[8px] px-3 bg-white/[0.03] text-[12px] font-medium text-[var(--color-text-secondary)] hover:bg-white/[0.06] hover:text-white transition-colors border border-white/[0.02]">
+                                    <MessageSquare className="h-3.5 w-3.5" />
+                                    Messages
+                                </button>
+                            )}
                         </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                            <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] ${rt.roleBadge}`}>
-                                {rt.roleLabel}
-                            </span>
-                            <span className="text-[12px] text-[var(--color-text-tertiary)]">
-                                with {model.otherParty?.full_name || 'counterparty'}
-                            </span>
-                            {contract.job?.deadline ? (
-                                <span className="text-[12px] text-[var(--color-text-tertiary)]">
-                                    Due {fmtDate(contract.job.deadline)}
-                                </span>
-                            ) : null}
+
+                        {/* Title & Status */}
+                        <div className="flex items-center gap-3 min-w-0">
+                            <PartyAvatar party={model.otherParty} size="sm" />
+                            <div className="flex flex-col min-w-0 gap-0.5">
+                                <div className="flex items-center gap-2">
+                                    <h2 className="truncate text-[15px] font-bold text-white leading-tight">
+                                        {contract.job?.title || 'Untitled contract'}
+                                    </h2>
+                                    <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-1.5 py-[1px] text-[9px] font-bold tracking-wide uppercase leading-none ${model.status.tone}`}>
+                                        {model.status.icon}{model.status.label}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-tertiary)] leading-none">
+                                    <span className={`inline-flex items-center rounded text-[10px] font-bold uppercase tracking-wider ${rt.accentText}`}>
+                                        {rt.roleLabel}
+                                    </span>
+                                    <span>•</span>
+                                    <span className="truncate">with {model.otherParty?.full_name || 'counterparty'}</span>
+                                    {contract.job?.deadline ? (
+                                        <>
+                                            <span>•</span>
+                                            <span>Due {fmtDate(contract.job.deadline)}</span>
+                                        </>
+                                    ) : null}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Amount block — prominent right side */}
-                    <div className="hidden shrink-0 flex-col items-end sm:flex">
-                        <span className={`text-[22px] font-bold tracking-[-0.03em] ${rt.accentText}`}>
+
+
+                    {/* Amount */}
+                    <div className="hidden flex-col items-end shrink-0 pl-4 sm:flex">
+                        <span className={`text-[16px] font-bold leading-tight ${rt.accentText}`}>
                             {fmtAmount(contract.amount)}
                         </span>
-                        <div className="mt-1 flex items-center gap-1.5">
+                        <div className="flex items-center gap-1 mt-0.5">
                             <Shield className="h-3 w-3 text-[#1D9E75]" />
-                            <span className="text-[11px] text-[#1D9E75]">
+                            <span className="text-[10px] font-medium text-[#1D9E75] uppercase tracking-wider leading-none">
                                 {model.isEscrowFunded ? 'In escrow' : 'Pending escrow'}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                {/* ── Tab bar ── */}
-                <nav className="flex h-11 shrink-0 items-center gap-1 overflow-x-auto px-6" role="tablist" aria-label="Contract workspace sections">
-                    {tabs.map((tab, index) => (
-                        <button
-                            key={tab.id}
-                            id={`contract-workspace-tab-${tab.id}`}
-                            type="button"
-                            role="tab"
-                            aria-selected={activeTab === tab.id}
-                            aria-controls={`contract-workspace-panel-${tab.id}`}
-                            onClick={() => setActiveTab(tab.id)}
-                            onKeyDown={(event) => handleTabKeyDown(event, index)}
-                            className={`relative flex h-7 shrink-0 items-center gap-1.5 rounded-[7px] px-3 text-[13px] font-medium transition-colors duration-100 ${focusRing} ${rt.focusRingColor} ${
-                                activeTab === tab.id
-                                    ? `${rt.tabActiveBg} ${rt.accentText}`
-                                    : 'text-[var(--color-text-tertiary)] hover:bg-white/5 hover:text-[var(--color-text-secondary)]'
-                            }`}
-                        >
-                            {tab.icon}
-                            <span>{tab.label}</span>
-                        </button>
-                    ))}
-                </nav>
+                {/* Tab Bar Row */}
+                <div className="flex items-center justify-between px-6">
+                    <nav className="flex h-10 gap-1 overflow-x-auto" role="tablist" aria-label="Contract workspace sections">
+                        {tabs.map((tab, index) => (
+                            <button
+                                key={tab.id}
+                                id={`contract-workspace-tab-${tab.id}`}
+                                type="button"
+                                role="tab"
+                                aria-selected={activeTab === tab.id}
+                                aria-controls={`contract-workspace-panel-${tab.id}`}
+                                onClick={() => setActiveTab(tab.id)}
+                                onKeyDown={(event) => handleTabKeyDown(event, index)}
+                                className={`relative flex items-center gap-1.5 rounded-t-[6px] px-3 text-[12px] font-semibold transition-colors duration-150 border-b-2 ${focusRing} ${rt.focusRingColor} ${
+                                    activeTab === tab.id
+                                        ? `border-b-[var(--color-text-primary)] text-[var(--color-text-primary)]`
+                                        : 'border-b-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-white/[0.02]'
+                                }`}
+                            >
+                                {tab.icon}
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+
+                    {/* Progress Pill right aligned next to tabs */}
+                    <div className="hidden lg:flex items-center gap-3.5 rounded-full border border-white/[0.06] bg-[#161719] px-4 py-1.5 shadow-sm mb-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-tertiary)]">Progress</span>
+                        <div className="w-[180px] h-1.5 overflow-hidden rounded-full bg-[#0A0A0B] shadow-inner ring-1 ring-inset ring-white/10">
+                            <div className={`h-full rounded-full transition-all duration-1000 ease-out relative ${rt.accentBg}`} style={{ width: `${model.progressPct}%` }}>
+                                <div className="absolute inset-0 bg-white/20 rounded-full mix-blend-overlay" />
+                            </div>
+                        </div>
+                        <span className={`text-[11px] font-black tracking-wider ${rt.accentText}`}>{model.progressPct}%</span>
+                    </div>
+                </div>
             </header>
 
             {/* Tab panels */}
@@ -572,12 +583,16 @@ export default function ContractDetailsSidebar({
                 aria-labelledby={`contract-workspace-tab-${activeTab}`}
                 className="flex-1 animate-[contractTabIn_160ms_ease-out] px-4 py-8 sm:px-8 sm:py-10"
             >
-                <div className="mx-auto w-full max-w-4xl">
+                <div className="mx-auto w-full max-w-[1600px]">
                 {activeTab === 'overview' ? (
-                    <div className="flex flex-col gap-6">
-                        {model.st === 'completed' ? <CompletedSummary model={model} rt={rt} onReview={onReview} /> : null}
-                        {model.st !== 'completed' || model.showLeaveReview ? <NextMoveCard model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onCancel={onCancel} onFundEscrow={onFundEscrow} onReview={onReview} setActiveTab={setActiveTab} /> : null}
-                        <ContractPulse model={model} rt={rt} />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <div className="lg:col-span-2 flex flex-col gap-6">
+                            {model.st === 'completed' ? <CompletedSummary model={model} rt={rt} onReview={onReview} /> : null}
+                            {model.st !== 'completed' || model.showLeaveReview ? <NextMoveCard model={model} rt={rt} isActionLoading={isActionLoading} onDeliver={onDeliver} onRequestChanges={onRequestChanges} onAcceptAndPay={onAcceptAndPay} onDispute={onDispute} onCancel={onCancel} onFundEscrow={onFundEscrow} onReview={onReview} setActiveTab={setActiveTab} /> : null}
+                        </div>
+                        <div className="lg:col-span-1">
+                            <ContractPulse model={model} rt={rt} />
+                        </div>
                     </div>
                 ) : null}
                 {activeTab === 'files' ? <FilesTab model={model} fileFilter={fileFilter} setFileFilter={setFileFilter} userRole={userRole} onPreviewFile={openPreview} onDeliver={onDeliver} rt={rt} /> : null}
@@ -628,17 +643,17 @@ type ActionProps = {
 
 function CompletedSummary({ model, rt, onReview }: { model: WorkspaceModel; rt: RoleTheme; onReview: () => void }) {
     return (
-        <section className="rounded-[10px] border border-[#7F77DD]/30 bg-[#3C3489]/20 px-4 py-4">
-            <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#7F77DD]/15">
-                    <CheckCircle className="h-5 w-5 text-[#7F77DD]" />
+        <section className="rounded-[16px] border border-[var(--color-border-subtle)] bg-[#161719] px-5 py-5 shadow-sm">
+            <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[#9B8FF0]/10 ring-1 ring-[#9B8FF0]/20">
+                    <CheckCircle className="h-5 w-5 text-[#9B8FF0]" />
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className={labelClass}>Contract closed</p>
-                    <h3 className="mt-1 text-[15px] font-semibold text-[var(--color-text-primary)]">
+                    <h3 className="mt-1 text-[16px] font-bold text-[var(--color-text-primary)]">
                         {fmtAmount(model.amount)} released to freelancer
                     </h3>
-                    <div className="mt-2 flex flex-col gap-1 text-[13px] text-[var(--color-text-secondary)]">
+                    <div className="mt-2 flex flex-col gap-1 text-[13px] font-medium text-[var(--color-text-secondary)]">
                         {model.fundedAt && <p>• Escrow funded: {fmtDate(model.fundedAt)}</p>}
                         {model.deliverySubmittedAt && <p>• Delivery submitted: {fmtDate(model.deliverySubmittedAt)}</p>}
                     </div>
@@ -666,31 +681,18 @@ function ContractPulse({ model, rt }: { model: WorkspaceModel; rt: RoleTheme }) 
     ];
     return (
         <section className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
                 {stats.map((stat) => (
-                    <div key={stat.label} className="relative overflow-hidden rounded-[16px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-6 transition-all hover:border-[rgba(255,255,255,0.1)] hover:bg-[var(--color-bg-muted)]">
-                        <p className="text-[12px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">{stat.label}</p>
-                        <div className="mt-3 flex items-baseline gap-2">
-                            <span className={`text-[32px] font-black leading-none tracking-tight ${rt.accentText}`}>{stat.value}</span>
+                    <div key={stat.label} className="relative overflow-hidden rounded-[16px] border border-white/5 bg-[#161719] p-5 shadow-sm transition-all hover:border-white/10 hover:bg-[#1A1C1E]">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">{stat.label}</p>
+                        <div className="mt-2 flex items-baseline gap-2">
+                            <span className={`text-[24px] font-black leading-none tracking-tight ${rt.accentText}`}>{stat.value}</span>
                         </div>
-                        <p className="mt-2 text-[13px] font-medium text-[var(--color-text-secondary)]">{stat.hint}</p>
+                        <p className="mt-1.5 text-[12px] font-medium text-[var(--color-text-secondary)]">{stat.hint}</p>
                         {/* Decorative background glow */}
-                        <div className={`absolute -right-4 -top-4 h-24 w-24 rounded-full opacity-[0.03] blur-2xl ${rt.accentBg}`} />
+                        <div className={`absolute -right-4 -top-4 h-20 w-20 rounded-full opacity-[0.03] blur-2xl ${rt.accentBg}`} />
                     </div>
                 ))}
-            </div>
-            {/* Progress bar */}
-            <div className="rounded-[16px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-6">
-                <div className="mb-3 flex items-end justify-between">
-                    <div>
-                        <h4 className="text-[14px] font-bold text-[var(--color-text-primary)]">Contract Progress</h4>
-                        <p className="mt-0.5 text-[13px] text-[var(--color-text-tertiary)]">Based on completed milestones</p>
-                    </div>
-                    <span className={`text-[24px] font-black tracking-tight ${rt.accentText}`}>{model.progressPct}%</span>
-                </div>
-                <div className="h-3 w-full overflow-hidden rounded-full bg-[#0A0A0B] shadow-inner ring-1 ring-inset ring-white/5">
-                    <div className={`h-full rounded-full transition-all duration-1000 ease-out ${rt.accentBg}`} style={{ width: `${model.progressPct}%` }} />
-                </div>
             </div>
         </section>
     );
@@ -724,28 +726,22 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
 
     const showSecondaryActions = model.showClientReview;
 
-    // Derive a strong accent color for the hero icon bg
-    const iconBg = model.st === 'completed' ? 'bg-[#7F77DD]/20'
-        : model.st === 'delivery_submitted' && model.showClientReview ? `${rt.accentBg}/20`
-        : model.st === 'pending_payment' && !model.isEscrowFunded ? 'bg-[#E8A020]/20'
-        : 'bg-white/5';
-
     return (
-        <section className={`relative overflow-hidden rounded-[20px] border ${model.nextMove.tone}`}>
-            {/* Subtle top glow */}
-            <div className="absolute inset-x-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <section className="relative overflow-hidden rounded-[16px] border border-white/5 bg-[#161719] shadow-md">
+            {/* Subtle top glow from accent color */}
+            <div className="absolute inset-x-0 top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-50" />
 
             {/* Hero top: icon + label + title */}
-            <div className="p-8 sm:p-10">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8">
+            <div className="p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
                     {/* Large icon */}
-                    <div className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-[20px] ${iconBg} shadow-inner ring-1 ring-white/10`}>
-                        <span className="[&>svg]:h-10 [&>svg]:w-10">{model.nextMove.icon}</span>
+                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] ${model.nextMove.iconColor || 'bg-white/5 text-white/70'} shadow-inner ring-1`}>
+                        <span className="[&>svg]:h-6 [&>svg]:w-6">{model.nextMove.icon}</span>
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="text-[13px] font-bold uppercase tracking-[0.15em] text-[var(--color-text-tertiary)] mb-2">Current Status</p>
-                        <h3 className="text-[28px] sm:text-[32px] font-black leading-tight tracking-tight text-[var(--color-text-primary)]">{model.nextMove.title}</h3>
-                        <p className="mt-2 text-[16px] leading-relaxed text-[var(--color-text-secondary)] max-w-xl">{model.nextMove.body}</p>
+                        <p className={`text-[11px] font-bold uppercase tracking-[0.1em] mb-1 ${model.nextMove.accentColor || 'text-[var(--color-text-tertiary)]'}`}>Current Status</p>
+                        <h3 className="text-[20px] sm:text-[24px] font-bold leading-tight tracking-tight text-[var(--color-text-primary)]">{model.nextMove.title}</h3>
+                        <p className="mt-1 text-[13px] leading-relaxed text-[var(--color-text-secondary)] max-w-xl">{model.nextMove.body}</p>
                         
                         {/* Task 3.2: Show Revision Feedback */}
                         {model.st === 'revision_requested' && model.lastRevisionNote ? (
@@ -780,19 +776,19 @@ function NextMoveCard({ model, rt, isActionLoading, onDeliver, onAcceptAndPay, o
             </div>
 
             {/* Divider */}
-            <div className="h-px w-full bg-[var(--color-border-subtle)]" />
+            <div className="h-px w-full bg-white/5" />
 
             {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 p-6 sm:px-10 sm:py-6 bg-[#0A0A0B]/40">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 p-4 sm:px-6 sm:py-4 bg-[#0A0A0B]/40">
                 {/* Primary CTA */}
                 {action && model.nextMove.primaryLabel ? (
                     <button type="button" onClick={action} disabled={Boolean(isActionLoading)}
-                        className={`rounded-[10px] px-5 py-2.5 text-[15px] font-bold transition-colors disabled:opacity-60 ${rt.primaryBtn} ${focusRing} ${rt.focusRingColor}`}>
+                        className={`rounded-[8px] px-4 py-2 text-[13px] font-bold transition-colors disabled:opacity-60 ${rt.primaryBtn} ${focusRing} ${rt.focusRingColor}`}>
                         {isActionLoading ? 'Processing…' : model.nextMove.primaryLabel}
                     </button>
                 ) : isPendingEscrow ? (
                     <button type="button" onClick={() => onFundEscrow?.()}
-                        className={`rounded-[10px] px-5 py-2.5 text-[15px] font-bold transition-colors ${rt.primaryBtn} ${focusRing} ${rt.focusRingColor}`}>
+                        className={`rounded-[8px] px-4 py-2 text-[13px] font-bold transition-colors ${rt.primaryBtn} ${focusRing} ${rt.focusRingColor}`}>
                         Fund escrow now
                     </button>
                 ) : null}
@@ -1163,11 +1159,11 @@ function CompactEmpty({ icon, title, text }: { icon: ReactNode; title: string; t
     );
 }
 
-function PartyAvatar({ party, size = 'md' }: { party?: { full_name?: string; avatar_url?: string | null } | null; size?: 'md' | 'lg' }) {
-    const dim = size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
+function PartyAvatar({ party, size = 'md' }: { party?: { full_name?: string; avatar_url?: string | null } | null; size?: 'sm' | 'md' | 'lg' }) {
+    const dim = size === 'lg' ? 'h-10 w-10' : size === 'sm' ? 'h-7 w-7' : 'h-8 w-8';
     return (
         <div className={`relative flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]`}>
-            {party?.avatar_url ? <img src={party.avatar_url} alt={party.full_name || 'User'} className="h-full w-full object-cover" /> : <User className="h-4 w-4" />}
+            {party?.avatar_url ? <img src={party.avatar_url} alt={party.full_name || 'User'} className="h-full w-full object-cover" /> : <User className={size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />}
         </div>
     );
 }

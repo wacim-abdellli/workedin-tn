@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, MessageSquare, Users, PackageCheck, GitPullRequest, ShieldAlert, X, Upload, Paperclip, Trash2, XCircle } from 'lucide-react';
+import { ArrowLeft, AlertCircle, MessageSquare, Users, PackageCheck, GitPullRequest, ShieldAlert, X, Upload, Paperclip, Trash2, XCircle, Loader2 } from 'lucide-react';
 import { Header } from '../components/layout';
 import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
 import FundEscrow from '../components/payments/FundEscrow';
@@ -170,7 +170,7 @@ export default function ContractWorkspacePage() {
     const [reviewFiles, setReviewFiles] = useState<File[]>([]);
     const [finalFiles, setFinalFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+    const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0, currentBytes: 0, totalBytes: 0 });
     const deliverTextareaRef = useRef<HTMLTextAreaElement>(null);
     const changesTextareaRef = useRef<HTMLTextAreaElement>(null);
     const disputeTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -514,7 +514,11 @@ export default function ContractWorkspacePage() {
                 const path = `${uid}/${cid}/submissions/${kind}/${Date.now()}_${safeName}`;
                 const { error: uploadErr } = await supabase.storage.from('contract-files').upload(path, file, { upsert: false });
                 if (uploadErr) throw new Error(`Upload failed for ${file.name}: ${uploadErr.message}`);
-                setUploadProgress(prev => ({ ...prev, current: prev.current + 1 }));
+                setUploadProgress(prev => ({ 
+                    ...prev, 
+                    current: prev.current + 1,
+                    currentBytes: prev.currentBytes + file.size 
+                }));
                 return {
                     name: file.name,
                     storage_path: path,
@@ -525,7 +529,8 @@ export default function ContractWorkspacePage() {
             };
 
             const totalFiles = reviewFiles.length + finalFiles.length;
-            setUploadProgress({ current: 0, total: totalFiles });
+            const totalBytes = [...reviewFiles, ...finalFiles].reduce((sum, f) => sum + f.size, 0);
+            setUploadProgress({ current: 0, total: totalFiles, currentBytes: 0, totalBytes });
 
             // Upload sequentially or in small batches if total files are many.
             // Using a simple loop to update progress reliably
@@ -937,8 +942,9 @@ export default function ContractWorkspacePage() {
                             </button>
                             <button type="button" onClick={() => void handleSubmitDelivery()} disabled={isDelivering || isUploading || !deliverNote.trim() || reviewFiles.length === 0 || finalFiles.length === 0}
                                 className="inline-flex items-center gap-2 rounded-[10px] bg-[#9B8FF0] px-4 py-2 text-[14px] font-semibold text-[var(--color-bg-base)] transition-colors hover:bg-[#a99cf5] disabled:opacity-50">
+                                {isUploading || isDelivering ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                                 {isUploading 
-                                    ? `Uploading ${uploadProgress.current} / ${uploadProgress.total}…` 
+                                    ? `Uploading ${(uploadProgress.currentBytes / 1024 / 1024).toFixed(1)}MB / ${(uploadProgress.totalBytes / 1024 / 1024).toFixed(1)}MB…` 
                                     : isDelivering ? 'Submitting…' : `Submit delivery (${reviewFiles.length + finalFiles.length} files)`}
                             </button>
                         </div>
