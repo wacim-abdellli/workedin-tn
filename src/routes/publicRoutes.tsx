@@ -26,7 +26,7 @@ const FindFreelancers = lazy(() => import('@/pages/FindFreelancers'));
 const SearchResults = lazy(() => import('@/pages/SearchResults'));
 const FreelancerProfile = lazy(() => import('@/pages/FreelancerProfile'));
 const ClientProfile = lazy(() => import('@/pages/ClientProfile'));
-const NotFound = lazy(() => import('@/pages/NotFound'));
+
 
 export const publicRoutes: AppRouteDefinition[] = [
   defineRoute(
@@ -174,9 +174,5 @@ export const publicRoutes: AppRouteDefinition[] = [
       errorBoundary: true,
     },
     withErrorBoundary(withProtected(<ClientProfile />)),
-  ),
-  defineRoute(
-    { path: '*', page: 'NotFound', section: 'public', guard: 'public', errorBoundary: true },
-    withErrorBoundary(<NotFound />),
   ),
 ];

@@ -57,9 +57,20 @@ describe('currencyUtils', () => {
             error: expect.stringContaining('20'),
         });
 
-        expect(validateWithdrawalAmount(100, 50)).toEqual({
+        // Localized error message checks
+        expect(validateWithdrawalAmount(100, 50, 20, 'ar')).toEqual({
             valid: false,
-            error: expect.any(String),
+            error: 'المبلغ المطلوب أكبر من الرصيد المتاح',
+        });
+
+        expect(validateWithdrawalAmount(100, 50, 20, 'en')).toEqual({
+            valid: false,
+            error: 'Requested amount exceeds available balance',
+        });
+
+        expect(validateWithdrawalAmount(100, 50, 20, 'fr')).toEqual({
+            valid: false,
+            error: 'Le montant demandé dépasse le solde disponible',
         });
 
         expect(validateWithdrawalAmount(25, 50)).toEqual({

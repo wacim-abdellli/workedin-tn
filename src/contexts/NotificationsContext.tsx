@@ -33,12 +33,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
             const haystack = `${n.title} ${n.body}`.toLowerCase();
             
             // Client exclusive notifications
-            const isClientNotif = (n.type === 'proposal' || n.type === 'new_proposal') && 
-                (haystack.includes('عرض جديد') || haystack.includes('new proposal') || haystack.includes('submitted a proposal'));
+            const isClientNotif = n.link?.includes('role=client') || ((n.type === 'proposal' || n.type === 'new_proposal') && 
+                (haystack.includes('عرض جديد') || haystack.includes('new proposal') || haystack.includes('submitted a proposal')));
                 
             // Freelancer exclusive notifications
-            const isFreelancerNotif = n.type === 'proposal' && 
-                (haystack.includes('تم قبول العرض') || haystack.includes('proposal accepted') || haystack.includes('your proposal'));
+            const isFreelancerNotif = n.link?.includes('role=freelancer') || (n.type === 'proposal' && 
+                (haystack.includes('تم قبول العرض') || haystack.includes('proposal accepted') || haystack.includes('your proposal')));
 
             if (activeWorkspace === 'client' && isFreelancerNotif) return false;
             if (activeWorkspace === 'freelancer' && isClientNotif) return false;

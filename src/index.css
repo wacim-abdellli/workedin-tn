@@ -96,6 +96,14 @@
 
   /* Widget accent top-border on hover */
   --widget-accent-border: 3px solid var(--workspace-primary);
+
+  /* Single role accent API. Workspace classes override --workspace-primary;
+     these aliases keep components from hardcoding client/freelancer hues. */
+  --accent-color: var(--workspace-primary);
+  --accent-color-hover: var(--workspace-primary-hover);
+  --accent-color-soft: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  --accent-color-border: color-mix(in srgb, var(--accent-color) 28%, transparent);
+  --accent-color-shadow: color-mix(in srgb, var(--accent-color) 35%, transparent);
 }
 
 .dark {
@@ -238,6 +246,22 @@ button[aria-haspopup="listbox"]:focus-visible {
   border-color: var(--workspace-primary) !important;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--workspace-primary) 22%, transparent) !important;
   outline: none !important;
+}
+
+input.header-search-input,
+input.header-search-input.header-search-input.header-search-input.header-search-input.header-search-input,
+input.header-search-input:focus,
+input.header-search-input:focus-visible,
+input.header-search-input.header-search-input.header-search-input.header-search-input.header-search-input:focus,
+input.header-search-input.header-search-input.header-search-input.header-search-input.header-search-input:focus-visible {
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+input.header-search-input::placeholder {
+  color: rgb(255 255 255 / 0.25) !important;
 }
 
 /* Native select popup theming across the app */
@@ -777,10 +801,10 @@ button[aria-haspopup="listbox"]:focus-visible {
 
   /* ===== HEADER/NAV ===== */
   .header-icon-btn {
-    @apply inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200/60 dark:border-white/5;
-    @apply text-gray-500 transition-all duration-300;
-    @apply hover:bg-white hover:text-gray-900 hover:scale-[1.08] hover:shadow-sm hover:border-gray-200;
-    @apply dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40;
+    @apply inline-flex h-10 w-10 min-h-10 min-w-10 items-center justify-center rounded-full border border-transparent bg-transparent;
+    @apply text-gray-500 transition-colors duration-200;
+    @apply hover:bg-black/5 hover:text-gray-950;
+    @apply dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white;
   }
 
   .header-kbd {
@@ -792,22 +816,22 @@ button[aria-haspopup="listbox"]:focus-visible {
   }
 
   .header-nav-link {
-    @apply relative flex shrink-0 max-w-[200px] items-center gap-1.5 rounded-xl px-2.5 lg:px-3 py-2;
-    @apply text-sm font-medium whitespace-nowrap z-10;
+    @apply relative flex h-7 shrink-0 max-w-[200px] items-center rounded-full px-3.5;
+    @apply text-[13px] font-medium tracking-wide whitespace-nowrap z-10;
     @apply transition-all duration-200;
     @apply text-zinc-500 hover:text-zinc-900;
-    @apply dark:text-zinc-400 dark:hover:text-zinc-100;
+    @apply dark:text-zinc-400 dark:hover:text-zinc-200;
   }
 
   .header-nav-link::before {
     content: "";
-    @apply absolute inset-0 rounded-xl opacity-0 transition-all duration-200 scale-95;
-    background: rgba(0, 0, 0, 0.05);
+    @apply absolute inset-0 rounded-full opacity-0 transition-all duration-200 scale-95;
+    background: rgba(0, 0, 0, 0.04);
     z-index: -1;
   }
 
   .dark .header-nav-link::before {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .header-nav-link:hover::before {
@@ -817,30 +841,30 @@ button[aria-haspopup="listbox"]:focus-visible {
   .header-nav-link-active {
     @apply header-nav-link;
     color: var(--workspace-primary) !important;
+    font-weight: 600 !important;
   }
 
   .header-nav-link-active::before {
     opacity: 1 !important;
     scale: 1 !important;
-    background: color-mix(in srgb, var(--workspace-primary) 10%, transparent) !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
   }
 
-  .header-nav-link-active::after {
-    content: "";
-    @apply absolute -bottom-[17px] left-2 right-2 h-[2px] rounded-t-full;
-    background: var(--workspace-primary);
-    box-shadow: 0 0 8px color-mix(in srgb, var(--workspace-primary) 70%, transparent);
+  .dark .header-nav-link-active::before {
+    background: #18181b !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
   }
 
   .header-profile-trigger {
-    @apply flex h-9 min-w-0 max-w-[196px] items-center gap-2 rounded-full border border-gray-200/60 dark:border-white/5 ps-1 pe-2;
-    @apply transition-all duration-300;
-    @apply bg-transparent hover:bg-white hover:border-gray-200 hover:shadow-sm hover:scale-[1.03];
-    @apply dark:bg-transparent dark:hover:bg-zinc-800 dark:hover:border-white/10 dark:hover:shadow-lg dark:hover:shadow-black/40;
+    @apply flex h-10 min-w-0 max-w-[216px] items-center gap-2 rounded-full border border-transparent ps-1.5 pe-2.5;
+    @apply transition-colors duration-200;
+    @apply bg-transparent hover:bg-black/5 hover:text-gray-950;
+    @apply dark:bg-transparent dark:hover:bg-white/10 dark:hover:text-white;
   }
 
   .header-profile-trigger-open {
-    @apply shadow-sm scale-[1.03];
+    @apply shadow-sm;
     border-color: color-mix(
       in srgb,
       var(--workspace-primary) 28%,
@@ -1906,4 +1930,76 @@ html:not(.dark) .border-white\/10,
 html:not(.dark) .border-white\/\[0\.08\],
 html:not(.dark) .border-white\/\[0\.10\] {
   border-color: var(--color-border-default) !important;
+}
+
+html:not(.dark) .desktop-header .text-foreground {
+  color: #fff !important;
+}
+
+html:not(.dark) .desktop-header .text-white,
+html:not(.dark) .desktop-header .text-white\/90 {
+  color: rgb(255 255 255 / 0.9) !important;
+}
+
+html:not(.dark) .desktop-header .text-white\/80 {
+  color: rgb(255 255 255 / 0.8) !important;
+}
+
+html:not(.dark) .desktop-header .text-white\/70 {
+  color: rgb(255 255 255 / 0.7) !important;
+}
+
+html:not(.dark) .desktop-header .text-white\/60,
+html:not(.dark) .desktop-header .text-white\/55 {
+  color: rgb(255 255 255 / 0.55) !important;
+}
+
+html:not(.dark) .desktop-header .text-white\/50,
+html:not(.dark) .desktop-header .text-white\/45,
+html:not(.dark) .desktop-header .text-white\/40 {
+  color: rgb(255 255 255 / 0.4) !important;
+}
+
+html:not(.dark) .desktop-header .text-white\/35,
+html:not(.dark) .desktop-header .text-white\/30,
+html:not(.dark) .desktop-header .text-white\/25 {
+  color: rgb(255 255 255 / 0.3) !important;
+}
+
+html:not(.dark) .desktop-header .bg-white\/\[0\.03\] {
+  background-color: rgb(255 255 255 / 0.03) !important;
+}
+
+html:not(.dark) .desktop-header .bg-white\/\[0\.04\] {
+  background-color: rgb(255 255 255 / 0.04) !important;
+}
+
+html:not(.dark) .desktop-header .bg-white\/\[0\.05\],
+html:not(.dark) .desktop-header .hover\:bg-white\/\[0\.05\]:hover {
+  background-color: rgb(255 255 255 / 0.05) !important;
+}
+
+html:not(.dark) .desktop-header .hover\:bg-white\/\[0\.06\]:hover,
+html:not(.dark) .desktop-header .focus-within\:bg-white\/\[0\.06\]:focus-within {
+  background-color: rgb(255 255 255 / 0.06) !important;
+}
+
+html:not(.dark) .desktop-header .border-white\/\[0\.07\] {
+  border-color: rgb(255 255 255 / 0.07) !important;
+}
+
+html:not(.dark) .desktop-header .border-white\/\[0\.08\] {
+  border-color: rgb(255 255 255 / 0.08) !important;
+}
+
+html:not(.dark) .desktop-header .border-white\/\[0\.10\] {
+  border-color: rgb(255 255 255 / 0.10) !important;
+}
+
+html:not(.dark) .desktop-header .hover\:border-white\/\[0\.18\]:hover {
+  border-color: rgb(255 255 255 / 0.18) !important;
+}
+
+html:not(.dark) .desktop-header .focus-within\:border-white\/\[0\.25\]:focus-within {
+  border-color: rgb(255 255 255 / 0.25) !important;
 }

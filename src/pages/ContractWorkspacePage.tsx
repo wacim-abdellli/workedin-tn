@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, AlertCircle, MessageSquare, Users, PackageCheck, GitPullRequest, ShieldAlert, X, Upload, Paperclip, Trash2, XCircle, Loader2 } from 'lucide-react';
 import { Header } from '../components/layout';
 import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
+import { RequestChangesModal, OpenDisputeModal, CancelContractModal } from '../components/contracts/ContractModals';
 import FundEscrow from '../components/payments/FundEscrow';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -160,20 +161,15 @@ export default function ContractWorkspacePage() {
     const [deliverOpen, setDeliverOpen] = useState(false);
     const [deliverNote, setDeliverNote] = useState('');
     const [changesOpen, setChangesOpen] = useState(false);
-    const [changesNote, setChangesNote] = useState('');
     const [disputeOpen, setDisputeOpen] = useState(false);
-    const [disputeReason, setDisputeReason] = useState('');
     const [fundEscrowOpen, setFundEscrowOpen] = useState(false);
     const [confirmReleaseOpen, setConfirmReleaseOpen] = useState(false);
     const [cancelOpen, setCancelOpen] = useState(false);
-    const [cancelReason, setCancelReason] = useState('');
     const [reviewFiles, setReviewFiles] = useState<File[]>([]);
     const [finalFiles, setFinalFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0, currentBytes: 0, totalBytes: 0 });
     const deliverTextareaRef = useRef<HTMLTextAreaElement>(null);
-    const changesTextareaRef = useRef<HTMLTextAreaElement>(null);
-    const disputeTextareaRef = useRef<HTMLTextAreaElement>(null);
 
     const userRole: 'client' | 'freelancer' = useMemo(() => {
         const mode = activeMode ?? profile?.active_mode;
@@ -570,17 +566,13 @@ export default function ContractWorkspacePage() {
     };
 
     const handleRequestChanges = () => {
-        setChangesNote('');
         setChangesOpen(true);
-        setTimeout(() => changesTextareaRef.current?.focus(), 60);
     };
 
-    const handleSubmitChanges = async () => {
-        if (!changesNote.trim()) return;
+    const handleSubmitChanges = async (note: string) => {
         try {
-            await requestChanges(changesNote.trim());
+            await requestChanges(note);
             setChangesOpen(false);
-            setChangesNote('');
             await loadWorkspace();
             showToast(tx('contractWorkspace.revisionRequested', {}, 'Revision requested. The freelancer has been notified.'), 'success');
         } catch (err) {
@@ -589,17 +581,13 @@ export default function ContractWorkspacePage() {
     };
 
     const handleOpenDispute = () => {
-        setDisputeReason('');
         setDisputeOpen(true);
-        setTimeout(() => disputeTextareaRef.current?.focus(), 60);
     };
 
-    const handleSubmitDispute = async () => {
-        if (!disputeReason.trim()) return;
+    const handleSubmitDispute = async (reason: string) => {
         try {
-            await openDispute(disputeReason.trim());
+            await openDispute(reason);
             setDisputeOpen(false);
-            setDisputeReason('');
             await loadWorkspace();
             showToast(tx('contractWorkspace.disputeOpened', {}, 'Dispute opened. Our team will review the case.'), 'info');
         } catch (err) {
@@ -608,16 +596,13 @@ export default function ContractWorkspacePage() {
     };
 
     const handleCancel = () => {
-        setCancelReason('');
         setCancelOpen(true);
     };
 
-    const handleSubmitCancel = async () => {
-        if (!cancelReason.trim()) return;
+    const handleSubmitCancel = async (reason: string) => {
         try {
-            await cancelContract(cancelReason.trim());
+            await cancelContract(reason);
             setCancelOpen(false);
-            setCancelReason('');
             await loadWorkspace();
             showToast('Contract cancelled successfully.', 'success');
         } catch (err) {
@@ -729,118 +714,26 @@ export default function ContractWorkspacePage() {
             ) : null}
 
             {/* ─── Request Changes Modal ────────────────────────────────────── */}
-            {changesOpen ? (
-                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-changes-title" onClick={() => setChangesOpen(false)}>
-                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
-                        <div className="mb-4 flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#E8A020]/15">
-                                <GitPullRequest className="h-5 w-5 text-[#E8A020]" />
-                            </div>
-                            <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Request revision</p>
-                                <h2 id="modal-changes-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">What needs to change?</h2>
-                            </div>
-                        </div>
-                        <textarea
-                            ref={changesTextareaRef}
-                            value={changesNote}
-                            onChange={e => setChangesNote(e.target.value)}
-                            placeholder="Be specific — describe exactly what needs to be revised so the freelancer can act immediately…"
-                            rows={4}
-                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[var(--color-bg-base)] px-4 py-3 text-[14px] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:border-[#E8A020]/60 focus:outline-none focus:ring-1 focus:ring-[#E8A020]/40"
-                        />
-                        <div className="mt-4 flex justify-end gap-2">
-                            <button type="button" onClick={() => setChangesOpen(false)}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
-                                Cancel
-                            </button>
-                            <button type="button" onClick={() => void handleSubmitChanges()} disabled={!changesNote.trim()}
-                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#E8A020] px-4 py-2 text-[14px] font-semibold text-[var(--color-bg-base)] transition-colors hover:bg-[#f0aa28] disabled:opacity-50">
-                                Send revision request
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            ) : null}
+            <RequestChangesModal
+                isOpen={changesOpen}
+                onClose={() => setChangesOpen(false)}
+                onSubmit={handleSubmitChanges}
+            />
 
             {/* ─── Open Dispute Modal ───────────────────────────────────────── */}
-            {disputeOpen ? (
-                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-dispute-title" onClick={() => setDisputeOpen(false)}>
-                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
-                        <div className="mb-4 flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-red-500/15">
-                                <ShieldAlert className="h-5 w-5 text-red-400" />
-                            </div>
-                            <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Open dispute</p>
-                                <h2 id="modal-dispute-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">Describe the issue</h2>
-                            </div>
-                        </div>
-                        <div className="mb-4 rounded-[10px] border border-red-500/20 bg-red-500/10 px-4 py-3">
-                            <p className="text-[13px] leading-relaxed text-red-300">Opening a dispute freezes the contract and notifies our team. All messaging is locked while the case is reviewed. Use this only if revision requests have failed.</p>
-                        </div>
-                        <textarea
-                            ref={disputeTextareaRef}
-                            value={disputeReason}
-                            onChange={e => setDisputeReason(e.target.value)}
-                            placeholder="Explain clearly what went wrong, what you expected, and what you received…"
-                            rows={4}
-                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[var(--color-bg-base)] px-4 py-3 text-[14px] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:border-red-500/60 focus:outline-none focus:ring-1 focus:ring-red-500/40"
-                        />
-                        <div className="mt-4 flex justify-end gap-2">
-                            <button type="button" onClick={() => setDisputeOpen(false)} disabled={isDisputing}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40">
-                                Cancel
-                            </button>
-                            <button type="button" onClick={() => void handleSubmitDispute()} disabled={isDisputing || !disputeReason.trim()}
-                                className="inline-flex items-center gap-2 rounded-[10px] border border-red-500/40 bg-red-900/60 px-4 py-2 text-[14px] font-semibold text-red-200 transition-colors hover:bg-red-900 disabled:opacity-50">
-                                {isDisputing ? 'Opening dispute…' : 'Open dispute'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            ) : null}
+            <OpenDisputeModal
+                isOpen={disputeOpen}
+                onClose={() => setDisputeOpen(false)}
+                onSubmit={handleSubmitDispute}
+            />
 
             {/* ─── Cancel Contract Modal ──────────────────────────────────── */}
-            {cancelOpen ? (
-                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-cancel-title" onClick={() => setCancelOpen(false)}>
-                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
-                        <div className="mb-4 flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-orange-500/15">
-                                <XCircle className="h-5 w-5 text-orange-400" />
-                            </div>
-                            <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Cancel contract</p>
-                                <h2 id="modal-cancel-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">Why are you cancelling?</h2>
-                            </div>
-                        </div>
-                        {contract?.escrow_funded ? (
-                            <div className="mb-3 rounded-[8px] border border-orange-500/20 bg-orange-500/10 px-3 py-2">
-                                <p className="text-[12px] text-orange-300 leading-relaxed">
-                                    ⚠️ Escrow has been funded. Cancelling will trigger an <strong>automatic refund</strong> to the client.
-                                </p>
-                            </div>
-                        ) : null}
-                        <textarea
-                            value={cancelReason}
-                            onChange={e => setCancelReason(e.target.value)}
-                            placeholder="Explain why you're cancelling this contract…"
-                            rows={3}
-                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[var(--color-bg-base)] px-4 py-3 text-[14px] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:border-orange-500/60 focus:outline-none focus:ring-1 focus:ring-orange-500/40"
-                        />
-                        <div className="mt-4 flex justify-end gap-2">
-                            <button type="button" onClick={() => setCancelOpen(false)} disabled={isCancelling}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40">
-                                Go back
-                            </button>
-                            <button type="button" onClick={() => void handleSubmitCancel()} disabled={isCancelling || !cancelReason.trim()}
-                                className="inline-flex items-center gap-2 rounded-[10px] border border-orange-500/40 bg-orange-900/60 px-4 py-2 text-[14px] font-semibold text-orange-200 transition-colors hover:bg-orange-900 disabled:opacity-50">
-                                {isCancelling ? 'Cancelling…' : 'Cancel contract'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            ) : null}
+            <CancelContractModal
+                isOpen={cancelOpen}
+                onClose={() => setCancelOpen(false)}
+                onSubmit={handleSubmitCancel}
+                escrowFunded={contract?.escrow_funded === true}
+            />
 
             {/* ─── Submit Delivery Modal ───────────────────────────────────── */}
             {deliverOpen ? (

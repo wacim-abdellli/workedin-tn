@@ -632,7 +632,7 @@ function ProfileView({
   const heroActions = isOwner ? (
       <button
         type="button"
-        onClick={() => navigate('/settings?tab=freelancer')}
+        onClick={() => navigate('/settings?tab=profile')}
         className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-xl border transition-all duration-150"
         style={{ 
           color: 'var(--color-text-secondary)', 
@@ -677,9 +677,29 @@ function ProfileView({
             <div className="lg:col-span-2 flex flex-col gap-5">
 
                     <ProfileSection
+                        title="Skills"
+                        animationDelay={180}
+                        onEdit={isOwner ? () => navigate('/settings?tab=profile') : undefined}
+                        editLabel="Edit"
+                    >
+                        {strengths.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {strengths.map((item) => (
+                                    <ProfileTag key={item} label={item} accentColor="var(--workspace-primary)" />
+                                ))}
+                            </div>
+                        ) : (
+                            <ProfileEmptySlot 
+                                message="No skills added yet."
+                                cta={isOwner ? <Link to="/settings?tab=profile" className="text-xs font-medium" style={{ color: accentColor }}>+ Add skills</Link> : undefined} 
+                            />
+                        )}
+                    </ProfileSection>
+
+                    <ProfileSection
                         title="Tools"
                         animationDelay={240}
-                        onEdit={isOwner ? () => navigate('/settings?tab=freelancer') : undefined}
+                        onEdit={isOwner ? () => navigate('/settings?tab=profile') : undefined}
                         editLabel="Edit"
                     >
                         {tools.length > 0 ? (
@@ -691,7 +711,7 @@ function ProfileView({
                         ) : (
                             <ProfileEmptySlot 
                                 message="No tools added yet."
-                                cta={isOwner ? <Link to="/settings?tab=freelancer" className="text-xs font-medium" style={{ color: accentColor }}>+ Add tools</Link> : undefined} 
+                                cta={isOwner ? <Link to="/settings?tab=profile" className="text-xs font-medium" style={{ color: accentColor }}>+ Add tools</Link> : undefined} 
                             />
                         )}
                     </ProfileSection>

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, DollarSign, Wrench, Timer, Repeat, FileText } from 'lucide-react';
+import { Briefcase, DollarSign, Wrench, Timer, Repeat, FileText, Zap } from 'lucide-react';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import Input from '@/components/ui/Input';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { TOOL_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants/profileOptions';
+import { PREDEFINED_SKILLS } from '@/types';
 
 /** Extract a plain-text description from a stored jsonb preference field.
  *  The field may be a Record<string,unknown> or already a string.
@@ -39,6 +40,7 @@ export interface FreelancerFormData {
     weekly_availability_hours: string;
     revision_policy: string;
     project_preferences: string;
+    skills: string[];
 }
 
 interface FreelancerInfoFormProps {
@@ -50,6 +52,12 @@ interface FreelancerInfoFormProps {
 export function buildFreelancerInitialForm(
     fp: ReturnType<typeof import('@/contexts/AuthContext').useAuth>['freelancerProfile']
 ): FreelancerFormData {
+    const resolvedSkills = (fp?.skills || []).map(s => {
+        if (!s) return '';
+        if (typeof s === 'string') return s;
+        return (s as any).name || (s as any).id || '';
+    }).filter(Boolean);
+
     return {
         title: fp?.title || '',
         hourly_rate: fp?.hourly_rate?.toString() || '',
@@ -61,6 +69,7 @@ export function buildFreelancerInitialForm(
         weekly_availability_hours: fp?.weekly_availability_hours?.toString() || '',
         revision_policy: fp?.revision_policy || '',
         project_preferences: extractDescription(fp?.project_preferences as Record<string,unknown>),
+        skills: resolvedSkills,
     };
 }
 
@@ -125,6 +134,62 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                     onChange={e => set({ years_experience: e.target.value })}
                     placeholder="e.g. 3"
                 />
+            </div>
+
+            {/* Skills picker */}
+            <div className="rounded-xl border p-4 space-y-4" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-elevated)' }}>
+                <div className="flex items-center justify-between border-b pb-2" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                    <p className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+                        <Zap className="w-4 h-4 text-purple-400" />
+                        Skills you specialize in
+                    </p>
+                    <span className="text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">
+                        {form.skills.length}/10
+                    </span>
+                </div>
+                
+                <div className="space-y-4 max-h-72 overflow-y-auto pr-1">
+                    {Object.entries(
+                        PREDEFINED_SKILLS.reduce((groups, skill) => {
+                            const cat = skill.category || 'other';
+                            if (!groups[cat]) groups[cat] = [];
+                            groups[cat].push(skill);
+                            return groups;
+                        }, {} as Record<string, typeof PREDEFINED_SKILLS>)
+                    ).map(([category, skills]) => (
+                        <div key={category} className="space-y-2">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                                {category.replace(/_/g, ' ')}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {skills.map(skill => {
+                                    const isSelected = form.skills.includes(skill.id);
+                                    return (
+                                        <button
+                                            key={skill.id}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = form.skills;
+                                                const exists = current.includes(skill.id);
+                                                const next = exists
+                                                    ? current.filter(id => id !== skill.id)
+                                                    : current.length < 10 ? [...current, skill.id] : current;
+                                                set({ skills: next });
+                                            }}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 ${
+                                                isSelected
+                                                    ? 'border-purple-500/50 bg-purple-500/20 text-purple-200'
+                                                    : 'border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-purple-500/40 hover:text-purple-300'
+                                            }`}
+                                        >
+                                            {skill.name_en}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* Tools picker */}

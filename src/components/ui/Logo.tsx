@@ -42,6 +42,7 @@ export function Logo({
     : resolvedMode === 'freelancer'
     ? LOGO_ICON_PURPLE
     : LOGO_ICON_AMBER;
+  const accentClass = resolvedMode === 'freelancer' ? 'text-purple-400' : 'text-amber-400';
 
   // Icon-only variant (for loading, favicons, etc.)
   if (variant === 'mark') {
@@ -60,10 +61,6 @@ export function Logo({
 
   // Pill variant (compact with icon + text)
   if (variant === 'pill') {
-    const textColor = resolvedMode === 'freelancer'
-      ? 'text-purple-600 dark:text-purple-400'
-      : 'text-amber-600 dark:text-amber-500';
-
     return (
       <span className={`inline-flex shrink-0 items-center gap-2 ${className}`} aria-label="WorkedIn">
         <img
@@ -79,7 +76,7 @@ export function Logo({
             style={{ fontSize: cfg.fontSize * 0.9, letterSpacing: '0.02em' }}
           >Worked</span>
           <span
-            className={`font-black ${textColor}`}
+            className={`font-black ${accentClass}`}
             style={{ fontSize: cfg.fontSize * 1.1, letterSpacing: '0.05em' }}
           >In</span>
         </span>
@@ -88,10 +85,6 @@ export function Logo({
   }
 
   // Full variant (icon + text)
-  const textColor = resolvedMode === 'freelancer'
-    ? 'text-purple-600 dark:text-purple-400'
-    : 'text-amber-600 dark:text-amber-500';
-
   return (
     <span className={`inline-flex shrink-0 items-center ${className}`} aria-label="WorkedIn" style={{ gap: `${cfg.gap}px` }}>
       <img
@@ -107,7 +100,7 @@ export function Logo({
           style={{ fontSize: cfg.fontSize * 0.9, letterSpacing: '0.02em' }}
         >Worked</span>
         <span
-          className={`font-black ${textColor}`}
+          className={`font-black ${accentClass}`}
           style={{ fontSize: cfg.fontSize * 1.1, letterSpacing: '0.05em' }}
         >In</span>
       </span>

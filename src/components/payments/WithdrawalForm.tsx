@@ -18,7 +18,7 @@ import { useTranslation } from "../../i18n";
  * Allows freelancers to request withdrawal from their wallet
  */
 const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) => {
-    const { tx } = useTranslation();
+    const { tx, language } = useTranslation();
     const { showToast } = useToast();
     const [submitted, setSubmitted] = useState(false);
 
@@ -31,7 +31,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
     const [phoneNumber, setPhoneNumber] = useState('');
 
     const amountValue = parseFloat(amount) || 0;
-    const validation = validateWithdrawalAmount(amountValue, wallet.balance);
+    const validation = validateWithdrawalAmount(amountValue, wallet.balance, MIN_WITHDRAWAL_AMOUNT, language);
 
     // Withdrawal mutation with retry logic
     const withdrawalMutation = useMutation({

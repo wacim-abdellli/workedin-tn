@@ -21,15 +21,15 @@ type SearchItem = {
 const RECENT_KEY = 'WorkedIn-recent-searches'
 
 export default function SearchModal({ onClose }: SearchModalProps) {
-  const { user, activeMode } = useAuth()
+  const { activeMode } = useAuth()
   const { tx } = useTranslation()
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const role: Role = activeMode === 'client' ? 'client' : 'freelancer'
-  const accent = role === 'client' ? '#f97316' : '#8b5cf6'
-  const accentLight = role === 'client' ? 'rgba(249,115,22,0.12)' : 'rgba(139,92,246,0.12)'
-  const accentBorder = role === 'client' ? 'rgba(249,115,22,0.25)' : 'rgba(139,92,246,0.25)'
+  const accent = 'var(--accent-color)'
+  const accentLight = 'var(--accent-color-soft)'
+  const accentBorder = 'var(--accent-color-border)'
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchItem[]>([])

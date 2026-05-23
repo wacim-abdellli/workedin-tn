@@ -79,18 +79,39 @@ export function calculateNetAfterFee(amount: number, feePercentage = 0.05): numb
 export function validateWithdrawalAmount(
     amount: number,
     balance: number,
-    minAmount = 20
+    minAmount = 20,
+    language: Language = 'ar'
 ): { valid: boolean; error?: string } {
+    const messages = {
+        ar: {
+            greaterThanZero: 'المبلغ يجب أن يكون أكبر من صفر',
+            minAmount: `الحد الأدنى للسحب هو ${minAmount} د.ت`,
+            exceedsBalance: 'المبلغ المطلوب أكبر من الرصيد المتاح',
+        },
+        en: {
+            greaterThanZero: 'Amount must be greater than zero',
+            minAmount: `Minimum withdrawal amount is ${minAmount} TND`,
+            exceedsBalance: 'Requested amount exceeds available balance',
+        },
+        fr: {
+            greaterThanZero: 'Le montant doit être supérieur à zéro',
+            minAmount: `Le montant minimum de retrait est de ${minAmount} TND`,
+            exceedsBalance: 'Le montant demandé dépasse le solde disponible',
+        },
+    };
+
+    const activeMessages = messages[language] || messages.en;
+
     if (amount <= 0) {
-        return { valid: false, error: 'المبلغ يجب أن يكون أكبر من صفر' };
+        return { valid: false, error: activeMessages.greaterThanZero };
     }
 
     if (amount < minAmount) {
-        return { valid: false, error: `الحد الأدنى للسحب هو ${minAmount} د.ت` };
+        return { valid: false, error: activeMessages.minAmount };
     }
 
     if (amount > balance) {
-        return { valid: false, error: 'المبلغ المطلوب أكبر من الرصيد المتاح' };
+        return { valid: false, error: activeMessages.exceedsBalance };
     }
 
     return { valid: true };

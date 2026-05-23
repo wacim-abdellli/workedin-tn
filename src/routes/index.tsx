@@ -1,11 +1,14 @@
+import { lazy } from 'react';
 import { accountRoutes } from './accountRoutes';
 import { adminRoutes } from './adminRoutes';
 import { contractRoutes } from './contractRoutes';
 import { onboardingRoutes } from './onboardingRoutes';
 import { publicRoutes } from './publicRoutes';
-import { createRouteGraph, renderRouteDefinitions } from './routeDefinitions';
+import { createRouteGraph, renderRouteDefinitions, defineRoute, withErrorBoundary } from './routeDefinitions';
 import { workspaceRoutes } from './workspaceRoutes';
 import { ROUTES } from '@/lib/routes';
+
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 export const appRoutes = [
   ...publicRoutes,
@@ -14,6 +17,10 @@ export const appRoutes = [
   ...accountRoutes,
   ...contractRoutes,
   ...adminRoutes,
+  defineRoute(
+    { path: '*', page: 'NotFound', section: 'public', guard: 'public', errorBoundary: true },
+    withErrorBoundary(<NotFound />),
+  ),
 ];
 
 export const appRouteGraph = createRouteGraph(appRoutes);

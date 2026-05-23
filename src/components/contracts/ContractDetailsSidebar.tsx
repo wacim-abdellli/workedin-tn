@@ -281,7 +281,7 @@ export default function ContractDetailsSidebar({
         const isPendingPayment = st === 'pending_payment';
         const isCompleted = st === 'completed';
         const isEscrowFunded = contract.escrowFunded === true || Boolean(contract.fundedAt);
-        const showFreelancerDeliver = userRole === 'freelancer' && (isActive || isRevision) && !deliverySubmitted;
+        const showFreelancerDeliver = userRole === 'freelancer' && ((isActive && !deliverySubmitted) || isRevision);
         const showClientReview = userRole === 'client' && isUnderReview && deliverySubmitted;
         const showLeaveReview = isCompleted && !hasLeftReview;
         const showReviewConfirmation = isCompleted && hasLeftReview;
@@ -461,6 +461,7 @@ export default function ContractDetailsSidebar({
     };
 
     const rt = roleTheme(userRole);
+    const otherPartyRt = roleTheme(userRole === 'client' ? 'freelancer' : 'client');
 
     return (
         <div className="flex w-full flex-col bg-[var(--color-bg-base)] text-[var(--color-text-primary)]">
@@ -505,11 +506,11 @@ export default function ContractDetailsSidebar({
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-tertiary)] leading-none">
-                                    <span className={`inline-flex items-center rounded text-[10px] font-bold uppercase tracking-wider ${rt.accentText}`}>
-                                        {rt.roleLabel}
+                                    <span className={`inline-flex items-center rounded text-[10px] font-bold uppercase tracking-wider ${otherPartyRt.accentText}`}>
+                                        {userRole === 'client' ? 'Freelancer' : 'Client'}
                                     </span>
                                     <span>•</span>
-                                    <span className="truncate">with {model.otherParty?.full_name || 'counterparty'}</span>
+                                    <span className="truncate">{model.otherParty?.full_name || 'counterparty'}</span>
                                     {contract.job?.deadline ? (
                                         <>
                                             <span>•</span>

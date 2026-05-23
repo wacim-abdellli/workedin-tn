@@ -20,7 +20,7 @@ import { Header, Footer } from '../components/layout';
 import { useToast } from '../components/ui/Toast';
 import { useTranslation } from '../i18n';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import type { Skill } from '../types';
+import { PREDEFINED_SKILLS, type Skill } from '@/types';
 import { canSaveJob, getAccessMessage } from '../lib/marketplaceAccess';
 
 interface Job {
@@ -87,6 +87,7 @@ const BUDGET_OPTIONS = [
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest First' },
+  { value: 'best-match', label: 'Best Matches' },
   { value: 'budget_high', label: 'Budget: High to Low' },
   { value: 'budget_low', label: 'Budget: Low to High' },
   { value: 'proposals_high', label: 'Most Proposals' },
@@ -162,6 +163,54 @@ function getCategoryLabel(category: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function getSkillIdentifiers(skill: any): string[] {
+  if (!skill) return [];
+  const ids: string[] = [];
+  const predefined = PREDEFINED_SKILLS || [];
+  
+  if (typeof skill === 'string') {
+    const term = skill.trim().toLowerCase();
+    if (term) {
+      ids.push(term);
+      // Try to find in predefined skills
+      const pred = predefined.find(ps => 
+        ps.id.toLowerCase() === term || 
+        ps.name_en.toLowerCase() === term ||
+        ps.name_fr.toLowerCase() === term ||
+        ps.name_ar.toLowerCase() === term
+      );
+      if (pred) {
+        ids.push(pred.id.toLowerCase());
+        ids.push(pred.name_en.toLowerCase());
+        ids.push(pred.name_fr.toLowerCase());
+        ids.push(pred.name_ar.toLowerCase());
+      }
+    }
+  } else if (typeof skill === 'object') {
+    const id = skill.id || skill.name || '';
+    if (id) {
+      const idStr = String(id).trim().toLowerCase();
+      if (idStr) {
+        ids.push(idStr);
+        const pred = predefined.find(ps => ps.id.toLowerCase() === idStr);
+        if (pred) {
+          ids.push(pred.name_en.toLowerCase());
+          ids.push(pred.name_fr.toLowerCase());
+          ids.push(pred.name_ar.toLowerCase());
+        }
+      }
+    }
+    const name_en = skill.name_en || '';
+    if (name_en) ids.push(name_en.trim().toLowerCase());
+    const name_fr = skill.name_fr || '';
+    if (name_fr) ids.push(name_fr.trim().toLowerCase());
+    const name_ar = skill.name_ar || '';
+    if (name_ar) ids.push(name_ar.trim().toLowerCase());
+  }
+  
+  return Array.from(new Set(ids.filter(Boolean)));
+}
+
 function JobBoard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -200,6 +249,28 @@ function JobBoard() {
 
     setSearchParams(params, { replace: true });
   }, [filters, setSearchParams]);
+
+  // Sync URL params → filters state (so navbar links like /jobs?sort=best-match update the feed)
+  useEffect(() => {
+    const q = searchParams.get('q') || DEFAULT_FILTERS.search;
+    const cat = searchParams.get('cat')?.split(',').filter(Boolean) || DEFAULT_FILTERS.categories;
+    const type = (searchParams.get('type') as FilterState['jobType']) || DEFAULT_FILTERS.jobType;
+    const budget = searchParams.get('budget') || DEFAULT_FILTERS.budgetRange;
+    const sort = searchParams.get('sort') || DEFAULT_FILTERS.sortBy;
+
+    setFilters((prev) => {
+      if (
+        prev.search === q &&
+        JSON.stringify(prev.categories) === JSON.stringify(cat) &&
+        prev.jobType === type &&
+        prev.budgetRange === budget &&
+        prev.sortBy === sort
+      ) {
+        return prev; // no change, avoid re-render loop
+      }
+      return { search: q, categories: cat, jobType: type, budgetRange: budget, sortBy: sort };
+    });
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -263,8 +334,29 @@ function JobBoard() {
   });
 
   const jobs = useMemo<Job[]>(() => {
-    return jobsPages?.pages.flatMap((page) => page.data as Job[]) || [];
-  }, [jobsPages]);
+    const rawJobs = jobsPages?.pages.flatMap((page) => page.data as Job[]) || [];
+    if (filters.sortBy === 'best-match' && Array.isArray(freelancerProfile?.skills)) {
+      return [...rawJobs].sort((a, b) => {
+        const getMatchCount = (job: Job) => {
+          const requiredSkills = job.required_skills || [];
+          let count = 0;
+          requiredSkills.forEach((reqSkill) => {
+            const reqSkillIds = getSkillIdentifiers(reqSkill);
+            if (reqSkillIds.length === 0) return;
+            
+            const isMatch = freelancerProfile.skills?.some((fs) => {
+              const fsSkillIds = getSkillIdentifiers(fs);
+              return fsSkillIds.some(id => reqSkillIds.includes(id));
+            });
+            if (isMatch) count++;
+          });
+          return count;
+        };
+        return getMatchCount(b) - getMatchCount(a);
+      });
+    }
+    return rawJobs;
+  }, [jobsPages, filters.sortBy, freelancerProfile]);
 
   const isFreelancerViewer = Boolean(
     user?.id && ((profile?.active_mode ?? '') === 'freelancer' || freelancerProfile),
@@ -328,36 +420,6 @@ function JobBoard() {
     },
   });
 
-  const proposalJobIds = useMemo(() => new Set(jobEngagementState?.proposalJobIds ?? []), [jobEngagementState]);
-  const activeContractJobIds = useMemo(() => new Set(jobEngagementState?.activeContractJobIds ?? []), [jobEngagementState]);
-
-  const visibleJobs = useMemo(() => {
-    if (!isFreelancerViewer) return jobs;
-    // Hide only jobs where the freelancer has an ACTIVE contract (they're already hired).
-    // Jobs with pending proposals remain visible with an 'Applied' badge.
-    // Jobs with completed/cancelled contracts are shown again (can re-apply or browse).
-    return jobs.filter((job) => !activeContractJobIds.has(job.id));
-  }, [activeContractJobIds, isFreelancerViewer, jobs]);
-
-  const totalJobsCount = jobsPages?.pages?.[0]?.count ?? jobs.length;
-  const displayedCount = isFreelancerViewer ? visibleJobs.length : totalJobsCount;
-
-  // isEngagementReady: true when we have the data we need to safely filter jobs.
-  // We gate on jobEngagementState !== undefined (data exists), NOT on !isFetching.
-  // Reason: React Query takes 1 render to set isFetching=true after a query becomes enabled,
-  // creating a window where isFetching=false but data is still undefined — causing a flash.
-  const isEngagementReady =
-    !isFreelancerViewer ||              // clients never need engagement state
-    listedJobIds.length === 0 ||        // no jobs loaded yet, nothing to filter
-    jobEngagementState !== undefined;   // state is loaded (even if stale — refetch is bg)
-
-  // Show skeleton while the primary jobs query is running OR engagement state is not ready yet.
-  const showSkeleton = (isFetching && !isFetchingNextPage) || !isEngagementReady;
-  // Legacy alias used in a few conditions below
-  const isLoading = showSkeleton;
-  const selectedSortOption =
-    SORT_OPTIONS.find((option) => option.value === filters.sortBy) || SORT_OPTIONS[0];
-
   const { data: savedJobsData = [] } = useQuery({
     queryKey: ['saved-jobs', user?.id],
     queryFn: async () => {
@@ -380,6 +442,45 @@ function JobBoard() {
   const savedJobIds = useMemo(() => {
     return new Set(savedJobsData.map((job) => job.id));
   }, [savedJobsData]);
+
+  const proposalJobIds = useMemo(() => new Set(jobEngagementState?.proposalJobIds ?? []), [jobEngagementState]);
+  const activeContractJobIds = useMemo(() => new Set(jobEngagementState?.activeContractJobIds ?? []), [jobEngagementState]);
+
+  const visibleJobs = useMemo(() => {
+    if (!isFreelancerViewer) return jobs;
+    // Hide only jobs where the freelancer has an ACTIVE contract (they're already hired).
+    // Jobs with pending proposals remain visible with an 'Applied' badge.
+    // Jobs with completed/cancelled contracts are shown again (can re-apply or browse).
+    return jobs.filter((job) => !activeContractJobIds.has(job.id));
+  }, [activeContractJobIds, isFreelancerViewer, jobs]);
+
+  const displayedJobs = useMemo(() => {
+    if (filters.sortBy === 'saved') {
+      return savedJobsData;
+    }
+    return visibleJobs;
+  }, [filters.sortBy, savedJobsData, visibleJobs]);
+
+  const totalJobsCount = jobsPages?.pages?.[0]?.count ?? jobs.length;
+  const displayedCount = filters.sortBy === 'saved' ? savedJobsData.length : (isFreelancerViewer ? visibleJobs.length : totalJobsCount);
+
+  // isEngagementReady: true when we have the data we need to safely filter jobs.
+  // We gate on jobEngagementState !== undefined (data exists), NOT on !isFetching.
+  // Reason: React Query takes 1 render to set isFetching=true after a query becomes enabled,
+  // creating a window where isFetching=false but data is still undefined — causing a flash.
+  const isEngagementReady =
+    !isFreelancerViewer ||              // clients never need engagement state
+    listedJobIds.length === 0 ||        // no jobs loaded yet, nothing to filter
+    jobEngagementState !== undefined;   // state is loaded (even if stale — refetch is bg)
+
+  // Show skeleton while the primary jobs query is running OR engagement state is not ready yet.
+  const showSkeleton = (isFetching && !isFetchingNextPage) || !isEngagementReady;
+  // Legacy alias used in a few conditions below
+  const isLoading = showSkeleton;
+  const selectedSortOption =
+    SORT_OPTIONS.find((option) => option.value === filters.sortBy) || SORT_OPTIONS[0];
+
+
 
   const toggleSaveMutation = useMutation({
     mutationFn: async ({ jobId, isSaved }: { jobId: string; isSaved: boolean }) => {
@@ -631,68 +732,165 @@ function JobBoard() {
           {/* ── Main content ── */}
           <section className="lg:col-span-3 flex flex-col gap-5">
 
-            {/* Search + Sort bar */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 relative">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-subtle pointer-events-none" />
-                <input
-                  type="text"
-                  value={filters.search}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-                  placeholder={tx('pages.jobBoard.filters.searchPlaceholder', undefined, 'Search jobs...')}
-                  className="w-full rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all"
-                  onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--workspace-primary,#8b5cf6)'; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-default)'; }}
-                />
-              </div>
+            {/* Search bar */}
+            <div className="relative w-full">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-subtle pointer-events-none" />
+              <input
+                type="text"
+                value={filters.search}
+                onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
+                placeholder={tx('pages.jobBoard.filters.searchPlaceholder', undefined, 'Search jobs...')}
+                className="w-full rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
+                onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--workspace-primary,#8b5cf6)'; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-subtle)'; }}
+              />
+            </div>
 
-              <div ref={sortMenuRef} className="relative sm:w-52">
-                <button
-                  type="button"
-                  onClick={() => setIsSortMenuOpen((p) => !p)}
-                  className="w-full rounded-xl px-4 py-3 text-sm text-on-surface-muted flex items-center justify-between gap-3 transition-all"
-                  aria-haspopup="listbox"
-                  aria-expanded={isSortMenuOpen}
-                >
-                  <span className="truncate">{selectedSortOption.label}</span>
-                  <ChevronDown className={`w-4 h-4 shrink-0 transition-transform ${isSortMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
+            {/* Upwork-style Tabs Navigation */}
+            <div className="mt-2">
+              <h2 className="text-xl font-bold text-on-surface mb-3">Jobs you might like</h2>
+              
+              <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] mb-3">
+                <div className="flex gap-6">
+                  {([
+                    { id: 'best-match', label: 'Best Matches' },
+                    { id: 'newest', label: 'Most Recent' },
+                    { id: 'saved', label: 'Saved Jobs' },
+                  ] as const).map((tab) => {
+                    const isActive = 
+                      tab.id === 'best-match' ? filters.sortBy === 'best-match' :
+                      tab.id === 'saved' ? filters.sortBy === 'saved' :
+                      (filters.sortBy !== 'best-match' && filters.sortBy !== 'saved');
 
-                {isSortMenuOpen && (
-                  <div
-                    className="absolute z-30 mt-2 right-0 w-full min-w-[200px] rounded-xl p-1 shadow-2xl surface-card border"
-                    role="listbox"
-                  >
-                    {SORT_OPTIONS.map((option) => {
-                      const isSelected = option.value === filters.sortBy;
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          role="option"
-                          aria-selected={isSelected}
-                          onClick={() => { setFilters((p) => ({ ...p, sortBy: option.value })); setIsSortMenuOpen(false); }}
-                          className="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors"
-                          style={{
-                            background: isSelected ? 'color-mix(in srgb,var(--workspace-primary,#8b5cf6) 15%,transparent)' : 'transparent',
-                            color: isSelected ? 'var(--workspace-primary,#8b5cf6)' : 'var(--color-text-secondary)',
-                          }}
-                        >
-                          {option.label}
-                        </button>
-                      );
-                    })}
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => {
+                          setFilters((prev) => ({ ...prev, sortBy: tab.id }));
+                        }}
+                        className={`pb-3.5 text-sm font-semibold transition-all relative -mb-px border-b-2 ${
+                          isActive 
+                            ? 'text-[var(--workspace-primary,#8b5cf6)] border-[var(--workspace-primary,#8b5cf6)]' 
+                            : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
+                        }`}
+                      >
+                        {tab.id === 'saved' && savedJobIds.size > 0 ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            {tab.label}
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--workspace-primary,#8b5cf6)]/10 text-[var(--workspace-primary,#8b5cf6)] font-bold">
+                              {savedJobIds.size}
+                            </span>
+                          </span>
+                        ) : tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Secondary Sort dropdown (only if not on Saved Jobs) */}
+                {filters.sortBy !== 'saved' && (
+                  <div ref={sortMenuRef} className="relative mb-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsSortMenuOpen((p) => !p)}
+                      className="rounded-xl px-3 py-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1.5 border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] transition-all"
+                    >
+                      <span>Sort: {selectedSortOption.label}</span>
+                      <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${isSortMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {isSortMenuOpen && (
+                      <div className="absolute right-0 z-30 mt-1 w-48 rounded-xl p-1 shadow-2xl surface-card border animate-in fade-in slide-in-from-top-1 duration-150" style={{ background: '#111111', borderColor: 'var(--color-border-subtle)' }}>
+                        {SORT_OPTIONS.filter(opt => opt.value !== 'saved').map((option) => {
+                          const isSelected = option.value === filters.sortBy;
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => { setFilters((p) => ({ ...p, sortBy: option.value })); setIsSortMenuOpen(false); }}
+                              className="w-full text-left px-3 py-2 rounded-lg text-xs transition-colors hover:bg-white/[0.05]"
+                              style={{
+                                background: isSelected ? 'color-mix(in srgb,var(--workspace-primary,#8b5cf6) 15%,transparent)' : 'transparent',
+                                color: isSelected ? 'var(--workspace-primary,#8b5cf6)' : 'var(--color-text-secondary)',
+                              }}
+                            >
+                              {option.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
+
+              {/* Tab description text */}
+              <p className="text-xs text-[var(--color-text-tertiary)] mb-4">
+                {filters.sortBy === 'best-match' && "Browse jobs that match your experience to a client's hiring preferences. Ordered by most relevant."}
+                {filters.sortBy === 'saved' && "Keep track of the jobs you saved to apply later."}
+                {filters.sortBy !== 'best-match' && filters.sortBy !== 'saved' && "Browse the most recent jobs posted on the marketplace."}
+              </p>
             </div>
 
             {/* Count — hidden while loading to avoid flickering numbers */}
             {!showSkeleton && (
-              <p className="text-xs text-on-surface-subtle flex items-center gap-1.5">
+              <p className="text-xs text-on-surface-subtle flex items-center gap-1.5 mb-2">
                 <span className="font-semibold text-on-surface tabular-nums">{displayedCount}</span>
                 <span>{tx('pages.jobBoard.filters.showing', { count: displayedCount }, 'jobs')}</span>
               </p>
+            )}
+
+            {/* Best Matches Info Banner */}
+            {!showSkeleton && filters.sortBy === 'best-match' && (
+              <div 
+                className="rounded-xl border p-4 text-sm flex items-start gap-3 transition-all mb-2"
+                style={{
+                  background: 'color-mix(in srgb, var(--workspace-primary, #8b5cf6) 8%, transparent)',
+                  borderColor: 'color-mix(in srgb, var(--workspace-primary, #8b5cf6) 20%, transparent)',
+                }}
+              >
+                <SlidersHorizontal className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--workspace-primary, #8b5cf6)' }} />
+                <div className="flex-1">
+                  {!user?.id ? (
+                    <p style={{ color: 'var(--color-text-secondary)' }}>
+                      Log in as a freelancer and add skills to your profile to see jobs matching your expertise.
+                    </p>
+                  ) : !freelancerProfile ? (
+                    <p style={{ color: 'var(--color-text-secondary)' }}>
+                      You are in client mode. Switch to freelancer mode to view best matching jobs.
+                    </p>
+                  ) : !Array.isArray(freelancerProfile.skills) || freelancerProfile.skills.length === 0 ? (
+                    <div>
+                      <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                        You haven't set up skills on your profile yet!
+                      </p>
+                      <p className="mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                        We are currently showing jobs sorted by newest first. To see customized opportunities, add skills to your freelancer profile.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/settings?tab=profile')}
+                        className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
+                        style={{
+                          background: 'var(--workspace-primary, #8b5cf6)',
+                          color: '#ffffff',
+                        }}
+                      >
+                        Add Skills to Profile
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                        Sorting by skills match
+                      </p>
+                      <p className="mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
+                        Jobs with skills matching your profile are displayed at the top. Currently matching based on: <span className="font-medium text-on-surface">{(Array.isArray(freelancerProfile.skills) ? freelancerProfile.skills : []).map((s: any) => typeof s === 'string' ? s : s.name_en || s.name || '').filter(Boolean).join(', ')}</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
 
             {/* Loading skeletons — show while jobs OR engagement state are loading */}
@@ -717,16 +915,20 @@ function JobBoard() {
             )}
 
             {/* Empty state — only shown once everything is fully loaded */}
-            {!showSkeleton && !error && isEngagementReady && visibleJobs.length === 0 && (
+            {!showSkeleton && !error && isEngagementReady && displayedJobs.length === 0 && (
               <div className="rounded-2xl border border-surface surface-card p-10 text-center">
-                <p className="text-on-surface-muted">{tx('pages.jobBoard.empty.filtered', undefined, 'No jobs found for the selected filters.')}</p>
+                <p className="text-on-surface-muted">
+                  {filters.sortBy === 'saved'
+                    ? "You haven't saved any jobs yet."
+                    : tx('pages.jobBoard.empty.filtered', undefined, 'No jobs found for the selected filters.')}
+                </p>
               </div>
             )}
 
             {/* Job cards — render only once engagement state is ready for freelancers */}
-            {!error && isEngagementReady && visibleJobs.length > 0 && (
+            {!error && isEngagementReady && displayedJobs.length > 0 && (
               <div className="flex flex-col gap-3">
-                {visibleJobs.map((job) => {
+                {displayedJobs.map((job) => {
                   const isSaved = savedJobIds.has(job.id);
                   const isAlreadyApplied = isFreelancerViewer && proposalJobIds.has(job.id);
                   const skillLabels = (job.required_skills || []).map((s) => toSkillLabel(s, language, tx)).filter(Boolean).slice(0, 5);

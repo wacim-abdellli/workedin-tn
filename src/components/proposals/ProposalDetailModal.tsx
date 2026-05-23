@@ -610,26 +610,7 @@ export default function ProposalDetailPane({
             {/* ── STICKY BOTTOM ACTION BAR ── */}
             <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 pl-5 pr-16 md:pr-20 py-4 flex items-center justify-between gap-3 z-30 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] bg-[var(--color-bg-elevated)]">
                  
-                {hireConfirm ? (
-                    <div className="flex items-center gap-2 flex-1 flex-wrap">
-                        <span className="text-sm font-bold text-[var(--color-text-primary)]">
-                            Confirm hire?
-                        </span>
-                        <span className="text-xs text-[var(--color-text-primary)]/50">
-                            A contract will be created.
-                        </span>
-                        <button type="button" onClick={() => setHireConfirm(false)}
-                            className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-[var(--color-text-primary)]/70 hover:bg-white/5 transition-colors ml-auto">
-                            Cancel
-                        </button>
-                        <button type="button" onClick={() => { setHireConfirm(false); onHire(); }}
-                            disabled={isHiring}
-                            className="flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-bold transition-all hover:bg-emerald-400 disabled:opacity-60 bg-emerald-500 text-[#0a0a0a]">
-                            {isHiring ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                            Yes, Hire!
-                        </button>
-                    </div>
-                ) : rejectConfirm ? (
+                {rejectConfirm ? (
                     <div className="flex items-center gap-2 flex-1 flex-wrap">
                         <span className="text-sm font-bold text-rose-400">
                             Decline this proposal?
@@ -691,6 +672,95 @@ export default function ProposalDetailPane({
                     </div>
                 )}
             </div>
+
+            {hireConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="w-full max-w-md rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black p-6 shadow-2xl space-y-6 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+
+                        <div className="flex flex-col items-center text-center space-y-3">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                                <CheckCircle className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-xl font-black text-white">Hire Confirmation</h3>
+                            <p className="text-sm text-white/50">
+                                You are about to hire <span className="font-bold text-white/80">{freelancer.full_name}</span>.
+                            </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-white/5 bg-white/2 p-4 space-y-3">
+                            <div className="flex items-center gap-3">
+                                {freelancer.avatar_url ? (
+                                    <img
+                                        src={freelancer.avatar_url}
+                                        alt={freelancer.full_name}
+                                        className="w-12 h-12 rounded-xl object-cover border border-white/10"
+                                    />
+                                ) : (
+                                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-white/60 font-bold border border-white/10">
+                                        {freelancer.full_name.charAt(0)}
+                                    </div>
+                                )}
+                                <div>
+                                    <h4 className="text-sm font-bold text-white">{freelancer.full_name}</h4>
+                                    <p className="text-xs text-white/40">Professional Freelancer</p>
+                                </div>
+                            </div>
+
+                            <div className="h-px bg-white/5" />
+
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p className="text-xs text-white/40">Bid Amount</p>
+                                    <p className="font-black text-emerald-400">{proposal.bid_amount} TND</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-white/40">Delivery Time</p>
+                                    <p className="font-bold text-white/80">{proposal.delivery_time_days} days</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-3.5">
+                            <span className="text-lg mt-0.5">🔒</span>
+                            <div className="space-y-0.5">
+                                <p className="text-xs font-bold text-emerald-300">Funds held securely in Escrow</p>
+                                <p className="text-[11px] text-white/50 leading-relaxed">
+                                    Your budget remains protected in escrow. Funds are only released to the freelancer after you review and approve their work.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setHireConfirm(false)}
+                                className="flex-1 py-3 rounded-xl border border-white/10 text-sm font-semibold text-white/70 hover:bg-white/5 active:scale-95 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setHireConfirm(false);
+                                    onHire();
+                                }}
+                                disabled={isHiring}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-emerald-500 text-black text-sm font-bold hover:bg-emerald-400 active:scale-95 transition-all disabled:opacity-50"
+                            >
+                                {isHiring ? (
+                                    <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                                ) : (
+                                    <>
+                                        <CheckCircle className="w-4 h-4" />
+                                        Confirm & Hire
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {lightboxImage && (
                 <div 

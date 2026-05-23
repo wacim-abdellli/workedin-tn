@@ -89,7 +89,7 @@ export function LanguageMenu() {
             setLangOpen((open) => !open);
           }
         }}
-        className="flex h-7 items-center justify-center gap-1.5 rounded-xl px-2.5 text-[11px] font-bold uppercase tracking-wider transition-all"
+        className="flex h-8 min-w-8 items-center justify-center gap-1.5 rounded-xl px-2.5 text-[11px] font-bold uppercase tracking-wider transition-all"
         style={{ color: "var(--color-text-secondary)" }}
         aria-expanded={langOpen}
         aria-haspopup="menu"

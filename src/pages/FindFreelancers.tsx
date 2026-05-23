@@ -1,5 +1,5 @@
- import { useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bookmark, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, UserCircle2, X } from 'lucide-react';
 
@@ -69,6 +69,17 @@ interface ReviewStats {
 const CATEGORY_OPTIONS: FreelancerCategory[] = ['Design', 'Development', 'Writing', 'Marketing', 'Video', 'Consulting'];
 const SKILL_OPTIONS = ['React', 'Node.js', 'Logo Design', 'Translation', 'Content Writing', 'Figma', 'Motion', 'SEO'];
 
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+    useEffect(() => {
+        const handle = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(handle);
+    }, [value, delay]);
+
+    return debouncedValue;
+}
+
 export default function FindFreelancers() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -84,7 +95,28 @@ export default function FindFreelancers() {
         }
     }, []);
 
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+
+    const debouncedSearch = useDebounce(searchQuery, 300);
+
+    useEffect(() => {
+        const next = new URLSearchParams(searchParams);
+        const trimmed = debouncedSearch.trim();
+        if (trimmed) {
+            next.set('q', trimmed);
+        } else {
+            next.delete('q');
+        }
+        setSearchParams(next, { replace: true });
+    }, [debouncedSearch, setSearchParams]);
+
+    useEffect(() => {
+        const urlQ = searchParams.get('q') || '';
+        if (urlQ !== debouncedSearch) {
+            setSearchQuery(urlQ);
+        }
+    }, [searchParams, debouncedSearch]);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [sortBy, setSortBy] = useState('recommended');
     const [showFilters, setShowFilters] = useState(false);

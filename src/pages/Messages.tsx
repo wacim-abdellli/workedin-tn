@@ -65,6 +65,7 @@ import { useTranslation } from '../i18n';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { validateUploadSelection } from '../lib/uploadPolicy';
 import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
+import { ChatInputArea } from '../components/chat/ChatInputArea';
 import {
     normalizeContractStatus,
     resolveMessagingLifecyclePolicy,
@@ -97,190 +98,115 @@ import {
   formatAudioTime
 } from '../lib/audioProcessing';
 
-const MESSAGE_ATTACHMENT_ACCEPT = [
-    'image/*',
-    'application/pdf',
-    'audio/webm',
-    'audio/mp4',
-    'audio/mpeg',
-    'audio/wav',
-    'audio/ogg',
-    'video/webm',
-    'video/mp4',
-    '.doc',
-    '.docx',
-    '.txt',
-    '.gif',
-    '.m4a',
-    '.mp3',
-    '.wav',
-    '.ogg',
-    '.mp4',
-    '.webm',
-].join(',');
+import {
+    MESSAGE_ATTACHMENT_ACCEPT,
+    isImageAttachment,
+    isAudioAttachment,
+    formatAttachmentSize,
+    getAttachmentExtensionLabel,
+    resolveMessageAttachmentUrl,
+    openBlobAsPreviewOrDownload,
+    truncateText,
+    sanitizeContractTitle,
+    TERMINAL_STATUSES,
+    sortConversationsByActivity,
+    isDeletedMessage,
+    shouldHideAttachmentUrlText,
+    resolveContractSystemMessage,
+    getMessageDisplayText,
+    getMessageContractSystemKind,
+    getMessageReplyMetadata,
+    getThreadPreview,
+    getLifecycleBannerClassName,
+    isMissingSchemaColumnError,
+    isEnumValueUnsupportedError,
+    extractRpcConversationId,
+    isUuidLike,
+    type ThreadMessage,
+    type MessageAttachment,
+    type ContractSystemMessageKind,
+} from '../lib/messageUtils';
+import { CollapsibleMessageText } from '../components/chat/CollapsibleMessageText';
+import { ImageLightbox } from '../components/chat/ImageLightbox';
+import { MessageBubbleItem } from '../components/chat/MessageBubbleItem';
+import { ConversationListPanel } from '../components/chat/ConversationListPanel';
+import {
+    DeliverWorkModal,
+    AcceptAndPayModal,
+    DisputeModal,
+    ReviewModal,
+    ContractWorkspaceModal,
+    DeleteMessageModal,
+} from '../components/contracts/ContractModalsBundle';
+import { ContractContextBar } from '../components/chat/ContractContextBar';
+import { EscrowFundingBanner } from '../components/chat/EscrowFundingBanner';
+import { ContractCompletionBanner } from '../components/chat/ContractCompletionBanner';
+import FundEscrow from '../components/payments/FundEscrow';
 
-const extractMessageAttachmentPath = (value: string | null | undefined): string | null => {
-    const raw = String(value || '').trim();
-    if (!raw) return null;
-
-    if (!/^(https?:)/i.test(raw)) {
-        const normalized = raw.replace(/^\/+/, '');
-        const withoutPublicPrefix = normalized.replace(/^storage\/v1\/object\/public\/message_attachments\//i, '');
-        const objectPath = withoutPublicPrefix.startsWith('message_attachments/')
-            ? withoutPublicPrefix.slice('message_attachments/'.length)
-            : withoutPublicPrefix;
-        return objectPath || null;
-    }
-
-    try {
-        const parsed = new URL(raw);
-        const decodedPath = decodeURIComponent(parsed.pathname);
-        const marker = '/message_attachments/';
-        const markerIndex = decodedPath.indexOf(marker);
-        if (markerIndex === -1) return null;
-
-        const candidate = decodedPath.slice(markerIndex + marker.length);
-        return candidate || null;
-    } catch {
-        return null;
-    }
-};
-
-const truncateText = (text: string | null | undefined, max: number): string => {
-    if (!text) return '';
-    return text.length > max ? text.slice(0, max) + '...' : text;
-};
-
-const GENERIC_CONTRACT_TITLES = new Set([
-    'unknown project',
-    'contract project',
-    'untitled project',
-    'untitled job',
-    'unknown job',
-]);
-
-const sanitizeContractTitle = (value: string | null | undefined): string => {
-    const normalized = String(value || '').trim();
-    if (!normalized) return '';
-
-    return GENERIC_CONTRACT_TITLES.has(normalized.toLowerCase()) ? '' : normalized;
-};
-
-type MessageAttachment = NonNullable<Message['attachments']>[number];
-
-const isImageAttachment = (attachment: MessageAttachment) =>
-    attachment.type?.startsWith('image/') || /\.(png|jpe?g|gif|webp|avif|svg)$/i.test(attachment.name || '');
-
-const isAudioAttachment = (attachment: MessageAttachment) =>
-    attachment.type?.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|webm)$/i.test(attachment.name || '');
-
-const formatAttachmentSize = (size: string | number | null | undefined) => {
-    const parsedSize = typeof size === 'string' ? Number(size) : size;
-    if (!Number.isFinite(parsedSize) || !parsedSize || parsedSize <= 0) return null;
-    if (parsedSize < 1024) return `${parsedSize} B`;
-    if (parsedSize < 1024 * 1024) return `${(parsedSize / 1024).toFixed(1)} KB`;
-    return `${(parsedSize / (1024 * 1024)).toFixed(1)} MB`;
-};
-
-const getAttachmentExtensionLabel = (name: string | null | undefined, mimeType: string | null | undefined) => {
-    const rawName = String(name || '').trim();
-    if (rawName.includes('.')) {
-        const ext = rawName.split('.').pop();
-        if (ext) return ext.toUpperCase();
-    }
-
-    const normalizedMimeType = normalizeMimeType(mimeType);
-    if (normalizedMimeType.includes('/')) {
-        return normalizedMimeType.split('/')[1]?.toUpperCase() || 'FILE';
-    }
-
-    return 'FILE';
-};
-
+import {
+    type ReplyMetadata,
+    parseReplyMetadataFromContent,
+    serializeReplyMetadataIntoContent,
+} from '../lib/messageReplies';
 import { MessageAudioPlayer } from '../components/chat/MessageAudioPlayer';
-const resolveMessageAttachmentUrl = (url: string | null | undefined) => {
-    const raw = String(url || '').trim();
-    if (!raw) return '';
-    if (/^(https?:|blob:|data:)/i.test(raw)) return raw;
 
-    const normalized = raw.replace(/^\/+/, '');
-    const withoutPublicPrefix = normalized.replace(/^storage\/v1\/object\/public\/message_attachments\//i, '');
-    const objectPath = withoutPublicPrefix.startsWith('message_attachments/')
-        ? withoutPublicPrefix.slice('message_attachments/'.length)
-        : withoutPublicPrefix;
+// ─── Local-only session / cache constants ────────────────────────────────────
+const MAX_CACHED_CONVERSATIONS = 50;
+const MAX_CACHED_MESSAGES = 200;
+const ENABLE_MESSAGES_SESSION_CACHE = false;
 
-    if (!objectPath) return raw;
+const getConversationsCacheKey = (userId: string, modeKey: string) => `messages:conversations:${userId}:${modeKey}`;
+const getMessagesCacheKey = (conversationId: string) => `messages:thread:${conversationId}`;
 
-    return supabase.storage
-        .from('message_attachments')
-        .getPublicUrl(objectPath)
-        .data.publicUrl;
+const resolveConversationScopes = (activeMode: string | null | undefined): ConversationScope[] => {
+    if (activeMode === 'freelancer') return ['freelancer', 'contract', 'shared'];
+    if (activeMode === 'client') return ['client', 'contract', 'shared'];
+    return ['client', 'freelancer', 'contract', 'shared'];
 };
 
-const openBlobAsPreviewOrDownload = (blob: Blob, fileName: string, canPreviewInTab: boolean) => {
-    const objectUrl = URL.createObjectURL(blob);
+const isConversationVisibleInMode = (
+    conversation: Conversation,
+    userId: string | undefined,
+    activeMode: string | null | undefined,
+) => {
+    if (!userId) return true;
+    if (activeMode !== 'client' && activeMode !== 'freelancer') return true;
 
-    if (canPreviewInTab) {
-        const openedWindow = window.open(objectUrl, '_blank', 'noopener,noreferrer');
-        if (!openedWindow) {
-            const link = document.createElement('a');
-            link.href = objectUrl;
-            link.download = fileName;
-            link.rel = 'noopener noreferrer';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    } else {
-        const link = document.createElement('a');
-        link.href = objectUrl;
-        link.download = fileName;
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const isParticipant1 = conversation.participant_1 === userId;
+    const myInbox = isParticipant1 ? conversation.inbox_participant_1 : conversation.inbox_participant_2;
+
+    if (myInbox === 'client' || myInbox === 'freelancer' || myInbox === 'shared') {
+        return myInbox === activeMode || myInbox === 'shared';
     }
+    if (myInbox === 'contract') return true;
 
-    window.setTimeout(() => {
-        URL.revokeObjectURL(objectUrl);
-    }, 60_000);
+    const scope = conversation.conversation_scope;
+    if (scope === 'shared') return true;
+    if (scope === 'client' || scope === 'freelancer') return scope === activeMode;
+    if (scope === 'contract') return true;
+
+    return true;
 };
 
-type ThreadMessage = Message & {
-    status?: 'sending' | 'failed';
+const resolveModeCacheKey = (activeMode: string | null | undefined) => {
+    if (activeMode === 'client' || activeMode === 'freelancer') return activeMode;
+    return 'all';
 };
 
-const CollapsibleMessageText = ({ text, isDeleted, isOwnMessage }: { text: string, isDeleted: boolean, isOwnMessage: boolean }) => {
-    const { tx } = useTranslation();
-    const [isExpanded, setIsExpanded] = useState(false);
-    const MAX_LENGTH = 300;
-
-    if (!text || text.length <= MAX_LENGTH) {
-        return (
-            <p className={`whitespace-pre-wrap break-words ${isDeleted ? 'italic leading-tight' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'break-word', wordWrap: 'break-word' }}>
-                {text}
-            </p>
-        );
-    }
-
-    const displayText = isExpanded ? text : `${text.slice(0, MAX_LENGTH)}...`;
-
-    return (
-        <div>
-            <p className={`whitespace-pre-wrap break-words ${isDeleted ? 'italic leading-tight' : ''}`} style={{ wordBreak: 'break-word', overflowWrap: 'break-word', wordWrap: 'break-word' }}>
-                {displayText}
-            </p>
-            <button
-                type="button"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className={`mt-1 text-[11px] font-semibold tracking-wide uppercase opacity-70 hover:opacity-100 transition-opacity ${isOwnMessage ? 'text-white' : 'text-amber-500'}`}
-            >
-                {isExpanded ? tx('pages.messages.seeLess', {}, 'See less') : tx('pages.messages.seeMore', {}, 'See more')}
-            </button>
-        </div>
-    );
+const readSessionCache = <T,>(key: string): T | null => {
+    if (!ENABLE_MESSAGES_SESSION_CACHE) return null;
+    try {
+        const raw = sessionStorage.getItem(key);
+        return raw ? JSON.parse(raw) as T : null;
+    } catch { return null; }
 };
 
+const writeSessionCache = (key: string, value: unknown) => {
+    if (!ENABLE_MESSAGES_SESSION_CACHE) return;
+    try { sessionStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
+};
+
+// ─── Domain-local types ───────────────────────────────────────────────────────
 type ContractSessionMeta = {
     id: string;
     status: string | null;
@@ -344,252 +270,6 @@ type ContractSharedFile = {
     senderName: string;
 };
 
-import {
-  type ReplyMetadata,
-  parseReplyMetadataFromContent,
-  serializeReplyMetadataIntoContent
-} from '../lib/messageReplies';
-const MAX_CACHED_CONVERSATIONS = 50;
-const MAX_CACHED_MESSAGES = 200;
-const ENABLE_MESSAGES_SESSION_CACHE = false;
-
-const getConversationsCacheKey = (userId: string, modeKey: string) => `messages:conversations:${userId}:${modeKey}`;
-const getMessagesCacheKey = (conversationId: string) => `messages:thread:${conversationId}`;
-
-const resolveConversationScopes = (activeMode: string | null | undefined): ConversationScope[] => {
-    if (activeMode === 'freelancer') return ['freelancer', 'contract', 'shared'];
-    if (activeMode === 'client') return ['client', 'contract', 'shared'];
-    return ['client', 'freelancer', 'contract', 'shared'];
-};
-
-const isConversationVisibleInMode = (
-    conversation: Conversation,
-    userId: string | undefined,
-    activeMode: string | null | undefined,
-) => {
-    if (!userId) return true;
-    if (activeMode !== 'client' && activeMode !== 'freelancer') return true;
-
-    const isParticipant1 = conversation.participant_1 === userId;
-    const myInbox = isParticipant1
-        ? conversation.inbox_participant_1
-        : conversation.inbox_participant_2;
-
-    // Prefer per-participant inbox columns when present.
-    if (myInbox === 'client' || myInbox === 'freelancer' || myInbox === 'shared') {
-        return myInbox === activeMode || myInbox === 'shared';
-    }
-    // Legacy fallback for rows that still need role-specific inbox repair.
-    if (myInbox === 'contract') return true;
-
-    // Legacy fallback when inbox columns are absent.
-    const scope = conversation.conversation_scope;
-    if (scope === 'shared') return true;
-    if (scope === 'client' || scope === 'freelancer') return scope === activeMode;
-    if (scope === 'contract') return true;
-
-    return true;
-};
-
-const resolveModeCacheKey = (activeMode: string | null | undefined) => {
-    if (activeMode === 'client' || activeMode === 'freelancer') return activeMode;
-    return 'all';
-};
-
-const readSessionCache = <T,>(key: string): T | null => {
-    if (!ENABLE_MESSAGES_SESSION_CACHE) return null;
-    try {
-        const raw = sessionStorage.getItem(key);
-        return raw ? JSON.parse(raw) as T : null;
-    } catch {
-        return null;
-    }
-};
-
-const writeSessionCache = (key: string, value: unknown) => {
-    if (!ENABLE_MESSAGES_SESSION_CACHE) return;
-    try {
-        sessionStorage.setItem(key, JSON.stringify(value));
-    } catch {
-        // Ignore session storage write failures.
-    }
-};
-
-const TERMINAL_STATUSES = new Set(['completed', 'cancelled', 'canceled', 'disputed']);
-
-const sortConversationsByActivity = (items: Conversation[], contractStatusById: Record<string, string> = {}) => {
-    return [...items].sort((a, b) => {
-        const aStatus = a.contract_id ? contractStatusById[a.contract_id] ?? '' : '';
-        const bStatus = b.contract_id ? contractStatusById[b.contract_id] ?? '' : '';
-        const aTerminal = TERMINAL_STATUSES.has(aStatus);
-        const bTerminal = TERMINAL_STATUSES.has(bStatus);
-        // Terminal conversations always sink to the bottom
-        if (aTerminal !== bTerminal) return aTerminal ? 1 : -1;
-        // Within same group: sort by last activity
-        return new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime();
-    });
-};
-
-const isDeletedMessage = (message: ThreadMessage | null | undefined) => Boolean(message?.is_deleted);
-
-const normalizeComparableUrl = (value: string) => (
-    value
-        .trim()
-        .replace(/[?#].*$/, '')
-        .replace(/\/+$/, '')
-);
-
-const shouldHideAttachmentUrlText = (message: ThreadMessage | null | undefined) => {
-    if (!message || isDeletedMessage(message)) return false;
-
-    const content = parseReplyMetadataFromContent(message.content).bodyText.trim();
-    if (!content || !/^https?:\/\/\S+$/i.test(content)) return false;
-
-    const attachments = message.attachments ?? [];
-    if (attachments.length === 0) return false;
-
-    const normalizedContent = normalizeComparableUrl(content);
-    return attachments.some((attachment) => {
-        if (!attachment.url) return false;
-        return normalizeComparableUrl(attachment.url) === normalizedContent;
-    });
-};
-
-type ContractSystemMessageKind = 'delivery' | 'revision_requested' | 'contract_completed' | 'dispute_opened' | 'review_left';
-
-const resolveContractSystemMessage = (rawBodyText: string): { kind: ContractSystemMessageKind; text: string } | null => {
-    const trimmed = rawBodyText.trim();
-    if (!trimmed) return null;
-
-    const markerMatch = trimmed.match(/^\[\[([a-z_]+)\]\]\s*(.*)$/i);
-    if (!markerMatch) return null;
-
-    const marker = markerMatch[1].toLowerCase();
-    const details = markerMatch[2]?.trim() || '';
-
-    if (marker === 'delivery') {
-        return {
-            kind: 'delivery',
-            text: details || 'Work delivered and ready for review',
-        };
-    }
-
-    if (marker === 'revision_requested') {
-        return {
-            kind: 'revision_requested',
-            text: details || 'Revision requested by client',
-        };
-    }
-
-    if (marker === 'contract_completed') {
-        return {
-            kind: 'contract_completed',
-            text: details || 'Contract completed and payment released',
-        };
-    }
-
-    if (marker === 'dispute_opened') {
-        return {
-            kind: 'dispute_opened',
-            text: details || 'Dispute opened for this contract',
-        };
-    }
-
-    if (marker === 'review_left') {
-        return {
-            kind: 'review_left',
-            text: details || 'Review submitted',
-        };
-    }
-
-    return null;
-};
-
-const getMessageDisplayText = (message: ThreadMessage | null | undefined, deletedLabel: string) => {
-    if (!message) return null;
-    if (isDeletedMessage(message)) return deletedLabel;
-
-    const bodyText = parseReplyMetadataFromContent(message.content).bodyText;
-    const contractSystemMessage = resolveContractSystemMessage(bodyText);
-    return contractSystemMessage?.text || bodyText;
-};
-
-const getMessageContractSystemKind = (message: ThreadMessage | null | undefined): ContractSystemMessageKind | null => {
-    if (!message || isDeletedMessage(message)) return null;
-    return resolveContractSystemMessage(parseReplyMetadataFromContent(message.content).bodyText)?.kind || null;
-};
-
-const getMessageReplyMetadata = (message: ThreadMessage | null | undefined) => {
-    if (!message || isDeletedMessage(message)) return null;
-    return parseReplyMetadataFromContent(message.content).replyMetadata;
-};
-
-const getThreadPreview = (threadMessages: ThreadMessage[], deletedLabel: string) => {
-    const lastMessage = threadMessages[threadMessages.length - 1] ?? null;
-    const rawPreviewText = getMessageDisplayText(lastMessage, deletedLabel)?.trim() || '';
-
-    let resolvedPreviewText: string | null = rawPreviewText;
-
-    if (!resolvedPreviewText && lastMessage && !isDeletedMessage(lastMessage)) {
-        const lastMessageAttachments = lastMessage.attachments ?? [];
-        if (lastMessageAttachments.some((attachment) => isAudioAttachment(attachment))) {
-            resolvedPreviewText = 'Audio note';
-        } else if (lastMessageAttachments.some((attachment) => isImageAttachment(attachment))) {
-            resolvedPreviewText = 'Image';
-        } else if (lastMessageAttachments.length > 0) {
-            resolvedPreviewText = 'Attachment';
-        }
-    }
-
-    return {
-        last_message_text: resolvedPreviewText,
-        last_message_at: lastMessage?.created_at ?? null,
-    };
-};
-
-const getLifecycleBannerClassName = (tone: MessagingPolicyTone) => {
-    switch (tone) {
-        case 'success':
-            return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200';
-        case 'warning':
-            return 'border-amber-500/40 bg-amber-500/10 text-amber-100';
-        case 'danger':
-            return 'border-red-500/40 bg-red-500/10 text-red-100';
-        case 'info':
-            return 'border-blue-500/40 bg-blue-500/10 text-blue-100';
-        case 'none':
-        default:
-            return 'border-surface surface-sunken text-on-surface-muted';
-    }
-};
-
-const isMissingSchemaColumnError = (error: unknown, tableName: string, columnName: string): boolean => {
-    if (!error || typeof error !== 'object') return false;
-    const candidate = error as { message?: unknown };
-    const message = typeof candidate.message === 'string' ? candidate.message.toLowerCase() : '';
-    if (
-        message.includes('could not find')
-        && message.includes('schema cache')
-        && message.includes(tableName.toLowerCase())
-        && message.includes(columnName.toLowerCase())
-    ) {
-        return true;
-    }
-
-    return message.includes('does not exist')
-        && message.includes(tableName.toLowerCase())
-        && message.includes(columnName.toLowerCase());
-};
-
-const isEnumValueUnsupportedError = (error: unknown, enumName: string, enumValue: string): boolean => {
-    if (!error || typeof error !== 'object') return false;
-    const candidate = error as { message?: unknown };
-    const message = typeof candidate.message === 'string' ? candidate.message.toLowerCase() : '';
-    return message.includes('invalid input value for enum')
-        && message.includes(enumName.toLowerCase())
-        && message.includes(enumValue.toLowerCase());
-};
-
 type ContractConversationLookupRow = {
     id: string;
     participant_1: string;
@@ -605,24 +285,6 @@ type ContractConversationLookupRow = {
     inbox_participant_1?: string | null;
     inbox_participant_2?: string | null;
 };
-
-const extractRpcConversationId = (payload: unknown): string | null => {
-    if (typeof payload === 'string' && payload.trim().length > 0) return payload;
-    if (payload && typeof payload === 'object') {
-        const candidate = payload as { id?: unknown; conversation_id?: unknown };
-        if (typeof candidate.id === 'string' && candidate.id.trim().length > 0) return candidate.id;
-        if (typeof candidate.conversation_id === 'string' && candidate.conversation_id.trim().length > 0) return candidate.conversation_id;
-    }
-    return null;
-};
-
-const UUID_LIKE_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-const isUuidLike = (value: string | null | undefined): value is string => {
-    if (!value) return false;
-    return UUID_LIKE_REGEX.test(String(value).trim());
-};
-
 const hydrateConversationRow = async (
     userId: string,
     row: ContractConversationLookupRow,
@@ -1008,6 +670,52 @@ function MessagesComponent() {
         }
     }, [contractStatusById]);
 
+    const selectedContractId = selectedConversation?.contract_id || null;
+    const selectedContractMeta = selectedContractId ? contractSessionMetaById[selectedContractId] : null;
+    const selectedWorkspaceContractId = selectedContractMeta?.linked_contract_id || selectedContractId;
+    const isContractSession = Boolean(selectedContractId);
+    const activeWorkspace = activeMode ?? profile?.active_mode;
+    const isFreelancerWorkspace = activeWorkspace === 'freelancer';
+    const conversationWorkspaceLabel = useMemo(() => {
+        if (activeWorkspace === 'client') {
+            return tx('pages.messages.clientInboxLabel', undefined, 'Client inbox');
+        }
+
+        if (activeWorkspace === 'freelancer') {
+            return tx('pages.messages.freelancerInboxLabel', undefined, 'Freelancer inbox');
+        }
+
+        return tx('pages.messages.allConversationsLabel', undefined, 'All conversations');
+    }, [activeWorkspace, tx]);
+
+    const selectedContractUserRole: 'client' | 'freelancer' = useMemo(() => {
+        if (activeWorkspace === 'client') return 'client';
+        if (activeWorkspace === 'freelancer') return 'freelancer';
+
+        if (selectedContractMeta?.client_id && selectedContractMeta.client_id === user?.id) {
+            return 'client';
+        }
+
+        return 'freelancer';
+    }, [activeWorkspace, selectedContractMeta?.client_id, user?.id]);
+
+    const selectedContractStatus = selectedContractId
+        ? (contractStatusById[selectedContractId] ?? normalizeContractStatus(selectedContractMeta?.status))
+        : null;
+
+    const selectedContractMilestones = selectedContractId
+        ? (milestonesByContractId[selectedContractId] ?? [])
+        : [];
+
+    const selectedContractHasReview = selectedContractId
+        ? (hasReviewedContractById[selectedContractId] ?? false)
+        : true;
+    const selectedContractRevisionCount = Number(selectedContractMeta?.revision_requests_count ?? 0);
+    const selectedContractRevisionLimit = Number(selectedContractMeta?.max_revision_rounds ?? 2);
+    const selectedContractRevisionRemaining = Math.max(selectedContractRevisionLimit - selectedContractRevisionCount, 0);
+    const selectedContractDeliverySubmittedAt = selectedContractMeta?.delivery_submitted_at || null;
+    const selectedContractReviewDueAt = selectedContractMeta?.review_due_at || null;
+
     const [page, setPage] = useState(0);
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -1020,6 +728,33 @@ function MessagesComponent() {
     const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [showUnknownContractBanner, setShowUnknownContractBanner] = useState(false);
+    const [isFundEscrowOpen, setIsFundEscrowOpen] = useState(false);
+    const [walletBalance, setWalletBalance] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (!user?.id || selectedContractStatus !== 'pending_payment' || selectedContractUserRole !== 'client') {
+            setWalletBalance(null);
+            return;
+        }
+
+        let active = true;
+        const fetchWallet = async () => {
+            try {
+                const { data } = await supabase.from('wallets').select('balance').eq('user_id', user.id).single();
+                if (active && data) {
+                    setWalletBalance(data.balance ?? 0);
+                }
+            } catch (err) {
+                console.warn('Failed to load wallet balance', err);
+            }
+        };
+
+        void fetchWallet();
+
+        return () => {
+            active = false;
+        };
+    }, [user?.id, selectedContractStatus, selectedContractUserRole]);
     const [deliveryNote, setDeliveryNote] = useState('');
     const [deliveryReviewFiles, setDeliveryReviewFiles] = useState<File[]>([]);
     const [deliveryFinalFiles, setDeliveryFinalFiles] = useState<File[]>([]);
@@ -1107,23 +842,7 @@ function MessagesComponent() {
     const canSendVoiceInSelectedConversation = selectedConversationPolicy?.canSendVoiceNotes ?? false;
     const canReplyInSelectedConversation = selectedConversationPolicy?.canReply ?? false;
 
-    const selectedContractId = selectedConversation?.contract_id || null;
-    const selectedContractMeta = selectedContractId ? contractSessionMetaById[selectedContractId] : null;
-    const selectedWorkspaceContractId = selectedContractMeta?.linked_contract_id || selectedContractId;
-    const isContractSession = Boolean(selectedContractId);
-    const activeWorkspace = activeMode ?? profile?.active_mode;
-    const isFreelancerWorkspace = activeWorkspace === 'freelancer';
-    const conversationWorkspaceLabel = useMemo(() => {
-        if (activeWorkspace === 'client') {
-            return tx('pages.messages.clientInboxLabel', undefined, 'Client inbox');
-        }
 
-        if (activeWorkspace === 'freelancer') {
-            return tx('pages.messages.freelancerInboxLabel', undefined, 'Freelancer inbox');
-        }
-
-        return tx('pages.messages.allConversationsLabel', undefined, 'All conversations');
-    }, [activeWorkspace, tx]);
 
     useEffect(() => {
         if (!isContractSession) {
@@ -1135,33 +854,7 @@ function MessagesComponent() {
         setIsReviewModalOpen(false);
     }, [isContractSession, selectedContractId]);
 
-    const selectedContractUserRole: 'client' | 'freelancer' = useMemo(() => {
-        if (activeWorkspace === 'client') return 'client';
-        if (activeWorkspace === 'freelancer') return 'freelancer';
 
-        if (selectedContractMeta?.client_id && selectedContractMeta.client_id === user?.id) {
-            return 'client';
-        }
-
-        return 'freelancer';
-    }, [activeWorkspace, selectedContractMeta?.client_id, user?.id]);
-
-    const selectedContractStatus = selectedContractId
-        ? (contractStatusById[selectedContractId] ?? normalizeContractStatus(selectedContractMeta?.status))
-        : null;
-
-    const selectedContractMilestones = selectedContractId
-        ? (milestonesByContractId[selectedContractId] ?? [])
-        : [];
-
-    const selectedContractHasReview = selectedContractId
-        ? (hasReviewedContractById[selectedContractId] ?? false)
-        : true;
-    const selectedContractRevisionCount = Number(selectedContractMeta?.revision_requests_count ?? 0);
-    const selectedContractRevisionLimit = Number(selectedContractMeta?.max_revision_rounds ?? 2);
-    const selectedContractRevisionRemaining = Math.max(selectedContractRevisionLimit - selectedContractRevisionCount, 0);
-    const selectedContractDeliverySubmittedAt = selectedContractMeta?.delivery_submitted_at || null;
-    const selectedContractReviewDueAt = selectedContractMeta?.review_due_at || null;
     const selectedContractReviewBanner = useMemo(() => {
         if (selectedContractStatus !== 'delivery_submitted') return null;
 
@@ -4999,6 +4692,19 @@ function MessagesComponent() {
                                                                         {statusMeta.label}
                                                                     </span>
                                                                 ) : null}
+                                                                {(() => {
+                                                                    const sessionMeta = conversation.contract_id ? contractSessionMetaById[conversation.contract_id] : null;
+                                                                    const isEscrowFunded = sessionMeta ? Boolean(sessionMeta.funded_at) : true;
+                                                                    const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && contractStatus === 'pending_payment';
+                                                                    if (needsEscrowFunding) {
+                                                                        return (
+                                                                            <span className="shrink-0 inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-[2px] text-[10px] font-medium leading-none text-amber-200 gap-0.5" title="Escrow not funded yet">
+                                                                                <span>🔒</span> Unfunded
+                                                                            </span>
+                                                                        );
+                                                                    }
+                                                                    return null;
+                                                                })()}
                                                             </>
                                                         );
                                                     })()}
@@ -5205,57 +4911,45 @@ function MessagesComponent() {
                             ) : null}
                         </div>
 
-                        {contractCockpit ? (
-                            <div className={`relative z-10 mx-4 mt-3 md:mx-6 overflow-hidden rounded-xl border ${contractCockpit.theme.shell}`}>
-                                {/* Collapsed slim bar */}
-                                <button
-                                    type="button"
-                                    onClick={() => setIsBannerExpanded(prev => !prev)}
-                                    aria-expanded={isBannerExpanded}
-                                    aria-label="Toggle contract details"
-                                    className="flex w-full items-center gap-2 px-3 py-2 text-left"
-                                >
-                                    <span className={`inline-flex shrink-0 items-center rounded-full border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] ${contractCockpit.theme.chip}`}>
-                                        {contractCockpit.statusLabel}
-                                    </span>
-                                    <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-on-surface">
-                                        {contractCockpit.title}
-                                    </span>
-                                    <svg
-                                        className={`h-3.5 w-3.5 shrink-0 text-on-surface-muted transition-transform duration-150 ${isBannerExpanded ? 'rotate-180' : ''}`}
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                                        strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-                                    >
-                                        <path d="m6 9 6 6 6-6" />
-                                    </svg>
-                                </button>
+                        {isContractSession && selectedContractMeta ? (
+                            <ContractContextBar
+                                title={selectedContractMeta.title || 'Contract'}
+                                amount={selectedContractMeta.amount || 0}
+                                escrowFunded={Boolean(selectedContractMeta.funded_at)}
+                                status={selectedContractStatus}
+                                deadline={selectedContractMeta.job_deadline || null}
+                                revisionCount={selectedContractMeta.revision_requests_count || 0}
+                                maxRevisions={selectedContractMeta.max_revision_rounds || 2}
+                                userRole={selectedContractUserRole === 'client' ? 'client' : 'freelancer'}
+                                deliverySubmittedAt={selectedContractMeta.delivery_submitted_at || null}
+                                reviewDueAt={selectedContractMeta.review_due_at || null}
+                                hasReview={selectedContractHasReview}
+                                isActing={isDeliveringContractWork || isAcceptingContractWork || isOpeningContractDispute || isRequestingContractChanges}
+                                onDeliver={() => setIsDeliverModalOpen(true)}
+                                onAccept={() => setIsAcceptModalOpen(true)}
+                                onRevision={() => void handleRequestContractChanges()}
+                                onOpenWorkspace={() => navigate(`/contracts/${selectedWorkspaceContractId}`)}
+                                onLeaveReview={() => setIsReviewModalOpen(true)}
+                                onFundEscrow={() => setIsFundEscrowOpen(true)}
+                            />
+                        ) : null}
 
-                                {/* Expanded details — minimal inline chips */}
-                                {isBannerExpanded ? (
-                                    <div className="flex flex-wrap items-center gap-1.5 border-t border-white/[0.07] px-3 py-2">
-                                        <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] text-on-surface-muted">
-                                            <span className={`${contractCockpit.theme.accent} font-medium`}>{tx('pages.messages.contractDetails.amount', {}, 'Amount')}</span> {contractCockpit.amount}
-                                        </span>
-                                        <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] text-on-surface-muted">
-                                            <span className={`${contractCockpit.theme.accent} font-medium`}>{tx('pages.messages.contractDetails.due', {}, 'Due')}</span> {contractCockpit.dueLabel}
-                                        </span>
-                                        {selectedContractStatus === 'delivery_submitted' ? (
-                                            <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] text-on-surface-muted">
-                                                <span className={`${contractCockpit.theme.accent} font-medium`}>{tx('pages.messages.contractDetails.review', {}, 'Review')}</span> {contractCockpit.reviewDueLabel}
-                                            </span>
-                                        ) : null}
-                                        {selectedWorkspaceContractId ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
-                                                className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-on-surface transition hover:bg-white/10"
-                                            >
-                                                {tx('pages.messages.contractDetails.workspace', {}, 'Workspace')} ↗
-                                            </button>
-                                        ) : null}
-                                    </div>
-                                ) : null}
-                            </div>
+                        {isContractSession && selectedContractMeta && !selectedContractMeta.funded_at && selectedContractStatus === 'pending_payment' ? (
+                            <EscrowFundingBanner
+                                amount={selectedContractMeta.amount || 0}
+                                freelancerName={selectedConversation.otherUser.full_name}
+                                walletBalance={walletBalance}
+                                userRole={selectedContractUserRole === 'client' ? 'client' : 'freelancer'}
+                                onFund={() => setIsFundEscrowOpen(true)}
+                            />
+                        ) : null}
+
+                        {isContractSession && selectedContractMeta && selectedContractStatus === 'completed' && !selectedContractHasReview ? (
+                            <ContractCompletionBanner
+                                otherUserName={selectedConversation.otherUser.full_name}
+                                hasReview={selectedContractHasReview}
+                                onLeaveReview={() => setIsReviewModalOpen(true)}
+                            />
                         ) : null}
 
                     {(selectedContractReviewBanner || selectedConversationPolicy?.bannerFallback)
@@ -5586,72 +5280,7 @@ function MessagesComponent() {
                             </div>
                         ) : null}
 
-                        {(selectedFile || audioBlob || isRecording) ? (
-                            <div className="mb-3 space-y-2">
-                                {isRecording ? (
-                                    <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-                                        <div className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
-                                        <span>{tx('ui.recording', undefined, 'Recording')} {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
-                                        <button
-                                            type="button"
-                                            onClick={stopRecording}
-                                            aria-label={tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')}
-                                            className="ml-auto p-2 rounded-lg text-red-200 hover:bg-red-500/20 transition-colors"
-                                        >
-                                            <Square className="w-4 h-4 fill-current" />
-                                        </button>
-                                    </div>
-                                ) : null}
-
-                                {audioBlob ? (
-                                    <div className="rounded-xl border border-[#1f2328] bg-[var(--color-bg-elevated)] px-3 py-2">
-                                        <div className="flex items-center gap-2 text-sm text-zinc-200">
-                                            <FileAudio className={`w-4 h-4 ${accentClasses.iconAccent}`} />
-                                            <span className="flex-1">{tx('pages.messages.voiceMemo', undefined, 'Audio note')} • {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
-                                            <button
-                                                type="button"
-                                                onClick={cancelRecording}
-                                                disabled={isSending}
-                                                aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')}
-                                                className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-[var(--color-bg-muted)] transition-colors disabled:opacity-50"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        {audioPreviewUrl ? (
-                                            <div className="mt-2 rounded-xl border border-[#1d2126] bg-[var(--color-bg-subtle)] px-3 py-2">
-                                                <MessageAudioPlayer
-                                                    src={audioPreviewUrl}
-                                                    name={tx('pages.messages.voiceMemo', undefined, 'Audio note')}
-                                                    isOwn
-                                                    accentVariant={isFreelancerWorkspace ? 'violet' : 'amber'}
-                                                />
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                ) : null}
-
-                                {selectedFile ? (
-                                    <div className="rounded-xl border border-[#1f2328] bg-[var(--color-bg-elevated)] px-3 py-2">
-                                        <div className="flex items-center gap-2 text-sm text-zinc-200">
-                                            <FileText className={`w-4 h-4 ${accentClasses.iconAccent}`} />
-                                            <span className="flex-1 truncate">{selectedFile.name}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => setSelectedFile(null)}
-                                                disabled={isSending}
-                                                aria-label={tx('pages.messages.a11y.removeAttachedItem', undefined, 'Remove attached item')}
-                                                className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-[var(--color-bg-muted)] transition-colors disabled:opacity-50"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : null}
-                            </div>
-                        ) : null}
-
-                        <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={MESSAGE_ATTACHMENT_ACCEPT} />
+                                 {(selectedFile || audioBlob || isRecording) ? null : null} {/* Removed old file preview block, ChatInputArea handles it */}
 
                         {!canSendInSelectedConversation ? (
                             /* ── Premium Read-Only Lock Panel ── */
@@ -5676,95 +5305,36 @@ function MessagesComponent() {
                             </div>
                         ) : (
                             /* ── Normal Composer ── */
-                            <div className={`flex items-end rounded-[26px] border p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.02),0_20px_45px_-32px_rgba(0,0,0,0.85)] transition-all ${accentClasses.composerShell}`}>
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isSending || !!selectedFile || !canAttachInSelectedConversation}
-                                    aria-label={tx('pages.messages.a11y.attachFile', undefined, 'Attach file')}
-                                    className="p-2.5 text-zinc-500 hover:text-white hover:bg-[var(--color-bg-muted)] rounded-xl cursor-pointer transition-all disabled:opacity-50"
-                                >
-                                    <Paperclip className="w-4 h-4" />
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (!canSendVoiceInSelectedConversation) {
-                                            const blockedMessage = selectedConversationPolicy?.blockedReasonFallback
-                                                || 'Voice notes are disabled for this conversation.';
-                                            showToast(
-                                                tx(
-                                                    'pages.messages.readOnlyThread',
-                                                    { message: blockedMessage },
-                                                    blockedMessage,
-                                                ),
-                                                'warning'
-                                            );
-                                            return;
-                                        }
-
-                                        if (isRecording) {
-                                            stopRecording();
-                                        } else {
-                                            startRecording();
-                                        }
-                                    }}
-                                    disabled={isSending || !canSendVoiceInSelectedConversation}
-                                    aria-label={isRecording
-                                        ? tx('pages.messages.a11y.stopRecording', undefined, 'Stop recording')
-                                        : tx('pages.messages.a11y.startRecording', undefined, 'Start recording')}
-                                    className={`p-2.5 rounded-xl transition-all ${
-                                        isRecording
-                                            ? 'bg-red-500/20 text-red-300'
-                                            : 'text-zinc-500 hover:text-white hover:bg-[var(--color-bg-muted)]'
-                                    } disabled:opacity-50`}
-                                >
-                                    {isRecording ? <Square className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
-                                </button>
-
-                                <textarea
-                                    id="messages-thread-composer-input"
-                                    ref={messageInputRef}
-                                    value={newMessage}
-                                    onChange={(e) => {
-                                        setNewMessage(e.target.value);
-                                        if (e.target.value.trim()) {
-                                            startTyping();
-                                        } else {
-                                            stopTyping();
-                                        }
-
-                                        e.currentTarget.style.height = '44px';
-                                        e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 128)}px`;
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            stopTyping();
-                                            void handleSendMessage();
-                                        }
-                                    }}
-                                    onBlur={stopTyping}
-                                    placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Type a message...')}
-                                    disabled={isSending || isRecording}
-                                    rows={1}
-                                    className="flex-1 bg-transparent border-0 ring-0 focus:ring-0 focus:border-transparent text-white text-sm px-3 py-2.5 outline-none resize-none max-h-32 min-h-[44px] placeholder:text-zinc-500 disabled:opacity-50"
-                                />
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        stopTyping();
-                                        void handleSendMessage();
-                                    }}
-                                    disabled={(!newMessage.trim() && !selectedFile && !audioBlob) || isSending || isRecording}
-                                    aria-label={tx('pages.messages.send', undefined, 'Send message')}
-                                    className={`${accentClasses.sendButton} text-white p-2.5 rounded-xl cursor-pointer transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
-                                >
-                                    {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                </button>
-                            </div>
+                            <ChatInputArea
+                                value={newMessage}
+                                onChange={(val) => {
+                                    setNewMessage(val);
+                                    if (val.trim()) startTyping();
+                                    else stopTyping();
+                                }}
+                                onSend={() => {
+                                    stopTyping();
+                                    void handleSendMessage();
+                                }}
+                                isSending={isSending}
+                                selectedFiles={selectedFile ? [selectedFile] : []}
+                                onFileSelect={(file) => setSelectedFile(file)}
+                                onRemoveFile={() => setSelectedFile(null)}
+                                canAttachFiles={canAttachInSelectedConversation}
+                                isRecording={isRecording}
+                                onToggleRecord={() => {
+                                    if (!canSendVoiceInSelectedConversation) {
+                                        const blockedMessage = selectedConversationPolicy?.blockedReasonFallback || 'Voice notes are disabled for this conversation.';
+                                        showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage), 'warning');
+                                        return;
+                                    }
+                                    if (isRecording) stopRecording();
+                                    else startRecording();
+                                }}
+                                canRecordAudio={canSendVoiceInSelectedConversation}
+                                disabled={isSending}
+                                placeholder={tx('pages.messages.messagePlaceholder', undefined, 'Type a message...')}
+                            />
                         )}
                     </div>
 
@@ -6152,6 +5722,46 @@ function MessagesComponent() {
                     </div>
                 </div>
             </Modal>
+
+            {/* Fund Escrow Modal */}
+            {isFundEscrowOpen && selectedContractMeta && (
+                <Modal
+                    isOpen={isFundEscrowOpen}
+                    onClose={() => setIsFundEscrowOpen(false)}
+                    title={tx('payment.fundEscrowTitle', undefined, 'Fund Escrow')}
+                    size="md"
+                >
+                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                        <FundEscrow
+                            contract={{
+                                id: selectedWorkspaceContractId,
+                                budget: selectedContractMeta.amount || 0,
+                                freelancer_id: selectedContractMeta.freelancer_id,
+                                escrow_funded: Boolean(selectedContractMeta.funded_at)
+                            } as any}
+                            onSuccess={() => {
+                                setIsFundEscrowOpen(false);
+                                if (selectedContractId) {
+                                    syncContractStatusLocally(selectedContractId, 'active');
+                                    setContractSessionMetaById((prev) => {
+                                        const existing = prev[selectedContractId];
+                                        if (!existing) return prev;
+                                        return {
+                                            ...prev,
+                                            [selectedContractId]: {
+                                                ...existing,
+                                                status: 'active',
+                                                funded_at: new Date().toISOString()
+                                            }
+                                        };
+                                    });
+                                }
+                            }}
+                            onError={() => setIsFundEscrowOpen(false)}
+                        />
+                    </div>
+                </Modal>
+            )}
 
             {/* ─── Image Lightbox Modal ─────────────────────────────────── */}
             {lightboxImageUrl && (

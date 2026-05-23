@@ -7,7 +7,7 @@ if (
   window.location.protocol = "https:";
 }
 
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { BrowserRouter, Navigate, Routes, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -48,17 +48,6 @@ function AppContent() {
   [pathname, search]);
   const isAuthCallbackPath = pathname.startsWith("/auth/callback");
 
-  if (
-    isFullyReady &&
-    user &&
-    profile &&
-    shouldRequireUserTypeSelection(profile) &&
-    !isUserTypeSelectionScreen &&
-    !isAuthCallbackPath
-  ) {
-    return <Navigate to="/signup?step=select-type" replace state={{ from: { pathname, search } }} />;
-  }
-
   const workspaceClass = pathname.startsWith("/admin")
     ? "workspace-admin"
     : resolvedWorkspace === "client"
@@ -70,6 +59,25 @@ function AppContent() {
     : resolvedWorkspace === "client"
       ? "client"
       : "freelancer";
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.workspace = workspaceMode;
+    root.classList.toggle("workspace-client", workspaceMode === "client");
+    root.classList.toggle("workspace-admin", workspaceMode === "admin");
+    root.classList.toggle("workspace-freelancer", workspaceMode === "freelancer");
+  }, [workspaceMode]);
+
+  if (
+    isFullyReady &&
+    user &&
+    profile &&
+    shouldRequireUserTypeSelection(profile) &&
+    !isUserTypeSelectionScreen &&
+    !isAuthCallbackPath
+  ) {
+    return <Navigate to="/signup?step=select-type" replace state={{ from: { pathname, search } }} />;
+  }
 
   const PageLoader = () => (
     <FullScreenLoader label="Loading..." hint="Opening the next page" mode={workspaceMode as 'freelancer' | 'client' | 'admin'} />

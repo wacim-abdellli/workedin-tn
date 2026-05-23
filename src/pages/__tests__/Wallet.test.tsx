@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, PropsWithChildren, ReactNode } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 
 const mocks = vi.hoisted(() => ({
     useQuery: vi.fn(),
@@ -50,6 +51,8 @@ vi.mock('@/i18n', () => ({
 vi.mock('@/components/layout', () => ({
     Header: () => <div>Header</div>,
 }));
+
+
 
 vi.mock('@/components/common/SEO', () => ({
     default: () => null,
@@ -121,11 +124,16 @@ describe('Wallet deposit flow', () => {
     });
 
     it('uses the canonical Flouci initiation helper with the wallet deposit payload', async () => {
-        render(<Wallet />);
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
 
         fireEvent.click(screen.getByRole('button', { name: 'Deposit Funds' }));
         fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '125' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Continue to Payment' }));
+        const depositButtons = screen.getAllByRole('button', { name: 'Deposit Funds' });
+        fireEvent.click(depositButtons[depositButtons.length - 1]);
 
         await waitFor(() => {
             expect(mocks.initiatePayment).toHaveBeenCalledWith({

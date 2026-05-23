@@ -22,7 +22,10 @@ if (import.meta.env.PROD) {
     import('@sentry/react').then(mod => Sentry = mod);
 }
 
-class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: Record<string, string | number>, fallback?: string) => string }, State> {
+class ErrorBoundaryInner extends Component<Props & { 
+    tx: (key: string, params?: Record<string, string | number>, fallback?: string) => string;
+    dir?: string;
+}, State> {
     public state: State = {
         hasError: false,
         error: null,
@@ -90,8 +93,9 @@ class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: 
             const workspaceClass = this.getWorkspaceClass();
             const workspaceLabel = workspaceMode === 'client' ? 'Client workspace' : 'Freelancer workspace';
 
+            const { dir } = this.props;
             return (
-                <div className="flex min-h-screen flex-col items-center justify-center bg-[#0A0A0B] px-4 py-10">
+                <div dir={dir} className="flex min-h-screen flex-col items-center justify-center bg-[#0A0A0B] px-4 py-10">
                     {/* Brand Header Floating Above */}
                     <div className="mb-10 flex flex-col items-center gap-5">
                         <Logo variant="full" size="md" mode={workspaceMode} />
@@ -147,8 +151,8 @@ class ErrorBoundaryInner extends Component<Props & { tx: (key: string, params?: 
 }
 
 function ErrorBoundary(props: Props) {
-    const { tx } = useTranslation();
-    return <ErrorBoundaryInner {...props} tx={tx} />;
+    const { tx, dir } = useTranslation();
+    return <ErrorBoundaryInner {...props} tx={tx} dir={dir} />;
 }
 
 export default ErrorBoundary;

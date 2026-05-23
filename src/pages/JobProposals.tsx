@@ -9,6 +9,7 @@ import JobEmptyPane from '../components/proposals/JobSummaryCard';
 import AIRecommendationsCard from '../components/proposals/AIRecommendationsCard';
 import type { Proposal, ProposalStatus, ProposalFilters } from '../types/proposal';
 import ProposalDetailPane from '../components/proposals/ProposalDetailModal';
+import { HireCelebrationPane } from '../components/proposals/HireCelebrationPane';
 import { supabase, withTimeout } from '../lib/supabase';
 import { useToast } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -83,6 +84,7 @@ export default function JobProposals() {
     const [filters, setFilters] = useState<ProposalFilters>({});
     const proposalsLoadErrorShownRef = useRef(false);
     const [hasActiveContract, setHasActiveContract] = useState(false);
+    const [hiredContract, setHiredContract] = useState<{ id: string; freelancerId: string; freelancerName: string; freelancerAvatar: string | null; jobTitle: string | null; amount: number } | null>(null);
     const [recommendations, setRecommendations] = useState<AIRecommendations | null>(null);
     const [recommendationsLoading, setRecommendationsLoading] = useState(false);
 
@@ -562,8 +564,14 @@ export default function JobProposals() {
             showToast(t.jobProposals.hireSuccess, 'success');
             // Mark that we now have an active contract
             setHasActiveContract(true);
-            navigate(`/messages?contract=${contract.id}&with=${contract.freelancerId}`, {
-                state: { contractId: contract.id, otherUserId: contract.freelancerId },
+            const prop = proposals.find(p => p.freelancer_id === contract.freelancerId);
+            setHiredContract({
+                id: contract.id,
+                freelancerId: contract.freelancerId,
+                freelancerName: prop?.freelancer?.full_name || 'Freelancer',
+                freelancerAvatar: prop?.freelancer?.avatar_url || null,
+                jobTitle: job?.title || 'Job',
+                amount: prop?.bid_amount || 0
             });
         },
         onError: (error) => {
@@ -847,7 +855,24 @@ export default function JobProposals() {
 
                 {/* ═══ RIGHT: Detail pane ═══ */}
                 <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
-                    {liveSelectedProposal ? (
+                    {hiredContract ? (
+                        <HireCelebrationPane
+                            freelancerName={hiredContract.freelancerName}
+                            freelancerAvatar={hiredContract.freelancerAvatar}
+                            jobTitle={hiredContract.jobTitle}
+                            amount={hiredContract.amount}
+                            contractId={hiredContract.id}
+                            freelancerId={hiredContract.freelancerId}
+                            onGoToChat={() => {
+                                navigate(`/messages?contract=${hiredContract.id}&with=${hiredContract.freelancerId}`, {
+                                    state: { contractId: hiredContract.id, otherUserId: hiredContract.freelancerId },
+                                });
+                            }}
+                            onGoToWorkspace={() => {
+                                navigate(`/contracts/${hiredContract.id}`);
+                            }}
+                        />
+                    ) : liveSelectedProposal ? (
                         <ProposalDetailPane
                             proposal={liveSelectedProposal}
                             isHiring={hireMutation.isPending}

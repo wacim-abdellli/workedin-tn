@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useMemo, useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getJobEditRoute } from '@/lib/routes'
 import { FolderOpen } from 'lucide-react'
 import { Header } from '@/components/layout'
@@ -163,7 +163,19 @@ export default function ClientJobs() {
   const { showToast } = useToast()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<JobListTab>('all')
+  const [searchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState<JobListTab>(() => {
+    const tab = searchParams.get('tab') as JobListTab | null
+    return tab && ['all', 'active', 'proposals', 'attention', 'finished'].includes(tab) ? tab : 'all'
+  })
+
+  // Sync tab when URL changes (e.g. clicking nav links)
+  useEffect(() => {
+    const tab = searchParams.get('tab') as JobListTab | null
+    if (tab && ['all', 'active', 'proposals', 'attention', 'finished'].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null)
   const [jobToConfirmDelete, setJobToConfirmDelete] = useState<EnrichedClientJob | null>(null)
 

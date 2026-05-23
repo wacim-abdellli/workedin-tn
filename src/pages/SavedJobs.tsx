@@ -1,4 +1,4 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Heart, MapPin, Clock, Star, Briefcase } from 'lucide-react';
 import { Header } from '@/components/layout';
@@ -231,6 +231,7 @@ export function SavedItems({
 
 export default function SavedJobsPage() {
   const { activeMode, user } = useAuth();
+  const { tx } = useTranslation();
   const role: SavedItemsRole = activeMode === 'client' ? 'client' : 'freelancer';
 
   const {

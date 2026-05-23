@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Bookmark,
+  LayoutDashboard,
   LogOut,
   Moon,
   Repeat2,
@@ -81,6 +82,8 @@ export function MobileHeader({
   const avatarInitials = getInitials(displayName);
   const targetWorkspace = activeWorkspace === "freelancer" ? "client" : "freelancer";
   const canQuickSwitch = Boolean(user);
+  // Freelancer navItems already contain /saved — only show standalone Saved for clients
+  const isFreelancerMode = activeWorkspace === "freelancer";
   const switchTargetLabel =
     targetWorkspace === "freelancer"
       ? t.auth?.accountPanel?.freelancerLabel || "Freelancer"
@@ -106,7 +109,7 @@ export function MobileHeader({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] md:hidden">
+    <div className="fixed inset-0 z-[60] xl:hidden">
       <button
         aria-label={t.common?.closeMenu || "Close navigation menu"}
         className="absolute inset-0 bg-[var(--color-foreground)]/60 backdrop-blur-sm"
@@ -247,14 +250,17 @@ export function MobileHeader({
 
             {user ? (
               <>
-                <button
-                  onClick={() => { navigate("/saved"); setMobileMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  <Bookmark className="h-4 w-4 flex-shrink-0" />
-                  {t.nav?.saved || "Saved"}
-                </button>
+                {/* Only show Saved for clients — freelancers already have it in navItems */}
+                {!isFreelancerMode && (
+                  <button
+                    onClick={() => { navigate("/saved"); setMobileMenuOpen(false); }}
+                    className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    <Bookmark className="h-4 w-4 flex-shrink-0" />
+                    {t.nav?.saved || "Saved"}
+                  </button>
+                )}
                 <button
                   onClick={() => { navigate("/profile"); setMobileMenuOpen(false); }}
                   className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
@@ -268,7 +274,7 @@ export function MobileHeader({
                   className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors"
                   style={{ color: "var(--color-text-primary)" }}
                 >
-                  <User className="h-4 w-4 flex-shrink-0" />
+                  <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
                   {t.nav?.dashboard || "Dashboard"}
                 </button>
                 <button

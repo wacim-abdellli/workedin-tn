@@ -15,6 +15,7 @@ import { FreelancerInfoForm, buildFreelancerInitialForm, mergeDescription } from
 import type { FreelancerFormData } from './FreelancerInfoForm';
 import { ClientInfoForm, buildClientInitialForm, mergePrefText } from './ClientInfoForm';
 import type { ClientFormData } from './ClientInfoForm';
+import { PREDEFINED_SKILLS } from '@/types';
 
 // ─── Tab definitions ────────────────────────────────────────────────────────
 type ProfileTab = 'basic' | 'freelancer' | 'client' | 'workspace';
@@ -111,6 +112,18 @@ export default function ProfileSettings() {
                 const parsedRate  = parseFloat(freelancerForm.hourly_rate);
                 const parsedYears = parseInt(freelancerForm.years_experience, 10);
                 const parsedHours = parseInt(freelancerForm.weekly_availability_hours, 10);
+                
+                const skillEntries = freelancerForm.skills.map((skillId) => {
+                    const skill = PREDEFINED_SKILLS.find((item) => item.id === skillId);
+                    return {
+                        name: skillId,
+                        name_en: skill?.name_en || skillId,
+                        name_ar: skill?.name_ar || skillId,
+                        name_fr: skill?.name_fr || skillId,
+                        level: 'intermediate' as const,
+                    };
+                });
+
                 await updateFreelancerProfile({
                     title:       freelancerForm.title,
                     hourly_rate: isNaN(parsedRate)  ? undefined : parsedRate,
@@ -121,6 +134,7 @@ export default function ProfileSettings() {
                     portfolio_links: freelancerForm.portfolio_links.split(',').map(s => s.trim()).filter(Boolean),
                     weekly_availability_hours: isNaN(parsedHours) ? undefined : parsedHours,
                     revision_policy: freelancerForm.revision_policy,
+                    skills: skillEntries,
                     // Merge typed text back into the jsonb without nuking hidden keys
                     project_preferences: mergeDescription(
                         freelancerProfile?.project_preferences as Record<string, unknown>,
