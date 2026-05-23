@@ -689,7 +689,11 @@ export const en: Translations = {
             "freelancerFeaturePortfolio": "Build public portfolio",
             "clientFeaturePostProjects": "Post projects for free",
             "clientFeatureReviewProposals": "Review verified proposals",
-            "clientFeatureEscrow": "Escrow-protected payments"
+            "clientFeatureEscrow": "Escrow-protected payments",
+            "goToWorkspace": "Go to {{workspace}}",
+            "onlineForMessages": "Online for messages",
+            "darkTheme": "Dark theme",
+            "language": "Language"
         }
     },
     "dashboard": {

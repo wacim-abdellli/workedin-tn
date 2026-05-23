@@ -687,7 +687,11 @@ export const ar = {
             "freelancerFeaturePortfolio": "أنشئ معرض أعمال عام",
             "clientFeaturePostProjects": "انشر المشاريع مجاناً",
             "clientFeatureReviewProposals": "راجع عروضاً موثقة",
-            "clientFeatureEscrow": "مدفوعات محمية بالضمان"
+            "clientFeatureEscrow": "مدفوعات محمية بالضمان",
+            "goToWorkspace": "الانتقال إلى {{workspace}}",
+            "onlineForMessages": "متصل للرسائل",
+            "darkTheme": "المظهر الداكن",
+            "language": "اللغة"
         }
     },
     "dashboard": {

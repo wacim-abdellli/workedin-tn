@@ -259,8 +259,13 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute end-0 top-full z-[70] mt-2 w-64 rounded-xl border border-white/[0.08] bg-[#111] shadow-2xl shadow-black/50 py-2 overflow-hidden"
-            style={{ transformOrigin: "top right" }}
+            className="absolute end-0 top-full z-[70] mt-2 w-64 rounded-2xl overflow-hidden py-2"
+            style={{
+              transformOrigin: "top right",
+              background: 'linear-gradient(145deg, #161616, #111111)',
+              border: '1px solid rgba(255,255,255,0.09)',
+              boxShadow: '0 24px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+            }}
             role="menu"
             ref={menuRef}
           >
@@ -301,9 +306,11 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                 <ArrowLeftRight className={`w-4 h-4 text-white/30 group-hover:text-white/60 ${isSwitching ? "animate-spin" : ""}`} />
                 <div className="text-left">
                   <p className="text-[10px] uppercase tracking-wider text-white/30 font-medium">
-                    Switch workspace
+                    {tx('auth.accountPanel.switchWorkspace', undefined, 'Switch workspace')}
                   </p>
-                  <p className="text-sm text-white/75 font-medium">Go to {switchTargetLabel}</p>
+                  <p className="text-sm text-white/75 font-medium">
+                    {tx('auth.accountPanel.goToWorkspace', { workspace: switchTargetLabel }, `Go to ${switchTargetLabel}`)}
+                  </p>
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-white/25" />
@@ -320,7 +327,7 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
               className={`${menuItemClass} disabled:opacity-60`}
             >
               <span className={`w-4 h-4 rounded-full ${isOnlineForMessages ? onlineDotClass : "bg-white/20"}`} />
-              Online for messages
+              {tx('auth.accountPanel.onlineForMessages', undefined, 'Online for messages')}
               <span className={toggleTrackClass(isOnlineForMessages)}>
                 <span className={toggleThumbClass(isOnlineForMessages)} />
               </span>
@@ -395,10 +402,10 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
               className={menuItemClass}
               aria-checked={isDark}
               role="switch"
-              aria-label="Dark theme"
+              aria-label={tx('auth.accountPanel.darkTheme', undefined, 'Dark theme')}
             >
               <Moon className={menuIconClass} />
-              Dark theme
+              {tx('auth.accountPanel.darkTheme', undefined, 'Dark theme')}
               <span className={toggleTrackClass(isDark)}>
                 <span className={toggleThumbClass(isDark)} />
               </span>
@@ -406,11 +413,11 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
 
             <div className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/55">
               <Globe2 className={menuIconClass} />
-              Language
+              {tx('auth.accountPanel.language', undefined, 'Language')}
               <div
                 className="ml-auto flex shrink-0 items-center rounded-full border border-white/[0.08] bg-white/[0.03] p-0.5"
                 role="group"
-                aria-label="Language"
+                aria-label={tx('auth.accountPanel.language', undefined, 'Language')}
               >
                 {LANGUAGE_OPTIONS.map((option) => {
                   const active = language === option.code;
