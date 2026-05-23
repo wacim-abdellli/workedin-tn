@@ -4380,7 +4380,7 @@ function MessagesComponent() {
 
         // Native DOM scroll
         const el = document.getElementById(`message-${messageId}`);
-        if (el) {
+        if (el && typeof el.scrollIntoView === 'function') {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
@@ -4479,7 +4479,7 @@ function MessagesComponent() {
 
     // Auto-scroll to bottom when messages change
     useEffect(() => {
-        if (messagesEndRef.current) {
+        if (messagesEndRef.current && typeof messagesEndRef.current.scrollIntoView === 'function') {
             messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
         }
     }, [messages.length, pendingQueue.length]);

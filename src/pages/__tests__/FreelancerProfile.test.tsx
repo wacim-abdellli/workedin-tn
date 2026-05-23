@@ -57,6 +57,10 @@ vi.mock('@/components/freelancer/ContactModal', () => ({
     default: () => <div>Contact Modal</div>,
 }));
 
+vi.mock('@/components/freelancer/InviteToJobModal', () => ({
+    default: () => <div>Invite To Job Modal</div>,
+}));
+
 vi.mock('@/components/ui/Toast', () => ({
     useToast: () => ({
         showToast: vi.fn(),

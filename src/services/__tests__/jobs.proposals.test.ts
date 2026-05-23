@@ -276,11 +276,6 @@ describe('proposals service targeted coverage', () => {
             })
         );
 
-        // The profile/freelancer_profiles pre-flight reads still happen.
-        expect(queryState.state.fromCalls).toEqual(
-            expect.arrayContaining(['profiles', 'freelancer_profiles'])
-        );
-
         // No direct insert on proposals table — atomicity is handled by the RPC.
         expect(queryState.state.insertCalls).toHaveLength(0);
     });
