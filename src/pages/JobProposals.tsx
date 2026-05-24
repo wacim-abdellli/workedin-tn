@@ -566,8 +566,8 @@ export default function JobProposals() {
             setHasActiveContract(true);
             const prop = proposals.find(p => p.freelancer_id === contract.freelancerId);
             setHiredContract({
-                id: contract.id,
-                freelancerId: contract.freelancerId,
+                id: contract.id || '',
+                freelancerId: contract.freelancerId || '',
                 freelancerName: prop?.freelancer?.full_name || 'Freelancer',
                 freelancerAvatar: prop?.freelancer?.avatar_url || null,
                 jobTitle: job?.title || 'Job',
@@ -649,7 +649,7 @@ export default function JobProposals() {
             const proposal = proposals.find(p => p.id === proposalId);
             if (proposal && job) {
                 void insertNotification({
-                    user_id: proposal.freelancer_id,
+                    user_id: proposal.freelancer_id || '',
                     type: 'proposal' as any,
                     title: 'Proposal Declined',
                     body: `Your proposal for "${job.title}" was declined.`,

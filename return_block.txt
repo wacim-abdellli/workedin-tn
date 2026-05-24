@@ -1,0 +1,634 @@
+return (
+    <div className="min-h-screen w-full" style={{ background: 'var(--color-bg-subtle)' }}>
+      <ProfileHero
+        variant="freelancer"
+        name={freelancer.full_name || 'Freelancer'}
+        subtitle={freelancer.title || 'Independent specialist'}
+        rate={`${freelancer.hourly_rate} TND/hr`}
+        avatarUrl={freelancer.avatar_url}
+        badges={heroBadges}
+        meta={heroMeta}
+        actions={heroActions}
+        isOwner={isOwner}
+        isUploadingAvatar={savingAvatar}
+        onAvatarUpload={handleAvatarUploadSelection}
+        verificationStatus={verificationStatus as 'verified' | 'unverified'}
+        onVerify={handleVerify}
+        availabilityStatus={availabilityStatus as 'available' | 'busy' | 'offline'}
+      />
+
+      {/* ── Stat bar ────────────────────────────────────────────────────── */}
+      <ProfileStatBar
+        variant="freelancer"
+        stats={[
+            { label: 'Completed', value: freelancer.stats.jobs_completed },
+            { label: 'Hourly Rate', value: `${freelancer.hourly_rate} TND`, highlight: true },
+            { label: 'Success Rate', value: `${freelancer.stats.success_rate}%` },
+            { label: 'Response Time', value: '< 2 hrs' },
+        ]}
+      />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="lg:col-span-2 flex flex-col gap-5">
+
+                    {/* ── About Section (NEW) ────────────────────────────── */}
+                    {bioText && (
+                        <ProfileSection
+                            title="About"
+                        >
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--color-text-secondary)' }}>
+                                {bioText}
+                            </p>
+                        </ProfileSection>
+                    )}
+
+                    <ProfileSection
+                        title="Skills"
+                    >
+                        {strengths.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                                {strengths.map((item) => (
+                                    <ProfileTag key={item} label={item} accentColor="var(--workspace-primary)" />
+                                ))}
+                            </div>
+                        ) : (
+                            <ProfileEmptySlot 
+                                message="No skills added yet."
+                                cta={isOwner ? <Link to="/settings?tab=profile" className="text-xs font-medium" style={{ color: accentColor }}>+ Add skills</Link> : undefined} 
+                            />
+                        )}
+                    </ProfileSection>
+
+                    <ProfileSection
+                        title="Tools"
+                    >
+                        {tools.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                                {tools.map((item) => (
+                                    <ProfileTag key={item} label={item} accentColor="var(--workspace-primary)" />
+                                ))}
+                            </div>
+                        ) : (
+                            <ProfileEmptySlot 
+                                message="No tools added yet."
+                                cta={isOwner ? <Link to="/settings?tab=profile" className="text-xs font-medium" style={{ color: accentColor }}>+ Add tools</Link> : undefined} 
+                            />
+                        )}
+                    </ProfileSection>
+
+                    <ProfileSection title="Selected work">
+                        {workSamples.length > 0 ? (
+                            <div className={`grid gap-3 ${workSamples.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                                {workSamples.map((item) => {
+                                    const workImages = getWorkSampleImages(item);
+                                    const workImage = workImages[0] || '';
+                                    const workTitle = item.title?.trim() || 'Untitled work';
+
+                                    return (
+                                        <article key={item.id} className="group rounded-lg border overflow-hidden transition-colors duration-200" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-elevated)' }}>
+                                            <div className="relative h-44 w-full bg-[radial-gradient(circle_at_25%_18%,rgba(139,92,246,0.15),transparent_48%),#0a0a0a]">
+                                                {workImage ? (
+                                                    <OptimizedImage
+                                                        src={workImage}
+                                                        alt={workTitle}
+                                                        className="h-full w-full"
+                                                        imgClassName="object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                                                    />
+                                                ) : (
+                                                    <div className="h-full w-full flex items-center justify-center text-white/30">
+                                                        <Briefcase className="w-8 h-8" />
+                                                    </div>
+                                                )}
+
+                                                <div className="absolute left-3 bottom-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[11px] text-white/85">
+                                                    <Images className="w-3.5 h-3.5" />
+                                                    {workImages.length} {workImages.length === 1 ? 'photo' : 'photos'}
+                                                </div>
+                                            </div>
+
+                                            <div className="p-3 space-y-2.5">
+                                                <div>
+                                                    <h4 className="text-sm font-semibold text-white line-clamp-2 leading-5">{workTitle}</h4>
+                                                    <p className="mt-1 text-xs text-white/60 line-clamp-3 leading-5">
+                                                        {item.description || 'No description provided yet.'}
+                                                    </p>
+                                                </div>
+
+                                                {item.skills_used && item.skills_used.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {item.skills_used.slice(0, 4).map((skill) => (
+                                                            <span
+                                                                key={skill}
+                                                                className="max-w-full truncate text-[11px] px-2 py-0.5 rounded-full border"
+                                                                style={{
+                                                                    borderColor: `color-mix(in srgb, ${accentColor} 24%, #2f2f2f)`,
+                                                                    color: accentColor,
+                                                                    background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
+                                                                }}
+                                                                title={skill}
+                                                            >
+                                                                {skill}
+                                                            </span>
+                                                        ))}
+                                                        {item.skills_used.length > 4 ? (
+                                                            <span className="text-[11px] px-2 py-0.5 rounded-full border border-white/15 text-white/55 bg-white/[0.04]">
+                                                                +{item.skills_used.length - 4} more
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+                                                ) : null}
+
+                                                {item.tools_used && item.tools_used.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {item.tools_used.slice(0, 3).map((tool) => (
+                                                            <span
+                                                                key={tool}
+                                                                className="max-w-full truncate text-[11px] px-2 py-0.5 rounded-full border"
+                                                                style={{
+                                                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 35%, transparent)',
+                                                                    color: 'var(--workspace-primary)',
+                                                                    background: 'var(--workspace-primary-dim)'
+                                                                }}
+                                                                title={tool}
+                                                            >
+                                                                {tool}
+                                                            </span>
+                                                        ))}
+                                                        {item.tools_used.length > 3 ? (
+                                                            <span 
+                                                                className="text-[11px] px-2 py-0.5 rounded-full border"
+                                                                style={{
+                                                                    borderColor: 'var(--color-border-subtle)',
+                                                                    color: 'var(--color-text-tertiary)',
+                                                                    background: 'var(--color-bg-subtle)'
+                                                                }}
+                                                            >
+                                                                +{item.tools_used.length - 3} more
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+                                                ) : null}
+
+                                                <div className="flex items-center justify-between gap-2 pt-1">
+                                                    {item.project_url ? (
+                                                        <a
+                                                            href={item.project_url}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="inline-flex items-center gap-1 text-xs text-[#c4b5fd] hover:text-[#ddd6fe] transition-colors"
+                                                        >
+                                                            <ExternalLink className="w-3.5 h-3.5" />
+                                                            {tx('pages.freelancerProfile.actions.openLink', undefined, 'Open link')}
+                                                        </a>
+                                                    ) : <span />}
+
+                                                    <div className="flex items-center gap-2">
+                                                        {isOwner ? (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => editWorkSample(item.id)}
+                                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/15 text-xs font-semibold text-white/75 hover:text-white transition-colors"
+                                                                >
+                                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => { void deleteWorkSample(item.id); }}
+                                                                    disabled={deletingWorkSampleId === item.id}
+                                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-500/35 text-xs font-semibold text-red-300 hover:text-red-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                    {deletingWorkSampleId === item.id ? 'Deleting...' : 'Delete'}
+                                                                </button>
+                                                            </>
+                                                        ) : null}
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openWorkSampleViewer(item.id)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors"
+                                                            style={{
+                                                                borderColor: `color-mix(in srgb, ${accentColor} 38%, #2f2f2f)`,
+                                                                color: accentColor,
+                                                                background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
+                                                            }}
+                                                        >
+                                                            {tx('pages.freelancerProfile.actions.viewFullProject', undefined, 'View full project')}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <ProfileEmptyState
+                                icon={<Briefcase className="w-10 h-10" />}
+                                title={tx('pages.freelancerProfile.workSamples.emptyTitle', undefined, 'No work samples added yet')}
+                                description="Showcase case studies, shipped products, and measurable outcomes."
+                                cta={isOwner ? 'Add your first work sample' : undefined}
+                                onCta={isOwner ? () => navigate(ROUTES.freelancerPortfolio) : undefined}
+                                accentColor={accentColor}
+                            />
+                        )}
+                    </ProfileSection>
+
+                    {activeWorkSample ? (
+                        <div
+                            className="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm p-3 sm:p-6"
+                            onClick={closeWorkSampleViewer}
+                            role="dialog"
+                            aria-modal="true"
+                        >
+                            <div
+                                className="mx-auto h-full max-w-6xl overflow-hidden rounded-2xl border border-white/10 bg-[#101010] shadow-2xl"
+                                onClick={(event) => event.stopPropagation()}
+                            >
+                                <div className="h-full grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr]">
+                                    <section className="relative bg-black/90 min-h-[280px] lg:min-h-full flex flex-col">
+                                        <button
+                                            type="button"
+                                            onClick={closeWorkSampleViewer}
+                                            className="absolute top-3 right-3 z-20 h-9 w-9 rounded-full border border-white/20 bg-black/65 text-white/80 hover:text-white transition-colors inline-flex items-center justify-center"
+                                            aria-label={tx('pages.freelancerProfile.viewer.close', undefined, 'Close portfolio viewer')}
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+
+                                        <div className="relative flex-1 flex items-center justify-center p-2 sm:p-4">
+                                            {activeWorkSampleImage ? (
+                                                <OptimizedImage
+                                                    src={activeWorkSampleImage}
+                                                    alt={activeWorkSample.title || 'Portfolio project image'}
+                                                    className="h-full max-h-[56vh] lg:max-h-[72vh] w-full"
+                                                    imgClassName="object-contain"
+                                                />
+                                            ) : (
+                                                <div className="h-full w-full flex items-center justify-center text-white/25 bg-[radial-gradient(circle_at_35%_20%,rgba(139,92,246,0.2),transparent_48%),#090909] rounded-xl">
+                                                    <Briefcase className="w-10 h-10" />
+                                                </div>
+                                            )}
+
+                                            {activeWorkSampleImages.length > 1 ? (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={showPreviousWorkImage}
+                                                        className="absolute left-4 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full border border-white/20 bg-black/65 text-white/80 hover:text-white transition-colors inline-flex items-center justify-center"
+                                                        aria-label={tx('pages.freelancerProfile.viewer.previousImage', undefined, 'Previous image')}
+                                                    >
+                                                        <ChevronLeft className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={showNextWorkImage}
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full border border-white/20 bg-black/65 text-white/80 hover:text-white transition-colors inline-flex items-center justify-center"
+                                                        aria-label={tx('pages.freelancerProfile.viewer.nextImage', undefined, 'Next image')}
+                                                    >
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </button>
+                                                </>
+                                            ) : null}
+                                        </div>
+
+                                        {activeWorkSampleImages.length > 1 ? (
+                                            <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+                                                <div className="flex gap-2 overflow-x-auto pb-1">
+                                                    {activeWorkSampleImages.map((imageUrl, index) => (
+                                                        <button
+                                                            key={`${activeWorkSample.id}-image-${index}`}
+                                                            type="button"
+                                                            onClick={() => setActiveWorkImageIndex(index)}
+                                                            className={`h-16 w-24 shrink-0 overflow-hidden rounded-lg border transition-colors ${index === activeWorkImageIndex ? 'border-[#8B5CF6]' : 'border-white/15 hover:border-white/35'}`}
+                                                        >
+                                                            <OptimizedImage
+                                                                src={imageUrl}
+                                                                alt={`Project image ${index + 1}`}
+                                                                className="h-full w-full"
+                                                                imgClassName="object-cover"
+                                                            />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : null}
+                                    </section>
+
+                                    <aside className="h-full flex flex-col bg-[var(--color-bg-elevated)]">
+                                        <div className="border-b border-white/10 px-4 py-4 sm:px-5">
+                                            <p className="text-xs uppercase tracking-[0.12em] text-[#c4b5fd] font-semibold">
+                                                Project {Math.max(1, activeWorkSamplePosition + 1)} of {workSamples.length}
+                                            </p>
+                                            <h3 className="text-lg font-bold text-white mt-2 leading-6">
+                                                {activeWorkSample.title || 'Untitled work'}
+                                            </h3>
+                                        </div>
+
+                                        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5 space-y-5">
+                                            <p className="text-sm text-white/75 leading-6">
+                                                {activeWorkSample.description || 'No description provided yet.'}
+                                            </p>
+
+                                            <div className="space-y-2.5 text-sm text-white/70">
+                                                <div className="inline-flex items-center gap-2">
+                                                    <Images className="w-4 h-4 text-white/45" />
+                                                    <span>{activeWorkSampleImages.length} {activeWorkSampleImages.length === 1 ? 'photo' : 'photos'}</span>
+                                                </div>
+
+                                                {activeWorkSample.client_name ? (
+                                                    <div className="inline-flex items-center gap-2">
+                                                        <span className="inline-flex items-center gap-2">
+                                                            <Briefcase className="w-4 h-4 text-white/45" />
+                                                            <span>{activeWorkSample.client_name}</span>
+                                                        </span>
+                                                    </div>
+                                                ) : null}
+
+                                                {activeWorkSample.completion_date ? (
+                                                    <div className="inline-flex items-center gap-2">
+                                                        <span className="inline-flex items-center gap-2">
+                                                            <CalendarDays className="w-4 h-4 text-white/45" />
+                                                            <span>{formatPortfolioMonth(activeWorkSample.completion_date)}</span>
+                                                        </span>
+                                                    </div>
+                                                ) : null}
+
+                                                {activeWorkSample.project_url ? (
+                                                    <a
+                                                        href={activeWorkSample.project_url}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="inline-flex items-center gap-2 text-[#c4b5fd] hover:text-[#ddd6fe] transition-colors"
+                                                    >
+                                                        <ExternalLink className="w-4 h-4" />
+                                                        {tx('pages.freelancerProfile.actions.openProjectLink', undefined, 'Open project link')}
+                                                    </a>
+                                                ) : null}
+                                            </div>
+
+                                            {activeWorkSample.skills_used && activeWorkSample.skills_used.length > 0 ? (
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45 mb-2">{tx('pages.freelancerProfile.labels.skillsUsed', undefined, 'Skills used')}</p>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {activeWorkSample.skills_used.map((skill) => (
+                                                            <span
+                                                                key={skill}
+                                                                className="text-xs px-2.5 py-1 rounded-full border"
+                                                                style={{
+                                                                    borderColor: `color-mix(in srgb, ${accentColor} 30%, #2f2f2f)`,
+                                                                    color: accentColor,
+                                                                    background: `color-mix(in srgb, ${accentColor} 12%, transparent)`,
+                                                                }}
+                                                            >
+                                                                {skill}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ) : null}
+
+                                            {activeWorkSample.tools_used && activeWorkSample.tools_used.length > 0 ? (
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45 mb-2">{tx('pages.freelancerProfile.labels.toolsUsed', undefined, 'Tools used')}</p>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {activeWorkSample.tools_used.map((tool) => (
+                                                            <span
+                                                                key={tool}
+                                                                className="text-xs px-2.5 py-1 rounded-full border"
+                                                                style={{
+                                                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 35%, transparent)',
+                                                                    color: 'var(--workspace-primary)',
+                                                                    background: 'var(--workspace-primary-dim)'
+                                                                }}
+                                                            >
+                                                                {tool}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ) : null}
+                                        </div>
+
+                                        {workSamples.length > 1 ? (
+                                            <div className="border-t border-white/10 px-4 py-3 sm:px-5 flex items-center justify-between gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={showPreviousWorkSample}
+                                                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/75 hover:text-white transition-colors"
+                                                >
+                                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                                    {tx('pages.freelancerProfile.actions.previousProject', undefined, 'Previous project')}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={showNextWorkSample}
+                                                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/75 hover:text-white transition-colors"
+                                                >
+                                                    {tx('pages.freelancerProfile.actions.nextProject', undefined, 'Next project')}
+                                                    <ChevronRight className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        ) : null}
+                                    </aside>
+                                </div>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    <ProfileSection title="Client Trust">
+                        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-5 items-start">
+                            <div className="rounded-lg border p-4 text-center" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-elevated)' }}>
+                                <p className="text-5xl leading-none font-black text-white">
+                                    {freelancer.stats.rating.toFixed(1)}
+                                </p>
+                                <div className="mt-2 flex items-center justify-center gap-1">
+                                    {[1, 2, 3, 4, 5].map((value) => (
+                                        <Star
+                                            key={value}
+                                            className="w-4 h-4"
+                                            style={{
+                                                color: value <= Math.round(freelancer.stats.rating) ? accentColor : '#4b5563',
+                                                fill: value <= Math.round(freelancer.stats.rating) ? accentColor : 'none',
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                                <p className="text-xs text-[var(--color-text-secondary)] mt-2">{freelancer.stats.reviews_count} reviews</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                {reviewBuckets.map(({ score, pct }) => (
+                                    <div key={score} className="flex items-center gap-2 text-xs">
+                                        <span className="w-3 text-[var(--color-text-secondary)]">{score}</span>
+                                        <div className="h-2 flex-1 rounded-full overflow-hidden" style={{ background: 'var(--color-border-subtle)' }}>
+                                            <div
+                                                className="h-full rounded-full transition-all duration-500"
+                                                style={{
+                                                    width: `${pct}%`,
+                                                    background: `linear-gradient(90deg, ${accentColor}, color-mix(in srgb, ${accentColor} 55%, #ffffff))`,
+                                                }}
+                                            />
+                                        </div>
+                                        <span className="w-10 text-right text-[var(--color-text-tertiary)]">{pct}%</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {freelancer.reviews.length > 0 ? (
+                            <div className="mt-5 space-y-2.5">
+                                {freelancer.reviews.slice(0, 3).map((review) => (
+                                    <article key={review.id} className="rounded-lg border p-3" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-subtle)' }}>
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <p className="text-sm font-semibold text-white">{review.client_name}</p>
+                                                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{review.job_title || 'Project collaboration'}</p>
+                                            </div>
+                                            <div className="inline-flex items-center gap-1 text-xs" style={{ color: accentColor }}>
+                                                <Star className="w-3.5 h-3.5" style={{ fill: accentColor }} />
+                                                {review.rating.toFixed(1)}
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-[var(--color-text-secondary)] mt-2">{review.comment}</p>
+                                    </article>
+                                ))}
+                            </div>
+                        ) : (
+                            <ProfileEmptySlot message={tx('pages.freelancerProfile.reviews.empty', undefined, 'No reviews yet. Complete your first contract to receive feedback.')} />
+                        )}
+                    </ProfileSection>
+                </div>
+
+                <div className="lg:col-span-1">
+                    <ProfileActionSidebar
+                        variant="freelancer"
+                        primaryCta={
+                            viewerRole === 'client' ? (
+                                <div className="flex flex-col gap-2">
+                                    <button
+                                        onClick={onHireNow}
+                                        className="w-full text-white rounded-xl py-3 font-semibold transition-all shadow-[0_4px_14px_0_rgba(139,92,246,0.39)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.23)]"
+                                        style={{ background: accentColor }}
+                                    >
+                                        {tx('pages.freelancerProfile.cta.hireMe', undefined, 'Hire Me')}
+                                    </button>
+                                    <button
+                                        onClick={onOpenContact}
+                                        className="w-full rounded-xl py-3 font-semibold transition-colors inline-flex items-center justify-center gap-2 hover:bg-[#8B5CF6]/10"
+                                        style={{ border: `1px solid color-mix(in srgb, ${accentColor} 50%, transparent)`, color: accentColor }}
+                                    >
+                                        <MessageSquare className="w-4 h-4" />
+                                        {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
+                                    </button>
+                                </div>
+                            ) : (viewerRole === 'freelancer' || viewerRole === 'guest') ? (
+                                <button
+                                    onClick={onOpenContact}
+                                    className="w-full rounded-xl py-3 font-semibold transition-colors inline-flex items-center justify-center gap-2 hover:bg-white/5"
+                                    style={{ border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
+                                >
+                                    <MessageSquare className="w-4 h-4" />
+                                    {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
+                                </button>
+                            ) : undefined
+                        }
+                        workspaceInfo={[
+                            {
+                                label: "Status",
+                                value: (
+                                    <span className="flex items-center justify-end gap-1.5">
+                                        <span className="w-2 h-2 rounded-full" style={{ background: freelancer.availability === 'available' ? '#14A800' : '#fbbf24' }} />
+                                        {freelancer.availability === 'available' ? 'Available for work' : freelancer.availability === 'busy' ? 'Busy' : 'Offline'}
+                                    </span>
+                                )
+                            },
+                            {
+                                label: "Location",
+                                value: freelancer.location || 'Tunisia'
+                            },
+                            {
+                                label: tx('pages.freelancerProfile.info.memberSince', undefined, 'Member since'),
+                                value: new Date(freelancer.joined_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+                            },
+                        ]}
+                        availability={[
+                            {
+                                label: "Hours per week",
+                                value: freelancer.weekly_availability_hours ? `${freelancer.weekly_availability_hours}+ hrs` : '30+ hrs'
+                            },
+                            {
+                                label: "Response time",
+                                value: freelancer.stats.response_time_hours ? `< ${freelancer.stats.response_time_hours} hrs` : '< 2 hrs'
+                            },
+                        ]}
+                        languages={
+                            freelancer.languages && freelancer.languages.length > 0
+                                ? freelancer.languages.map(lang => ({
+                                    language: lang.language,
+                                    proficiency: lang.proficiency
+                                }))
+                                : []
+                        }
+                        verifications={[
+                            { label: 'Identity', passed: !!freelancer.verifications.cin },
+                            { label: 'Phone', passed: !!freelancer.verifications.phone },
+                            { label: 'Email', passed: !!freelancer.verifications.email },
+                            { label: tx('pages.freelancerProfile.verifications.paymentMethod', undefined, 'Payment method'), passed: !!freelancer.verifications.payment },
+                        ]}
+                        education={
+                            freelancer.education && freelancer.education.length > 0
+                                ? freelancer.education.map(edu => ({
+                                    institution: edu.institution,
+                                    degree: edu.degree,
+                                    field: edu.field,
+                                    years: `${edu.startYear}-${edu.endYear}`
+                                }))
+                                : []
+                        }
+                        certifications={
+                            freelancer.certifications && freelancer.certifications.length > 0
+                                ? freelancer.certifications.map(cert => ({
+                                    name: cert.name,
+                                    issuer: cert.issuer,
+                                    year: cert.year
+                                }))
+                                : []
+                        }
+                        ownerActions={isOwner ? [
+                            {
+                                icon: <Eye className="w-4 h-4" />,
+                                label: tx('pages.freelancerProfile.cta.viewPublicProfile', undefined, 'View Public Profile'),
+                                description: 'Preview how others see your profile.',
+                                onClick: () => navigate(`/freelancer/${freelancer.username || freelancer.id}?preview=public`)
+                            },
+                            {
+                                icon: <Briefcase className="w-4 h-4" />,
+                                label: tx('pages.freelancerProfile.cta.portfolioDashboard', undefined, 'Portfolio Dashboard'),
+                                description: 'Organize your best work.',
+                                onClick: () => navigate(ROUTES.freelancerPortfolio)
+                            },
+                            {
+                                icon: <MessageSquare className="w-4 h-4" />,
+                                label: tx('pages.freelancerProfile.cta.myProposals', undefined, 'My Proposals'),
+                                description: 'Track statuses and follow up.',
+                                onClick: () => navigate(ROUTES.myProposals)
+                            },
+                            {
+                                icon: <Settings className="w-4 h-4" />,
+                                label: tx('pages.freelancerProfile.cta.workspaceSettings', undefined, 'Workspace Settings'),
+                                description: 'Notifications and security.',
+                                onClick: () => navigate(ROUTES.settings)
+                            }
+                        ] : []}
+                    />
+                </div>
+            </div>
+        </div>
+      </div>
+    );
+}
+

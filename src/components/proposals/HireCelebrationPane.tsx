@@ -78,12 +78,12 @@ export function HireCelebrationPane({
                 </div>
 
                 {/* Trust card */}
-                <div className="w-full rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
+                <div className="w-full rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] backdrop-blur-md p-4 space-y-3.5 shadow-lg">
                     <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4 text-amber-400 shrink-0" />
                         <p className="text-xs font-bold text-amber-200">Secure your contract</p>
                     </div>
-                    <p className="text-xs text-white/50 text-left leading-relaxed">
+                    <p className="text-xs text-white/60 text-left leading-relaxed">
                         Fund{' '}
                         <span className="font-bold text-amber-300">{fmtAmount(amount)} TND</span>{' '}
                         into escrow from the workspace. Your money is protected until you approve the delivery.
@@ -111,17 +111,17 @@ export function HireCelebrationPane({
                 </div>
 
                 {/* What's next */}
-                <div className="w-full rounded-xl border border-white/5 bg-white/2 p-3 text-left space-y-2">
+                <div className="w-full rounded-2xl border border-white/[0.04] bg-white/[0.01] backdrop-blur-md p-4 text-left space-y-2.5 shadow-sm">
                     <p className="text-[10px] uppercase tracking-wider font-black text-white/40">Next steps</p>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                         {[
                             { icon: <MessageSquare className="w-3.5 h-3.5" />, text: 'Open the contract chat to align on details' },
                             { icon: <Shield className="w-3.5 h-3.5" />, text: `Fund ${fmtAmount(amount)} TND escrow from the workspace` },
                             { icon: <Star className="w-3.5 h-3.5" />, text: 'Review and approve delivery when ready' },
                         ].map(({ icon, text }) => (
                             <div key={text} className="flex items-start gap-2">
-                                <span className="mt-0.5 text-amber-500/70 shrink-0">{icon}</span>
-                                <p className="text-[12px] text-white/60">{text}</p>
+                                <span className="mt-0.5 text-amber-400 shrink-0">{icon}</span>
+                                <p className="text-[12px] text-white/60 leading-normal">{text}</p>
                             </div>
                         ))}
                     </div>
@@ -132,7 +132,7 @@ export function HireCelebrationPane({
                     <button
                         type="button"
                         onClick={onGoToChat}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-500 py-3 text-sm font-bold text-black shadow-lg shadow-amber-500/20 transition hover:bg-amber-400 active:scale-95"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-500 py-3 text-sm font-bold text-black shadow-lg shadow-amber-500/10 transition-all duration-200 hover:bg-amber-400 hover:scale-[1.02] active:scale-[0.98]"
                     >
                         <MessageSquare className="w-4 h-4" />
                         Open Chat
@@ -140,7 +140,7 @@ export function HireCelebrationPane({
                     <button
                         type="button"
                         onClick={onGoToWorkspace}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/70 transition hover:bg-white/5"
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/70 transition-all duration-200 hover:bg-white/5 hover:text-white hover:scale-[1.02] active:scale-[0.98]"
                     >
                         <ExternalLink className="w-4 h-4" />
                         Workspace

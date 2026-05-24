@@ -471,7 +471,7 @@ export default function ContractWorkspacePage() {
         setDeliverNote('');
         setReviewFiles([]);
         setFinalFiles([]);
-        setUploadProgress({ current: 0, total: 0 });
+        setUploadProgress({ current: 0, total: 0, currentBytes: 0, totalBytes: 0 });
         setDeliverOpen(true);
         setTimeout(() => deliverTextareaRef.current?.focus(), 60);
     };
@@ -847,7 +847,7 @@ export default function ContractWorkspacePage() {
 
             {/* ─── Confirm Release Payment Modal ──────────────────────────── */}
             {confirmReleaseOpen ? (
-                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-release-title" onClick={() => setReleasePaymentOpen(false)}>
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-release-title" onClick={() => setConfirmReleaseOpen(false)}>
                     <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
                         <div className="mb-4 flex items-center gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#1D9E75]/15">

@@ -41,7 +41,7 @@ interface UseContractStateReturn {
     contract: ContractData | null;
     isLoading: boolean;
     error: Error | null;
-    deliverWork: (note: string) => Promise<void>;
+    deliverWork: (note: string, reviewAssets?: Array<Record<string, string>>, finalAssets?: Array<Record<string, string>>) => Promise<void>;
     acceptWork: () => Promise<void>;
     requestChanges: (feedback: string) => Promise<void>;
     openDispute: (reason: string) => Promise<void>;
