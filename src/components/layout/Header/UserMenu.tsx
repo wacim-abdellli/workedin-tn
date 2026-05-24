@@ -271,12 +271,6 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
               {avatarInitials}
             </div>
           )}
-          {isOnlineForMessages && (
-            <span
-              className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-[#0c0c0e] ${onlineDotClass}`}
-              aria-hidden="true"
-            />
-          )}
         </div>
         <div className="flex flex-col items-start leading-none pr-0.5">
           <span 
