@@ -148,57 +148,45 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
   const switchActionLabel = t.auth?.accountPanel?.switchAction || "Switch";
   const switchButtonLabel = `${switchActionLabel}: ${switchTargetLabel}`;
   const workspaceBadgeClass = isFreelancer
-    ? "border-purple-500/25 text-purple-400/70 bg-purple-500/[0.07]"
-    : "border-amber-500/25 text-amber-400/70 bg-amber-500/[0.07]";
+    ? "border-purple-500/25 text-purple-400 bg-purple-500/[0.07]"
+    : "border-amber-500/25 text-amber-400 bg-amber-500/[0.07]";
   const onlineDotClass = "bg-green-500"; // Semantic green for online status
-  const menuItemClass = isDark
-    ? "w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors duration-100"
-    : "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100";
   
-  const menuItemStyle = isDark 
-    ? {} 
-    : {
-        color: 'var(--color-text-secondary)',
-      };
+  const menuItemClass = `w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-150 ${
+    isDark
+      ? "text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04]"
+      : "text-zinc-600 hover:text-zinc-900 hover:bg-black/[0.03]"
+  }`;
   
-  const menuItemHoverStyle = isDark
-    ? {}
-    : {
-        color: 'var(--color-text-primary)',
-        background: 'var(--color-bg-muted)',
-      };
-  
-  const menuIconClass = isDark 
-    ? "w-4 h-4 text-white/30 shrink-0"
-    : "w-4 h-4 shrink-0";
-  
-  const menuIconStyle = isDark ? {} : { color: 'var(--color-text-tertiary)' };
+  const menuIconClass = `w-4 h-4 shrink-0 transition-colors duration-150 ${
+    isDark ? "text-zinc-500 group-hover:text-zinc-300" : "text-zinc-400 group-hover:text-zinc-600"
+  }`;
   
   const divider = (
     <div 
-      className="mx-3 border-t" 
-      style={{ 
-        borderColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'var(--color-border-subtle)' 
-      }} 
+      className={`mx-3 my-1 border-t ${
+        isDark ? 'border-white/[0.06]' : 'border-zinc-200/50'
+      }`} 
     />
   );
+
   // Semantic colors for toggles: green for online status, workspace colors for dark mode
   const toggleTrackClass = (enabled: boolean, isOnlineToggle: boolean = false) => {
     if (isOnlineToggle) {
       // Online toggle: green when enabled, gray when disabled
-      return `relative ml-auto shrink-0 h-5 w-9 rounded-full transition-colors duration-200 ${
-        enabled ? "bg-green-500" : (isDark ? "bg-white/[0.14]" : "bg-gray-300")
+      return `relative ml-auto shrink-0 h-5 w-8 rounded-full transition-colors duration-200 ${
+        enabled ? "bg-green-500" : (isDark ? "bg-white/[0.14]" : "bg-zinc-200")
       }`;
     } else {
       // Dark mode toggle: workspace colors when enabled
-      return `relative ml-auto shrink-0 h-5 w-9 rounded-full transition-colors duration-200 ${
-        enabled ? (isFreelancer ? "bg-purple-500" : "bg-amber-500") : (isDark ? "bg-white/[0.14]" : "bg-gray-300")
+      return `relative ml-auto shrink-0 h-5 w-8 rounded-full transition-colors duration-200 ${
+        enabled ? (isFreelancer ? "bg-purple-500" : "bg-amber-500") : (isDark ? "bg-white/[0.14]" : "bg-zinc-200")
       }`;
     }
   };
   const toggleThumbClass = (enabled: boolean) =>
     `absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-      enabled ? "translate-x-4" : "translate-x-0"
+      enabled ? "translate-x-3" : "translate-x-0"
     }`;
 
   const handleToggleOnline = async () => {
@@ -320,23 +308,25 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute end-0 top-full z-[70] mt-2 w-64 rounded-2xl overflow-hidden py-2"
+            className="absolute end-0 top-full z-[70] mt-2.5 w-64 rounded-2xl p-1.5"
             style={{
               transformOrigin: "top right",
               background: isDark 
-                ? 'linear-gradient(145deg, #161616, #111111)'
-                : 'linear-gradient(145deg, var(--color-background-elevated), var(--color-bg-subtle))',
+                ? 'rgba(12, 12, 14, 0.85)'
+                : 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
               border: isDark 
-                ? '1px solid rgba(255,255,255,0.09)'
-                : '1px solid var(--color-border-default)',
+                ? '1px solid rgba(255, 255, 255, 0.08)'
+                : '1px solid rgba(0, 0, 0, 0.06)',
               boxShadow: isDark 
-                ? '0 24px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)'
-                : '0 24px 48px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
+                ? '0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02)'
+                : '0 20px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02)',
             }}
             role="menu"
             ref={menuRef}
           >
-            <div className="px-4 py-3 flex items-center gap-3">
+            <div className="px-3.5 py-3 flex items-center gap-3">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -359,7 +349,7 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                   {avatarInitials}
                 </div>
               )}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p 
                   className="truncate text-sm font-semibold"
                   style={{ color: isDark ? 'rgba(255, 255, 255, 0.9)' : 'var(--color-text-primary)' }}
@@ -367,13 +357,12 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                   {displayName}
                 </p>
                 <p 
-                  className="truncate text-xs"
-                  style={{ color: isDark ? 'rgba(255, 255, 255, 0.4)' : 'var(--color-text-tertiary)' }}
+                  className="truncate text-xs text-zinc-400 dark:text-zinc-500"
                 >
                   {user.email}
                 </p>
                 <span
-                  className={`inline-flex mt-1 items-center px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide border ${workspaceBadgeClass}`}
+                  className={`inline-flex mt-1 items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${workspaceBadgeClass}`}
                 >
                   {workspaceLabel}
                 </span>
@@ -385,42 +374,35 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             <button
               onClick={() => void handleQuickWorkspaceSwitch()}
               disabled={isSwitching}
-              className="w-full flex items-center justify-between px-4 py-2.5 text-sm group transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-              style={menuItemStyle}
-              onMouseEnter={(e) => {
-                if (!isSwitching) {
-                  Object.assign(e.currentTarget.style, menuItemHoverStyle);
-                }
-              }}
-              onMouseLeave={(e) => {
-                Object.assign(e.currentTarget.style, menuItemStyle);
-              }}
+              className={`group ${menuItemClass} justify-between text-left disabled:cursor-not-allowed disabled:opacity-60`}
               title={switchButtonLabel}
               role="menuitem"
             >
               <div className="flex items-center gap-3">
                 <ArrowLeftRight 
-                  className={`w-4 h-4 ${isSwitching ? "animate-spin" : ""}`}
-                  style={menuIconStyle}
+                  className={`w-4 h-4 shrink-0 transition-colors duration-150 ${isSwitching ? "animate-spin" : ""} ${
+                    isDark ? "text-zinc-500 group-hover:text-zinc-300" : "text-zinc-400 group-hover:text-zinc-600"
+                  }`}
                 />
-                <div className="text-left">
+                <div>
                   <p 
-                    className="text-[10px] uppercase tracking-wider font-medium"
-                    style={{ color: isDark ? 'rgba(255, 255, 255, 0.3)' : 'var(--color-text-tertiary)' }}
+                    className="text-[9px] uppercase tracking-wider font-bold text-zinc-400 dark:text-zinc-500"
                   >
                     {tx('auth.accountPanel.switchWorkspace', undefined, 'Switch workspace')}
                   </p>
                   <p 
-                    className="text-sm font-medium"
-                    style={{ color: isDark ? 'rgba(255, 255, 255, 0.75)' : 'var(--color-text-secondary)' }}
+                    className={`text-sm font-semibold transition-colors duration-150 ${
+                      isDark ? "text-zinc-300 group-hover:text-zinc-50" : "text-zinc-700 group-hover:text-zinc-900"
+                    }`}
                   >
                     {tx('auth.accountPanel.goToWorkspace', { workspace: switchTargetLabel }, `Go to ${switchTargetLabel}`)}
                   </p>
                 </div>
               </div>
               <ChevronRight 
-                className="w-4 h-4"
-                style={{ color: isDark ? 'rgba(255, 255, 255, 0.25)' : 'var(--color-text-tertiary)' }}
+                className={`w-4 h-4 transition-colors duration-150 ${
+                  isDark ? "text-zinc-600 group-hover:text-zinc-400" : "text-zinc-400 group-hover:text-zinc-600"
+                }`}
               />
             </button>
 
@@ -432,19 +414,12 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
               aria-checked={isOnlineForMessages}
               onClick={() => void handleToggleOnline()}
               disabled={isTogglingOnline}
-              className={`${menuItemClass} disabled:opacity-60`}
-              style={menuItemStyle}
-              onMouseEnter={(e) => {
-                if (!isTogglingOnline) {
-                  Object.assign(e.currentTarget.style, menuItemHoverStyle);
-                }
-              }}
-              onMouseLeave={(e) => {
-                Object.assign(e.currentTarget.style, menuItemStyle);
-              }}
+              className={`group ${menuItemClass} justify-between disabled:opacity-60`}
             >
-              <span className={`w-4 h-4 rounded-full ${isOnlineForMessages ? onlineDotClass : isDark ? "bg-white/20" : "bg-gray-300"}`} />
-              {tx('auth.accountPanel.onlineForMessages', undefined, 'Online for messages')}
+              <div className="flex items-center gap-3">
+                <span className={`w-2 h-2 rounded-full shrink-0 transition-all duration-300 ${isOnlineForMessages ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-zinc-400 dark:bg-zinc-600'}`} />
+                <span>{tx('auth.accountPanel.onlineForMessages', undefined, 'Online for messages')}</span>
+              </div>
               <span className={toggleTrackClass(isOnlineForMessages, true)}>
                 <span className={toggleThumbClass(isOnlineForMessages)} />
               </span>
@@ -460,45 +435,34 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                   navigate(path);
                   setUserMenuOpen(false);
                 }}
-                className={menuItemClass}
-                style={menuItemStyle}
-                onMouseEnter={(e) => {
-                  Object.assign(e.currentTarget.style, menuItemHoverStyle);
-                }}
-                onMouseLeave={(e) => {
-                  Object.assign(e.currentTarget.style, menuItemStyle);
-                }}
+                className={`group ${menuItemClass}`}
                 role="menuitem"
               >
-                <Icon className={menuIconClass} style={menuIconStyle} />
-                {label}
+                <Icon className={menuIconClass} />
+                <span>{label}</span>
               </button>
             ))}
 
             {freelancerVerified ? (
               <div 
                 className={menuItemClass} 
-                style={menuItemStyle}
                 role="menuitem"
               >
-                <Shield className={menuIconClass} style={menuIconStyle} />
-                {t.settings?.cinVerification || "ID Verified"}
+                <Shield className={menuIconClass} />
+                <span className="flex-1 text-left">{t.settings?.cinVerification || "ID Verified"}</span>
                 <CheckCircle2 
-                  className="ml-auto w-4 h-4"
-                  style={{ color: isDark ? 'rgba(255, 255, 255, 0.3)' : 'var(--color-text-tertiary)' }}
+                  className="w-4 h-4 text-green-500 shrink-0"
                 />
               </div>
             ) : freelancerPending ? (
               <div 
                 className={menuItemClass} 
-                style={menuItemStyle}
                 role="menuitem"
               >
-                <Shield className={menuIconClass} style={menuIconStyle} />
-                {t.settings?.cinVerification || "Verify identity"}
+                <Shield className={menuIconClass} />
+                <span className="flex-1 text-left">{t.settings?.cinVerification || "Verify identity"}</span>
                 <Loader2 
-                  className="ml-auto w-4 h-4 animate-spin"
-                  style={{ color: isDark ? 'rgba(255, 255, 255, 0.3)' : 'var(--color-text-tertiary)' }}
+                  className="w-4 h-4 animate-spin text-zinc-400 shrink-0"
                 />
               </div>
             ) : (
@@ -507,18 +471,11 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                   navigate("/verify-identity");
                   setUserMenuOpen(false);
                 }}
-                className={menuItemClass}
-                style={menuItemStyle}
-                onMouseEnter={(e) => {
-                  Object.assign(e.currentTarget.style, menuItemHoverStyle);
-                }}
-                onMouseLeave={(e) => {
-                  Object.assign(e.currentTarget.style, menuItemStyle);
-                }}
+                className={`group ${menuItemClass}`}
                 role="menuitem"
               >
-                <Shield className={menuIconClass} style={menuIconStyle} />
-                {t.settings?.cinVerification || "Verify identity"}
+                <Shield className={menuIconClass} />
+                <span>{t.settings?.cinVerification || "Verify identity"}</span>
               </button>
             )}
 
@@ -528,12 +485,14 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                   navigate("/admin");
                   setUserMenuOpen(false);
                 }}
-                className={menuItemClass}
+                className={`group ${menuItemClass}`}
                 role="menuitem"
               >
                 <Shield className={menuIconClass} />
-                {t.nav?.adminDashboard || "Admin Dashboard"}
-                <span className="ml-auto rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-medium text-white/35">
+                <span>{t.nav?.adminDashboard || "Admin Dashboard"}</span>
+                <span className={`ml-auto rounded-full border px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider ${
+                  isFreelancer ? "border-purple-500/25 text-purple-400 bg-purple-500/[0.07]" : "border-amber-500/25 text-amber-400 bg-amber-500/[0.07]"
+                }`}>
                   {tx("ui.admin")}
                 </span>
               </button>
@@ -544,30 +503,25 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             <button
               type="button"
               onClick={toggleTheme}
-              className={menuItemClass}
-              style={menuItemStyle}
-              onMouseEnter={(e) => {
-                Object.assign(e.currentTarget.style, menuItemHoverStyle);
-              }}
-              onMouseLeave={(e) => {
-                Object.assign(e.currentTarget.style, menuItemStyle);
-              }}
+              className={`group ${menuItemClass} justify-between`}
               aria-checked={isDark}
               role="switch"
               aria-label={tx('auth.accountPanel.darkTheme', undefined, 'Dark theme')}
             >
-              <Moon className={menuIconClass} style={menuIconStyle} />
-              {tx('auth.accountPanel.darkTheme', undefined, 'Dark theme')}
+              <div className="flex items-center gap-3">
+                <Moon className={menuIconClass} />
+                <span>{tx('auth.accountPanel.darkTheme', undefined, 'Dark theme')}</span>
+              </div>
               <span className={toggleTrackClass(isDark, false)}>
                 <span className={toggleThumbClass(isDark)} />
               </span>
             </button>
 
-            <div className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/55">
+            <div className={`flex items-center gap-3 px-3.5 py-2 text-sm font-medium ${isDark ? "text-zinc-400" : "text-zinc-600"}`}>
               <Globe2 className={menuIconClass} />
-              {tx('auth.accountPanel.language', undefined, 'Language')}
+              <span>{tx('auth.accountPanel.language', undefined, 'Language')}</span>
               <div
-                className="ml-auto flex shrink-0 items-center rounded-full border border-white/[0.08] bg-white/[0.03] p-0.5"
+                className="ml-auto flex shrink-0 items-center rounded-full border border-zinc-200/50 dark:border-white/[0.06] bg-black/[0.02] dark:bg-white/[0.02] p-0.5"
                 role="group"
                 aria-label={tx('auth.accountPanel.language', undefined, 'Language')}
               >
@@ -578,8 +532,12 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                       key={option.code}
                       type="button"
                       onClick={() => setLanguage(option.code)}
-                      className={`h-5 min-w-7 rounded-full px-1.5 text-[9px] font-bold transition-colors ${
-                        active ? (isFreelancer ? "text-purple-400 bg-purple-500/[0.12]" : "text-amber-400 bg-amber-500/[0.12]") : "text-white/35"
+                      className={`h-5 min-w-7 rounded-full px-1.5 text-[9px] font-bold transition-all duration-150 ${
+                        active 
+                          ? (isFreelancer 
+                              ? "text-purple-400 bg-purple-500/[0.12] border border-purple-500/20" 
+                              : "text-amber-400 bg-amber-500/[0.12] border border-amber-500/20") 
+                          : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100"
                       }`}
                       aria-label={option.label}
                     >
@@ -597,11 +555,11 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                 await signOut();
                 setUserMenuOpen(false);
               }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/40 hover:text-red-400 hover:bg-red-500/[0.06] transition-colors duration-100"
+              className="group w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-zinc-500 hover:text-red-400 hover:bg-red-500/[0.06]"
               role="menuitem"
             >
-              <LogOut className="w-4 h-4" />
-              {t.nav?.logout || "Sign out"}
+              <LogOut className="w-4 h-4 shrink-0 transition-colors duration-150 text-zinc-500 group-hover:text-red-400" />
+              <span>{t.nav?.logout || "Sign out"}</span>
             </button>
           </motion.div>
         )}

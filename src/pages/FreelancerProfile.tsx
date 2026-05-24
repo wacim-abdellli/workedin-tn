@@ -41,6 +41,7 @@ import { useTranslation } from '../i18n';
 import { localizeGovernorate } from '../lib/governorates';
 import { ROUTES } from '@/lib/routes';
 import { logger } from '@/lib/logger';
+import { usePresence } from '@/hooks/usePresence';
 import ContactModal from '../components/freelancer/ContactModal';
 import InviteToJobModal from '../components/freelancer/InviteToJobModal';
 import { uploadAvatar } from '@/services/profiles';
@@ -354,6 +355,11 @@ function ProfileView({
     const navigate = useNavigate();
     const { showToast } = useToast();
     const { tx } = useTranslation();
+    const { user, profile } = useAuth();
+    const { isOnline } = usePresence({
+        userId: user?.id,
+        isOnlineForMessages: profile?.is_online_for_messages !== false,
+    });
     const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
     const [savingAvatar, setSavingAvatar] = useState(false);
@@ -710,7 +716,7 @@ function ProfileView({
               )}
               
               {/* Availability Status Dot */}
-              {freelancer.availability === 'available' && (
+              {isOnline(freelancer.id) && (
                 <span
                   className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-[3px] border-white dark:border-[#0c0c0e] bg-[#10B981]"
                   aria-hidden="true"
