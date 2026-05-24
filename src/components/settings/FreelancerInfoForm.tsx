@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Briefcase, DollarSign, Wrench, Timer, Repeat, FileText, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { Briefcase, DollarSign, Wrench, Timer, Repeat, FileText, Zap, Search, Check, X, Plus, Languages, Trash2, GraduationCap } from 'lucide-react';
 import { useTranslation } from '@/i18n';
-import { useAuth } from '@/contexts/AuthContext';
 import Input from '@/components/ui/Input';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { TOOL_OPTIONS, INDUSTRY_OPTIONS } from '@/lib/constants/profileOptions';
@@ -41,6 +40,8 @@ export interface FreelancerFormData {
     revision_policy: string;
     project_preferences: string;
     skills: string[];
+    languages: { language: string; proficiency: 'native' | 'fluent' | 'conversational' | 'basic' }[];
+    education: { institution: string; degree: string; field: string; startYear: string; endYear: string }[];
 }
 
 interface FreelancerInfoFormProps {
@@ -70,11 +71,39 @@ export function buildFreelancerInitialForm(
         revision_policy: fp?.revision_policy || '',
         project_preferences: extractDescription(fp?.project_preferences as Record<string,unknown>),
         skills: resolvedSkills,
+        languages: Array.isArray(fp?.languages) ? fp.languages as any : [],
+        education: Array.isArray(fp?.education) ? fp.education as any : [],
     };
 }
 
+const COMMON_LANGUAGES = [
+    { value: 'English', label: 'English' },
+    { value: 'French', label: 'French' },
+    { value: 'Arabic', label: 'Arabic' },
+    { value: 'Spanish', label: 'Spanish' },
+    { value: 'German', label: 'German' },
+    { value: 'Italian', label: 'Italian' },
+    { value: 'Portuguese', label: 'Portuguese' },
+    { value: 'Russian', label: 'Russian' },
+    { value: 'Chinese', label: 'Chinese' },
+    { value: 'Japanese', label: 'Japanese' },
+    { value: 'Turkish', label: 'Turkish' },
+    { value: 'Hindi', label: 'Hindi' },
+    { value: 'Korean', label: 'Korean' },
+    { value: 'Dutch', label: 'Dutch' },
+    { value: 'Polish', label: 'Polish' },
+    { value: 'Swedish', label: 'Swedish' },
+    { value: 'Norwegian', label: 'Norwegian' },
+    { value: 'Danish', label: 'Danish' },
+    { value: 'Finnish', label: 'Finnish' },
+    { value: 'Romanian', label: 'Romanian' },
+    { value: 'Greek', label: 'Greek' },
+    { value: 'Ukrainian', label: 'Ukrainian' },
+];
+
 export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) {
     const { t, tx } = useTranslation();
+    const [skillsSearch, setSkillsSearch] = useState('');
 
     const set = (patch: Partial<FreelancerFormData>) => onChange({ ...form, ...patch });
 
@@ -93,193 +122,462 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
         { value: 'offline', label: t.publicProfile.offline },
     ];
 
-    return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <Input
-                    label={tx('profile.headline', undefined, 'Professional title')}
-                    value={form.title}
-                    onChange={e => set({ title: e.target.value })}
-                    placeholder={tx('profile.headlinePlaceholder', undefined, 'UI/UX Designer, Full-stack Developer...')}
-                    leftIcon={<Briefcase className="w-4 h-4" />}
-                />
+    const matchingPredefined = PREDEFINED_SKILLS.filter(skill =>
+        skill.name_en.toLowerCase().includes(skillsSearch.toLowerCase()) ||
+        skill.id.toLowerCase().includes(skillsSearch.toLowerCase())
+    );
 
-                <div className="relative z-40">
-                    <CustomSelect
-                        name="availability"
-                        label={tx('profile.availability', undefined, 'Availability')}
-                        options={AVAILABILITY_OPTIONS}
-                        variant="freelancer"
-                        value={form.availability}
-                        onChange={value => set({ availability: value as 'available' | 'busy' | 'offline' })}
-                    />
+    return (
+        <div className="space-y-8">
+            {/* General Professional Info Card */}
+            <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
+                <div className="flex items-center gap-2 pb-3 border-b border-gray-150 dark:border-white/[0.04]">
+                    <Briefcase className="w-4 h-4 text-purple-500" />
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">General Professional Info</h3>
                 </div>
 
-                <Input
-                    label={tx('onboarding.freelancer.hourlyRateLabel', undefined, `Hourly rate (${t.common.tnd}/hr)`)}
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={form.hourly_rate}
-                    onChange={e => set({ hourly_rate: e.target.value })}
-                    placeholder="e.g. 35"
-                    leftIcon={<DollarSign className="w-4 h-4" />}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <Input
+                        label={tx('profile.headline', undefined, 'Professional title')}
+                        value={form.title}
+                        onChange={e => set({ title: e.target.value })}
+                        placeholder={tx('profile.headlinePlaceholder', undefined, 'UI/UX Designer, Full-stack Developer...')}
+                        leftIcon={<Briefcase className="w-4 h-4 text-purple-400" />}
+                    />
 
-                <Input
-                    label={tx('profile.yearsExperience', undefined, 'Years of experience')}
-                    type="number"
-                    min="0"
-                    value={form.years_experience}
-                    onChange={e => set({ years_experience: e.target.value })}
-                    placeholder="e.g. 3"
-                />
+                    <div className="relative z-40">
+                        <CustomSelect
+                            name="availability"
+                            label={tx('profile.availability', undefined, 'Availability')}
+                            options={AVAILABILITY_OPTIONS}
+                            variant="freelancer"
+                            value={form.availability}
+                            onChange={value => set({ availability: value as 'available' | 'busy' | 'offline' })}
+                        />
+                    </div>
+
+                    <Input
+                        label={tx('onboarding.freelancer.hourlyRateLabel', undefined, `Hourly rate (${tx('common.tnd', undefined, 'TND')}/hr)`)}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={form.hourly_rate}
+                        onChange={e => set({ hourly_rate: e.target.value })}
+                        placeholder="e.g. 35"
+                        leftIcon={<DollarSign className="w-4 h-4 text-purple-400" />}
+                    />
+
+                    <Input
+                        label={tx('profile.yearsExperience', undefined, 'Years of experience')}
+                        type="number"
+                        min="0"
+                        value={form.years_experience}
+                        onChange={e => set({ years_experience: e.target.value })}
+                        placeholder="e.g. 3"
+                    />
+
+                    <div className="md:col-span-2">
+                        <Input
+                            label={tx('profile.weeklyAvailabilityHours', undefined, 'Weekly availability (hrs)')}
+                            type="number"
+                            min="1"
+                            max="168"
+                            value={form.weekly_availability_hours}
+                            onChange={e => set({ weekly_availability_hours: e.target.value })}
+                            placeholder="e.g. 30"
+                            leftIcon={<Timer className="w-4 h-4 text-purple-400" />}
+                        />
+                    </div>
+                </div>
             </div>
 
-            {/* Skills picker */}
-            <div className="rounded-xl border p-4 space-y-4" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-elevated)' }}>
-                <div className="flex items-center justify-between border-b pb-2" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                    <p className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
-                        <Zap className="w-4 h-4 text-purple-400" />
-                        Skills you specialize in
-                    </p>
-                    <span className="text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">
-                        {form.skills.length}/10
-                    </span>
+            {/* Taxonomy & Skills Card */}
+            <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-6 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
+                <div className="flex items-center gap-2 pb-3 border-b border-gray-150 dark:border-white/[0.04]">
+                    <Zap className="w-4 h-4 text-purple-500" />
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Expertise & Skills</h3>
                 </div>
-                
-                <div className="space-y-4 max-h-72 overflow-y-auto pr-1">
-                    {Object.entries(
-                        PREDEFINED_SKILLS.reduce((groups, skill) => {
-                            const cat = skill.category || 'other';
-                            if (!groups[cat]) groups[cat] = [];
-                            groups[cat].push(skill);
-                            return groups;
-                        }, {} as Record<string, typeof PREDEFINED_SKILLS>)
-                    ).map(([category, skills]) => (
-                        <div key={category} className="space-y-2">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                                {category.replace(/_/g, ' ')}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {skills.map(skill => {
+
+                {/* Skills Section */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500">
+                            Skills you specialize in
+                        </p>
+                        <span className="text-[10px] font-bold text-purple-400 dark:text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 rounded-full">
+                            {form.skills.length}/10 selected
+                        </span>
+                    </div>
+
+                    {/* Selected Skills Bar */}
+                    <div className="flex flex-wrap gap-1.5 min-h-[36px] p-2.5 rounded-xl border border-gray-200/60 dark:border-white/[0.04] bg-gray-50/50 dark:bg-black/10">
+                        {form.skills.length === 0 ? (
+                            <span className="text-xs text-gray-400 dark:text-zinc-500">No skills selected yet. Search below to add skills.</span>
+                        ) : (
+                            form.skills.map(skillId => {
+                                const skill = PREDEFINED_SKILLS.find(s => s.id === skillId);
+                                const label = skill?.name_en || skillId;
+                                return (
+                                    <span key={skillId} className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg text-xs font-semibold bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-300">
+                                        {label}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                set({ skills: form.skills.filter(id => id !== skillId) });
+                                            }}
+                                            className="p-0.5 rounded-md hover:bg-purple-500/20 text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                );
+                            })
+                        )}
+                    </div>
+
+                    {/* Search Field */}
+                    <div className="relative">
+                        <Input
+                            label="Search skills to add"
+                            value={skillsSearch}
+                            onChange={e => setSkillsSearch(e.target.value)}
+                            placeholder="Type to search e.g. React, UI/UX..."
+                            leftIcon={<Search className="w-4 h-4 text-gray-400" />}
+                        />
+                    </div>
+
+                    {/* Inline Search Results or Suggestions */}
+                    {skillsSearch.trim() ? (
+                        <div className="space-y-1.5 p-3 rounded-xl border border-dashed border-gray-200 dark:border-white/[0.08] bg-gray-50/20 dark:bg-black/5">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500">Search Results</p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {matchingPredefined.slice(0, 10).map(skill => {
                                     const isSelected = form.skills.includes(skill.id);
                                     return (
                                         <button
                                             key={skill.id}
                                             type="button"
                                             onClick={() => {
-                                                const current = form.skills;
-                                                const exists = current.includes(skill.id);
-                                                const next = exists
-                                                    ? current.filter(id => id !== skill.id)
-                                                    : current.length < 10 ? [...current, skill.id] : current;
-                                                set({ skills: next });
+                                                if (isSelected) {
+                                                    set({ skills: form.skills.filter(id => id !== skill.id) });
+                                                } else if (form.skills.length < 10) {
+                                                    set({ skills: [...form.skills, skill.id] });
+                                                }
                                             }}
-                                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 ${
+                                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs border transition-all ${
                                                 isSelected
-                                                    ? 'border-purple-500/50 bg-purple-500/20 text-purple-200'
-                                                    : 'border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-purple-500/40 hover:text-purple-300'
+                                                    ? 'border-purple-500 bg-purple-500/15 text-purple-600 dark:text-purple-300'
+                                                    : 'border-gray-200 dark:border-white/[0.04] text-gray-500 dark:text-zinc-400 bg-white dark:bg-transparent hover:border-purple-500/30'
                                             }`}
                                         >
-                                            {skill.name_en}
+                                            <span>{skill.name_en}</span>
+                                            {isSelected ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                                        </button>
+                                    );
+                                })}
+                                {matchingPredefined.length === 0 && (
+                                    <span className="text-xs text-gray-400 dark:text-zinc-500">No matching skills found.</span>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Suggested Skills</p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {PREDEFINED_SKILLS.slice(0, 12).map(skill => {
+                                    const isSelected = form.skills.includes(skill.id);
+                                    return (
+                                        <button
+                                            key={skill.id}
+                                            type="button"
+                                            onClick={() => {
+                                                if (isSelected) {
+                                                    set({ skills: form.skills.filter(id => id !== skill.id) });
+                                                } else if (form.skills.length < 10) {
+                                                    set({ skills: [...form.skills, skill.id] });
+                                                }
+                                            }}
+                                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs border transition-all ${
+                                                isSelected
+                                                    ? 'border-purple-500 bg-purple-500/15 text-purple-600 dark:text-purple-300'
+                                                    : 'border-gray-200 dark:border-white/[0.04] text-gray-500 dark:text-zinc-400 bg-white dark:bg-transparent hover:border-purple-500/30'
+                                            }`}
+                                        >
+                                            <span>{skill.name_en}</span>
+                                            {isSelected ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
                                         </button>
                                     );
                                 })}
                             </div>
                         </div>
-                    ))}
+                    )}
+                </div>
+
+                {/* Tools Section */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500 flex items-center gap-1.5">
+                            <Wrench className="w-3.5 h-3.5" />
+                            {tx('profile.tools', undefined, 'Tools you use')}
+                        </p>
+                        <span className="text-[10px] font-bold text-purple-400 dark:text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 rounded-full">
+                            {form.tools.length}/6 selected
+                        </span>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-gray-200/50 dark:border-white/[0.04] bg-gray-50/50 dark:bg-black/10 flex flex-wrap gap-1.5">
+                        {TOOL_OPTIONS.map(tool => {
+                            const isSelected = form.tools.includes(tool);
+                            return (
+                                <button
+                                    key={tool}
+                                    type="button"
+                                    onClick={() => toggleOption('tools', tool, 6)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 ${
+                                        isSelected
+                                            ? 'border-purple-500 bg-purple-500/15 text-purple-600 dark:text-purple-300 shadow-sm'
+                                            : 'border-gray-200 dark:border-white/[0.04] text-gray-500 dark:text-zinc-400 bg-white dark:bg-transparent hover:border-purple-500/40 hover:text-purple-600 dark:hover:text-purple-300'
+                                    }`}
+                                >
+                                    {tool}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Industries Section */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500 flex items-center gap-1.5">
+                            <Briefcase className="w-3.5 h-3.5" />
+                            {tx('profile.industries', undefined, 'Industries')}
+                        </p>
+                        <span className="text-[10px] font-bold text-purple-400 dark:text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 rounded-full">
+                            {form.industries.length}/4 selected
+                        </span>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-gray-200/50 dark:border-white/[0.04] bg-gray-50/50 dark:bg-black/10 flex flex-wrap gap-1.5">
+                        {INDUSTRY_OPTIONS.map(industry => {
+                            const isSelected = form.industries.includes(industry);
+                            return (
+                                <button
+                                    key={industry}
+                                    type="button"
+                                    onClick={() => toggleOption('industries', industry, 4)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 ${
+                                        isSelected
+                                            ? 'border-purple-500 bg-purple-500/15 text-purple-600 dark:text-purple-300 shadow-sm'
+                                            : 'border-gray-200 dark:border-white/[0.04] text-gray-500 dark:text-zinc-400 bg-white dark:bg-transparent hover:border-purple-500/40 hover:text-purple-600 dark:hover:text-purple-300'
+                                    }`}
+                                >
+                                    {industry}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 
-            {/* Tools picker */}
-            <div className="rounded-xl border p-4 space-y-3" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-elevated)' }}>
-                <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
-                        <Wrench className="w-4 h-4 text-purple-400" />
-                        {tx('profile.tools', undefined, 'Tools you use')}
-                    </p>
-                    <span className="text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">
-                        {form.tools.length}/6
-                    </span>
+            {/* Languages Card */}
+            <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-150 dark:border-white/[0.04]">
+                    <div className="flex items-center gap-2">
+                        <Languages className="w-4 h-4 text-purple-500" />
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Languages</h3>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            set({ languages: [...form.languages, { language: '', proficiency: 'fluent' }] });
+                        }}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Language
+                    </button>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    {TOOL_OPTIONS.map(tool => {
-                        const isSelected = form.tools.includes(tool);
-                        return (
-                            <button
-                                key={tool}
-                                type="button"
-                                onClick={() => toggleOption('tools', tool, 6)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 ${
-                                    isSelected
-                                        ? 'border-purple-500/50 bg-purple-500/20 text-purple-200'
-                                        : 'border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-purple-500/40 hover:text-purple-300'
-                                }`}
-                            >
-                                {tool}
-                            </button>
-                        );
-                    })}
-                </div>
+
+                {form.languages.length === 0 ? (
+                    <p className="text-xs text-gray-400 dark:text-zinc-500">No languages listed. Click "Add Language" to add.</p>
+                ) : (
+                    <div className="space-y-3">
+                        {form.languages.map((lang, index) => (
+                            <div key={index} className="flex flex-wrap items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-white/[0.04] bg-gray-50/30 dark:bg-black/5">
+                                <div className="flex-1 min-w-[150px]">
+                                    <select
+                                        value={lang.language}
+                                        onChange={e => {
+                                            const updated = [...form.languages];
+                                            updated[index] = { ...lang, language: e.target.value };
+                                            set({ languages: updated });
+                                        }}
+                                        className="w-full h-9 rounded-lg border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#141414] text-xs px-2.5 text-gray-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                    >
+                                        <option value="" disabled>Select language...</option>
+                                        {COMMON_LANGUAGES.map(option => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                        {lang.language && !COMMON_LANGUAGES.some(o => o.value === lang.language) && (
+                                            <option value={lang.language}>{lang.language}</option>
+                                        )}
+                                    </select>
+                                </div>
+                                <div className="w-40">
+                                    <select
+                                        value={lang.proficiency}
+                                        onChange={e => {
+                                            const updated = [...form.languages];
+                                            updated[index] = { ...lang, proficiency: e.target.value as any };
+                                            set({ languages: updated });
+                                        }}
+                                        className="w-full h-9 rounded-lg border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#141414] text-xs px-2.5 text-gray-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                    >
+                                        <option value="basic">Basic</option>
+                                        <option value="conversational">Conversational</option>
+                                        <option value="fluent">Fluent</option>
+                                        <option value="native">Native or Bilingual</option>
+                                    </select>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        set({ languages: form.languages.filter((_, i) => i !== index) });
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            {/* Industries picker */}
-            <div className="rounded-xl border p-4 space-y-3" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-background-elevated)' }}>
-                <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
-                        <Briefcase className="w-4 h-4 text-purple-400" />
-                        {tx('profile.industries', undefined, 'Industries')}
-                    </p>
-                    <span className="text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">
-                        {form.industries.length}/4
-                    </span>
+            {/* Education Card */}
+            <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-150 dark:border-white/[0.04]">
+                    <div className="flex items-center gap-2">
+                        <GraduationCap className="w-4 h-4 text-purple-500" />
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Education</h3>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            set({
+                                education: [
+                                    ...form.education,
+                                    { institution: '', degree: '', field: '', startYear: '', endYear: '' }
+                                ]
+                            });
+                        }}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Education
+                    </button>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    {INDUSTRY_OPTIONS.map(industry => {
-                        const isSelected = form.industries.includes(industry);
-                        return (
-                            <button
-                                key={industry}
-                                type="button"
-                                onClick={() => toggleOption('industries', industry, 4)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-150 ${
-                                    isSelected
-                                        ? 'border-purple-500/50 bg-purple-500/20 text-purple-200'
-                                        : 'border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-purple-500/40 hover:text-purple-300'
-                                }`}
-                            >
-                                {industry}
-                            </button>
-                        );
-                    })}
-                </div>
+
+                {form.education.length === 0 ? (
+                    <p className="text-xs text-gray-400 dark:text-zinc-500">No education details listed. Click "Add Education" to add.</p>
+                ) : (
+                    <div className="space-y-4">
+                        {form.education.map((edu, index) => (
+                            <div key={index} className="p-4 rounded-xl border border-gray-100 dark:border-white/[0.04] bg-gray-50/30 dark:bg-black/5 space-y-3 relative group">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        set({ education: form.education.filter((_, i) => i !== index) });
+                                    }}
+                                    className="absolute top-3 right-3 p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-8">
+                                    <Input
+                                        label="Institution"
+                                        placeholder="e.g. University of Tunis"
+                                        value={edu.institution}
+                                        onChange={e => {
+                                            const updated = [...form.education];
+                                            updated[index] = { ...edu, institution: e.target.value };
+                                            set({ education: updated });
+                                        }}
+                                        className="h-9 text-xs"
+                                    />
+                                    <Input
+                                        label="Degree"
+                                        placeholder="e.g. Bachelor's, Master's"
+                                        value={edu.degree}
+                                        onChange={e => {
+                                            const updated = [...form.education];
+                                            updated[index] = { ...edu, degree: e.target.value };
+                                            set({ education: updated });
+                                        }}
+                                        className="h-9 text-xs"
+                                    />
+                                    <Input
+                                        label="Field of study"
+                                        placeholder="e.g. Computer Science"
+                                        value={edu.field}
+                                        onChange={e => {
+                                            const updated = [...form.education];
+                                            updated[index] = { ...edu, field: e.target.value };
+                                            set({ education: updated });
+                                        }}
+                                        className="h-9 text-xs"
+                                    />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Input
+                                            label="Start Year"
+                                            placeholder="e.g. 2020"
+                                            value={edu.startYear}
+                                            onChange={e => {
+                                                const updated = [...form.education];
+                                                updated[index] = { ...edu, startYear: e.target.value };
+                                                set({ education: updated });
+                                            }}
+                                            className="h-9 text-xs"
+                                        />
+                                        <Input
+                                            label="End Year"
+                                            placeholder="e.g. 2023"
+                                            value={edu.endYear}
+                                            onChange={e => {
+                                                const updated = [...form.education];
+                                                updated[index] = { ...edu, endYear: e.target.value };
+                                                set({ education: updated });
+                                            }}
+                                            className="h-9 text-xs"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="md:col-span-2">
+            {/* Preferences & Work Deliverables Card */}
+            <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
+                <div className="flex items-center gap-2 pb-3 border-b border-gray-150 dark:border-white/[0.04]">
+                    <FileText className="w-4 h-4 text-purple-500" />
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Portfolio & Work Preferences</h3>
+                </div>
+
+                <div className="space-y-5">
                     <Input
                         label={tx('profile.portfolioLinks', undefined, 'Portfolio links (comma separated)')}
                         value={form.portfolio_links}
                         onChange={e => set({ portfolio_links: e.target.value })}
                         placeholder="https://site.com/work-1, https://behance.net/mywork"
+                        leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
                     />
-                </div>
 
-                <Input
-                    label={tx('profile.weeklyAvailabilityHours', undefined, 'Weekly availability (hrs)')}
-                    type="number"
-                    min="1"
-                    max="168"
-                    value={form.weekly_availability_hours}
-                    onChange={e => set({ weekly_availability_hours: e.target.value })}
-                    placeholder="e.g. 30"
-                    leftIcon={<Timer className="w-4 h-4" />}
-                />
-
-                <div />
-
-                <div className="md:col-span-2">
                     <Input
                         as="textarea"
                         rows={3}
@@ -287,11 +585,9 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                         value={form.revision_policy}
                         onChange={e => set({ revision_policy: e.target.value })}
                         placeholder={tx('profile.revisionPolicyPlaceholder', undefined, 'e.g. 2 revisions included, additional billed separately.')}
-                        leftIcon={<Repeat className="w-4 h-4" />}
+                        leftIcon={<Repeat className="w-4 h-4 text-purple-400" />}
                     />
-                </div>
 
-                <div className="md:col-span-2">
                     <Input
                         as="textarea"
                         rows={4}
@@ -299,7 +595,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                         value={form.project_preferences}
                         onChange={e => set({ project_preferences: e.target.value })}
                         placeholder={tx('profile.projectPreferencesPlaceholder', undefined, 'Describe ideal project size, communication style, and client type.')}
-                        leftIcon={<FileText className="w-4 h-4" />}
+                        leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
                     />
                 </div>
             </div>

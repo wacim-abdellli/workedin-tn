@@ -53,3 +53,6 @@ ui-audit-run/
 # Duplicate/archive logo folders
 workedin-logosv2/
 workedin-logos/*.zip
+
+# Generated audit reports
+i18n-audit-report.txt

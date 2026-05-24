@@ -135,6 +135,8 @@ export default function ProfileSettings() {
                     weekly_availability_hours: isNaN(parsedHours) ? undefined : parsedHours,
                     revision_policy: freelancerForm.revision_policy,
                     skills: skillEntries,
+                    languages: freelancerForm.languages,
+                    education: freelancerForm.education,
                     // Merge typed text back into the jsonb without nuking hidden keys
                     project_preferences: mergeDescription(
                         freelancerProfile?.project_preferences as Record<string, unknown>,
@@ -234,10 +236,10 @@ export default function ProfileSettings() {
     // They can switch mode from the header to access the other workspace.
     type TabConfig = { id: ProfileTab; label: string; icon: typeof User; show: boolean; dirty?: boolean };
     const TABS: TabConfig[] = [
-        { id: 'basic',      label: 'Basic Info',   icon: User,      show: true,                                        dirty: basicDirty },
-        { id: 'freelancer', label: 'Freelancer',   icon: Briefcase, show: isFreelancer && activeMode === 'freelancer', dirty: freelancerDirty },
-        { id: 'client',     label: 'Client',       icon: Building2, show: isClient     && activeMode === 'client',     dirty: clientDirty },
-        { id: 'workspace',  label: 'Workspace',    icon: Zap,       show: true },
+        { id: 'basic' as ProfileTab,      label: 'Basic Info',   icon: User,      show: true,                                        dirty: basicDirty },
+        { id: 'freelancer' as ProfileTab, label: 'Freelancer',   icon: Briefcase, show: isFreelancer && activeMode === 'freelancer', dirty: freelancerDirty },
+        { id: 'client' as ProfileTab,     label: 'Client',       icon: Building2, show: isClient     && activeMode === 'client',     dirty: clientDirty },
+        { id: 'workspace' as ProfileTab,  label: 'Workspace',    icon: Zap,       show: true },
     ].filter(tab => tab.show);
 
     // ── CSS accent token per active tab ────────────────────────────────────
@@ -258,35 +260,38 @@ export default function ProfileSettings() {
                 <div className="absolute top-0 left-0 right-0 h-0.5 transition-all duration-300"
                      style={{ background: `linear-gradient(90deg, ${accentVar} 0%, transparent 70%)` }} />
 
-                {/* ── Tab bar ───────────────────────────────────────────── */}
-                <div className="flex gap-0 border-b overflow-x-auto" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                    {TABS.map(tab => {
-                        const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                type="button"
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`
-                                    relative flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap
-                                    transition-all duration-200 border-b-2 -mb-px
-                                    ${isActive
-                                        ? 'border-b-2 text-white'
-                                        : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-background-elevated)]'
-                                    }
-                                `}
-                                style={isActive ? { borderBottomColor: accentVar, color: accentVar } : {}}
-                            >
-                                <Icon className="w-4 h-4" />
-                                {tab.label}
-                                {tab.dirty && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 absolute top-2 right-2" />
-                                )}
-                            </button>
-                        );
-                    })}
+                {/* ── Tab bar - Segmented Pill Bar ──────────────────────── */}
+                <div className="px-6 pt-5 pb-2 flex overflow-x-auto">
+                    <div className="p-1 rounded-xl bg-black/10 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.04] flex items-center gap-1 min-w-max shadow-inner">
+                        {TABS.map(tab => {
+                            const Icon = tab.icon;
+                            const isActive = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`
+                                        relative flex items-center gap-2 px-4 py-2 rounded-lg text-xs uppercase tracking-wider font-semibold whitespace-nowrap
+                                        transition-all duration-200 border
+                                        ${isActive
+                                            ? 'bg-white dark:bg-[#141414] border-gray-200 dark:border-white/[0.08] text-gray-900 dark:text-white shadow-sm'
+                                            : 'border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-zinc-200'
+                                        }
+                                    `}
+                                    style={isActive ? { color: accentVar } : {}}
+                                >
+                                    <Icon className="w-3.5 h-3.5" style={isActive ? { color: accentVar } : {}} />
+                                    <span>{tab.label}</span>
+                                    {tab.dirty && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
+
 
                 {/* ── Tab content ── scoped accent var so inputs get right focus color ── */}
                 <div
@@ -396,10 +401,10 @@ export default function ProfileSettings() {
                                     <Zap className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--workspace-primary)' }} />
                                     <div>
                                         <p className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>
-                                            {t.auth.accountPanel.enableBothLabel}
+                                            {tx('auth.accountPanel.enableBothLabel', undefined, 'Enable both workspace roles')}
                                         </p>
                                         <p className="text-xs mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-                                            {t.auth.accountPanel.enableBothDesc}
+                                            {tx('auth.accountPanel.enableBothDesc', undefined, 'Access client hiring dashboard and freelancer profile under a single credentials login.')}
                                         </p>
                                         <button
                                             type="button"
@@ -407,7 +412,7 @@ export default function ProfileSettings() {
                                             className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all hover:opacity-90"
                                             style={{ background: 'var(--workspace-primary)', color: '#fff' }}
                                         >
-                                            {t.auth.accountPanel.enableBothAction}
+                                            {tx('auth.accountPanel.enableBothAction', undefined, 'Enable both roles')}
                                         </button>
                                     </div>
                                 </div>

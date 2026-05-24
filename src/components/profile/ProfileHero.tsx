@@ -1,24 +1,20 @@
 /**
- * ProfileHero
- * Full-width hero banner that appears at the top of both FreelancerProfile
- * and ClientProfile. Handles:
- *   - Workspace-tinted radial gradient background
- *   - Large avatar with ring + optional camera overlay (owner only)
- *   - Name, subtitle, badge pills
- *   - Meta row (location, member since, quick stats)
- *   - Contextual action buttons (owner edit | visitor contact/invite)
- *
- * Designed to be data-agnostic: callers pass pre-processed strings.
+ * ProfileHero - Upwork-style Profile Header
+ * Clean, professional header matching Upwork's exact design
+ * Features:
+ *   - Large circular avatar with green availability dot
+ *   - Name with inline verification checkmark
+ *   - Location and stats in a single clean row
+ *   - Minimal, professional styling
  */
 
-import { Camera, Loader2, MapPin, Calendar, CheckCircle, Edit2 } from 'lucide-react';
+import { Camera, Loader2, MapPin, Calendar, CheckCircle, Edit2, ShieldCheck, AlertCircle } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 export type ProfileHeroVariant = 'freelancer' | 'client';
 
 interface ProfileHeroBadge {
     label: string;
-    /** Filled pill or outlined */
     style?: 'filled' | 'outlined' | 'success' | 'neutral';
     icon?: ReactNode;
 }
@@ -32,58 +28,22 @@ interface ProfileHeroProps {
     variant: ProfileHeroVariant;
     name: string;
     subtitle?: string;
+    rate?: string;
     avatarUrl?: string | null;
     badges?: ProfileHeroBadge[];
     meta?: ProfileHeroMeta[];
-
-    /** Slot for action buttons in top-right — pass pre-built buttons */
     actions?: ReactNode;
-
-    /** Owner avatar upload */
     isOwner?: boolean;
     isUploadingAvatar?: boolean;
     onAvatarUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-
-    /** Optional extra row rendered below meta (e.g. availability pill) */
+    verificationStatus?: 'verified' | 'unverified' | null;
+    onVerify?: () => void;
     extraRow?: ReactNode;
+    availabilityStatus?: 'available' | 'busy' | 'offline';
 }
-
-// ─── Design tokens ────────────────────────────────────────────────────────────
-
-const VARIANT_CONFIG = {
-    freelancer: {
-        accent: '#8B5CF6',
-        accentAlpha18: 'rgba(139,92,246,0.18)',
-        accentAlpha12: 'rgba(139,92,246,0.12)',
-        accentAlpha35: 'rgba(139,92,246,0.35)',
-        ringClass: 'ring-[#8B5CF6]/25',
-        gradientOrb: 'rgba(139,92,246,0.20)',
-    },
-    client: {
-        accent: '#F59E0B',
-        accentAlpha18: 'rgba(245,158,11,0.18)',
-        accentAlpha12: 'rgba(245,158,11,0.12)',
-        accentAlpha35: 'rgba(245,158,11,0.35)',
-        ringClass: 'ring-[#F59E0B]/25',
-        gradientOrb: 'rgba(245,158,11,0.20)',
-    },
-} as const;
 
 function getInitials(name: string): string {
     return name.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join('');
-}
-
-function getBadgeStyle(
-    style: ProfileHeroBadge['style'] = 'filled',
-    accent: string,
-    accentAlpha12: string,
-    accentAlpha35: string,
-): React.CSSProperties {
-    if (style === 'filled') return { background: accentAlpha12, color: accent, borderColor: accentAlpha35 };
-    if (style === 'success') return { background: 'rgba(16,185,129,0.10)', color: '#10B981', borderColor: 'rgba(16,185,129,0.25)' };
-    if (style === 'neutral') return { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.55)', borderColor: 'rgba(255,255,255,0.12)' };
-    // outlined
-    return { background: 'transparent', color: accent, borderColor: accentAlpha35 };
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -92,6 +52,7 @@ export function ProfileHero({
     variant,
     name,
     subtitle,
+    rate,
     avatarUrl,
     badges = [],
     meta = [],
@@ -99,53 +60,57 @@ export function ProfileHero({
     isOwner = false,
     isUploadingAvatar = false,
     onAvatarUpload,
+    verificationStatus,
+    onVerify,
     extraRow,
+    availabilityStatus,
 }: ProfileHeroProps) {
-    const cfg = VARIANT_CONFIG[variant];
-
     return (
         <div
-            className="relative overflow-hidden"
+            className="relative overflow-hidden border-b"
             style={{
-                background: `radial-gradient(ellipse at 85% 0%, ${cfg.accentAlpha18} 0%, transparent 55%),
-                             radial-gradient(ellipse at 10% 100%, ${cfg.gradientOrb} 0%, transparent 40%),
-                             var(--color-background-base)`,
-                borderBottom: `1px solid ${cfg.accentAlpha35}`,
+                background: 'var(--color-bg-base)',
+                borderColor: 'var(--color-border-subtle)',
             }}
         >
-            {/* Decorative blur orb */}
-            <div
-                className="pointer-events-none absolute -right-8 -top-12 h-40 w-40 rounded-full blur-3xl"
-                style={{ background: cfg.gradientOrb }}
-                aria-hidden
-            />
-
-            <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-                <div className="flex flex-col sm:flex-row sm:items-start gap-6">
-                    {/* ── Avatar ────────────────────────────────────────── */}
+            <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-8">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-5">
+                    {/* ── Avatar - Upwork style with green dot ────────────────────── */}
                     <div className="relative shrink-0 group">
                         {avatarUrl ? (
                             <img
                                 src={avatarUrl}
                                 alt={name}
-                                className={`w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-4 ring-offset-2 transition-transform duration-300 ${cfg.ringClass}`}
-                                style={{ ringOffsetColor: 'var(--color-background-base)' }}
+                                className="w-28 h-28 rounded-full object-cover border-4"
+                                style={{ borderColor: 'var(--color-bg-base)' }}
                             />
                         ) : (
                             <div
-                                className={`w-24 h-24 sm:w-28 sm:h-28 rounded-2xl flex items-center justify-center text-3xl font-black text-white ring-4 ring-offset-2 select-none ${cfg.ringClass}`}
+                                className="w-28 h-28 rounded-full flex items-center justify-center text-3xl font-bold text-white select-none border-4"
                                 style={{
-                                    background: `linear-gradient(135deg, ${cfg.accent}, color-mix(in srgb, ${cfg.accent} 60%, #1a1a2e))`,
-                                    ringOffsetColor: 'var(--color-background-base)',
+                                    background: '#14A800',
+                                    borderColor: 'var(--color-bg-base)',
                                 }}
                             >
                                 {getInitials(name)}
                             </div>
                         )}
+                        
+                        {/* Availability dot - bottom-right corner */}
+                        {availabilityStatus === 'available' && (
+                            <span
+                                className="absolute bottom-1 right-1 w-5 h-5 rounded-full border-4"
+                                style={{
+                                    background: '#14A800',
+                                    borderColor: 'var(--color-bg-base)',
+                                }}
+                                aria-hidden="true"
+                            />
+                        )}
 
                         {/* Camera overlay (owner only) */}
                         {isOwner && onAvatarUpload && (
-                            <label className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
+                            <label className="absolute inset-0 rounded-full flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
                                 {isUploadingAvatar
                                     ? <Loader2 className="w-6 h-6 text-white animate-spin" />
                                     : <Camera className="w-6 h-6 text-white" />
@@ -163,50 +128,43 @@ export function ProfileHero({
 
                     {/* ── Info column ───────────────────────────────────── */}
                     <div className="flex-1 min-w-0">
-                        {/* Name + actions row */}
+                        {/* Name + verification + actions */}
                         <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
-                            <div>
-                                <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight tracking-tight">
+                            <div className="flex items-center gap-2.5">
+                                <h1 className="text-3xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
                                     {name}
                                 </h1>
-                                {subtitle && (
-                                    <p className="mt-1 text-sm sm:text-base font-medium" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                                        {subtitle}
-                                    </p>
+                                
+                                {/* Verification badge */}
+                                {verificationStatus === 'verified' && (
+                                    <CheckCircle 
+                                        className="w-5 h-5 shrink-0" 
+                                        style={{ color: '#14A800' }}
+                                        aria-label="Verified"
+                                    />
                                 )}
                             </div>
                             {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
                         </div>
 
-                        {/* Badge pills */}
-                        {badges.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-3">
-                                {badges.map((badge, i) => (
-                                    <span
-                                        key={i}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold"
-                                        style={getBadgeStyle(badge.style, cfg.accent, cfg.accentAlpha12, cfg.accentAlpha35)}
-                                    >
-                                        {badge.icon}
-                                        {badge.label}
-                                    </span>
-                                ))}
-                            </div>
+                        {/* Subtitle (title) */}
+                        {subtitle && (
+                            <p className="text-base mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+                                {subtitle}
+                            </p>
                         )}
 
-                        {/* Meta row (location, date, etc.) */}
-                        {meta.length > 0 && (
-                            <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                                {meta.map((item, i) => (
-                                    <span key={i} className="inline-flex items-center gap-1.5">
-                                        {item.icon}
-                                        {item.label}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
+                        {/* Meta row - location, rating, stats */}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                            {meta.map((item, i) => (
+                                <span key={i} className="inline-flex items-center gap-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                                    <span style={{ color: 'var(--color-text-tertiary)' }}>{item.icon}</span>
+                                    <span>{item.label}</span>
+                                </span>
+                            ))}
+                        </div>
 
-                        {/* Extra slot (e.g. availability, rating preview) */}
+                        {/* Extra slot */}
                         {extraRow && <div className="mt-3">{extraRow}</div>}
                     </div>
                 </div>
@@ -215,6 +173,6 @@ export function ProfileHero({
     );
 }
 
-// ─── Re-export helpers so consumers don't need to duplicate ──────────────────
-export { MapPin, Calendar, CheckCircle, Edit2 };
+// ─── Re-export helpers ──────────────────────────────────────────────────────
+export { MapPin, Calendar, CheckCircle, Edit2, ShieldCheck, AlertCircle };
 export type { ProfileHeroBadge, ProfileHeroMeta };

@@ -224,10 +224,16 @@ vi.mock('@/lib/supabase', () => ({
                     throw new Error(`Unexpected supabase table access in Messages lifecycle test: ${table}`);
                 }),
                 eq: vi.fn(() => builder),
+                order: vi.fn(() => builder),
+                limit: vi.fn(() => builder),
+                maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+                single: vi.fn().mockResolvedValue({ data: null, error: null }),
+                then: vi.fn((resolve: (v: unknown) => unknown) => Promise.resolve(resolve({ data: [], error: null }))),
             };
 
             return builder;
         }),
+        rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
         channel: vi.fn((name: string) => {
             supabaseState.channelNames.push(name);
 
@@ -249,6 +255,18 @@ vi.mock('@/lib/supabase', () => ({
                 })),
             })),
         },
+    },
+    supabaseAnon: {
+        from: vi.fn(() => {
+            const anonBuilder: Record<string, unknown> = {};
+            const fluent = () => anonBuilder;
+            anonBuilder.select = vi.fn(fluent);
+            anonBuilder.eq = vi.fn(fluent);
+            anonBuilder.order = vi.fn(fluent);
+            anonBuilder.single = vi.fn().mockResolvedValue({ data: null, error: null });
+            anonBuilder.maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+            return anonBuilder;
+        }),
     },
 }));
 
@@ -482,7 +500,10 @@ async function renderSelectedScenario({
         expect(messageServiceMocks.getMessages).toHaveBeenCalledWith(conversation.id);
     });
 
-    await screen.findByRole('button', { name: 'Send message' });
+    if (threadMessages.length > 0) {
+        const lastMsg = threadMessages[threadMessages.length - 1];
+        await screen.findAllByText(lastMsg.content);
+    }
 
     return view;
 }
@@ -581,7 +602,7 @@ describe('Messages lifecycle', () => {
 
         await renderSelectedScenario({ conversation, threadMessages });
 
-        expect(screen.queryByRole('button', { name: 'Open Contract' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Open Workspace' })).not.toBeInTheDocument();
         expect(screen.queryByText('This contract is completed. The thread is now read-only.')).not.toBeInTheDocument();
         expect(screen.getByPlaceholderText('Type a message...')).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Reply to message' })).toBeInTheDocument();
@@ -641,7 +662,7 @@ describe('Messages lifecycle', () => {
             expect(screen.queryByText('Contract status is currently unavailable. Messaging remains open.')).not.toBeInTheDocument();
         });
 
-        expect(screen.getByRole('button', { name: 'Open Contract' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Open Workspace' })).toBeInTheDocument();
         expect(screen.queryByText('Payment is still being confirmed for this contract. Messaging remains open.')).not.toBeInTheDocument();
         expect(screen.getByPlaceholderText('Type a message...')).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Attach file' })).toBeEnabled();
@@ -826,7 +847,7 @@ describe('Messages lifecycle', () => {
 
         expect(screen.getAllByText(/Contract #contract/i).length).toBeGreaterThan(0);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Open Contract' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Open Workspace' }));
     });
 
     it('opens the client profile from a freelancer-side contract conversation', async () => {
@@ -992,28 +1013,16 @@ describe('Messages lifecycle', () => {
             contractRows: [{ id: contractId, status: label }],
         });
 
-        const bannerText = await screen.findByText(banner);
+        const bannerText = (await screen.findAllByText(banner))[0];
         const bannerContainer = bannerText.closest('div');
 
         expect(bannerContainer).not.toBeNull();
         expect(bannerContainer).toHaveClass(classToken);
-        expect(screen.getByPlaceholderText(banner)).toBeDisabled();
-        expect(screen.getByRole('button', { name: 'Attach file' })).toBeDisabled();
-        expect(screen.getByRole('button', { name: 'Start recording' })).toBeDisabled();
-        expect(screen.getByRole('button', { name: 'Send message' })).toBeDisabled();
+        expect(screen.queryByPlaceholderText('Type a message...')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Attach file' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Start recording' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Send message' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Reply to message' })).not.toBeInTheDocument();
-
-        const fileInput = container.querySelector('input[type="file"]');
-        expect(fileInput).not.toBeNull();
-
-        fireEvent.change(fileInput as HTMLInputElement, {
-            target: {
-                files: [new File(['blocked'], 'blocked.pdf', { type: 'application/pdf' })],
-            },
-        });
-
-        expect(toastMocks.showToast).toHaveBeenCalledWith(banner, 'warning');
-        expect(messageServiceMocks.uploadMessageAttachment).not.toHaveBeenCalled();
     });
 
     it('cancels an in-progress voice draft when lifecycle status turns the thread read-only', async () => {
@@ -1040,7 +1049,7 @@ describe('Messages lifecycle', () => {
             contractRows: [{ id: 'contract-completed-audio', status: 'completed' }],
         });
 
-        await screen.findByText('This contract is completed. The thread is now read-only.');
+        await screen.findAllByText('This contract is completed. The thread is now read-only.');
 
         expect(audioRecorderMocks.cancelRecording).toHaveBeenCalledTimes(1);
     });

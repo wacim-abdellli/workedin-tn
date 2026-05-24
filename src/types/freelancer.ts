@@ -18,6 +18,8 @@ export interface FreelancerProfileOwnerRow {
     created_at: string;
     phone: string | null;
     user_type: string | null;
+    phone_verified?: boolean | null;
+    payment_verified?: boolean | null;
 }
 
 export interface FreelancerProfilePublicRow {

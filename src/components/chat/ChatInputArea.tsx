@@ -97,6 +97,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                 <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={disabled || isSending || isRecording}
+                    aria-label="Attach file"
                     className="p-2.5 rounded-xl transition-colors disabled:opacity-50"
                     style={{ color: 'var(--color-text-tertiary)' }}
                 >
@@ -107,6 +108,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                 <button
                     onClick={onToggleRecord}
                     disabled={disabled || isSending}
+                    aria-label={isRecording ? 'Stop recording' : 'Start recording'}
                     className={`p-2.5 rounded-xl transition-all disabled:opacity-50 ${isRecording ? 'bg-red-500/20 text-red-400' : ''}`}
                     style={!isRecording ? { color: 'var(--color-text-tertiary)' } : {}}
                 >
@@ -133,6 +135,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                         onTypingStop?.();
                         onSend();
                     }}
+                    aria-label="Send message"
                     disabled={disabled || isSending || (!value.trim() && selectedFiles.length === 0)}
                     className="p-2.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ 

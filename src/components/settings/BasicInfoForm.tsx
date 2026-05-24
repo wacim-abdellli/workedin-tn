@@ -89,7 +89,7 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
     const avatarSrc = localAvatarPreview || profile?.avatar_url;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {/* Avatar row */}
             <div className="flex items-center gap-5">
                 <div className="relative group shrink-0">
@@ -97,8 +97,8 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
                         <img
                             src={avatarSrc}
                             alt={form.full_name}
-                            className="w-20 h-20 rounded-2xl object-cover ring-2 ring-offset-2 transition-all duration-300 group-hover:scale-105"
-                            style={{ ringColor: 'var(--workspace-primary)', ringOffsetColor: 'var(--color-background-base)' }}
+                            className="w-20 h-20 rounded-2xl object-cover transition-all duration-300 group-hover:scale-105"
+                            style={{ boxShadow: '0 0 0 2px var(--workspace-primary)' }}
                         />
                     ) : (
                         <div
@@ -153,50 +153,91 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
 
             <div className="h-px" style={{ background: 'var(--color-border-subtle)' }} />
 
-            {/* Form fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <Input
-                    label={tx('settings.fullName', undefined, 'Full name')}
-                    value={form.full_name}
-                    onChange={e => set({ full_name: e.target.value })}
-                    placeholder="e.g. Wissem Abdelali"
-                />
-                <Input
-                    label={tx('settings.phoneNumberLabel', undefined, 'Phone number')}
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    value={form.phone}
-                    onChange={e => set({ phone: sanitizePhoneInput(e.target.value) })}
-                    placeholder="+216 XX XXX XXX"
-                />
-                <Input
-                    label={tx('settings.emailOptionalLabel', undefined, 'Email (optional)')}
-                    type="email"
-                    value={form.email}
-                    onChange={e => set({ email: e.target.value })}
-                    placeholder="you@example.com"
-                />
-                <div className="relative" style={{ zIndex: 50 }}>
-                    <CustomSelect
-                        name="location"
-                        label={tx('settings.location', undefined, 'Location')}
-                        placeholder={t.profile.selectLocation || 'Select governorate'}
-                        options={getLocalizedGovernorateOptions(language)}
-                        variant={activeMode === 'client' ? 'client' : 'freelancer'}
-                        value={form.location}
-                        onChange={value => set({ location: value })}
-                    />
+            {/* Section 1: Account Verification & Trust */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-white/[0.04]">
+                    <Shield className="w-4 h-4 text-emerald-500" />
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Account Verification & Trust</h3>
                 </div>
-                <div className="md:col-span-2">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <Input
-                        as="textarea"
-                        rows={3}
-                        label={tx('settings.bioLabel', undefined, 'Bio')}
-                        value={form.bio}
-                        onChange={e => set({ bio: e.target.value })}
-                        placeholder={tx('settings.bioPlaceholder', undefined, 'Write a short bio about yourself...')}
+                        label={tx('settings.fullName', undefined, 'Full name')}
+                        value={form.full_name}
+                        onChange={e => set({ full_name: e.target.value })}
+                        placeholder="e.g. Wissem Abdelali"
                     />
+
+                    {/* Email field with verification badge below */}
+                    <div className="space-y-1.5">
+                        <Input
+                            label={tx('settings.emailOptionalLabel', undefined, 'Email (optional)')}
+                            type="email"
+                            value={form.email}
+                            onChange={e => set({ email: e.target.value })}
+                            placeholder="you@example.com"
+                        />
+                        <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                            <Check className="w-3.5 h-3.5" />
+                            <span>{tx('settings.verifiedLoginEmail', undefined, 'Registered login email (Verified)')}</span>
+                        </div>
+                    </div>
+
+                    {/* Phone field with trust badge below */}
+                    <div className="space-y-1.5">
+                        <Input
+                            label={tx('settings.phoneNumberLabel', undefined, 'Phone number')}
+                            type="tel"
+                            inputMode="tel"
+                            autoComplete="tel"
+                            value={form.phone}
+                            onChange={e => set({ phone: sanitizePhoneInput(e.target.value) })}
+                            placeholder="+216 XX XXX XXX"
+                        />
+                        {form.phone ? (
+                            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                                <Check className="w-3.5 h-3.5" />
+                                <span>{tx('settings.phoneVerifiedBadge', undefined, 'Verified for project and transaction notifications')}</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                                <span>{tx('settings.phoneUnverifiedBadge', undefined, 'Add a number to show a phone-verified trust badge on job posts & profiles')}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Section 2: Profile Details */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-white/[0.04]">
+                    <User className="w-4 h-4 text-purple-500" />
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Profile Details</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="relative" style={{ zIndex: 50 }}>
+                        <CustomSelect
+                            name="location"
+                            label={tx('settings.location', undefined, 'Location')}
+                            placeholder={t.profile.selectLocation || 'Select governorate'}
+                            options={getLocalizedGovernorateOptions(language)}
+                            variant={activeMode === 'client' ? 'client' : 'freelancer'}
+                            value={form.location}
+                            onChange={value => set({ location: value })}
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <Input
+                            as="textarea"
+                            rows={3}
+                            label={tx('settings.bioLabel', undefined, 'Bio')}
+                            value={form.bio}
+                            onChange={e => set({ bio: e.target.value })}
+                            placeholder={tx('settings.bioPlaceholder', undefined, 'Write a short bio about yourself...')}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

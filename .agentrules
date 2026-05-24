@@ -1,0 +1,46 @@
+# WorkedIn TN - Agent Instructions & Behavior Rules
+
+This file is automatically loaded by AI coding agents (Antigravity, Cursor, etc.) to set prompt constraints, code styles, and architecture instructions.
+
+## 📌 Context Initialization
+Before writing code or answering complex architectural questions, you MUST read and absorb the core project map:
+👉 **[PROJECT_MAP.md](file:///c:/Users/pc/Desktop/workedin_tn/PROJECT_MAP.md)**
+
+This file contains the complete database schema, design token systems, project structure, and technical requirements. Reading this map is enough to give you 100% accurate context on the codebase without wasting tokens scanning 60+ individual files.
+
+---
+
+## 🛠️ Code Conventions & Preferences
+
+### 1. React & TypeScript
+- **Version:** React 19 (use React 19 compliant hooks/APIs, no legacy features).
+- **TypeScript:** Strict type checks. Avoid `any` at all costs. Utilize explicit return types for critical components/functions.
+- **State Management:** Use Zustand stores (`src/store/` or corresponding page state) instead of bloated Contexts unless globally required.
+
+### 2. Styling System
+- **Strict Token Compliance:** Do NOT write raw HEX, HSL, or RGB colors.
+- Use CSS variables defined in the Design System:
+  - Colors: `var(--color-text-primary)`, `var(--color-background-base)`, `var(--color-brand-primary)`
+  - Spacing: `var(--spacing-2)`, `var(--spacing-4)`, `var(--spacing-8)`
+  - Radii: `var(--radius-md)`, `var(--radius-lg)`
+- Custom designs must utilize HSL tailoring and standard semantic values.
+- Dark mode compatibility is mandatory. All layouts must support `.dark` theme toggling seamlessly.
+
+### 3. Supabase & Database Integrity
+- Client queries must use `supabase` from `src/lib/supabase.ts`.
+- Never alter RLS (Row Level Security) configurations without double-checking RLS policies in `supabase/schema_v2.sql`.
+- Maintain transactional safety.
+
+### 4. Internationalization (i18n)
+- The app supports Arabic, French, and English.
+- Avoid hardcoding user-facing strings. Use `react-i18next` for translations.
+- Run `npm run i18n:audit` to verify translation completeness.
+
+---
+
+## 📈 Agent Workflow Directives
+
+1. **Maintain the Project Map:** Whenever you create or delete a file, add/modify a database table or schema in `supabase/`, or introduce a new core routing context, you MUST update the `PROJECT_MAP.md` as the final step of your task execution. Keep the map perfectly accurate.
+2. **Keep Edits Precise:** Avoid replacing entire files when making small fixes. Use localized replacements to reduce bundle drift.
+3. **Document Steps:** Update `task.md` continuously during execution to keep the user informed of exactly what has been completed, what is in progress, and what is next.
+4. **Verify Before Declaring Done:** Propose running local tests (`npm run test:run` or `npm run test:e2e`) to verify that modifications do not break existing features.

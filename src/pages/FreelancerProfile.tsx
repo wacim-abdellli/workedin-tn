@@ -28,6 +28,8 @@ import {
     Save,
     Loader2,
     DollarSign,
+    Globe,
+    Share2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -359,6 +361,25 @@ function ProfileView({
     const [activeWorkImageIndex, setActiveWorkImageIndex] = useState(0);
     const [deletingWorkSampleId, setDeletingWorkSampleId] = useState<string | null>(null);
 
+    const [localTime, setLocalTime] = useState(() => {
+        return new Date().toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    });
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setLocalTime(new Date().toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            }));
+        }, 30000);
+        return () => clearInterval(timer);
+    }, []);
+
     const workSamples = freelancer.work_samples;
 
     const activeWorkSample = useMemo(() => {
@@ -646,592 +667,1022 @@ function ProfileView({
       </button>
   ) : undefined;
 
+  const formatRate = (rate: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(rate);
+  };
+
+  const displayRate = freelancer.hourly_rate > 0
+    ? `${formatRate(freelancer.hourly_rate)}/hr`
+    : '$0.00/hr';
+
+  const initialAvatar = freelancer.full_name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(p => p[0]?.toUpperCase() ?? '')
+    .join('');
+
   return (
-    <div className="min-h-screen w-full page-bg-base">
-      <ProfileHero
-        variant="freelancer"
-        name={freelancer.full_name || 'Freelancer'}
-        subtitle={freelancer.title || 'Independent specialist'}
-        avatarUrl={freelancer.avatar_url}
-        badges={heroBadges}
-        meta={heroMeta}
-        actions={heroActions}
-        isOwner={isOwner}
-        isUploadingAvatar={savingAvatar}
-        onAvatarUpload={handleAvatarUploadSelection}
-      />
-
-      {/* ── Stat bar ────────────────────────────────────────────────────── */}
-      <ProfileStatBar
-        variant="freelancer"
-        stats={[
-            { icon: <Briefcase className="w-4 h-4" />, label: 'Completed', value: freelancer.stats.jobs_completed },
-            { icon: <DollarSign className="w-4 h-4" />, label: 'Hourly Rate', value: `${freelancer.hourly_rate} TND/hr`, highlight: true },
-            { icon: <CheckCircle className="w-4 h-4" />, label: 'Success Rate', value: `${freelancer.stats.success_rate}%` },
-            { icon: <Clock className="w-4 h-4" />, label: 'Response Time', value: '< 2 hrs' },
-        ]}
-      />
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 flex flex-col gap-5">
-
-                    <ProfileSection
-                        title="Skills"
-                        animationDelay={180}
-                        onEdit={isOwner ? () => navigate('/settings?tab=profile') : undefined}
-                        editLabel="Edit"
-                    >
-                        {strengths.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                                {strengths.map((item) => (
-                                    <ProfileTag key={item} label={item} accentColor="var(--workspace-primary)" />
-                                ))}
-                            </div>
-                        ) : (
-                            <ProfileEmptySlot 
-                                message="No skills added yet."
-                                cta={isOwner ? <Link to="/settings?tab=profile" className="text-xs font-medium" style={{ color: accentColor }}>+ Add skills</Link> : undefined} 
-                            />
-                        )}
-                    </ProfileSection>
-
-                    <ProfileSection
-                        title="Tools"
-                        animationDelay={240}
-                        onEdit={isOwner ? () => navigate('/settings?tab=profile') : undefined}
-                        editLabel="Edit"
-                    >
-                        {tools.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                                {tools.map((item) => (
-                                    <ProfileTag key={item} label={item} accentColor="var(--workspace-primary)" />
-                                ))}
-                            </div>
-                        ) : (
-                            <ProfileEmptySlot 
-                                message="No tools added yet."
-                                cta={isOwner ? <Link to="/settings?tab=profile" className="text-xs font-medium" style={{ color: accentColor }}>+ Add tools</Link> : undefined} 
-                            />
-                        )}
-                    </ProfileSection>
-
-                    <ProfileSection title={tx('pages.freelancerProfile.sections.selectedWork', undefined, 'Selected work')} animationDelay={320}>
-                        {workSamples.length > 0 ? (
-                            <div className={`grid gap-4 ${workSamples.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
-                                {workSamples.map((item) => {
-                                    const workImages = getWorkSampleImages(item);
-                                    const workImage = workImages[0] || '';
-                                    const workTitle = item.title?.trim() || 'Untitled work';
-
-                                    return (
-                                        <article key={item.id} className="group rounded-xl border border-white/10 bg-[#0e0e0e] overflow-hidden transition-colors hover:border-white/20">
-                                            <div className="relative h-44 w-full bg-[radial-gradient(circle_at_25%_18%,rgba(139,92,246,0.2),transparent_48%),#111111]">
-                                                {workImage ? (
-                                                    <OptimizedImage
-                                                        src={workImage}
-                                                        alt={workTitle}
-                                                        className="h-full w-full"
-                                                        imgClassName="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                                                    />
-                                                ) : (
-                                                    <div className="h-full w-full flex items-center justify-center text-white/30">
-                                                        <Briefcase className="w-8 h-8" />
-                                                    </div>
-                                                )}
-
-                                                <div className="absolute left-3 bottom-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[11px] text-white/85">
-                                                    <Images className="w-3.5 h-3.5" />
-                                                    {workImages.length} {workImages.length === 1 ? 'photo' : 'photos'}
-                                                </div>
-                                            </div>
-
-                                            <div className="p-3.5 space-y-3">
-                                                <div>
-                                                    <h4 className="text-sm font-semibold text-white line-clamp-2 leading-5">{workTitle}</h4>
-                                                    <p className="mt-1.5 text-xs text-white/60 line-clamp-3 leading-5">
-                                                        {item.description || 'No description provided yet.'}
-                                                    </p>
-                                                </div>
-
-                                                {item.skills_used && item.skills_used.length > 0 ? (
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {item.skills_used.slice(0, 4).map((skill) => (
-                                                            <span
-                                                                key={skill}
-                                                                className="max-w-full truncate text-[11px] px-2 py-0.5 rounded-full border"
-                                                                style={{
-                                                                    borderColor: `color-mix(in srgb, ${accentColor} 24%, #2f2f2f)`,
-                                                                    color: accentColor,
-                                                                    background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
-                                                                }}
-                                                                title={skill}
-                                                            >
-                                                                {skill}
-                                                            </span>
-                                                        ))}
-                                                        {item.skills_used.length > 4 ? (
-                                                            <span className="text-[11px] px-2 py-0.5 rounded-full border border-white/15 text-white/55 bg-white/[0.04]">
-                                                                +{item.skills_used.length - 4} more
-                                                            </span>
-                                                        ) : null}
-                                                    </div>
-                                                ) : null}
-
-                                                {item.tools_used && item.tools_used.length > 0 ? (
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {item.tools_used.slice(0, 3).map((tool) => (
-                                                            <span
-                                                                key={tool}
-                                                                className="max-w-full truncate text-[11px] px-2 py-0.5 rounded-full border"
-                                                                style={{
-                                                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 35%, transparent)',
-                                                                    color: 'var(--workspace-primary)',
-                                                                    background: 'var(--workspace-primary-dim)'
-                                                                }}
-                                                                title={tool}
-                                                            >
-                                                                {tool}
-                                                            </span>
-                                                        ))}
-                                                        {item.tools_used.length > 3 ? (
-                                                            <span 
-                                                                className="text-[11px] px-2 py-0.5 rounded-full border"
-                                                                style={{
-                                                                    borderColor: 'var(--color-border-subtle)',
-                                                                    color: 'var(--color-text-tertiary)',
-                                                                    background: 'var(--color-bg-subtle)'
-                                                                }}
-                                                            >
-                                                                +{item.tools_used.length - 3} more
-                                                            </span>
-                                                        ) : null}
-                                                    </div>
-                                                ) : null}
-
-                                                <div className="flex items-center justify-between gap-2 pt-1">
-                                                    {item.project_url ? (
-                                                        <a
-                                                            href={item.project_url}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="inline-flex items-center gap-1 text-xs text-[#c4b5fd] hover:text-[#ddd6fe] transition-colors"
-                                                        >
-                                                            <ExternalLink className="w-3.5 h-3.5" />
-                                                            {tx('pages.freelancerProfile.actions.openLink', undefined, 'Open link')}
-                                                        </a>
-                                                    ) : <span />}
-
-                                                    <div className="flex items-center gap-2">
-                                                        {isOwner ? (
-                                                            <>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => editWorkSample(item.id)}
-                                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-white/15 text-xs font-semibold text-white/75 hover:text-white transition-colors"
-                                                                >
-                                                                    <Edit2 className="w-3.5 h-3.5" />
-                                                                    Edit
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => { void deleteWorkSample(item.id); }}
-                                                                    disabled={deletingWorkSampleId === item.id}
-                                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-500/35 text-xs font-semibold text-red-300 hover:text-red-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                                                                >
-                                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                                    {deletingWorkSampleId === item.id ? 'Deleting...' : 'Delete'}
-                                                                </button>
-                                                            </>
-                                                        ) : null}
-
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => openWorkSampleViewer(item.id)}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors"
-                                                            style={{
-                                                                borderColor: `color-mix(in srgb, ${accentColor} 38%, #2f2f2f)`,
-                                                                color: accentColor,
-                                                                background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
-                                                            }}
-                                                        >
-                                                            {tx('pages.freelancerProfile.actions.viewFullProject', undefined, 'View full project')}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <ProfileEmptyState
-                                icon={<Briefcase className="w-10 h-10" />}
-                                title={tx('pages.freelancerProfile.workSamples.emptyTitle', undefined, 'No work samples added yet')}
-                                description="Showcase case studies, shipped products, and measurable outcomes."
-                                cta={isOwner ? 'Add your first work sample' : undefined}
-                                onCta={isOwner ? () => navigate(ROUTES.freelancerPortfolio) : undefined}
-                                accentColor={accentColor}
-                            />
-                        )}
-                    </ProfileSection>
-
-                    {activeWorkSample ? (
-                        <div
-                            className="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm p-3 sm:p-6"
-                            onClick={closeWorkSampleViewer}
-                            role="dialog"
-                            aria-modal="true"
-                        >
-                            <div
-                                className="mx-auto h-full max-w-6xl overflow-hidden rounded-2xl border border-white/10 bg-[#101010] shadow-2xl"
-                                onClick={(event) => event.stopPropagation()}
-                            >
-                                <div className="h-full grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr]">
-                                    <section className="relative bg-black/90 min-h-[280px] lg:min-h-full flex flex-col">
-                                        <button
-                                            type="button"
-                                            onClick={closeWorkSampleViewer}
-                                            className="absolute top-3 right-3 z-20 h-9 w-9 rounded-full border border-white/20 bg-black/65 text-white/80 hover:text-white transition-colors inline-flex items-center justify-center"
-                                            aria-label={tx('pages.freelancerProfile.viewer.close', undefined, 'Close portfolio viewer')}
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
-
-                                        <div className="relative flex-1 flex items-center justify-center p-2 sm:p-4">
-                                            {activeWorkSampleImage ? (
-                                                <OptimizedImage
-                                                    src={activeWorkSampleImage}
-                                                    alt={activeWorkSample.title || 'Portfolio project image'}
-                                                    className="h-full max-h-[56vh] lg:max-h-[72vh] w-full"
-                                                    imgClassName="object-contain"
-                                                />
-                                            ) : (
-                                                <div className="h-full w-full flex items-center justify-center text-white/25 bg-[radial-gradient(circle_at_35%_20%,rgba(139,92,246,0.2),transparent_48%),#090909] rounded-xl">
-                                                    <Briefcase className="w-10 h-10" />
-                                                </div>
-                                            )}
-
-                                            {activeWorkSampleImages.length > 1 ? (
-                                                <>
-                                                    <button
-                                                        type="button"
-                                                        onClick={showPreviousWorkImage}
-                                                        className="absolute left-4 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full border border-white/20 bg-black/65 text-white/80 hover:text-white transition-colors inline-flex items-center justify-center"
-                                                        aria-label={tx('pages.freelancerProfile.viewer.previousImage', undefined, 'Previous image')}
-                                                    >
-                                                        <ChevronLeft className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={showNextWorkImage}
-                                                        className="absolute right-4 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full border border-white/20 bg-black/65 text-white/80 hover:text-white transition-colors inline-flex items-center justify-center"
-                                                        aria-label={tx('pages.freelancerProfile.viewer.nextImage', undefined, 'Next image')}
-                                                    >
-                                                        <ChevronRight className="w-4 h-4" />
-                                                    </button>
-                                                </>
-                                            ) : null}
-                                        </div>
-
-                                        {activeWorkSampleImages.length > 1 ? (
-                                            <div className="px-3 pb-3 sm:px-4 sm:pb-4">
-                                                <div className="flex gap-2 overflow-x-auto pb-1">
-                                                    {activeWorkSampleImages.map((imageUrl, index) => (
-                                                        <button
-                                                            key={`${activeWorkSample.id}-image-${index}`}
-                                                            type="button"
-                                                            onClick={() => setActiveWorkImageIndex(index)}
-                                                            className={`h-16 w-24 shrink-0 overflow-hidden rounded-lg border transition-colors ${index === activeWorkImageIndex ? 'border-[#8B5CF6]' : 'border-white/15 hover:border-white/35'}`}
-                                                        >
-                                                            <OptimizedImage
-                                                                src={imageUrl}
-                                                                alt={`Project image ${index + 1}`}
-                                                                className="h-full w-full"
-                                                                imgClassName="object-cover"
-                                                            />
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : null}
-                                    </section>
-
-                                    <aside className="h-full flex flex-col bg-[var(--color-bg-elevated)]">
-                                        <div className="border-b border-white/10 px-4 py-4 sm:px-5">
-                                            <p className="text-xs uppercase tracking-[0.12em] text-[#c4b5fd] font-semibold">
-                                                Project {Math.max(1, activeWorkSamplePosition + 1)} of {workSamples.length}
-                                            </p>
-                                            <h3 className="text-lg font-bold text-white mt-2 leading-6">
-                                                {activeWorkSample.title || 'Untitled work'}
-                                            </h3>
-                                        </div>
-
-                                        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5 space-y-5">
-                                            <p className="text-sm text-white/75 leading-6">
-                                                {activeWorkSample.description || 'No description provided yet.'}
-                                            </p>
-
-                                            <div className="space-y-2.5 text-sm text-white/70">
-                                                <div className="inline-flex items-center gap-2">
-                                                    <Images className="w-4 h-4 text-white/45" />
-                                                    <span>{activeWorkSampleImages.length} {activeWorkSampleImages.length === 1 ? 'photo' : 'photos'}</span>
-                                                </div>
-
-                                                {activeWorkSample.client_name ? (
-                                                    <div className="inline-flex items-center gap-2">
-                                                        <span className="inline-flex items-center gap-2">
-                                                            <Briefcase className="w-4 h-4 text-white/45" />
-                                                            <span>{activeWorkSample.client_name}</span>
-                                                        </span>
-                                                    </div>
-                                                ) : null}
-
-                                                {activeWorkSample.completion_date ? (
-                                                    <div className="inline-flex items-center gap-2">
-                                                        <span className="inline-flex items-center gap-2">
-                                                            <CalendarDays className="w-4 h-4 text-white/45" />
-                                                            <span>{formatPortfolioMonth(activeWorkSample.completion_date)}</span>
-                                                        </span>
-                                                    </div>
-                                                ) : null}
-
-                                                {activeWorkSample.project_url ? (
-                                                    <a
-                                                        href={activeWorkSample.project_url}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="inline-flex items-center gap-2 text-[#c4b5fd] hover:text-[#ddd6fe] transition-colors"
-                                                    >
-                                                        <ExternalLink className="w-4 h-4" />
-                                                        {tx('pages.freelancerProfile.actions.openProjectLink', undefined, 'Open project link')}
-                                                    </a>
-                                                ) : null}
-                                            </div>
-
-                                            {activeWorkSample.skills_used && activeWorkSample.skills_used.length > 0 ? (
-                                                <div>
-                                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45 mb-2">{tx('pages.freelancerProfile.labels.skillsUsed', undefined, 'Skills used')}</p>
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {activeWorkSample.skills_used.map((skill) => (
-                                                            <span
-                                                                key={skill}
-                                                                className="text-xs px-2.5 py-1 rounded-full border"
-                                                                style={{
-                                                                    borderColor: `color-mix(in srgb, ${accentColor} 30%, #2f2f2f)`,
-                                                                    color: accentColor,
-                                                                    background: `color-mix(in srgb, ${accentColor} 12%, transparent)`,
-                                                                }}
-                                                            >
-                                                                {skill}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ) : null}
-
-                                            {activeWorkSample.tools_used && activeWorkSample.tools_used.length > 0 ? (
-                                                <div>
-                                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/45 mb-2">{tx('pages.freelancerProfile.labels.toolsUsed', undefined, 'Tools used')}</p>
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {activeWorkSample.tools_used.map((tool) => (
-                                                            <span
-                                                                key={tool}
-                                                                className="text-xs px-2.5 py-1 rounded-full border"
-                                                                style={{
-                                                                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 35%, transparent)',
-                                                                    color: 'var(--workspace-primary)',
-                                                                    background: 'var(--workspace-primary-dim)'
-                                                                }}
-                                                            >
-                                                                {tool}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ) : null}
-                                        </div>
-
-                                        {workSamples.length > 1 ? (
-                                            <div className="border-t border-white/10 px-4 py-3 sm:px-5 flex items-center justify-between gap-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={showPreviousWorkSample}
-                                                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/75 hover:text-white transition-colors"
-                                                >
-                                                    <ChevronLeft className="w-3.5 h-3.5" />
-                                                    {tx('pages.freelancerProfile.actions.previousProject', undefined, 'Previous project')}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={showNextWorkSample}
-                                                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-xs text-white/75 hover:text-white transition-colors"
-                                                >
-                                                    {tx('pages.freelancerProfile.actions.nextProject', undefined, 'Next project')}
-                                                    <ChevronRight className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        ) : null}
-                                    </aside>
-                                </div>
-                            </div>
-                        </div>
-                    ) : null}
-
-                    <ProfileSection title={tx('pages.freelancerProfile.sections.clientTrust', undefined, 'Client trust')} animationDelay={400}>
-                        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 items-start">
-                            <div className="rounded-xl border bg-[var(--color-bg-base)] p-4 text-center" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                                <p className="text-5xl leading-none font-black text-white">
-                                    {freelancer.stats.rating.toFixed(1)}
-                                </p>
-                                <div className="mt-2 flex items-center justify-center gap-1">
-                                    {[1, 2, 3, 4, 5].map((value) => (
-                                        <Star
-                                            key={value}
-                                            className="w-4 h-4"
-                                            style={{
-                                                color: value <= Math.round(freelancer.stats.rating) ? accentColor : '#4b5563',
-                                                fill: value <= Math.round(freelancer.stats.rating) ? accentColor : 'none',
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                                <p className="text-xs text-[var(--color-text-secondary)] mt-2">{freelancer.stats.reviews_count} reviews</p>
-                            </div>
-
-                            <div className="space-y-2">
-                                {reviewBuckets.map(({ score, pct }) => (
-                                    <div key={score} className="flex items-center gap-2 text-xs">
-                                        <span className="w-3 text-[var(--color-text-secondary)]">{score}</span>
-                                        <div className="h-2 flex-1 rounded-full overflow-hidden" style={{ background: 'var(--color-border-subtle)' }}>
-                                            <div
-                                                className="h-full rounded-full transition-all duration-500"
-                                                style={{
-                                                    width: `${pct}%`,
-                                                    background: `linear-gradient(90deg, ${accentColor}, color-mix(in srgb, ${accentColor} 55%, #ffffff))`,
-                                                }}
-                                            />
-                                        </div>
-                                        <span className="w-10 text-right text-[var(--color-text-tertiary)]">{pct}%</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {freelancer.reviews.length > 0 ? (
-                            <div className="mt-6 space-y-3">
-                                {freelancer.reviews.slice(0, 3).map((review) => (
-                                    <article key={review.id} className="rounded-xl border p-3.5" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-subtle)' }}>
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div>
-                                                <p className="text-sm font-semibold text-white">{review.client_name}</p>
-                                                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">{review.job_title || 'Project collaboration'}</p>
-                                            </div>
-                                            <div className="inline-flex items-center gap-1 text-xs" style={{ color: accentColor }}>
-                                                <Star className="w-3.5 h-3.5" style={{ fill: accentColor }} />
-                                                {review.rating.toFixed(1)}
-                                            </div>
-                                        </div>
-                                        <p className="text-sm text-[var(--color-text-secondary)] mt-2">{review.comment}</p>
-                                    </article>
-                                ))}
-                            </div>
-                        ) : (
-                            <ProfileEmptySlot message={tx('pages.freelancerProfile.reviews.empty', undefined, 'No reviews yet. Complete your first contract to receive feedback.')} />
-                        )}
-                    </ProfileSection>
+    <div className="min-h-screen w-full bg-[#f9fafb] dark:bg-black py-6 px-2 sm:px-4 transition-colors duration-200">
+      <div className="max-w-[1400px] mx-auto bg-white dark:bg-[#0c0c0e] border border-gray-200 dark:border-[#2d2d2d] rounded-2xl shadow-sm overflow-hidden transition-colors duration-200">
+        
+        {/* ─── Profile Header ────────────────────────────────────────────── */}
+        <header className="p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 flex-1 w-full">
+            {/* Avatar block with green dot */}
+            <div className="relative group shrink-0">
+              {freelancer.avatar_url ? (
+                <img
+                  src={freelancer.avatar_url}
+                  alt={freelancer.full_name}
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border border-gray-200 dark:border-[#2d2d2d]"
+                />
+              ) : (
+                <div
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center text-3xl font-bold text-white select-none"
+                  style={{ background: '#10B981' }}
+                >
+                  {initialAvatar}
                 </div>
+              )}
+              
+              {/* Availability Status Dot */}
+              {freelancer.availability === 'available' && (
+                <span
+                  className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-[3px] border-white dark:border-[#0c0c0e] bg-[#10B981]"
+                  aria-hidden="true"
+                />
+              )}
 
-                <div className="lg:col-span-1">
-                    <ProfileActionSidebar
-                        variant="freelancer"
-                        primaryCta={
-                            viewerRole === 'client' ? (
-                                <div className="flex flex-col gap-2">
-                                    <button
-                                        onClick={onHireNow}
-                                        className="w-full text-white rounded-xl py-3 font-semibold transition-all shadow-[0_4px_14px_0_rgba(139,92,246,0.39)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.23)]"
-                                        style={{ background: accentColor }}
-                                    >
-                                        {tx('pages.freelancerProfile.cta.hireMe', undefined, 'Hire Me')}
-                                    </button>
-                                    <button
-                                        onClick={onOpenContact}
-                                        className="w-full rounded-xl py-3 font-semibold transition-colors inline-flex items-center justify-center gap-2 hover:bg-[#8B5CF6]/10"
-                                        style={{ border: `1px solid color-mix(in srgb, ${accentColor} 50%, transparent)`, color: accentColor }}
-                                    >
-                                        <MessageSquare className="w-4 h-4" />
-                                        {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
-                                    </button>
-                                </div>
-                            ) : (viewerRole === 'freelancer' || viewerRole === 'guest') ? (
-                                <button
-                                    onClick={onOpenContact}
-                                    className="w-full rounded-xl py-3 font-semibold transition-colors inline-flex items-center justify-center gap-2 hover:bg-white/5"
-                                    style={{ border: '1px solid var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
-                                >
-                                    <MessageSquare className="w-4 h-4" />
-                                    {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
-                                </button>
-                            ) : undefined
-                        }
-                        workspaceInfo={[
-                            {
-                                label: "Status",
-                                value: (
-                                    <span className="flex items-center justify-end gap-1.5">
-                                        <span className="w-2 h-2 rounded-full" style={{ background: freelancer.availability === 'available' ? '#4ade80' : '#fbbf24' }} />
-                                        {freelancer.availability === 'available' ? 'Available for work' : freelancer.availability}
-                                    </span>
-                                )
-                            },
-                            {
-                                label: tx('pages.freelancerProfile.info.memberSince', undefined, 'Member since'),
-                                value: new Date(freelancer.joined_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
-                            },
-                            {
-                                label: tx('pages.freelancerProfile.info.lastSeen', undefined, 'Last seen'),
-                                value: <span className="text-emerald-400">Recently</span>
-                            }
-                        ]}
-                        verifications={[
-                            { label: 'Identity', passed: !!freelancer.verifications.cin },
-                            { label: 'Phone', passed: !!freelancer.verifications.phone },
-                            { label: 'Email', passed: !!freelancer.verifications.email },
-                            { label: tx('pages.freelancerProfile.verifications.paymentMethod', undefined, 'Payment method'), passed: !!freelancer.verifications.payment },
-                        ]}
-                        ownerActions={isOwner ? [
-                            {
-                                icon: <Eye className="w-4 h-4" />,
-                                label: tx('pages.freelancerProfile.cta.viewPublicProfile', undefined, 'View Public Profile'),
-                                description: 'Preview how others see your profile.',
-                                onClick: () => navigate(`/freelancer/${freelancer.username || freelancer.id}?preview=public`)
-                            },
-                            {
-                                icon: <Briefcase className="w-4 h-4" />,
-                                label: tx('pages.freelancerProfile.cta.portfolioDashboard', undefined, 'Portfolio Dashboard'),
-                                description: 'Organize your best work.',
-                                onClick: () => navigate(ROUTES.freelancerPortfolio)
-                            },
-                            {
-                                icon: <MessageSquare className="w-4 h-4" />,
-                                label: tx('pages.freelancerProfile.cta.myProposals', undefined, 'My Proposals'),
-                                description: 'Track statuses and follow up.',
-                                onClick: () => navigate(ROUTES.myProposals)
-                            },
-                            {
-                                icon: <Settings className="w-4 h-4" />,
-                                label: tx('pages.freelancerProfile.cta.workspaceSettings', undefined, 'Workspace Settings'),
-                                description: 'Notifications and security.',
-                                onClick: () => navigate(ROUTES.settings)
-                            }
-                        ] : []}
-                    />
-                </div>
+              {/* Camera overlay for avatar upload (owner only) */}
+              {isOwner && typeof onSaveAvatar === 'function' && (
+                <label className="absolute inset-0 rounded-full flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
+                  {savingAvatar ? (
+                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  ) : (
+                    <Camera className="w-6 h-6 text-white" />
+                  )}
+                  <input
+                    type="file"
+                    aria-label="Upload profile picture"
+                    className="hidden"
+                    onChange={handleAvatarUploadSelection}
+                    disabled={savingAvatar}
+                  />
+                </label>
+              )}
             </div>
+
+            {/* Info details */}
+            <div className="flex-1 min-w-0 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-zinc-50 tracking-tight">
+                  {freelancer.full_name || 'Freelancer'}
+                </h1>
+                
+                {/* Verification badge */}
+                {(freelancer.verifications.cin || freelancer.verifications.email) && (
+                  <CheckCircle 
+                    className="w-5 h-5 text-[#10B981] fill-white dark:fill-[#0c0c0e] shrink-0"
+                    aria-label="Verified"
+                  />
+                )}
+              </div>
+
+              {/* Location & Local Time */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 mt-2 text-sm text-gray-500 dark:text-zinc-400">
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                  <span>{freelancer.location}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                  <span>{localTime} local time</span>
+                </span>
+              </div>
+
+              {/* Stats: Rating, Jobs, Response Time */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1.5 mt-4 text-sm text-gray-500 dark:text-zinc-400">
+                <span className="inline-flex items-center gap-1 text-[#F59E0B] font-medium">
+                  <Star className="w-4 h-4 fill-current" />
+                  <span>{freelancer.stats.rating.toFixed(1)} ({freelancer.stats.reviews_count} {freelancer.stats.reviews_count === 1 ? 'review' : 'reviews'})</span>
+                </span>
+                <span className="text-gray-300 dark:text-[#2d2d2d] select-none">•</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Briefcase className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                  <span>{freelancer.stats.jobs_completed} {freelancer.stats.jobs_completed === 1 ? 'job' : 'jobs'} completed</span>
+                </span>
+                <span className="text-gray-300 dark:text-[#2d2d2d] select-none">•</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                  <span>{freelancer.stats.response_time_hours <= 2 ? '< 2 hrs' : `${freelancer.stats.response_time_hours} hrs`} response time</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons (Right side) */}
+          <div className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end mt-4 md:mt-0 shrink-0 flex-wrap">
+            {isOwner ? (
+              <button
+                type="button"
+                onClick={() => navigate('/settings?tab=profile')}
+                className="rounded-full border border-[#8B5CF6] hover:bg-[#8B5CF6]/5 text-[#8B5CF6] dark:text-[#8B5CF6] dark:border-[#8B5CF6] px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                Edit Profile
+              </button>
+            ) : viewerRole === 'client' ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onHireNow}
+                  className="rounded-full bg-[#8B5CF6] hover:bg-[#7c3aed] text-white px-5 py-2 text-sm font-semibold transition-all duration-150"
+                >
+                  Hire Me
+                </button>
+                <button
+                  type="button"
+                  onClick={onOpenContact}
+                  className="rounded-full border border-gray-300 dark:border-[#2d2d2d] hover:bg-gray-50 dark:hover:bg-[#161618] text-gray-700 dark:text-zinc-300 px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Send Message
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenContact}
+                className="rounded-full border border-gray-300 dark:border-[#2d2d2d] hover:bg-gray-50 dark:hover:bg-[#161618] text-gray-700 dark:text-zinc-300 px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                Send Message
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                showToast(tx('pages.freelancerProfile.toasts.linkCopied', undefined, 'Profile link copied to clipboard'), 'success');
+              }}
+              className="rounded-full border border-gray-300 dark:border-[#2d2d2d] hover:bg-gray-50 dark:hover:bg-[#161618] text-gray-700 dark:text-zinc-300 px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              Share
+            </button>
+          </div>
+        </header>
+
+        {/* Divider */}
+        <div className="border-b border-gray-200 dark:border-[#2d2d2d]" />
+
+        {/* ─── Two-Column Split Grid ─────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-4">
+          
+          {/* ─── Left Column (3/4 width) ──────────────────────────────────── */}
+          <main className="lg:col-span-3 flex flex-col divide-y divide-gray-200 dark:divide-[#2d2d2d]">
+            
+            {/* Title, Rate & Bio Description */}
+            <section className="p-6 sm:p-8 flex flex-col gap-4">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div className="space-y-1">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50">
+                    {freelancer.title || 'Independent Specialist'}
+                  </h2>
+                  <p className="text-xs text-gray-400 dark:text-zinc-500">
+                    {freelancer.skills && freelancer.skills.length > 0 ? `Specialized in ${freelancer.skills.slice(0, 3).map(s => s.name_en).join(', ')}` : 'Specialized Freelancer'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold text-gray-900 dark:text-zinc-50">
+                    {displayRate}
+                  </span>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/settings?tab=profile')}
+                      className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                      aria-label="Edit title and rate"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Bio Description Paragraph */}
+              <div className="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                {freelancer.bio || 'No biography details provided yet.'}
+              </div>
+
+              {isOwner && !freelancer.bio && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/settings?tab=profile')}
+                  className="text-sm font-semibold text-[#8B5CF6] hover:underline self-start"
+                >
+                  + Add description
+                </button>
+              )}
+            </section>
+
+            {/* Skills & Tools */}
+            <section className="p-6 sm:p-8 flex flex-col gap-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+                  Skills
+                </h3>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/settings?tab=profile')}
+                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                    aria-label="Edit skills and tools"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-6">
+                {/* Services/Skills */}
+                {freelancer.skills && freelancer.skills.length > 0 && (
+                  <div className="space-y-2.5">
+                    <h4 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
+                      Services
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {freelancer.skills.map((skill) => (
+                        <span
+                          key={skill.id}
+                          className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
+                        >
+                          {getFreelancerSkillName(skill)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tools */}
+                {freelancer.tools && freelancer.tools.length > 0 && (
+                  <div className="space-y-2.5">
+                    <h4 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
+                      Tools
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {freelancer.tools.map((tool) => (
+                        <span
+                          key={tool}
+                          className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
+                        >
+                          {tool}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Industries */}
+                {freelancer.industries && freelancer.industries.length > 0 && (
+                  <div className="space-y-2.5">
+                    <h4 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
+                      Industries
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {freelancer.industries.map((industry) => (
+                        <span
+                          key={industry}
+                          className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
+                        >
+                          {industry}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Project Preferences & Details */}
+            <section className="p-6 sm:p-8 flex flex-col gap-5">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+                  Project Preferences & Details
+                </h3>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/settings?tab=profile')}
+                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                    aria-label="Edit project preferences"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30">
+                  <h4 className="font-semibold text-gray-800 dark:text-zinc-200 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-[#8B5CF6]" />
+                    Revision Policy
+                  </h4>
+                  <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-xs">
+                    {freelancer.revision_policy || '2 revisions included, additional billed separately.'}
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30">
+                  <h4 className="font-semibold text-gray-800 dark:text-zinc-200 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-[#8B5CF6]" />
+                    Project Preferences
+                  </h4>
+                  <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-xs">
+                    {(freelancer.project_preferences?.details as string) || 'Open to project scope changes, regular text/call communication, and milestone-based deliverables.'}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Portfolio */}
+            <section className="p-6 sm:p-8 flex flex-col gap-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+                  Portfolio
+                </h3>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(ROUTES.freelancerPortfolio)}
+                    className="text-[#8B5CF6] hover:underline text-sm font-semibold flex items-center gap-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add
+                  </button>
+                )}
+              </div>
+
+              {workSamples.length > 0 ? (
+                <div className={`grid gap-5 ${workSamples.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                  {workSamples.map((item) => {
+                    const workImages = getWorkSampleImages(item);
+                    const workImage = workImages[0] || '';
+                    const workTitle = item.title?.trim() || 'Untitled work';
+
+                    return (
+                      <article
+                        key={item.id}
+                        className="group flex flex-col border border-gray-200 dark:border-[#2d2d2d] rounded-xl overflow-hidden bg-white dark:bg-[#0c0c0e] hover:border-gray-300 dark:hover:border-[#2d2d2d] transition-all duration-200"
+                      >
+                        {/* Image wrapper */}
+                        <div className="relative h-44 w-full bg-gray-50 dark:bg-black overflow-hidden border-b border-gray-200 dark:border-[#2d2d2d]">
+                          {workImage ? (
+                            <OptimizedImage
+                              src={workImage}
+                              alt={workTitle}
+                              className="h-full w-full"
+                              imgClassName="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center text-gray-400 dark:text-[#2d2d2d]">
+                              <Briefcase className="w-10 h-10" />
+                            </div>
+                          )}
+                          
+                          <div className="absolute left-3 bottom-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] text-white">
+                            <Images className="w-3.5 h-3.5" />
+                            {workImages.length} {workImages.length === 1 ? 'photo' : 'photos'}
+                          </div>
+                        </div>
+
+                        {/* Title and content */}
+                        <div className="p-4 flex-1 flex flex-col gap-3">
+                          <div className="flex-1">
+                            <h4 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 line-clamp-1">
+                              {workTitle}
+                            </h4>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                              {item.description || 'No description provided.'}
+                            </p>
+                          </div>
+
+                          {/* Skill pills used */}
+                          {item.skills_used && item.skills_used.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {item.skills_used.slice(0, 3).map((skill) => (
+                                <span
+                                  key={skill}
+                                  className="text-[10px] px-2 py-0.5 rounded-full border border-gray-200 dark:border-[#2d2d2d] text-gray-600 dark:text-zinc-400 bg-gray-50 dark:bg-[#161618]/50"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                              {item.skills_used.length > 3 && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full border border-gray-200 dark:border-[#2d2d2d] text-gray-400 dark:text-zinc-500 bg-gray-50 dark:bg-[#161618]/50">
+                                  +{item.skills_used.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Action row */}
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-[#2d2d2d]/80 mt-1">
+                            {item.project_url ? (
+                              <a
+                                href={item.project_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-[#8B5CF6] dark:text-[#a78bfa] hover:underline"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                Open Link
+                              </a>
+                            ) : (
+                              <span />
+                            )}
+
+                            <div className="flex items-center gap-1.5">
+                              {isOwner ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => editWorkSample(item.id)}
+                                    className="p-1.5 text-gray-400 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-lg transition-colors"
+                                    title="Edit project"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => { void deleteWorkSample(item.id); }}
+                                    disabled={deletingWorkSampleId === item.id}
+                                    className="p-1.5 text-gray-400 hover:text-red-650 dark:text-zinc-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors disabled:opacity-50"
+                                    title="Delete project"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </>
+                              ) : null}
+
+                              <button
+                                type="button"
+                                onClick={() => openWorkSampleViewer(item.id)}
+                                className="text-xs font-semibold text-[#8B5CF6] hover:underline"
+                              >
+                                View Project
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 px-4 border border-dashed border-gray-300 dark:border-[#2d2d2d] rounded-xl bg-gray-50/50 dark:bg-[#161618]/10 text-center">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-100 dark:bg-[#161618] text-gray-400 dark:text-[#2d2d2d] mb-3">
+                    <Briefcase className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-1">
+                    No work samples added yet
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400 max-w-[280px] leading-relaxed mb-4">
+                    Showcase case studies, designs, products, and measurable outcomes to attract clients.
+                  </p>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => navigate(ROUTES.freelancerPortfolio)}
+                      className="px-5 py-2 bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-semibold rounded-full transition-colors shadow-sm"
+                    >
+                      Add your first work sample
+                    </button>
+                  )}
+                </div>
+              )}
+            </section>
+
+            {/* Work History & Reviews */}
+            <section className="p-6 sm:p-8 flex flex-col gap-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+                Work History & Reviews
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 items-start">
+                <div className="border border-gray-200 dark:border-[#2d2d2d] bg-gray-50/30 dark:bg-[#161618]/30 rounded-xl p-4 text-center">
+                  <p className="text-5xl font-black text-gray-900 dark:text-zinc-50 leading-none">
+                    {freelancer.stats.rating.toFixed(1)}
+                  </p>
+                  <div className="mt-2 flex items-center justify-center gap-1">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <Star
+                        key={value}
+                        className="w-4 h-4"
+                        style={{
+                          color: value <= Math.round(freelancer.stats.rating) ? '#F59E0B' : '#d1d5db',
+                          fill: value <= Math.round(freelancer.stats.rating) ? '#F59E0B' : 'none',
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400 mt-2">
+                    {freelancer.stats.reviews_count} {freelancer.stats.reviews_count === 1 ? 'review' : 'reviews'}
+                  </p>
+                </div>
+
+                <div className="space-y-2 flex-1">
+                  {reviewBuckets.map(({ score, pct }) => (
+                    <div key={score} className="flex items-center gap-3 text-xs">
+                      <span className="w-3 text-gray-500 dark:text-zinc-400">{score}</span>
+                      <div className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-[#161618] overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-[#8B5CF6] transition-all duration-500"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="w-8 text-right text-gray-400 dark:text-zinc-500">{pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {freelancer.reviews.length > 0 ? (
+                <div className="divide-y divide-gray-100 dark:divide-[#2d2d2d] mt-4">
+                  {freelancer.reviews.slice(0, 5).map((review) => (
+                    <article key={review.id} className="py-4 first:pt-0 last:pb-0 flex flex-col gap-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
+                            {review.job_title || 'Project Collaboration'}
+                          </h4>
+                          <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                            by {review.client_name} • {new Date(review.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="inline-flex items-center gap-1 text-[#F59E0B] font-medium text-sm">
+                          <Star className="w-3.5 h-3.5 fill-current" />
+                          <span>{review.rating.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-zinc-300 italic font-normal leading-relaxed mt-1">
+                        "{review.comment}"
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-6 text-center border border-gray-100 dark:border-[#2d2d2d] rounded-xl bg-gray-50/20 dark:bg-[#161618]/10">
+                  <p className="text-xs text-gray-400 dark:text-zinc-500">
+                    No reviews yet. Complete your first contract to receive feedback.
+                  </p>
+                </div>
+              )}
+            </section>
+          </main>
+
+          {/* ─── Right Column (1/4 width, Sidebar) ─────────────────────────── */}
+          <aside className="lg:col-span-1 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-[#2d2d2d] flex flex-col divide-y divide-gray-200 dark:divide-[#2d2d2d]">
+            
+            {/* Availability & Stats */}
+            <section className="p-6 flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
+                  Availability & Stats
+                </h3>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/settings?tab=profile')}
+                    className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    aria-label="Edit availability settings"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <dl className="space-y-3.5 text-sm">
+                <div className="flex justify-between items-start gap-3">
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Status</dt>
+                  <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right flex items-center gap-1.5">
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ background: freelancer.availability === 'available' ? '#4ade80' : '#fbbf24' }}
+                    />
+                    {freelancer.availability === 'available' ? 'Available for work' : freelancer.availability}
+                  </dd>
+                </div>
+
+                <div className="flex justify-between items-start gap-3">
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Weekly availability</dt>
+                  <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
+                    {freelancer.weekly_availability_hours || 30} hrs/week
+                  </dd>
+                </div>
+
+                <div className="flex justify-between items-start gap-3">
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Years of experience</dt>
+                  <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
+                    {freelancer.years_experience || 1} {freelancer.years_experience === 1 ? 'year' : 'years'}
+                  </dd>
+                </div>
+
+                <div className="flex justify-between items-start gap-3">
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Response time</dt>
+                  <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
+                    {freelancer.stats.response_time_hours <= 2 ? '< 2 hrs' : `< ${freelancer.stats.response_time_hours} hrs`}
+                  </dd>
+                </div>
+
+                <div className="flex justify-between items-start gap-3">
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Job Success</dt>
+                  <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
+                    {freelancer.stats.success_rate}%
+                  </dd>
+                </div>
+
+                <div className="flex justify-between items-start gap-3">
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Profile Visibility</dt>
+                  <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right flex items-center gap-1">
+                    <Globe className="w-3.5 h-3.5 text-gray-400 dark:text-zinc-500" />
+                    <span>Public</span>
+                  </dd>
+                </div>
+              </dl>
+            </section>
+
+            {/* Portfolio Links */}
+            <section className="p-6 flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
+                  Portfolio Links
+                </h3>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/settings?tab=profile')}
+                    className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    aria-label="Edit portfolio links"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {freelancer.portfolio_links && freelancer.portfolio_links.length > 0 ? (
+                <ul className="space-y-2.5">
+                  {freelancer.portfolio_links.map((link, idx) => {
+                    const cleanLink = link.trim();
+                    if (!cleanLink) return null;
+                    const displayLabel = cleanLink.replace(/^https?:\/\/(www\.)?/, '').split('/')[0] || 'Link';
+                    return (
+                      <li key={idx}>
+                        <a
+                          href={cleanLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-[#8B5CF6] dark:text-[#a78bfa] hover:underline"
+                        >
+                          <Globe className="w-4 h-4 shrink-0 text-gray-400 dark:text-zinc-500" />
+                          <span className="truncate">{displayLabel}</span>
+                          <ExternalLink className="w-3 h-3 shrink-0 opacity-60" />
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="text-center py-2">
+                  <p className="text-xs text-gray-400 dark:text-zinc-500">No links added yet.</p>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/settings?tab=profile')}
+                      className="text-xs font-semibold text-[#8B5CF6] hover:underline mt-1"
+                    >
+                      + Add portfolio links
+                    </button>
+                  )}
+                </div>
+              )}
+            </section>
+
+            {/* Verifications */}
+            <section className="p-6 flex flex-col gap-4">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
+                Verifications
+              </h3>
+
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-center gap-2.5">
+                  {freelancer.verifications.cin ? (
+                    <CheckCircle className="w-4 h-4 shrink-0 text-[#10B981] fill-white dark:fill-[#0f0f10]" />
+                  ) : (
+                    <Circle className="w-4 h-4 shrink-0 text-gray-300 dark:text-zinc-700" />
+                  )}
+                  <span className={freelancer.verifications.cin ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
+                    Identity Verified
+                  </span>
+                </li>
+
+                <li className="flex items-center gap-2.5">
+                  {freelancer.verifications.phone ? (
+                    <CheckCircle className="w-4 h-4 shrink-0 text-[#10B981] fill-white dark:fill-[#0f0f10]" />
+                  ) : (
+                    <Circle className="w-4 h-4 shrink-0 text-gray-300 dark:text-zinc-700" />
+                  )}
+                  <span className={freelancer.verifications.phone ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
+                    Phone Number
+                  </span>
+                </li>
+
+                <li className="flex items-center gap-2.5">
+                  {freelancer.verifications.email ? (
+                    <CheckCircle className="w-4 h-4 shrink-0 text-[#10B981] fill-white dark:fill-[#0f0f10]" />
+                  ) : (
+                    <Circle className="w-4 h-4 shrink-0 text-gray-300 dark:text-zinc-700" />
+                  )}
+                  <span className={freelancer.verifications.email ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
+                    Email Address
+                  </span>
+                </li>
+
+                <li className="flex items-center gap-2.5">
+                  {freelancer.verifications.payment ? (
+                    <CheckCircle className="w-4 h-4 shrink-0 text-[#10B981] fill-white dark:fill-[#0f0f10]" />
+                  ) : (
+                    <Circle className="w-4 h-4 shrink-0 text-gray-300 dark:text-zinc-700" />
+                  )}
+                  <span className={freelancer.verifications.payment ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
+                    Payment Method
+                  </span>
+                </li>
+              </ul>
+            </section>
+
+            {/* Languages */}
+            <section className="p-6 flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
+                  Languages
+                </h3>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/settings?tab=profile')}
+                    className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    aria-label="Edit languages"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {freelancer.languages && freelancer.languages.length > 0 ? (
+                <ul className="space-y-3">
+                  {freelancer.languages.map((lang, idx) => (
+                    <li key={idx} className="flex justify-between text-sm gap-2">
+                      <span className="font-semibold text-gray-800 dark:text-zinc-200">{lang.language}</span>
+                      <span className="text-gray-500 dark:text-zinc-400 capitalize text-xs">{lang.proficiency}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-gray-400 dark:text-zinc-500">No languages listed.</p>
+              )}
+            </section>
+
+            {/* Education */}
+            <section className="p-6 flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
+                  Education
+                </h3>
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/settings?tab=profile')}
+                    className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    aria-label="Add education"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {freelancer.education && freelancer.education.length > 0 ? (
+                <ul className="space-y-4">
+                  {freelancer.education.map((edu, idx) => (
+                    <li key={idx} className="text-sm">
+                      <p className="font-semibold text-gray-800 dark:text-zinc-200">{edu.institution}</p>
+                      <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">{edu.degree} in {edu.field}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">{edu.startYear} - {edu.endYear}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-center py-2">
+                  <p className="text-xs text-gray-400 dark:text-zinc-500">No education entered yet.</p>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/settings?tab=profile')}
+                      className="text-xs font-semibold text-[#8B5CF6] hover:underline mt-1"
+                    >
+                      + Add education details
+                    </button>
+                  )}
+                </div>
+              )}
+            </section>
+          </aside>
         </div>
       </div>
-    );
+
+      {/* ─── Portfolio item viewer overlay modal ─────────────────────────── */}
+      {activeWorkSample && (
+        <div
+          className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm p-3 sm:p-6"
+          onClick={closeWorkSampleViewer}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="mx-auto h-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f10] shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="h-full grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr]">
+              <section className="relative bg-black flex flex-col justify-center items-center p-4">
+                <button
+                  type="button"
+                  onClick={closeWorkSampleViewer}
+                  className="absolute top-3 right-3 z-20 h-9 w-9 rounded-full bg-black/60 text-white/80 hover:text-white border border-white/20 transition-colors inline-flex items-center justify-center"
+                  aria-label="Close viewer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                <div className="relative flex-1 flex items-center justify-center w-full">
+                  {activeWorkSampleImage ? (
+                    <OptimizedImage
+                      src={activeWorkSampleImage}
+                      alt={activeWorkSample.title || 'Portfolio project image'}
+                      className="max-h-[58vh] lg:max-h-[74vh] w-full"
+                      imgClassName="object-contain"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-white/30">
+                      <Briefcase className="w-12 h-12" />
+                    </div>
+                  )}
+
+                  {activeWorkSampleImages.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={showPreviousWorkImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/60 text-white/80 hover:text-white border border-white/20 transition-colors inline-flex items-center justify-center"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={showNextWorkImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-black/60 text-white/80 hover:text-white border border-white/20 transition-colors inline-flex items-center justify-center"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {activeWorkSampleImages.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto w-full max-w-md py-2 justify-center">
+                    {activeWorkSampleImages.map((imageUrl, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setActiveWorkImageIndex(idx)}
+                        className={`h-12 w-16 shrink-0 overflow-hidden rounded border transition-colors ${idx === activeWorkImageIndex ? 'border-[#8B5CF6]' : 'border-white/10 hover:border-white/30'}`}
+                      >
+                        <img
+                          src={imageUrl}
+                          alt="Thumbnail"
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <aside className="h-full flex flex-col bg-zinc-900 text-white border-l border-zinc-800 overflow-y-auto">
+                <div className="border-b border-zinc-800 p-5">
+                  <p className="text-[10px] uppercase tracking-wider text-[#8B5CF6] font-semibold">
+                    Project {Math.max(1, activeWorkSamplePosition + 1)} of {workSamples.length}
+                  </p>
+                  <h3 className="text-lg font-bold text-white mt-1.5">
+                    {activeWorkSample.title || 'Untitled Work'}
+                  </h3>
+                </div>
+
+                <div className="flex-1 p-5 space-y-6">
+                  <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                    {activeWorkSample.description || 'No description provided.'}
+                  </p>
+
+                  <div className="space-y-3.5 text-xs text-zinc-400 border-t border-zinc-800/80 pt-4">
+                    {activeWorkSample.client_name && (
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-zinc-550" />
+                        <span>Client: {activeWorkSample.client_name}</span>
+                      </div>
+                    )}
+                    {activeWorkSample.completion_date && (
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 text-zinc-550" />
+                        <span>Date: {formatPortfolioMonth(activeWorkSample.completion_date)}</span>
+                      </div>
+                    )}
+                    {activeWorkSample.project_url && (
+                      <a
+                        href={activeWorkSample.project_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-[#8B5CF6] hover:underline"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Open Project Link
+                      </a>
+                    )}
+                  </div>
+
+                  {activeWorkSample.skills_used && activeWorkSample.skills_used.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Skills Used</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {activeWorkSample.skills_used.map((skill) => (
+                          <span
+                            key={skill}
+                            className="text-xs px-2.5 py-1 bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-full font-medium"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {activeWorkSample.tools_used && activeWorkSample.tools_used.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Tools Used</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {activeWorkSample.tools_used.map((tool) => (
+                          <span
+                            key={tool}
+                            className="text-xs px-2.5 py-1 bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-full font-medium"
+                          >
+                            {tool}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {workSamples.length > 1 && (
+                  <div className="border-t border-zinc-800 p-4 flex items-center justify-between gap-3 bg-zinc-950/40">
+                    <button
+                      type="button"
+                      onClick={showPreviousWorkSample}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 px-3 py-2 text-xs text-zinc-300 hover:text-white transition-colors"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={showNextWorkSample}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 px-3 py-2 text-xs text-zinc-300 hover:text-white transition-colors"
+                    >
+                      Next
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </aside>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function FreelancerProfile() {
@@ -1548,7 +1999,9 @@ export default function FreelancerProfile() {
                                 bio,
                                 location,
                                 created_at,
-                                user_type
+                                user_type,
+                                phone_verified,
+                                payment_verified
                             )
                         `)
                         .eq('id', profileId)
@@ -1632,13 +2085,18 @@ export default function FreelancerProfile() {
                     languages: Array.isArray(profileRow.languages) ? profileRow.languages : [],
                     education: Array.isArray(profileRow.education) ? profileRow.education : [],
                     certifications: Array.isArray(profileRow.certifications) ? profileRow.certifications : [],
+                    years_experience: profileRow.years_experience ?? 1,
+                    industries: Array.isArray(profileRow.industries) ? profileRow.industries : [],
+                    portfolio_links: Array.isArray(profileRow.portfolio_links) ? profileRow.portfolio_links : [],
+                    weekly_availability_hours: profileRow.weekly_availability_hours ?? 30,
+                    revision_policy: profileRow.revision_policy ?? '',
                     project_preferences: toRecord(profileRow.project_preferences),
                     stats,
                     verifications: {
                         cin: profileRow.cin_verified || false,
-                        phone: (profileRow as { phone_verified?: boolean }).phone_verified || false,
+                        phone: profileRow.profile?.phone_verified || false,
                         email: true,
-                        payment: (profileRow as { payment_verified?: boolean }).payment_verified || false,
+                        payment: profileRow.profile?.payment_verified || false,
                     },
                     work_samples: portfolioRows.map((item) => {
                         const {
@@ -1824,7 +2282,7 @@ export default function FreelancerProfile() {
         return (
             <div className="min-h-screen page-bg-base">
                 <Header />
-                <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
+                <div className="max-w-[1400px] mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
                     {/* Left column */}
                     <div className="lg:col-span-2 flex flex-col gap-6">
                         {/* Profile header skeleton */}
@@ -1883,7 +2341,7 @@ export default function FreelancerProfile() {
         <div className="min-h-screen page-bg-base">
             <Header />
             {isPublicPreview ? (
-                <div className="max-w-6xl mx-auto px-6 pt-5">
+                <div className="max-w-[1400px] mx-auto px-4 pt-4">
                     <div 
                         className="surface-card border rounded-xl px-4 py-3 flex items-center justify-between gap-3"
                         style={{ borderColor: 'var(--color-border-default)' }}
@@ -1931,10 +2389,6 @@ export default function FreelancerProfile() {
                 onOpenContact={openContactModal}
                 onHireNow={startHireFlow}
                 onSaveAvatar={saveAvatar}
-                onSaveBasics={saveProfileBasics}
-                onSaveBio={saveBio}
-                onSaveSkills={saveSkills}
-                onSaveTools={saveTools}
                 onRefreshWorkSamples={() => loadFreelancer(false)}
             />
 

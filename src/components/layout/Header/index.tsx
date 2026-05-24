@@ -195,7 +195,7 @@ export default function Header() {
   };
 
   const handleGoHome = () => {
-    navigate(user ? "/dashboard" : "/");
+    navigate("/");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -244,10 +244,16 @@ export default function Header() {
 
       <header
         dir={dir}
-        className="desktop-header fixed top-0 left-0 right-0 z-[100] hidden xl:flex h-16 w-full items-center px-8 gap-8 border-b border-white/[0.07] bg-[#0d0d0d]"
+        className="desktop-header fixed top-0 left-0 right-0 z-[100] hidden xl:flex h-16 w-full items-center px-8 gap-8 border-b transition-colors duration-300"
+        style={{
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.07)' : 'var(--color-border-default)',
+          background: isDark 
+            ? '#0d0d0d'
+            : 'var(--color-background-elevated)',
+        }}
       >
         <div className="flex-none flex items-center">
-          <Link to={user ? "/dashboard" : "/"} aria-label={homeLabel} className="flex items-center">
+          <Link to="/" aria-label={homeLabel} className="flex items-center">
             <Logo variant="full" size="sm" titleStyle="minimal" mode={resolvedWorkspace === "freelancer" ? "freelancer" : "client"} />
           </Link>
         </div>
@@ -258,24 +264,45 @@ export default function Header() {
 
         <HeaderSearch />
 
-        <div className="flex-none flex items-center gap-1">
+        <div className="flex-none flex items-center gap-2">
           {user && (
             <>
+              {/* Messages Button - Premium Capsule */}
               <button
                 onClick={() => navigate("/messages")}
-                className="relative p-2 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/[0.06] transition-all duration-150"
+                className="relative flex items-center justify-center h-10 w-10 rounded-xl border border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c0e] hover:bg-gray-50 dark:hover:bg-[#141414] hover:border-gray-300 dark:hover:border-white/[0.12] shadow-sm transition-all duration-200"
+                style={{
+                  color: isDark ? 'rgba(255, 255, 255, 0.65)' : 'var(--color-text-secondary)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = isDark ? '#ffffff' : 'var(--color-text-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = isDark ? 'rgba(255, 255, 255, 0.65)' : 'var(--color-text-secondary)';
+                }}
                 aria-label={t.nav?.messages || "Messages"}
               >
-                <MessageSquare className="w-5 h-5" />
+                <MessageSquare className="w-[18px] h-[18px]" strokeWidth={2} />
                 {unreadCount > 0 && (
-                  <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${unreadDotClass} ring-2 ring-[#0d0d0d]`} />
+                  <span 
+                    className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-4.5 rounded-full text-[9px] font-black shadow-md ring-2 ring-white dark:ring-black"
+                    style={{ 
+                      background: 'var(--workspace-primary)',
+                      color: '#ffffff',
+                      padding: unreadCount > 9 ? '0 5px' : '0',
+                    }}
+                  >
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
                 )}
               </button>
 
-              <NotificationBell workspace={resolvedWorkspace} />
+              {/* Notifications Button - Clean & Simple */}
+              <NotificationBell workspace={resolvedWorkspace} isDark={isDark} />
 
-              <div className="w-px h-5 bg-white/[0.08] mx-1" />
+              <div className="w-px h-5 mx-2.5 bg-gradient-to-b from-transparent via-gray-200 dark:via-white/[0.08] to-transparent" />
 
+              {/* User Profile - Clean & Compact */}
               <UserMenu isDark={isDark} toggleTheme={toggleTheme} isDesktopCondensed={true} />
             </>
           )}

@@ -150,18 +150,55 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
   const workspaceBadgeClass = isFreelancer
     ? "border-purple-500/25 text-purple-400/70 bg-purple-500/[0.07]"
     : "border-amber-500/25 text-amber-400/70 bg-amber-500/[0.07]";
-  const onlineDotClass = isFreelancer ? "bg-purple-400" : "bg-amber-400";
-  const menuItemClass =
-    "w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors duration-100";
-  const menuIconClass = "w-4 h-4 text-white/30 shrink-0";
-  const divider = <div className="mx-3 border-t border-white/[0.06]" />;
-  const toggleTrackClass = (enabled: boolean) =>
-    `relative ml-auto shrink-0 h-[20px] w-[36px] rounded-full transition-colors duration-200 ${
-      enabled ? (isFreelancer ? "bg-purple-500" : "bg-amber-500") : "bg-white/[0.14]"
-    }`;
+  const onlineDotClass = "bg-green-500"; // Semantic green for online status
+  const menuItemClass = isDark
+    ? "w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/[0.05] transition-colors duration-100"
+    : "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100";
+  
+  const menuItemStyle = isDark 
+    ? {} 
+    : {
+        color: 'var(--color-text-secondary)',
+      };
+  
+  const menuItemHoverStyle = isDark
+    ? {}
+    : {
+        color: 'var(--color-text-primary)',
+        background: 'var(--color-bg-muted)',
+      };
+  
+  const menuIconClass = isDark 
+    ? "w-4 h-4 text-white/30 shrink-0"
+    : "w-4 h-4 shrink-0";
+  
+  const menuIconStyle = isDark ? {} : { color: 'var(--color-text-tertiary)' };
+  
+  const divider = (
+    <div 
+      className="mx-3 border-t" 
+      style={{ 
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'var(--color-border-subtle)' 
+      }} 
+    />
+  );
+  // Semantic colors for toggles: green for online status, workspace colors for dark mode
+  const toggleTrackClass = (enabled: boolean, isOnlineToggle: boolean = false) => {
+    if (isOnlineToggle) {
+      // Online toggle: green when enabled, gray when disabled
+      return `relative ml-auto shrink-0 h-5 w-9 rounded-full transition-colors duration-200 ${
+        enabled ? "bg-green-500" : (isDark ? "bg-white/[0.14]" : "bg-gray-300")
+      }`;
+    } else {
+      // Dark mode toggle: workspace colors when enabled
+      return `relative ml-auto shrink-0 h-5 w-9 rounded-full transition-colors duration-200 ${
+        enabled ? (isFreelancer ? "bg-purple-500" : "bg-amber-500") : (isDark ? "bg-white/[0.14]" : "bg-gray-300")
+      }`;
+    }
+  };
   const toggleThumbClass = (enabled: boolean) =>
-    `absolute top-[2px] h-[16px] w-[16px] rounded-full bg-white shadow-sm transition-transform duration-200 ${
-      enabled ? "translate-x-[18px]" : "translate-x-[2px]"
+    `absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+      enabled ? "translate-x-4" : "translate-x-0"
     }`;
 
   const handleToggleOnline = async () => {
@@ -192,6 +229,8 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
     }
   };
 
+  const workspaceRingClass = isFreelancer ? "ring-purple-500/25" : "ring-amber-500/25";
+
   return (
     <div className="relative" ref={userMenuRef}>
       <button
@@ -221,35 +260,57 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             setUserMenuOpen((open) => !open);
           }
         }}
-        className="flex items-center gap-2 p-1.5 pr-2.5 rounded-lg hover:bg-white/[0.06] transition-all duration-150"
+        className="group flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full border border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c0e] hover:bg-gray-50 dark:hover:bg-[#141414] hover:border-gray-300 dark:hover:border-white/[0.12] transition-all duration-200 shadow-sm"
         aria-expanded={userMenuOpen}
         aria-haspopup="menu"
       >
-        <div className="relative shrink-0">
+        <div className="relative shrink-0 flex items-center">
           {avatarUrl ? (
             <img
               src={avatarUrl}
               alt=""
-              className="w-7 h-7 rounded-full object-cover ring-2 ring-white/[0.08]"
+              className={`w-8 h-8 rounded-full object-cover ring-2 ${workspaceRingClass}`}
               onError={() => setAvatarFailed(true)}
             />
           ) : (
-            <div className="flex w-7 h-7 items-center justify-center rounded-full text-[10px] font-bold text-white ring-2 ring-white/[0.08] bg-white/[0.10]">
+            <div 
+              className={`flex w-8 h-8 items-center justify-center rounded-full text-[10px] font-bold ring-2 ${workspaceRingClass}`}
+              style={{
+                color: isDark ? '#ffffff' : 'var(--color-text-primary)',
+                background: isDark ? 'rgba(255, 255, 255, 0.12)' : 'var(--color-bg-muted)',
+              }}
+            >
               {avatarInitials}
             </div>
           )}
           {isOnlineForMessages && (
             <span
-              className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${onlineDotClass} ring-2 ring-[#0d0d0d]`}
+              className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-[#0c0c0e] ${onlineDotClass}`}
               aria-hidden="true"
             />
           )}
         </div>
-        <div className="flex flex-col items-start">
-          <span className="text-xs font-medium text-white/80 leading-none">{firstName}</span>
-          <span className="text-[10px] text-white/35 leading-none mt-0.5 capitalize">{workspaceLabel}</span>
+        <div className="flex flex-col items-start leading-none pr-0.5">
+          <span 
+            className="text-[12.5px] font-bold tracking-tight text-gray-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white"
+          >
+            {firstName}
+          </span>
+          <span 
+            className={`text-[9.5px] font-bold uppercase tracking-wider mt-0.5 ${
+              isFreelancer 
+                ? 'text-purple-600 dark:text-purple-400' 
+                : 'text-amber-600 dark:text-amber-400'
+            }`}
+          >
+            {workspaceLabel}
+          </span>
         </div>
-        <ChevronDown className="w-3.5 h-3.5 text-white/30 ml-1" />
+        <ChevronDown 
+          className={`w-3.5 h-3.5 text-gray-400 dark:text-zinc-500 group-hover:text-gray-900 dark:group-hover:text-zinc-100 transition-transform duration-200 ${
+            userMenuOpen ? 'rotate-180' : 'rotate-0'
+          }`}
+        />
       </button>
 
       <AnimatePresence>
@@ -262,9 +323,15 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             className="absolute end-0 top-full z-[70] mt-2 w-64 rounded-2xl overflow-hidden py-2"
             style={{
               transformOrigin: "top right",
-              background: 'linear-gradient(145deg, #161616, #111111)',
-              border: '1px solid rgba(255,255,255,0.09)',
-              boxShadow: '0 24px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+              background: isDark 
+                ? 'linear-gradient(145deg, #161616, #111111)'
+                : 'linear-gradient(145deg, var(--color-background-elevated), var(--color-bg-subtle))',
+              border: isDark 
+                ? '1px solid rgba(255,255,255,0.09)'
+                : '1px solid var(--color-border-default)',
+              boxShadow: isDark 
+                ? '0 24px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)'
+                : '0 24px 48px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
             }}
             role="menu"
             ref={menuRef}
@@ -274,17 +341,37 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                 <img
                   src={avatarUrl}
                   alt=""
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-white/[0.08]"
+                  className="w-10 h-10 rounded-full object-cover ring-2"
+                  style={{ 
+                    ringColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'var(--color-border-default)' 
+                  }}
                   onError={() => setAvatarFailed(true)}
                 />
               ) : (
-                <div className="flex w-10 h-10 items-center justify-center rounded-full text-sm font-bold text-white ring-2 ring-white/[0.08] bg-white/[0.10]">
+                <div 
+                  className="flex w-10 h-10 items-center justify-center rounded-full text-sm font-bold ring-2"
+                  style={{
+                    color: isDark ? '#ffffff' : 'var(--color-text-primary)',
+                    ringColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'var(--color-border-default)',
+                    background: isDark ? 'rgba(255, 255, 255, 0.10)' : 'var(--color-bg-muted)',
+                  }}
+                >
                   {avatarInitials}
                 </div>
               )}
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-white/90">{displayName}</p>
-                <p className="truncate text-xs text-white/40">{user.email}</p>
+                <p 
+                  className="truncate text-sm font-semibold"
+                  style={{ color: isDark ? 'rgba(255, 255, 255, 0.9)' : 'var(--color-text-primary)' }}
+                >
+                  {displayName}
+                </p>
+                <p 
+                  className="truncate text-xs"
+                  style={{ color: isDark ? 'rgba(255, 255, 255, 0.4)' : 'var(--color-text-tertiary)' }}
+                >
+                  {user.email}
+                </p>
                 <span
                   className={`inline-flex mt-1 items-center px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide border ${workspaceBadgeClass}`}
                 >
@@ -298,22 +385,43 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             <button
               onClick={() => void handleQuickWorkspaceSwitch()}
               disabled={isSwitching}
-              className="w-full flex items-center justify-between px-4 py-2.5 text-sm group hover:bg-white/[0.05] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full flex items-center justify-between px-4 py-2.5 text-sm group transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+              style={menuItemStyle}
+              onMouseEnter={(e) => {
+                if (!isSwitching) {
+                  Object.assign(e.currentTarget.style, menuItemHoverStyle);
+                }
+              }}
+              onMouseLeave={(e) => {
+                Object.assign(e.currentTarget.style, menuItemStyle);
+              }}
               title={switchButtonLabel}
               role="menuitem"
             >
               <div className="flex items-center gap-3">
-                <ArrowLeftRight className={`w-4 h-4 text-white/30 group-hover:text-white/60 ${isSwitching ? "animate-spin" : ""}`} />
+                <ArrowLeftRight 
+                  className={`w-4 h-4 ${isSwitching ? "animate-spin" : ""}`}
+                  style={menuIconStyle}
+                />
                 <div className="text-left">
-                  <p className="text-[10px] uppercase tracking-wider text-white/30 font-medium">
+                  <p 
+                    className="text-[10px] uppercase tracking-wider font-medium"
+                    style={{ color: isDark ? 'rgba(255, 255, 255, 0.3)' : 'var(--color-text-tertiary)' }}
+                  >
                     {tx('auth.accountPanel.switchWorkspace', undefined, 'Switch workspace')}
                   </p>
-                  <p className="text-sm text-white/75 font-medium">
+                  <p 
+                    className="text-sm font-medium"
+                    style={{ color: isDark ? 'rgba(255, 255, 255, 0.75)' : 'var(--color-text-secondary)' }}
+                  >
                     {tx('auth.accountPanel.goToWorkspace', { workspace: switchTargetLabel }, `Go to ${switchTargetLabel}`)}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/25" />
+              <ChevronRight 
+                className="w-4 h-4"
+                style={{ color: isDark ? 'rgba(255, 255, 255, 0.25)' : 'var(--color-text-tertiary)' }}
+              />
             </button>
 
             {divider}
@@ -325,10 +433,19 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
               onClick={() => void handleToggleOnline()}
               disabled={isTogglingOnline}
               className={`${menuItemClass} disabled:opacity-60`}
+              style={menuItemStyle}
+              onMouseEnter={(e) => {
+                if (!isTogglingOnline) {
+                  Object.assign(e.currentTarget.style, menuItemHoverStyle);
+                }
+              }}
+              onMouseLeave={(e) => {
+                Object.assign(e.currentTarget.style, menuItemStyle);
+              }}
             >
-              <span className={`w-4 h-4 rounded-full ${isOnlineForMessages ? onlineDotClass : "bg-white/20"}`} />
+              <span className={`w-4 h-4 rounded-full ${isOnlineForMessages ? onlineDotClass : isDark ? "bg-white/20" : "bg-gray-300"}`} />
               {tx('auth.accountPanel.onlineForMessages', undefined, 'Online for messages')}
-              <span className={toggleTrackClass(isOnlineForMessages)}>
+              <span className={toggleTrackClass(isOnlineForMessages, true)}>
                 <span className={toggleThumbClass(isOnlineForMessages)} />
               </span>
             </button>
@@ -344,24 +461,45 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                   setUserMenuOpen(false);
                 }}
                 className={menuItemClass}
+                style={menuItemStyle}
+                onMouseEnter={(e) => {
+                  Object.assign(e.currentTarget.style, menuItemHoverStyle);
+                }}
+                onMouseLeave={(e) => {
+                  Object.assign(e.currentTarget.style, menuItemStyle);
+                }}
                 role="menuitem"
               >
-                <Icon className={menuIconClass} />
+                <Icon className={menuIconClass} style={menuIconStyle} />
                 {label}
               </button>
             ))}
 
             {freelancerVerified ? (
-              <div className={menuItemClass} role="menuitem">
-                <Shield className={menuIconClass} />
+              <div 
+                className={menuItemClass} 
+                style={menuItemStyle}
+                role="menuitem"
+              >
+                <Shield className={menuIconClass} style={menuIconStyle} />
                 {t.settings?.cinVerification || "ID Verified"}
-                <CheckCircle2 className="ml-auto w-4 h-4 text-white/30" />
+                <CheckCircle2 
+                  className="ml-auto w-4 h-4"
+                  style={{ color: isDark ? 'rgba(255, 255, 255, 0.3)' : 'var(--color-text-tertiary)' }}
+                />
               </div>
             ) : freelancerPending ? (
-              <div className={menuItemClass} role="menuitem">
-                <Shield className={menuIconClass} />
+              <div 
+                className={menuItemClass} 
+                style={menuItemStyle}
+                role="menuitem"
+              >
+                <Shield className={menuIconClass} style={menuIconStyle} />
                 {t.settings?.cinVerification || "Verify identity"}
-                <Loader2 className="ml-auto w-4 h-4 animate-spin text-white/30" />
+                <Loader2 
+                  className="ml-auto w-4 h-4 animate-spin"
+                  style={{ color: isDark ? 'rgba(255, 255, 255, 0.3)' : 'var(--color-text-tertiary)' }}
+                />
               </div>
             ) : (
               <button
@@ -370,9 +508,16 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                   setUserMenuOpen(false);
                 }}
                 className={menuItemClass}
+                style={menuItemStyle}
+                onMouseEnter={(e) => {
+                  Object.assign(e.currentTarget.style, menuItemHoverStyle);
+                }}
+                onMouseLeave={(e) => {
+                  Object.assign(e.currentTarget.style, menuItemStyle);
+                }}
                 role="menuitem"
               >
-                <Shield className={menuIconClass} />
+                <Shield className={menuIconClass} style={menuIconStyle} />
                 {t.settings?.cinVerification || "Verify identity"}
               </button>
             )}
@@ -400,13 +545,20 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
               type="button"
               onClick={toggleTheme}
               className={menuItemClass}
+              style={menuItemStyle}
+              onMouseEnter={(e) => {
+                Object.assign(e.currentTarget.style, menuItemHoverStyle);
+              }}
+              onMouseLeave={(e) => {
+                Object.assign(e.currentTarget.style, menuItemStyle);
+              }}
               aria-checked={isDark}
               role="switch"
               aria-label={tx('auth.accountPanel.darkTheme', undefined, 'Dark theme')}
             >
-              <Moon className={menuIconClass} />
+              <Moon className={menuIconClass} style={menuIconStyle} />
               {tx('auth.accountPanel.darkTheme', undefined, 'Dark theme')}
-              <span className={toggleTrackClass(isDark)}>
+              <span className={toggleTrackClass(isDark, false)}>
                 <span className={toggleThumbClass(isDark)} />
               </span>
             </button>

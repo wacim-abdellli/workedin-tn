@@ -168,10 +168,10 @@
 /* ===== DARK MODE ===== */
 .dark {
   /* ===== SEMANTIC TOKENS - Backgrounds (Dark Mode) ===== */
-  --color-bg-base: #0f0f0f;
-  --color-bg-subtle: #1a1a1a;
-  --color-bg-muted: #262626;
-  --color-bg-elevated: #2d2d2d;
+  --color-bg-base: #030303;
+  --color-bg-subtle: #141414;
+  --color-bg-muted: #1a1a1a;
+  --color-bg-elevated: #0c0c0e;
   --color-bg-overlay: rgba(0, 0, 0, 0.7);
 
   /* Aliases for consistency with design system naming */
@@ -189,9 +189,9 @@
   --color-text-inverse: var(--neutral-900);
 
   /* ===== SEMANTIC TOKENS - Borders (Dark Mode) ===== */
-  --color-border-subtle: #262626;
-  --color-border-default: #404040;
-  --color-border-strong: #525252;
+  --color-border-subtle: #1f1f1f;
+  --color-border-default: #2d2d2d;
+  --color-border-strong: #404040;
 
   /* ===== WORKSPACE THEMING - Dark Mode Adjustments ===== */
   --workspace-primary-light: rgba(168, 85, 247, 0.1);
@@ -209,17 +209,17 @@
   --shadow-glow-accent: 0 0 32px rgba(245, 158, 11, 0.4);
 
   /* ===== DASHBOARD SURFACES (Dark Mode) ===== */
-  --dash-bg: #0f0f0f;
-  --dash-card: #1a1a1a;
-  --dash-card-hover: #262626;
-  --dash-raised: #2d2d2d;
+  --dash-bg: #030303;
+  --dash-card: #0c0c0e;
+  --dash-card-hover: #141414;
+  --dash-raised: #1a1a1a;
   --dash-border: rgba(255, 255, 255, 0.08);
   --dash-border-hover: rgba(255, 255, 255, 0.12);
 
   /* ===== LEGACY ALIASES (Dark Mode) ===== */
   --page-bg: var(--color-bg-base);
   --surface-bg: var(--color-bg-subtle);
-  --card-bg: var(--color-bg-muted);
+  --card-bg: var(--color-bg-elevated);
   --text-primary: var(--color-text-primary);
   --text-secondary: var(--color-text-secondary);
   --text-muted: var(--color-text-tertiary);

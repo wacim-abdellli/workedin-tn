@@ -35,9 +35,11 @@ function iconForType(type: AppNotification['type']) {
 export function NotificationBell({
     className = '',
     workspace = 'client',
+    isDark = false,
 }: {
     className?: string;
     workspace?: 'client' | 'freelancer';
+    isDark?: boolean;
 }) {
     const { t, tx, language } = useTranslation();
     const navigate = useNavigate();
@@ -46,7 +48,6 @@ export function NotificationBell({
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const pal = PALETTE;
-    const unreadDotClass = workspace === 'freelancer' ? 'bg-purple-400' : 'bg-amber-400';
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -92,15 +93,33 @@ export function NotificationBell({
 
     return (
         <div ref={dropdownRef} className={`relative ${className}`}>
-            {/* ── Bell trigger ─────────────────────────────────── */}
+            {/* Bell trigger - Premium Capsule */}
             <button
                 onClick={() => setIsOpen(v => !v)}
-                className="relative p-2 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/[0.06] transition-all duration-150"
+                className="relative flex items-center justify-center h-10 w-10 rounded-xl border border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c0e] hover:bg-gray-50 dark:hover:bg-[#141414] hover:border-gray-300 dark:hover:border-white/[0.12] shadow-sm transition-all duration-200"
+                style={{
+                  color: isDark ? 'rgba(255, 255, 255, 0.65)' : 'var(--color-text-secondary)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = isDark ? '#ffffff' : 'var(--color-text-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = isDark ? 'rgba(255, 255, 255, 0.65)' : 'var(--color-text-secondary)';
+                }}
                 aria-label={`${t.notifications?.title || 'Notifications'}${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
             >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-[18px] h-[18px]" strokeWidth={2} />
                 {unreadCount > 0 && (
-                    <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${unreadDotClass} ring-2 ring-[#0d0d0d]`} />
+                    <span 
+                      className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-4.5 rounded-full text-[9px] font-black shadow-md ring-2 ring-white dark:ring-black"
+                      style={{ 
+                        background: 'var(--workspace-primary)',
+                        color: '#ffffff',
+                        padding: unreadCount > 9 ? '0 5px' : '0',
+                      }}
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
                 )}
             </button>
 
@@ -112,9 +131,18 @@ export function NotificationBell({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute ltr:-right-2 ltr:sm:right-0 rtl:-left-2 rtl:sm:left-0 top-full z-[70] mt-3 w-[calc(100vw-2rem)] max-w-sm sm:w-[400px] overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0c0c0e] shadow-2xl shadow-zinc-300/40 dark:shadow-black/80"
+                    className="absolute ltr:-right-2 ltr:sm:right-0 rtl:-left-2 rtl:sm:left-0 top-full z-[70] mt-3 w-[calc(100vw-2rem)] max-w-sm sm:w-[400px] overflow-hidden rounded-2xl"
                     style={{
                         transformOrigin: 'top right',
+                        background: isDark 
+                          ? 'linear-gradient(145deg, #161616, #111111)'
+                          : 'linear-gradient(145deg, var(--color-background-elevated), var(--color-bg-subtle))',
+                        border: isDark 
+                          ? '1px solid rgba(255,255,255,0.09)'
+                          : '1px solid var(--color-border-default)',
+                        boxShadow: isDark 
+                          ? '0 24px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)'
+                          : '0 24px 48px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
                     }}
                 >
                     {/* Colored top accent stripe */}
@@ -163,7 +191,12 @@ export function NotificationBell({
                     </div>
 
                     {/* Divider */}
-                    <div className="mx-4 h-px bg-zinc-150 dark:bg-zinc-800/60" />
+                    <div 
+                      className="mx-4 h-px"
+                      style={{ 
+                        background: isDark ? 'rgba(255, 255, 255, 0.06)' : 'var(--color-border-subtle)' 
+                      }}
+                    />
 
                     {/* Notification list */}
                     <div className="max-h-[60vh] overflow-y-auto px-2 py-2 space-y-0.5">
@@ -267,7 +300,12 @@ export function NotificationBell({
                     {/* Footer */}
                     {notifications.length > 0 && (
                         <>
-                            <div className="mx-4 h-px bg-zinc-150 dark:bg-zinc-800/60" />
+                            <div 
+                              className="mx-4 h-px"
+                              style={{ 
+                                background: isDark ? 'rgba(255, 255, 255, 0.06)' : 'var(--color-border-subtle)' 
+                              }}
+                            />
                             <div className="p-2">
                                 <button
                                     onClick={() => { navigate('/notifications'); setIsOpen(false); }}

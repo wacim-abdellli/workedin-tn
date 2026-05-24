@@ -1,10 +1,6 @@
 /**
- * ProfileSection
- * Consistent section wrapper used throughout both profile pages.
- * - surface-card background + rounded border
- * - Title bar with optional icon, edit button, and trailing slot
- * - Smooth animate-in on mount
- * - Staggered delay via `animationDelay` for sequential reveal
+ * ProfileSection - Upwork-style section wrapper
+ * Clean, minimal design matching Upwork's profile sections
  */
 
 import type { ReactNode } from 'react';
@@ -12,34 +8,28 @@ import { Edit2 } from 'lucide-react';
 
 interface ProfileSectionProps {
     title?: string;
-    icon?: ReactNode;
-    /** Slot in the title row trailing area (e.g. count badge, action button) */
     trailing?: ReactNode;
-    /** Fires when the pencil edit button is clicked */
-    onEdit?: () => void;
-    editLabel?: string;
     children: ReactNode;
     className?: string;
-    /** Optional stagger delay in ms for the entrance animation */
     animationDelay?: number;
-    /** If true, no internal padding — useful for full-bleed content like portfolio grids */
     noPadding?: boolean;
+    onEdit?: () => void;
+    editLabel?: string;
 }
 
 export function ProfileSection({
     title,
-    icon,
     trailing,
-    onEdit,
-    editLabel = 'Edit',
     children,
     className = '',
     animationDelay = 0,
     noPadding = false,
+    onEdit,
+    editLabel = 'Edit',
 }: ProfileSectionProps) {
     return (
         <section
-            className={`surface-card border rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-400 ${className}`}
+            className={`surface-card border rounded-lg overflow-hidden animate-in fade-in duration-200 ${className}`}
             style={{
                 borderColor: 'var(--color-border-subtle)',
                 animationDelay: animationDelay > 0 ? `${animationDelay}ms` : undefined,
@@ -49,18 +39,15 @@ export function ProfileSection({
             {/* Title bar */}
             {(title || trailing || onEdit) && (
                 <div
-                    className="flex items-center justify-between gap-3 px-5 py-4 border-b"
-                    style={{ borderColor: 'var(--color-border-subtle)' }}
+                    className="flex items-center justify-between gap-3 px-6 py-4 border-b"
+                    style={{
+                        borderColor: 'var(--color-border-subtle)',
+                    }}
                 >
                     {title && (
-                        <div className="flex items-center gap-2 min-w-0">
-                            {icon && (
-                                <span className="shrink-0 text-[var(--color-text-tertiary)]">{icon}</span>
-                            )}
-                            <h2 className="text-sm font-bold uppercase tracking-widest truncate" style={{ color: 'var(--color-text-secondary)' }}>
-                                {title}
-                            </h2>
-                        </div>
+                        <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                            {title}
+                        </h2>
                     )}
 
                     <div className="flex items-center gap-2 shrink-0">
@@ -69,10 +56,15 @@ export function ProfileSection({
                             <button
                                 type="button"
                                 onClick={onEdit}
-                                className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg border transition-all duration-150 hover:bg-white/5"
-                                style={{ color: 'var(--color-text-tertiary)', borderColor: 'var(--color-border-subtle)' }}
+                                className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border transition-all duration-150"
+                                style={{
+                                    color: 'var(--color-text-secondary)',
+                                    borderColor: 'var(--color-border-subtle)',
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                             >
-                                <Edit2 className="w-3 h-3" />
+                                <Edit2 className="w-3.5 h-3.5" />
                                 {editLabel}
                             </button>
                         )}
@@ -81,14 +73,14 @@ export function ProfileSection({
             )}
 
             {/* Content */}
-            <div className={noPadding ? '' : 'p-5'}>
+            <div className={noPadding ? '' : 'p-6'}>
                 {children}
             </div>
         </section>
     );
 }
 
-/** Small accent pill used inside sections (e.g. skill tags, tool pills) */
+/** Skill/Tool tag - Upwork style */
 export function ProfileTag({
     label,
     accentColor = '#8B5CF6',
@@ -98,14 +90,14 @@ export function ProfileTag({
     accentColor?: string;
     size?: 'xs' | 'sm';
 }) {
-    const padding = size === 'xs' ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs';
+    const padding = size === 'xs' ? 'px-3 py-1.5 text-xs' : 'px-3 py-1.5 text-sm';
     return (
         <span
             className={`inline-flex items-center ${padding} rounded-full border font-medium`}
             style={{
-                background: `color-mix(in srgb, ${accentColor} 10%, transparent)`,
-                color: accentColor,
-                borderColor: `color-mix(in srgb, ${accentColor} 30%, transparent)`,
+                background: 'var(--color-bg-subtle)',
+                color: 'var(--color-text-primary)',
+                borderColor: 'var(--color-border-default)',
             }}
         >
             {label}
@@ -113,7 +105,7 @@ export function ProfileTag({
     );
 }
 
-/** Empty state placeholder within a section */
+/** Empty state placeholder */
 export function ProfileEmptySlot({
     message,
     cta,
@@ -122,7 +114,7 @@ export function ProfileEmptySlot({
     cta?: ReactNode;
 }) {
     return (
-        <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
             <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>{message}</p>
             {cta}
         </div>

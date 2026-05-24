@@ -4056,7 +4056,9 @@ export const en: Translations = {
         "pending": "Pending",
         "cancelled": "Cancelled",
         "approved": "Approved",
-        "rejected": "Rejected"
+        "rejected": "Rejected",
+        "tnd": "TND",
+        "tndPerHour": "TND/hr"
     },
     "contractWorkspace": {
         "clientView": "Client view",

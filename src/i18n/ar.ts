@@ -4023,7 +4023,9 @@ export const ar = {
         "retry": "إعادة المحاولة",
         "loading": "جاري التحميل...",
         "error": "خطأ",
-        "success": "نجاح"
+        "success": "نجاح",
+        "tnd": "د.ت",
+        "tndPerHour": "د.ت/ساعة"
     },
     "contractWorkspace": {
         "clientView": "عرض العميل",

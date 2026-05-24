@@ -4025,7 +4025,9 @@ export const fr: Translations = {
         "retry": "Réessayer",
         "loading": "Chargement...",
         "error": "Erreur",
-        "success": "Succès"
+        "success": "Succès",
+        "tnd": "TND",
+        "tndPerHour": "TND/h"
     },
     "contractWorkspace": {
         "clientView": "Vue client",

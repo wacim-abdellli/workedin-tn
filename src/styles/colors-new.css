@@ -308,16 +308,16 @@
    ============================================================ */
 .dark {
   /* Backgrounds */
-  --color-bg-base: #0a0a0a;
+  --color-bg-base: #030303;
   --color-background-base: var(--color-bg-base);
 
   --color-bg-subtle: #141414;
   --color-background-subtle: var(--color-bg-subtle);
 
-  --color-bg-muted: #1f1f1f;
+  --color-bg-muted: #1a1a1a;
   --color-background-muted: var(--color-bg-muted);
 
-  --color-bg-elevated: #252525;
+  --color-bg-elevated: #0c0c0e;
   --color-background-elevated: var(--color-bg-elevated);
 
   --color-bg-overlay: rgba(0, 0, 0, 0.7);
@@ -360,10 +360,10 @@
   --color-status-info-bg: rgba(59, 130, 246, 0.15);
 
   /* Dashboard surfaces */
-  --dash-bg: #0a0a0a;
-  --dash-card: #141414;
-  --dash-card-hover: #1f1f1f;
-  --dash-raised: #252525;
+  --dash-bg: #030303;
+  --dash-card: #0c0c0e;
+  --dash-card-hover: #141414;
+  --dash-raised: #1a1a1a;
   --dash-border: rgba(255, 255, 255, 0.08);
   --dash-border-hover: rgba(255, 255, 255, 0.12);
 
