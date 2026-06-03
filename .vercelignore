@@ -1,4 +1,4 @@
-# Vercel Ignore File
+# Vercel Ignore File — only exclude what the build does NOT need
 .tmp
 .git
 node_modules
@@ -12,9 +12,10 @@ test-results
 e2e
 supabase
 scripts
-design-system
+design-system/build
+design-system/node_modules
+design-system/scripts
 vitest.config.ts
 playwright.config.ts
-
 eslint.config.js
 eslint.json
