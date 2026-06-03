@@ -15,6 +15,6 @@ scripts
 design-system
 vitest.config.ts
 playwright.config.ts
-tsconfig.node.json
+
 eslint.config.js
 eslint.json
