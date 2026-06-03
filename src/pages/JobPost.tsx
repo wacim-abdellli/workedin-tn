@@ -976,6 +976,7 @@ export default function JobPost() {
                       <p className="text-xs text-on-surface-subtle -mt-1">Choose the closest category to improve matching quality.</p>
                       <select
                         name="category"
+                        aria-label={tx('jobs.new.fields.mainCategory', undefined, 'Main category')}
                         value={selectedCategory}
                         onChange={(event) => {
                           methods.setValue('category', event.target.value, {
@@ -1011,6 +1012,7 @@ export default function JobPost() {
                       <p className="text-xs text-on-surface-subtle -mt-1">Pick the exact specialty so experts can find your project faster.</p>
                       <select
                         name="subcategory"
+                        aria-label={tx('jobs.new.fields.subcategory', undefined, 'Subcategory')}
                         value={selectedSubcategory}
                         onChange={(event) => {
                           methods.setValue('subcategory', event.target.value, {
