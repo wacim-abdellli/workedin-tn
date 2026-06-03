@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from './supabase.js';
 
 export interface HealthStatus {
   status: 'ok' | 'degraded' | 'error';

@@ -46,6 +46,7 @@ vi.mock('@/lib/supabase', () => {
                 return builder;
             }),
             single: vi.fn(async () => getTableResult(table)),
+            maybeSingle: vi.fn(async () => getTableResult(table)),
             then: (resolve: (value: unknown) => unknown) => Promise.resolve(resolve(getTableResult(table))),
         };
 
@@ -70,6 +71,19 @@ vi.mock('@/lib/supabase', () => {
                 };
                 return channel;
             }),
+            auth: {
+                getUser: vi.fn(async () => {
+                    const mockUserId = state.tableResults.authUserId ?? 'sender-1';
+                    if (!mockUserId) return { data: { user: null }, error: new Error('No user') };
+                    return { data: { user: { id: mockUserId } }, error: null };
+                }),
+            },
+            rpc: vi.fn(async (fnName) => {
+                if (fnName === 'delete_message_atomic') {
+                    return { data: { conversation_id: 'conversation-1' }, error: null };
+                }
+                return { data: null, error: null };
+            }),
         },
         withTimeout: vi.fn(async <T>(promise: PromiseLike<T>) => promise),
         uploadFile: state.uploadFile,
@@ -83,6 +97,7 @@ import {
     sendMessage,
     subscribeToMessages,
     uploadMessageAttachment,
+    deleteMessage,
 } from '@/services/messages';
 
 describe('messages service coverage', () => {
@@ -137,12 +152,15 @@ describe('messages service coverage', () => {
         ]));
     });
 
-    it('repairs legacy contract inbox rows before returning them', async () => {
+    it('loads first-class contract conversation rows', async () => {
         state.tableResults.conversations = {
             data: [{
                 id: 'contract-conversation-1',
                 participant_1: 'user-1',
                 participant_2: 'freelancer-1',
+                client_id: 'user-1',
+                freelancer_id: 'freelancer-1',
+                status: 'active',
                 contract_id: 'contract-1',
                 last_message_text: 'Hello from contract',
                 last_message_at: '2026-04-18T10:00:00.000Z',
@@ -151,8 +169,8 @@ describe('messages service coverage', () => {
                 created_at: '2026-04-17T10:00:00.000Z',
                 updated_at: '2026-04-18T10:00:00.000Z',
                 conversation_scope: 'contract',
-                inbox_participant_1: 'contract',
-                inbox_participant_2: 'contract',
+                inbox_participant_1: 'client',
+                inbox_participant_2: 'freelancer',
             }],
             error: null,
         };
@@ -182,6 +200,8 @@ describe('messages service coverage', () => {
         expect(result.data).toEqual([
             expect.objectContaining({
                 id: 'contract-conversation-1',
+                client_id: 'user-1',
+                freelancer_id: 'freelancer-1',
                 inbox_participant_1: 'client',
                 inbox_participant_2: 'freelancer',
                 otherUser: expect.objectContaining({
@@ -190,22 +210,21 @@ describe('messages service coverage', () => {
                 }),
             }),
         ]);
-        expect(state.updateCalls).toContainEqual({
+        // DB repairs are bypassed in Phase 3
+        expect(state.updateCalls).not.toContainEqual(expect.objectContaining({
             table: 'conversations',
-            value: {
-                conversation_scope: 'contract',
-                inbox_participant_1: 'client',
-                inbox_participant_2: 'freelancer',
-            },
-        });
+        }));
     });
 
-    it('drops repaired contract rows from the wrong mode scope', async () => {
+    it('filters out contract conversations from the wrong workspace mode', async () => {
         state.tableResults.conversations = {
             data: [{
                 id: 'contract-conversation-2',
                 participant_1: 'client-1',
                 participant_2: 'user-1',
+                client_id: 'client-1',
+                freelancer_id: 'user-1',
+                status: 'active',
                 contract_id: 'contract-2',
                 last_message_text: 'Wrong inbox before repair',
                 last_message_at: '2026-04-18T11:00:00.000Z',
@@ -214,8 +233,8 @@ describe('messages service coverage', () => {
                 created_at: '2026-04-17T11:00:00.000Z',
                 updated_at: '2026-04-18T11:00:00.000Z',
                 conversation_scope: 'contract',
-                inbox_participant_1: 'contract',
-                inbox_participant_2: 'contract',
+                inbox_participant_1: 'client',
+                inbox_participant_2: 'freelancer',
             }],
             error: null,
         };
@@ -235,14 +254,6 @@ describe('messages service coverage', () => {
         expect(result.error).toBeNull();
         expect(result.data).toEqual([]);
         expect(result.count).toBe(0);
-        expect(state.updateCalls).toContainEqual({
-            table: 'conversations',
-            value: {
-                conversation_scope: 'contract',
-                inbox_participant_1: 'client',
-                inbox_participant_2: 'freelancer',
-            },
-        });
     });
 
     it('sends messages successfully and supports read updates and subscriptions', async () => {
@@ -344,5 +355,30 @@ describe('messages service coverage', () => {
         );
         expect(result).toEqual({ url: 'https://mock-url.com/file.jpg', error: null });
         randomUuidSpy.mockRestore();
+    });
+
+    it('allows message deletion only by the sender (owner)', async () => {
+        state.tableResults.authUserId = 'sender-1';
+        state.tableResults.messages = {
+            data: { id: 'message-1', sender_id: 'sender-1', receiver_id: 'receiver-1' },
+            error: null,
+        };
+
+        const result = await deleteMessage('message-1');
+        expect(result.error).toBeNull();
+        expect(result.data).toEqual({ conversation_id: 'conversation-1' });
+    });
+
+    it('blocks message deletion by non-senders', async () => {
+        state.tableResults.authUserId = 'receiver-1';
+        state.tableResults.messages = {
+            data: { id: 'message-1', sender_id: 'sender-1', receiver_id: 'receiver-1' },
+            error: null,
+        };
+
+        const result = await deleteMessage('message-1');
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toContain('Access Denied');
+        expect(result.data).toBeNull();
     });
 });

@@ -108,6 +108,8 @@ describe('useContractState', () => {
             params: {
                 p_contract_id: 'contract-1',
                 p_delivery_note: 'Ready for review',
+                p_review_assets: [],
+                p_final_assets: [],
             },
         });
         expect(result.current.contract).toEqual(expect.objectContaining({
@@ -124,7 +126,7 @@ describe('useContractState', () => {
                 job_id: 'job-1',
                 freelancer_id: 'freelancer-1',
                 client_id: 'client-1',
-                status: 'active',
+                status: 'delivery_submitted',
                 payment_status: 'pending',
                 delivery_note: 'submitted',
                 started_at: '2026-03-01T00:00:00.000Z',
@@ -249,7 +251,7 @@ describe('useContractState', () => {
                 job_id: 'job-1',
                 freelancer_id: 'freelancer-1',
                 client_id: 'client-1',
-                status: 'active',
+                status: 'delivery_submitted',
                 payment_status: 'pending',
                 delivery_note: 'submitted',
                 started_at: '2026-03-01T00:00:00.000Z',
@@ -280,7 +282,7 @@ describe('useContractState', () => {
             message_type: 'system',
         }));
         expect(result.current.contract).toEqual(expect.objectContaining({
-            status: 'active',
+            status: 'delivery_submitted',
             payment_status: 'pending',
         }));
         expect(result.current.isAccepting).toBe(false);

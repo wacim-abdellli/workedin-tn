@@ -2,6 +2,8 @@
  * Contracts Service — All contract-related Supabase queries
  */
 import { supabase } from '@/lib/supabase';
+import { canAccessContract } from '@/lib/permissionEngine';
+import { canTransitionContractStatus } from '@/lib/contractWorkflow';
 
 function getErrorText(error: unknown): string {
     if (!error || typeof error !== 'object') return '';
@@ -46,6 +48,12 @@ export async function getContractById(contractId: string) {
         .single();
 
     if (!directResult.error || !canRetryWithManualHydration(directResult.error)) {
+        if (directResult.data && supabase.auth && typeof supabase.auth.getUser === 'function') {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user && !canAccessContract(user.id, directResult.data)) {
+                return { data: null, error: { message: 'Access Denied: You do not have permission to access this contract.' } as any };
+            }
+        }
         return directResult;
     }
 
@@ -97,14 +105,21 @@ export async function getContractById(contractId: string) {
         return { data: null, error: milestonesResult.error };
     }
 
+    const contract = {
+        ...baseContract,
+        job: jobResult.data,
+        client: clientResult.data,
+        freelancer: freelancerResult.data,
+        milestones: milestonesResult.data || [],
+    };
+
+    const user = (supabase.auth && typeof supabase.auth.getUser === 'function') ? (await supabase.auth.getUser())?.data?.user : null;
+    if (user && !canAccessContract(user.id, contract)) {
+        return { data: null, error: { message: 'Access Denied: You do not have permission to access this contract.' } as any };
+    }
+
     return {
-        data: {
-            ...baseContract,
-            job: jobResult.data,
-            client: clientResult.data,
-            freelancer: freelancerResult.data,
-            milestones: milestonesResult.data || [],
-        },
+        data: contract,
         error: null,
     };
 }
@@ -147,6 +162,30 @@ export async function createContract(data: {
 }
 
 export async function updateContractStatus(contractId: string, status: string) {
+    const { data: contractData, error: fetchError } = await supabase
+        .from('contracts')
+        .select('status')
+        .eq('id', contractId)
+        .single();
+
+    if (fetchError) {
+        return { data: null, error: fetchError };
+    }
+
+    const currentContract = Array.isArray(contractData) ? contractData[0] : contractData;
+    const currentStatus = currentContract?.status;
+
+    if (!canTransitionContractStatus(currentStatus, status as any)) {
+        return {
+            data: null,
+            error: {
+                message: `Access Denied: Illegal transition from ${currentStatus} to ${status}`,
+                details: 'Contract status transition is not permitted.',
+                hint: 'Check the contract workflow state machine rules.'
+            } as any
+        };
+    }
+
     return supabase.from('contracts').update({ status }).eq('id', contractId);
 }
 

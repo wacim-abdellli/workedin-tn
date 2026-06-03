@@ -157,7 +157,7 @@ export function getUploadPolicy(bucket: string): UploadPolicy | null {
 
 export function getFileExtension(fileName: string): string {
   const parts = fileName.toLowerCase().split('.');
-  return parts.length > 1 ? parts.at(-1) ?? '' : '';
+  return parts.length > 1 ? parts[parts.length - 1] ?? '' : '';
 }
 
 export function sanitizePathSegment(segment: string): string {
@@ -321,7 +321,7 @@ export function sanitizeStoragePath(input: {
   }
 
   const extension = getFileExtension(input.fileName);
-  const lastSegment = safeSegments.at(-1) ?? 'file';
+  const lastSegment = safeSegments[safeSegments.length - 1] ?? 'file';
   const baseName = sanitizePathSegment(lastSegment.replace(/\.[^.]+$/, '')) || 'file';
   safeSegments[safeSegments.length - 1] = extension ? `${baseName}.${extension}` : baseName;
 

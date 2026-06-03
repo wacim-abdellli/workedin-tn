@@ -1,0 +1,20 @@
+# Vercel Ignore File
+.tmp
+.git
+node_modules
+dist
+.continue
+.agentrules
+.aider*
+artifacts
+playwright-report
+test-results
+e2e
+supabase
+scripts
+design-system
+vitest.config.ts
+playwright.config.ts
+tsconfig.node.json
+eslint.config.js
+eslint.json

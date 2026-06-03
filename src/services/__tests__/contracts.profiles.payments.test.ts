@@ -286,6 +286,10 @@ describe('contracts service coverage', () => {
         });
         await getMilestones('contract-1');
         await updateMilestoneStatus('milestone-1', 'completed');
+        serviceState.state.tableResults.contracts = {
+            data: { id: 'contract-1', status: 'delivery_submitted' },
+            error: null,
+        };
         await updateContractStatus('contract-1', 'completed');
 
         expect(serviceState.state.insertCalls).toContainEqual({
@@ -305,6 +309,17 @@ describe('contracts service coverage', () => {
             table: 'contracts',
             value: { status: 'completed' },
         });
+    });
+
+    it('enforces status transition validations and raises errors for illegal transitions', async () => {
+        serviceState.state.tableResults.contracts = {
+            data: { id: 'contract-1', status: 'pending_payment' },
+            error: null,
+        };
+
+        const result = await updateContractStatus('contract-1', 'completed');
+        expect(result.error).not.toBeNull();
+        expect(result.error?.message).toContain('Access Denied: Illegal transition from pending_payment to completed');
     });
 });
 

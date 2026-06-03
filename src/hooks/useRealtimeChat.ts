@@ -35,6 +35,62 @@ interface UseRealtimeChatReturn {
 
 const MESSAGES_PER_PAGE = 50;
 
+function processMessageUpdates(
+    prev: ChatMessage[],
+    incoming: ChatMessage | ChatMessage[],
+    currentUserId: string
+): ChatMessage[] {
+    const incomingList = Array.isArray(incoming) ? incoming : [incoming];
+    let updated = [...prev];
+
+    for (const msg of incomingList) {
+        const isTemp = msg.id.startsWith('temp-');
+
+        if (!isTemp) {
+            // Check if message ID already exists
+            const existingIndex = updated.findIndex(m => m.id === msg.id);
+            if (existingIndex !== -1) {
+                updated[existingIndex] = {
+                    ...updated[existingIndex],
+                    ...msg,
+                    status: 'sent'
+                };
+                continue;
+            }
+
+            // Check if it matches an optimistic temp message sent by current user
+            if (msg.sender_id === currentUserId) {
+                const optIndex = updated.findIndex(
+                    m => m.id.startsWith('temp-') && m.content === msg.content
+                );
+                if (optIndex !== -1) {
+                    updated[optIndex] = {
+                        ...msg,
+                        status: 'sent'
+                    };
+                    continue;
+                }
+            }
+
+            updated.push(msg);
+        } else {
+            // Keep the optimistic message if not already present
+            if (!updated.some(m => m.id === msg.id)) {
+                updated.push(msg);
+            }
+        }
+    }
+
+    return updated.sort((a, b) => {
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        if (timeA !== timeB) {
+            return timeA - timeB;
+        }
+        return a.id.localeCompare(b.id);
+    });
+}
+
 export function useRealtimeChat({
     contractId,
     userId,
@@ -79,10 +135,10 @@ export function useRealtimeChat({
             const newMessages = (data || []) as ChatMessage[];
             
             if (offset === 0) {
-                setMessages(newMessages);
+                setMessages(processMessageUpdates([], newMessages, userId));
             } else {
                 // Prepend older messages
-                setMessages(prev => [...newMessages, ...prev]);
+                setMessages(prev => processMessageUpdates(prev, newMessages, userId));
             }
             
             setHasMoreMessages(newMessages.length === MESSAGES_PER_PAGE);
@@ -138,12 +194,7 @@ export function useRealtimeChat({
                         sender: sender || null,
                     };
 
-                    setMessages((prev) => {
-                        if (prev.some((message) => message.id === newMessage.id)) {
-                            return prev;
-                        }
-                        return [...prev, newMessage];
-                    });
+                    setMessages((prev) => processMessageUpdates(prev, newMessage, userId));
                 }
             )
             .on('presence', { event: 'sync' }, () => {
@@ -196,7 +247,7 @@ export function useRealtimeChat({
                 status: 'sending'
             };
 
-            setMessages(prev => [...prev, optimisticMsg]);
+            setMessages(prev => processMessageUpdates(prev, optimisticMsg, userId));
             setIsSending(true);
 
             let attempt = 0;
@@ -215,14 +266,11 @@ export function useRealtimeChat({
                     if (insertError) throw insertError;
 
                     if (persistedMessage) {
-                        setMessages(prev => prev.map(message => (
-                            message.id === optimisticId
-                                ? {
-                                    ...(persistedMessage as ChatMessage),
-                                    status: 'sent',
-                                }
-                                : message
-                        )));
+                        const resolvedMsg = {
+                            ...(persistedMessage as ChatMessage),
+                            status: 'sent' as const,
+                        };
+                        setMessages(prev => processMessageUpdates(prev, resolvedMsg, userId));
                     }
                     break;
                 } catch (err) {

@@ -37,10 +37,7 @@ import Modal from '../components/ui/Modal';
 import { ReviewForm } from '../components/ui/Reviews';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import { supabase, uploadFileWithMetadata } from '../lib/supabase';
-import {
-    getContractConversationInboxPatch,
-    repairContractConversationInboxRows,
-} from '../lib/contractConversationInbox';
+
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
 import {
@@ -278,6 +275,9 @@ type ContractConversationLookupRow = {
     id: string;
     participant_1: string;
     participant_2: string;
+    client_id?: string;
+    freelancer_id?: string;
+    status?: string;
     contract_id: string | null;
     last_message_text: string | null;
     last_message_at: string | null;
@@ -324,6 +324,9 @@ const hydrateConversationRow = async (
         id: row.id,
         participant_1: row.participant_1,
         participant_2: row.participant_2,
+        client_id: row.client_id,
+        freelancer_id: row.freelancer_id,
+        status: row.status || 'active',
         contract_id: row.contract_id,
         last_message_text: row.last_message_text,
         last_message_at: row.last_message_at,
@@ -350,7 +353,7 @@ const fetchConversationById = async (
 ): Promise<Conversation | null> => {
     const buildLookup = (includeScopeColumns: boolean) => {
         const selectColumns = includeScopeColumns
-            ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2'
+            ? 'id, participant_1, participant_2, client_id, freelancer_id, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2, status'
             : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at';
 
         return supabase
@@ -376,8 +379,7 @@ const fetchConversationById = async (
     if (!row) return null;
     if (row.participant_1 !== userId && row.participant_2 !== userId) return null;
 
-    const [repairedRow] = await repairContractConversationInboxRows([row]);
-    return hydrateConversationRow(userId, repairedRow ?? row);
+    return hydrateConversationRow(userId, row);
 };
 
 const fetchConversationByContractId = async (
@@ -389,7 +391,7 @@ const fetchConversationByContractId = async (
         includeScopeColumns: boolean
     ) => {
         const selectColumns = includeScopeColumns
-            ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2'
+            ? 'id, participant_1, participant_2, client_id, freelancer_id, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2, status'
             : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at';
 
         return supabase
@@ -426,8 +428,7 @@ const fetchConversationByContractId = async (
     const row = (participant1Result.data || participant2Result.data) as ContractConversationLookupRow | null;
     if (!row) return null;
 
-    const [repairedRow] = await repairContractConversationInboxRows([row]);
-    return hydrateConversationRow(userId, repairedRow ?? row);
+    return hydrateConversationRow(userId, row);
 };
 
 const fetchConversationByParticipants = async (
@@ -440,7 +441,7 @@ const fetchConversationByParticipants = async (
 
     const buildLookup = (includeScopeColumns: boolean) => {
         const selectColumns = includeScopeColumns
-            ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2'
+            ? 'id, participant_1, participant_2, client_id, freelancer_id, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2, status'
             : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at';
 
         return supabase
@@ -468,8 +469,7 @@ const fetchConversationByParticipants = async (
     const row = lookupResult.data as ContractConversationLookupRow | null;
     if (!row) return null;
 
-    const [repairedRow] = await repairContractConversationInboxRows([row]);
-    return hydrateConversationRow(userId, repairedRow ?? row);
+    return hydrateConversationRow(userId, row);
 };
 
 const createContractConversationFallback = async (
@@ -480,21 +480,38 @@ const createContractConversationFallback = async (
     const [participant1, participant2] = userId < otherUserId
         ? [userId, otherUserId]
         : [otherUserId, userId];
-    const contractInboxPatch = await getContractConversationInboxPatch(
-        participant1,
-        participant2,
-        contractId,
-    );
 
-    if (!contractInboxPatch) return null;
+    const { data: contract, error: contractError } = await supabase
+        .from('contracts')
+        .select('id, client_id, freelancer_id')
+        .eq('id', contractId)
+        .maybeSingle();
+
+    if (contractError || !contract) return null;
+
+    const inboxParticipant1 = participant1 === contract.client_id
+        ? 'client'
+        : participant1 === contract.freelancer_id
+            ? 'freelancer'
+            : null;
+    const inboxParticipant2 = participant2 === contract.client_id
+        ? 'client'
+        : participant2 === contract.freelancer_id
+            ? 'freelancer'
+            : null;
 
     const insertModern = () => supabase
         .from('conversations')
         .insert({
             participant_1: participant1,
             participant_2: participant2,
+            client_id: contract.client_id,
+            freelancer_id: contract.freelancer_id,
             contract_id: contractId,
-            ...contractInboxPatch,
+            conversation_scope: 'contract',
+            inbox_participant_1: inboxParticipant1,
+            inbox_participant_2: inboxParticipant2,
+            status: 'active',
         })
         .select('id')
         .maybeSingle();
@@ -515,6 +532,8 @@ const createContractConversationFallback = async (
         isMissingSchemaColumnError(insertResult.error, 'conversations', 'conversation_scope')
         || isMissingSchemaColumnError(insertResult.error, 'conversations', 'inbox_participant_1')
         || isMissingSchemaColumnError(insertResult.error, 'conversations', 'inbox_participant_2')
+        || isMissingSchemaColumnError(insertResult.error, 'conversations', 'client_id')
+        || isMissingSchemaColumnError(insertResult.error, 'conversations', 'freelancer_id')
     );
 
     if (shouldRetryLegacyInsert) {

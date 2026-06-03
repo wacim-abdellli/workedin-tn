@@ -1,4 +1,4 @@
-import { getHealthStatus } from '../src/lib/healthCheck';
+import { getHealthStatus } from '../src/lib/healthCheck.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {

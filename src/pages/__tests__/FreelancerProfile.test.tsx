@@ -2,9 +2,20 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const supabaseMock = vi.hoisted(() => ({
-    from: vi.fn(),
-}));
+const supabaseMock = vi.hoisted(() => {
+    const channel = {
+        on: vi.fn().mockReturnThis(),
+        subscribe: vi.fn().mockReturnThis(),
+        track: vi.fn().mockResolvedValue({}),
+        untrack: vi.fn().mockResolvedValue({}),
+        presenceState: vi.fn().mockReturnValue({}),
+    };
+    return {
+        from: vi.fn(),
+        channel: vi.fn(() => channel),
+        removeChannel: vi.fn(),
+    };
+});
 
 const capturedSelects = vi.hoisted(() => ({
     freelancerProfiles: '',

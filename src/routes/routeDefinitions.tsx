@@ -5,6 +5,7 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { AdminRoute } from '@/components/routing/AdminRoute';
 import { OnboardingRoute } from '@/components/routing/OnboardingRoute';
 import ProtectedRoute from '@/components/routing/ProtectedRoute';
+import ProtectedGate from '@/components/routing/ProtectedGate';
 import { WorkspaceRoute } from '@/components/routing/WorkspaceRoute';
 import type { Workspace } from '@/lib/workspaceRoutes';
 
@@ -48,7 +49,11 @@ export function withErrorBoundary(element: ReactElement) {
 }
 
 export function withProtected(element: ReactElement) {
-  return <ProtectedRoute>{element}</ProtectedRoute>;
+  return (
+    <ProtectedRoute>
+      <ProtectedGate>{element}</ProtectedGate>
+    </ProtectedRoute>
+  );
 }
 
 export function withWorkspace(workspace: Workspace, element: ReactElement) {

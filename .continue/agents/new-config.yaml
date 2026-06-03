@@ -1,0 +1,22 @@
+# This is an example configuration file
+# To learn more, see the full config.yaml reference: https://docs.continue.dev/reference
+
+name: Example Config
+version: 1.0.0
+schema: v1
+
+# Define which models can be used
+models:
+  - name: Qwen Coder
+    provider: openrouter
+    model: qwen/qwen2.5-coder
+    apiKey: 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
+
+  - name: DeepSeek Chat
+    provider: openrouter
+    model: deepseek/deepseek-chat
+    apiKey: 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
+# MCP Servers that Continue can access
+# https://docs.continue.dev/customization/mcp-tools
+mcpServers:
+  - uses: anthropic/memory-mcp

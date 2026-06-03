@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { I18nProvider } from '@/i18n';
 
 import { ProtectedRoute } from '@/components/routing/ProtectedRoute';
+import { ProtectedGate } from '@/components/routing/ProtectedGate';
 import { WorkspaceRoute } from '@/components/routing/WorkspaceRoute';
 import { OnboardingRoute } from '@/components/routing/OnboardingRoute';
 
@@ -75,7 +76,9 @@ describe('workspace routing guards', () => {
                             path="/my-proposals"
                             element={
                                 <ProtectedRoute>
-                                    <div>Protected content</div>
+                                    <ProtectedGate>
+                                        <div>Protected content</div>
+                                    </ProtectedGate>
                                 </ProtectedRoute>
                             }
                         />
@@ -171,7 +174,9 @@ describe('workspace routing guards', () => {
                             path="/client/dashboard"
                             element={
                                 <ProtectedRoute>
-                                    <div>Client dashboard</div>
+                                    <ProtectedGate>
+                                        <div>Client dashboard</div>
+                                    </ProtectedGate>
                                 </ProtectedRoute>
                             }
                         />
@@ -203,7 +208,9 @@ describe('workspace routing guards', () => {
                             path="/freelancer/dashboard"
                             element={
                                 <ProtectedRoute>
-                                    <div>Freelancer dashboard</div>
+                                    <ProtectedGate>
+                                        <div>Freelancer dashboard</div>
+                                    </ProtectedGate>
                                 </ProtectedRoute>
                             }
                         />

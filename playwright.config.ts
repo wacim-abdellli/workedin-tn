@@ -52,7 +52,8 @@ export default defineConfig({
       dependencies: ['setup'],
     },
   ],
-  webServer: process.env.CI ? undefined : {
+  // Skip local webServer when testing against a remote URL (e.g., production Vercel deployment)
+  webServer: (process.env.CI || process.env.E2E_BASE_URL) ? undefined : {
     command: 'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,

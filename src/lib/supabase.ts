@@ -1,10 +1,24 @@
  import { createClient } from '@supabase/supabase-js';
-import { getUploadPolicy, sanitizeStoragePath, validateUploadSelection } from './uploadPolicy';
+import { getUploadPolicy, sanitizeStoragePath, validateUploadSelection } from './uploadPolicy.js';
 
-// Environment variables for Supabase
-// You'll need to create a .env file with these values from your Supabase project
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
+// Safe environment variable retrieval for Vite and Node/Vercel
+const getEnvVar = (key: string): string | undefined => {
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+        return process.env[key];
+    }
+    try {
+        const metaEnv = (import.meta as any).env;
+        if (metaEnv && metaEnv[key]) {
+            return metaEnv[key];
+        }
+    } catch {
+        // Ignored
+    }
+    return undefined;
+};
+
+const supabaseUrl = getEnvVar('VITE_SUPABASE_URL') || 'https://your-project.supabase.co';
+const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY') || 'your-anon-key';
 
 // Anon-only client for public queries (jobs, freelancers) — isolated from user session churn.
 export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {

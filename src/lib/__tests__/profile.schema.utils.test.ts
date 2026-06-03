@@ -50,6 +50,7 @@ describe('profileCompletion', () => {
                 avatar_url: 'https://avatar.example/1.png',
                 bio: 'Experienced freelance designer with strong delivery history.',
                 phone: '+21600000000',
+                phone_verified: true,
                 location: 'Tunis',
             } as never,
             {
@@ -84,6 +85,7 @@ describe('profileCompletion', () => {
             avatar_url: 'https://avatar.example/client.png',
             bio: 'We hire product and growth freelancers for long-term work.',
             phone: '+21611111111',
+            phone_verified: true,
             location: '',
         } as never);
 

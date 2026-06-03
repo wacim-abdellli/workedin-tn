@@ -169,30 +169,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
-      const desiredWorkspace = getInitialWorkspace(nextProfile, nextFreelancerProfile);
-      const currentWorkspace = store.activeWorkspace;
-
-      // If the workspace is already set to a value the user's profile supports,
-      // do NOT overwrite it. This prevents the flip-flop where multiple fetchProfile
-      // calls (from initAuth + onAuthStateChange) keep re-deriving the workspace
-      // from the DB active_mode, causing redirects.
-      const capabilities = getWorkspaceCapabilities(nextProfile.user_type);
-      const currentIsValid = capabilities.includes(currentWorkspace);
-
-      // Never replace a workspace the profile already allows — avoids gold→purple flashes when
-      // fetchProfile runs twice (HMR, StrictMode, cache+network) or before refs catch up.
-      if (currentIsValid) {
-        store.setSwitching(false);
-        if (nextProfile?.id) {
-          saveWorkspaceForUser(nextProfile.id, currentWorkspace);
-        }
+      // If a workspace switch is actively in-flight on the client, do NOT overwrite it
+      // with a potentially stale database profile mode.
+      if (store.isSwitching) {
+        logger.info('[AuthContext] Ignoring syncWorkspaceFromProfile: active switch is in-flight.');
         return;
       }
 
-      store.setWorkspace(desiredWorkspace);
+      const dbWorkspace = nextProfile.active_mode;
+      const capabilities = getWorkspaceCapabilities(nextProfile.user_type);
+
+      let targetWorkspace: Workspace = 'client';
+      if (dbWorkspace && capabilities.includes(dbWorkspace as Workspace)) {
+        targetWorkspace = dbWorkspace as Workspace;
+      } else {
+        targetWorkspace = getInitialWorkspace(nextProfile, nextFreelancerProfile);
+      }
+
+      if (store.activeWorkspace !== targetWorkspace) {
+        logger.warn('[AuthContext] Syncing active workspace mode to database preference:', targetWorkspace);
+        store.setWorkspace(targetWorkspace);
+      }
+
       store.setSwitching(false);
-      // Persist so reload restores the correct workspace
-      if (nextProfile?.id) saveWorkspaceForUser(nextProfile.id, desiredWorkspace);
+
+      // Cache in localStorage to avoid theme flash on next load
+      if (nextProfile?.id) {
+        saveWorkspaceForUser(nextProfile.id, targetWorkspace);
+      }
     },
     []
   );

@@ -602,7 +602,7 @@ describe('Messages lifecycle', () => {
 
         await renderSelectedScenario({ conversation, threadMessages });
 
-        expect(screen.queryByRole('button', { name: 'Open Workspace' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /View workspace/i })).not.toBeInTheDocument();
         expect(screen.queryByText('This contract is completed. The thread is now read-only.')).not.toBeInTheDocument();
         expect(screen.getByPlaceholderText('Type a message...')).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Reply to message' })).toBeInTheDocument();
@@ -662,7 +662,8 @@ describe('Messages lifecycle', () => {
             expect(screen.queryByText('Contract status is currently unavailable. Messaging remains open.')).not.toBeInTheDocument();
         });
 
-        expect(screen.getByRole('button', { name: 'Open Workspace' })).toBeInTheDocument();
+        // The Workspace toggle button is rendered in the header
+        expect(screen.getByRole('button', { name: /Workspace/i })).toBeInTheDocument();
         expect(screen.queryByText('Payment is still being confirmed for this contract. Messaging remains open.')).not.toBeInTheDocument();
         expect(screen.getByPlaceholderText('Type a message...')).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Attach file' })).toBeEnabled();
@@ -847,7 +848,8 @@ describe('Messages lifecycle', () => {
 
         expect(screen.getAllByText(/Contract #contract/i).length).toBeGreaterThan(0);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Open Workspace' }));
+        // Click the Workspace toggle button to open the workspace sidebar
+        fireEvent.click(screen.getByRole('button', { name: /Workspace/i }));
     });
 
     it('opens the client profile from a freelancer-side contract conversation', async () => {
@@ -927,7 +929,7 @@ describe('Messages lifecycle', () => {
         });
 
         const bannerText = await screen.findByText(banner, {}, { timeout: 3000 });
-        const bannerContainer = bannerText.closest('div');
+        const bannerContainer = bannerText.closest('.rounded-2xl');
 
         expect(bannerContainer).not.toBeNull();
         expect(bannerContainer).toHaveClass(classToken);
@@ -1014,7 +1016,7 @@ describe('Messages lifecycle', () => {
         });
 
         const bannerText = (await screen.findAllByText(banner))[0];
-        const bannerContainer = bannerText.closest('div');
+        const bannerContainer = bannerText.closest('.rounded-2xl');
 
         expect(bannerContainer).not.toBeNull();
         expect(bannerContainer).toHaveClass(classToken);

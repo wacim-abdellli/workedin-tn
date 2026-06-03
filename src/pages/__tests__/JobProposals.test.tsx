@@ -224,6 +224,7 @@ vi.mock('@/lib/supabase', () => {
                 supabaseState.state.eqCalls.push({ table, column, value });
                 return builder;
             }),
+            in: vi.fn(() => builder),
             order: vi.fn((column: string, options?: unknown) => {
                 supabaseState.state.orderCalls.push({ table, column, options });
                 return builder;
@@ -288,7 +289,9 @@ describe('JobProposals', () => {
     it('loads proposal freelancer data from public_profiles and uses the narrow notify rpc on hire', async () => {
         renderJobProposals();
 
-        await screen.findByText('Freelancer One');
+        await waitFor(() => {
+            expect(screen.getAllByText(/Freelancer One/i)[0]).toBeInTheDocument();
+        });
 
         expect(supabaseState.state.selectCalls).toEqual(expect.arrayContaining([
             expect.objectContaining({
@@ -317,8 +320,20 @@ describe('JobProposals', () => {
                         p_contract_id: 'contract-77',
                     },
                 },
+                {
+                    fn: 'get_or_create_conversation',
+                    params: {
+                        user1: 'client-1',
+                        user2: 'freelancer-1',
+                        p_contract_id: 'contract-77',
+                        p_scope: 'contract',
+                    },
+                },
             ]);
         });
+
+        await screen.findByRole('button', { name: /Open Chat/i });
+        fireEvent.click(screen.getByRole('button', { name: /Open Chat/i }));
 
         expect(supabaseState.state.rpcCalls.some((call) => call.fn === 'create_notification')).toBe(false);
         expect(toastMocks.showToast).toHaveBeenCalledWith('Proposal hired successfully', 'success');

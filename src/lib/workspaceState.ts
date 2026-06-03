@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { logger } from '@/lib/logger';
+import { supabase } from '@/lib/supabase';
 
 export type Workspace = 'client' | 'freelancer';
 
@@ -90,8 +92,27 @@ const WS_KEY = 'wi_workspace';
 
 export function saveWorkspaceForUser(userId: string, workspace: Workspace) {
   try {
+    logger.info('[WorkspaceState] Persisting workspace to localStorage:', { userId, workspace });
     localStorage.setItem(WS_KEY, JSON.stringify({ userId, workspace }));
-  } catch { /* ignore */ }
+
+    // Background database sync to profiles table
+    void supabase
+      .from('profiles')
+      .update({
+        active_mode: workspace,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId)
+      .then(({ error }) => {
+        if (error) {
+          logger.error('[WorkspaceState] Failed to sync workspace to backend profiles table:', error);
+        } else {
+          logger.info('[WorkspaceState] Successfully synced workspace to backend profiles table:', workspace);
+        }
+      });
+  } catch (err) {
+    logger.error('[WorkspaceState] Exception in saveWorkspaceForUser:', err);
+  }
 }
 
 export function loadWorkspaceForUser(userId: string): Workspace | null {
@@ -120,7 +141,10 @@ function getInitialActiveWorkspace(): Workspace {
 export const useWorkspaceStore = create<WorkspaceState>()((set) => ({
   activeWorkspace: getInitialActiveWorkspace(),
   isSwitching: false,
-  setWorkspace: (workspace) => set({ activeWorkspace: workspace }),
+  setWorkspace: (workspace) => {
+    logger.warn('[WorkspaceState] Active workspace mode switching to:', workspace);
+    set({ activeWorkspace: workspace });
+  },
   setSwitching: (value) => set({ isSwitching: value }),
 }));
 

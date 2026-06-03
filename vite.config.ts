@@ -80,6 +80,14 @@ export default defineConfig(({ command, mode }) => ({
             return 'supabase-vendor';
           }
 
+          if (id.includes('@radix-ui')) {
+            return 'radix-vendor';
+          }
+
+          if (id.includes('date-fns') || id.includes('dayjs')) {
+            return 'date-vendor';
+          }
+
           if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
             return 'form-vendor';
           }

@@ -351,7 +351,7 @@ export default function SavedJobsPage() {
         };
       })
       .filter((freelancer): freelancer is SavedTalentItem => Boolean(freelancer));
-  }, [role, savedFreelancerIds, savedFreelancerPool]);
+  }, [role, savedFreelancerIds, savedFreelancerPool, tx]);
 
   const isLoading =
     role === 'freelancer'

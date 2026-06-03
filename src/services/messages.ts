@@ -2,9 +2,9 @@
  * Messages Service - Chat/messaging Supabase queries
  */
 import { supabase, uploadFile } from '@/lib/supabase';
-import { repairContractConversationInboxRows } from '@/lib/contractConversationInbox';
 import { validateUploadPayload } from '@/lib/uploadPolicy';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
+import { canAccessMessage, canSendMessage, canDeleteMessage } from '@/lib/permissionEngine';
 import type { MessageAttachment } from '@/types';
 import type {
     RealtimeChannel,
@@ -185,6 +185,9 @@ export interface Conversation {
     id: string;
     participant_1: string;
     participant_2: string;
+    client_id?: string;
+    freelancer_id?: string;
+    status?: string;
     contract_id: string | null;
     last_message_text: string | null;
     last_message_at: string | null;
@@ -238,6 +241,9 @@ interface ConversationRow {
     id: string;
     participant_1: string;
     participant_2: string;
+    client_id?: string;
+    freelancer_id?: string;
+    status?: string;
     contract_id: string | null;
     last_message_text: string | null;
     last_message_at: string | null;
@@ -280,7 +286,7 @@ export async function getConversations(
                 .from('conversations') as any)
                 .select(
                     includeScopeColumns
-                        ? 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2'
+                        ? 'id, participant_1, participant_2, client_id, freelancer_id, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2, status'
                         : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at',
                     { count: 'estimated' }
                 )
@@ -336,17 +342,45 @@ export async function getConversations(
             return bTime - aTime;
         });
 
-        const repairedConversations = await repairContractConversationInboxRows(uniqueConversations);
+        const repairedConversations = uniqueConversations;
         const scopedConversations = inboxValues && inboxValues.length > 0
             ? repairedConversations.filter((conversation) => {
-                const myInbox = conversation.participant_1 === userId
-                    ? conversation.inbox_participant_1
-                    : conversation.inbox_participant_2;
+                if (conversation.status === 'archived') return false;
 
-                if (typeof myInbox !== 'string' || myInbox.length === 0) return true;
-                return inboxValues.includes(myInbox as ConversationScope);
+                // Explicit first-class role mapping:
+                let myRole: ConversationScope | undefined = undefined;
+                if (conversation.client_id === userId) {
+                    myRole = 'client';
+                } else if (conversation.freelancer_id === userId) {
+                    myRole = 'freelancer';
+                }
+
+                // Fallback to inbox_participant columns if roles are not aligned or for legacy rows
+                if (!myRole) {
+                    const myInbox = conversation.participant_1 === userId
+                        ? conversation.inbox_participant_1
+                        : conversation.inbox_participant_2;
+                    if (myInbox) {
+                        myRole = myInbox as ConversationScope;
+                    }
+                }
+
+                // If role is resolved, verify it matches the active workspace mode (inboxValues)
+                if (myRole) {
+                    return inboxValues.includes(myRole);
+                }
+
+                // Fallback to conversation_scope if still unresolved
+                if (conversation.conversation_scope === 'contract') {
+                    return inboxValues.includes('contract');
+                }
+                if (conversation.conversation_scope) {
+                    return inboxValues.includes(conversation.conversation_scope as ConversationScope);
+                }
+
+                return true;
             })
-            : repairedConversations;
+            : repairedConversations.filter(c => c.status !== 'archived');
 
         const paginatedConversations = scopedConversations.slice(start, end + 1);
         const count = scopedConversations.length;
@@ -382,6 +416,9 @@ export async function getConversations(
                 id: conv.id,
                 participant_1: conv.participant_1,
                 participant_2: conv.participant_2,
+                client_id: conv.client_id,
+                freelancer_id: conv.freelancer_id,
+                status: conv.status || 'active',
                 contract_id: conv.contract_id,
                 last_message_text: conv.last_message_text,
                 last_message_at: conv.last_message_at,
@@ -557,6 +594,11 @@ export async function sendMessage(params: {
     attachments?: MessageAttachment[];
 }) {
     try {
+        const tempConversation = { participant_1: params.senderId, participant_2: params.receiverId };
+        if (!canSendMessage(params.senderId, tempConversation)) {
+            return { data: null, error: new Error('Permission Denied: You are not a participant in this conversation.') };
+        }
+
         const { data, error } = await supabaseWithRetry(() => supabase
             .from('messages')
             .insert({
@@ -606,6 +648,25 @@ export async function markConversationRead(conversationId: string, _userId?: str
 
 export async function deleteMessage(messageId: string) {
     try {
+        const user = (supabase.auth && typeof supabase.auth.getUser === 'function') ? (await supabase.auth.getUser())?.data?.user : null;
+        if (!user) {
+            return { data: null, error: new Error('Unauthorized: No active session.') };
+        }
+
+        const { data: message, error: fetchError } = await supabase
+            .from('messages')
+            .select('sender_id, receiver_id')
+            .eq('id', messageId)
+            .maybeSingle();
+
+        if (fetchError || !message) {
+            return { data: null, error: fetchError || new Error('Message not found.') };
+        }
+
+        if (!canDeleteMessage(user.id, message)) {
+            return { data: null, error: new Error('Access Denied: You do not have permission to delete this message.') };
+        }
+
         // Use the existing delete_message_atomic function
         // This marks the message as deleted for everyone
         const { data, error } = await supabaseWithRetry(

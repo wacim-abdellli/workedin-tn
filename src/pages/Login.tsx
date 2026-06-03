@@ -182,7 +182,7 @@ function Login() {
                 </div>
 
                 {/* RIGHT PANEL */}
-                <div className="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 bg-[var(--color-bg-base)] border-l border-[var(--color-border-subtle)]">
+                <main className="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 bg-[var(--color-bg-base)] border-l border-[var(--color-border-subtle)]">
                     {/* Mobile logo */}
                     <div className="flex lg:hidden mb-8">
                         <Logo variant="full" size="sm" mode="client" />
@@ -290,7 +290,7 @@ function Login() {
                             </button>
                         </p>
                     </div>
-                </div>
+                </main>
             </div>
         </>
     );

@@ -23,14 +23,14 @@ beforeAll(() => {
         })),
     });
 
-    // Mock IntersectionObserver
-    const mockIntersectionObserver = vi.fn();
-    mockIntersectionObserver.mockReturnValue({
-        observe: () => null,
-        unobserve: () => null,
-        disconnect: () => null,
-    });
-    window.IntersectionObserver = mockIntersectionObserver as unknown as typeof IntersectionObserver;
+    // Mock IntersectionObserver — use regular function (not arrow) so it works as a constructor with `new`
+    window.IntersectionObserver = vi.fn().mockImplementation(function MockIntersectionObserver() {
+        return {
+            observe: () => null,
+            unobserve: () => null,
+            disconnect: () => null,
+        };
+    }) as unknown as typeof IntersectionObserver;
 
     // Mock ResizeObserver
     window.ResizeObserver = vi.fn().mockImplementation(() => ({

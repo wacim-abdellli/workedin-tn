@@ -48,7 +48,7 @@ async function expectLandmarks(page: Page, expected: LandmarkExpectation) {
   await expect(page.locator('h1')).toHaveCount(expected.h1);
 
   if (typeof expected.banner === 'number') {
-    await expect(page.locator('header, [role="banner"]')).toHaveCount(expected.banner);
+    await expect(page.getByRole('banner')).toHaveCount(expected.banner);
   }
 
   if (typeof expected.navigation === 'number') {

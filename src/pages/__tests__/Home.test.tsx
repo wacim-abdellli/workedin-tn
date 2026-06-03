@@ -35,6 +35,7 @@ vi.mock('@/components/home/LiveCounterSection', () => ({
 vi.mock('@/components/home/TestimonialsSection', () => ({ default: () => <div>Testimonials</div> }));
 vi.mock('@/components/home/CTASection', () => ({ default: () => <div>CTA</div> }));
 
+import { I18nProvider } from '@/i18n';
 import Home from '@/pages/Home';
 
 function createCountQuery(count: number) {
@@ -77,7 +78,9 @@ describe('Home', () => {
     it('uses public_profiles for guest freelancer stats instead of raw profiles', async () => {
         render(
             <MemoryRouter>
-                <Home />
+                <I18nProvider>
+                    <Home />
+                </I18nProvider>
             </MemoryRouter>
         );
 

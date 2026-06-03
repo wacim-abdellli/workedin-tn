@@ -1,4 +1,4 @@
-﻿import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowLeft,
@@ -819,7 +819,7 @@ export default function JobPost() {
   };
 
   return (
-    <div className="page-bg-base min-h-screen">
+    <>
       <SEO
         title={tx('jobs.new.seo.title', undefined, 'Post a Project')}
         description={tx(
@@ -829,7 +829,7 @@ export default function JobPost() {
         )}
       />
       <Header />
-
+      <main className="page-bg-base min-h-screen">
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className="min-h-screen w-full page-bg-base p-4 md:p-8 flex justify-center pb-36 md:pb-40">
           <div className="max-w-4xl w-full flex flex-col gap-6">
@@ -1452,7 +1452,8 @@ export default function JobPost() {
           </div>
         </div>
       </Modal>
-    </div>
+      </main>
+    </>
   );
 }
 
