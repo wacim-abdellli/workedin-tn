@@ -37,7 +37,11 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
           </div>
           <h1 className="text-2xl font-bold mb-3 text-foreground">{tr('تم رفض الوصول', 'Access Denied', 'Accès refusé')}</h1>
           <p className="text-muted mb-6">{tr('ليس لديك صلاحية لعرض لوحة تحكم المسؤول. يرجى العودة إلى الموقع الرئيسي.', 'You do not have permission to view the administrator dashboard. Please return to the main site.', 'Vous n\'êtes pas autorisé à afficher le tableau de bord administrateur. Veuillez retourner au site principal.')}</p>
-          <Link to="/" className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 transition-colors" style={{ color: 'white' }}>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-sm font-semibold shadow-sm transition-colors"
+            style={{ backgroundColor: '#ffffff', color: '#1e1b4b', border: '2px solid #7c3aed' }}
+          >
             {tr('العودة للرئيسية', 'Return Home', 'Retour à l\'accueil')}
           </Link>
         </div>
