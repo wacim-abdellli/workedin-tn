@@ -8,14 +8,6 @@ import { formatCurrency } from '../lib/currencyUtils';
 
 type VerificationStatus = 'verifying' | 'success' | 'failed';
 
-/**
- * PaymentSuccess Page
- * Handles redirect after successful Dhmad payment
- * 
- * FIXES APPLIED:
- * - Removed frontend Flouci verification (security risk)
- * - Now polls the database waiting for the Dhmad webhook to mark escrow_funded = true
- */
 const PaymentSuccess = () => {
     const { dir, tx } = useTranslation();
     const [searchParams] = useSearchParams();
@@ -28,15 +20,126 @@ const PaymentSuccess = () => {
 
     useEffect(() => {
         const contract_id = searchParams.get('contract_id');
+        const payment_id = searchParams.get('payment_id');
+        const isMockSuccess = searchParams.get('mock_success') === 'true';
+        const mockAmount = parseFloat(searchParams.get('amount') || '0');
+
         setContractId(contract_id);
 
-        if (!contract_id) {
-            logger.error('[PaymentSuccess] No contract_id in URL');
+        if (!contract_id && !payment_id) {
+            logger.error('[PaymentSuccess] No contract_id or payment_id in URL');
             setStatus('failed');
-            setError('معرف العقد غير موجود');
+            setError(tx('payment.success.missingInfo', undefined, 'Missing payment identifier'));
             return;
         }
 
+        // --- Flow A: Wallet Deposit ---
+        if (payment_id && !contract_id) {
+            if (isMockSuccess && mockAmount > 0) {
+                // Perform local wallet mock balance update (DEV mode)
+                const updateMockWallet = async () => {
+                    try {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (!user) throw new Error('Not authenticated');
+
+                        // Get current user wallet
+                        const { data: wallet, error: walletError } = await supabase
+                            .from('wallets')
+                            .select('id, balance')
+                            .eq('user_id', user.id)
+                            .single();
+
+                        if (walletError || !wallet) throw new Error('Wallet not found');
+
+                        // Update wallet balance
+                        const { error: updateError } = await supabase
+                            .from('wallets')
+                            .update({ balance: wallet.balance + mockAmount })
+                            .eq('id', wallet.id);
+
+                        if (updateError) throw updateError;
+
+                        // Insert transaction history record
+                        await supabase.from('transactions').insert({
+                            user_id: user.id,
+                            amount: mockAmount,
+                            type: 'deposit',
+                            status: 'completed',
+                            description: `Wallet Deposit (Mock Payment)`,
+                        });
+
+                        setAmount(mockAmount);
+                        setStatus('success');
+                        setTimeout(() => {
+                            navigate('/wallet');
+                        }, 4000);
+                    } catch (err) {
+                        logger.error('[PaymentSuccess] Mock wallet update failed:', err);
+                        setStatus('failed');
+                        setError(tx('wallet.mockDepositFailed', undefined, 'Failed to credit mock wallet deposit'));
+                    }
+                };
+
+                void updateMockWallet();
+                return;
+            } else {
+                // In production, poll transactions table for completed deposit
+                let pollCount = 0;
+                const maxPolls = 15; // 30 seconds max (2s interval)
+
+                const pollWalletTransaction = async () => {
+                    try {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (!user) throw new Error('Not authenticated');
+
+                        // Poll transactions table for completed deposit in last 2 minutes
+                        const { data: txs, error: txError } = await supabase
+                            .from('transactions')
+                            .select('amount, status')
+                            .eq('user_id', user.id)
+                            .eq('type', 'deposit')
+                            .eq('status', 'completed')
+                            .order('created_at', { ascending: false })
+                            .limit(1);
+
+                        if (txError) throw txError;
+
+                        if (txs && txs.length > 0) {
+                            setAmount(txs[0].amount || 0);
+                            setStatus('success');
+                            setTimeout(() => {
+                                navigate('/wallet');
+                            }, 4000);
+                            return true; // Stop polling
+                        }
+                        return false;
+                    } catch (err) {
+                        logger.error('[PaymentSuccess] Wallet poll error:', err);
+                        return false;
+                    }
+                };
+
+                pollWalletTransaction().then(success => {
+                    if (!success) {
+                        const interval = setInterval(async () => {
+                            pollCount++;
+                            const isSuccess = await pollWalletTransaction();
+                            if (isSuccess) {
+                                clearInterval(interval);
+                            } else if (pollCount >= maxPolls) {
+                                clearInterval(interval);
+                                setStatus('failed');
+                                setError(tx('payment.success.timeout', undefined, 'Timeout waiting for deposit verification. Please check your wallet dashboard.'));
+                            }
+                        }, 2000);
+                        return () => clearInterval(interval);
+                    }
+                });
+                return;
+            }
+        }
+
+        // --- Flow B: Contract Escrow Payment ---
         let pollCount = 0;
         const maxPolls = 15; // 30 seconds max (2s interval)
 
@@ -82,14 +185,14 @@ const PaymentSuccess = () => {
                     } else if (pollCount >= maxPolls) {
                         clearInterval(interval);
                         setStatus('failed');
-                        setError('انتهى وقت الانتظار. يرجى التحقق من حالة الدفع في لوحة التحكم.');
+                        setError(tx('payment.success.timeout', undefined, 'Timeout waiting for payment verification. Please check your dashboard.'));
                     }
                 }, 2000);
 
                 return () => clearInterval(interval);
             }
         });
-    }, [searchParams, navigate]);
+    }, [searchParams, navigate, tx]);
 
     return (
         <div
@@ -99,41 +202,56 @@ const PaymentSuccess = () => {
             <div className="max-w-md w-full">
                 {/* Verifying State */}
                 {status === 'verifying' && (
-                    <div className="bg-card rounded-2xl shadow-xl p-8 text-center">
-                        <Loader2 className="w-16 h-16 animate-spin text-primary-600 mx-auto mb-6" />
+                    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[var(--color-bg-elevated)]/60 backdrop-blur-md p-8 text-center shadow-xl">
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                        <div className="w-16 h-16 bg-[color:var(--workspace-primary-dim)] border border-[color:var(--workspace-primary)]/20 rounded-[18px] flex items-center justify-center mx-auto mb-6 animate-pulse">
+                            <Loader2 className="w-6 h-6 animate-spin text-[color:var(--workspace-primary)]" />
+                        </div>
                         <h2 className="text-xl font-bold text-foreground dark:text-white mb-2">
                             {tx('dynamic_key_374761519')}</h2>
-                        <p className="text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                             {tx('dynamic_key_1821001923')}</p>
                     </div>
                 )}
 
                 {/* Success State */}
                 {status === 'success' && (
-                    <div className="bg-card rounded-2xl shadow-xl p-8 text-center">
-                        <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle className="w-10 h-10 text-green-600" />
+                    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[var(--color-bg-elevated)]/60 backdrop-blur-md p-8 text-center shadow-xl">
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                        <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-[18px] flex items-center justify-center mx-auto mb-6">
+                            <CheckCircle className="w-6 h-6" />
                         </div>
                         <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">
                             {tx('dynamic_key_1798326885')}</h2>
-                        <p className="text-muted-foreground mb-4">
-                            {tx('dynamic_key_831489996')}</p>
+                        <p className="text-muted-foreground text-sm mb-4">
+                            {contractId
+                                ? tx('dynamic_key_831489996')
+                                : tx('payment.success.walletFunded', undefined, 'Wallet balance updated successfully.')}
+                        </p>
 
                         {amount > 0 && (
-                            <div className="text-3xl font-bold text-green-600 mb-6">
-                                {formatCurrency(amount)}
+                            <div className="text-3xl font-black text-emerald-400 mb-6">
+                                {formatCurrency(amount, true)}
                             </div>
                         )}
 
-                        <div className="text-sm text-muted mb-6">
+                        <div className="text-xs text-muted mb-6">
                             {tx('dynamic_key_480999927')}</div>
 
-                        {contractId && (
+                        {contractId ? (
                             <Link
                                 to={`/contracts/${contractId}`}
                                 className="btn-primary btn-lg justify-center w-full"
                             >
                                 <span>{tx('dynamic_key_730815621')}</span>
+                                <ArrowRight className="w-5 h-5 rtl:rotate-180" />
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/wallet"
+                                className="btn-primary btn-lg justify-center w-full"
+                            >
+                                <span>{tx('payment.success.goToWallet', undefined, 'Go to Wallet')}</span>
                                 <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                             </Link>
                         )}
@@ -142,29 +260,32 @@ const PaymentSuccess = () => {
 
                 {/* Failed State */}
                 {status === 'failed' && (
-                    <div className="bg-card rounded-2xl shadow-xl p-8 text-center">
-                        <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[var(--color-bg-elevated)]/60 backdrop-blur-md p-8 text-center shadow-xl">
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                        <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-[18px] flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </div>
                         <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">
                             {tx('dynamic_key_1762109572')}</h2>
-                        <p className="text-muted-foreground mb-4">
-                            {error || 'حدث خطأ أثناء التحقق من عملية الدفع'}
+                        <p className="text-muted-foreground text-sm mb-6">
+                            {error || tx('payment.success.verificationError', undefined, 'An error occurred during payment verification.')}
                         </p>
 
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             <button
                                 onClick={() => window.location.reload()}
                                 className="btn-primary btn-lg justify-center w-full"
                             >
                                 {tx('dynamic_key_131381918')}</button>
                             <Link
-                                to="/client/dashboard"
+                                to={contractId ? `/contracts/${contractId}` : "/wallet"}
                                 className="btn-secondary btn-lg justify-center w-full"
                             >
-                                {tx('dynamic_key_764967864')}</Link>
+                                {contractId 
+                                    ? tx('payment.success.backToContract', undefined, 'Back to Contract') 
+                                    : tx('payment.success.backToWallet', undefined, 'Back to Wallet')}</Link>
                         </div>
                     </div>
                 )}
