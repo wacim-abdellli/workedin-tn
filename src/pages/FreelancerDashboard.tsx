@@ -537,14 +537,7 @@ function FreelancerDashboardPage() {
       <Header />
 
       <main className="pt-8 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div
-            className="rounded-3xl p-6 sm:p-8 flex flex-col gap-8 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] transition-all duration-300"
-            style={{
-              background: 'color-mix(in srgb, var(--workspace-primary) 1.5%, var(--color-bg-elevated))',
-              boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-border-subtle) 75%, var(--workspace-primary) 15%)',
-            }}
-          >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-7">
 
           {/* ── HERO ROW ── */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -553,16 +546,14 @@ function FreelancerDashboardPage() {
                 <img
                   src={profile.avatar_url}
                   alt={firstName}
-                  className="h-14 w-14 rounded-full object-cover shrink-0"
-                  style={{ boxShadow: '0 0 0 3px var(--color-bg-base), 0 0 0 5px color-mix(in srgb, var(--workspace-primary) 40%, transparent)' }}
+                  className="h-14 w-14 rounded-full object-cover shrink-0 border border-[var(--color-border-subtle)]"
                 />
               ) : (
                 <div
-                  className="h-14 w-14 rounded-full flex items-center justify-center shrink-0 text-xl font-bold"
+                  className="h-14 w-14 rounded-full flex items-center justify-center shrink-0 text-xl font-bold border border-[var(--color-border-subtle)]"
                   style={{
-                    background: 'color-mix(in srgb, var(--workspace-primary) 12%, var(--color-bg-elevated))',
-                    color: 'var(--workspace-primary)',
-                    boxShadow: '0 0 0 3px var(--color-bg-base), 0 0 0 5px color-mix(in srgb, var(--workspace-primary) 40%, transparent)',
+                    background: 'var(--color-bg-elevated)',
+                    color: 'var(--color-text-secondary)',
                   }}
                 >
                   {firstName[0]}
@@ -588,7 +579,6 @@ function FreelancerDashboardPage() {
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:brightness-110 active:scale-95 shrink-0"
               style={{
                 background: 'var(--workspace-primary)',
-                boxShadow: '0 4px 14px -4px color-mix(in srgb, var(--workspace-primary) 60%, transparent)',
               }}
             >
               <Search className="w-4 h-4" />
@@ -600,70 +590,50 @@ function FreelancerDashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Card 1: Applications */}
             <div
-              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--workspace-primary)_35%,transparent)]"
-              style={{
-                background: 'color-mix(in srgb, var(--workspace-primary) 8%, var(--color-bg-elevated))',
-                boxShadow: '0 0 0 1px color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
-                borderLeft: '4px solid var(--workspace-primary)',
-              }}
+              className="rounded-2xl p-5 flex flex-col gap-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-default)]"
             >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 85%, transparent)' }}>Applications</p>
-                <FileText className="w-4 h-4" style={{ color: 'var(--workspace-primary)' }} />
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">Applications</p>
+                <FileText className="w-4 h-4 text-[var(--color-text-tertiary)]" />
               </div>
-              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--workspace-primary)' }}>{dailyProposalUsage.remaining}</p>
-              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 70%, transparent)' }}>of {dailyProposalUsage.limit} left today</p>
+              <p className="text-3xl font-bold tabular-nums leading-none mt-1 text-[var(--color-text-primary)]">{dailyProposalUsage.remaining}</p>
+              <p className="text-[11px] text-[var(--color-text-tertiary)]">of {dailyProposalUsage.limit} left today</p>
             </div>
 
             {/* Card 2: Contracts */}
             <div
-              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--color-status-info)_35%,transparent)]"
-              style={{
-                background: 'color-mix(in srgb, var(--color-status-info) 8%, var(--color-bg-elevated))',
-                boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-status-info) 20%, transparent)',
-                borderLeft: '4px solid var(--color-status-info)',
-              }}
+              className="rounded-2xl p-5 flex flex-col gap-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-default)]"
             >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--color-status-info) 85%, transparent)' }}>Contracts</p>
-                <Briefcase className="w-4 h-4" style={{ color: 'var(--color-status-info)' }} />
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">Contracts</p>
+                <Briefcase className="w-4 h-4 text-[var(--color-text-tertiary)]" />
               </div>
-              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--color-status-info)' }}>{activeContractsCount}</p>
-              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--color-status-info) 70%, transparent)' }}>active now</p>
+              <p className="text-3xl font-bold tabular-nums leading-none mt-1 text-[var(--color-text-primary)]">{activeContractsCount}</p>
+              <p className="text-[11px] text-[var(--color-text-tertiary)]">active now</p>
             </div>
 
             {/* Card 3: Proposals */}
             <div
-              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--color-status-warning)_35%,transparent)]"
-              style={{
-                background: 'color-mix(in srgb, var(--color-status-warning) 8%, var(--color-bg-elevated))',
-                boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-status-warning) 20%, transparent)',
-                borderLeft: '4px solid var(--color-status-warning)',
-              }}
+              className="rounded-2xl p-5 flex flex-col gap-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-default)]"
             >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--color-status-warning) 85%, transparent)' }}>Proposals</p>
-                <Sparkles className="w-4 h-4" style={{ color: 'var(--color-status-warning)' }} />
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">Proposals</p>
+                <Sparkles className="w-4 h-4 text-[var(--color-text-tertiary)]" />
               </div>
-              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--color-status-warning)' }}>{pendingProposalsCount}</p>
-              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--color-status-warning) 70%, transparent)' }}>awaiting reply</p>
+              <p className="text-3xl font-bold tabular-nums leading-none mt-1 text-[var(--color-text-primary)]">{pendingProposalsCount}</p>
+              <p className="text-[11px] text-[var(--color-text-tertiary)]">awaiting reply</p>
             </div>
 
             {/* Card 4: Profile Views */}
             <div
-              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--color-status-success)_35%,transparent)]"
-              style={{
-                background: 'color-mix(in srgb, var(--color-status-success) 8%, var(--color-bg-elevated))',
-                boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-status-success) 20%, transparent)',
-                borderLeft: '4px solid var(--color-status-success)',
-              }}
+              className="rounded-2xl p-5 flex flex-col gap-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-default)]"
             >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--color-status-success) 85%, transparent)' }}>Profile Views</p>
-                <User className="w-4 h-4" style={{ color: 'var(--color-status-success)' }} />
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">Profile Views</p>
+                <User className="w-4 h-4 text-[var(--color-text-tertiary)]" />
               </div>
-              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--color-status-success)' }}>{profileViewsCount}</p>
-              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--color-status-success) 70%, transparent)' }}>total views</p>
+              <p className="text-3xl font-bold tabular-nums leading-none mt-1 text-[var(--color-text-primary)]">{profileViewsCount}</p>
+              <p className="text-[11px] text-[var(--color-text-tertiary)]">total views</p>
             </div>
           </div>
 
@@ -674,7 +644,7 @@ function FreelancerDashboardPage() {
             <section className="lg:col-span-8 flex flex-col gap-5">
 
               {/* Active Contracts */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
                   <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     {tx('dashboard.freelancer.activeContracts', undefined, 'Active Contracts')}
@@ -702,14 +672,13 @@ function FreelancerDashboardPage() {
                         key={row.id}
                         type="button"
                         onClick={() => navigate(row.submitPath)}
-                        className="group flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-150 hover:translate-x-0.5 active:scale-[0.99]"
-                        style={{ background: 'var(--color-bg-base)', boxShadow: '0 0 0 1px var(--color-border-subtle)', borderLeft: '3px solid var(--workspace-primary)' }}
+                        className="group flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-150 border border-[var(--color-border-subtle)] hover:border-[var(--color-border-default)] bg-[var(--color-bg-base)] active:scale-[0.99]"
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>{row.jobTitle}</p>
                           <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--color-text-tertiary)' }}>with {row.clientName}</p>
                         </div>
-                        <span className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)', color: 'var(--workspace-primary)' }}>
+                        <span className="shrink-0 text-xs font-semibold text-[var(--workspace-primary)] flex items-center gap-1.5 group-hover:translate-x-0.5 transition-transform">
                           Open <ArrowRight className="w-3 h-3" />
                         </span>
                       </button>
@@ -719,7 +688,7 @@ function FreelancerDashboardPage() {
               </div>
 
               {/* Recent Proposals */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
                   <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     {tx('dashboard.freelancer.recentProposals', undefined, 'Recent Proposals')}
@@ -756,7 +725,7 @@ function FreelancerDashboardPage() {
               </div>
 
               {/* Job Matches */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
                   <div>
                     <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
@@ -783,8 +752,7 @@ function FreelancerDashboardPage() {
                     {jobs.map((job) => (
                       <div
                         key={job.id}
-                        className="flex items-center justify-between gap-4 p-4 rounded-xl"
-                        style={{ background: 'var(--color-bg-base)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}
+                        className="flex items-center justify-between gap-4 p-4 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-base)]"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
@@ -819,7 +787,7 @@ function FreelancerDashboardPage() {
             <aside className="lg:col-span-4 flex flex-col gap-4 lg:sticky lg:top-20">
 
               {/* Earnings */}
-              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl p-5 border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
                   {tx('dashboard.freelancer.earningsThisMonth', undefined, 'Earnings This Month')}
                 </p>
@@ -847,7 +815,7 @@ function FreelancerDashboardPage() {
               </div>
 
               {/* Daily Quota — segmented bar */}
-              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl p-5 border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Daily Applications</p>
                   <span className="text-xs font-bold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
@@ -868,39 +836,38 @@ function FreelancerDashboardPage() {
                 </p>
               </div>
 
-              {/* Profile Completion Ring */}
+
+
+              {/* Profile Strength */}
               {profileCompletion < 100 && (
-                <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
+                <div className="rounded-2xl p-5 border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
                     {tx('dashboard.freelancer.profileCompletion', undefined, 'Profile Strength')}
                   </p>
-                  <div className="flex items-center gap-4">
-                    <div className="relative h-16 w-16 shrink-0">
-                      <svg className="h-16 w-16 -rotate-90" viewBox="0 0 100 100">
-                        <circle stroke="var(--color-border-subtle)" strokeWidth="7" cx="50" cy="50" r="42" fill="transparent" />
-                        <circle
-                          stroke="var(--workspace-primary)" strokeWidth="7" strokeLinecap="round"
-                          cx="50" cy="50" r="42" fill="transparent"
-                          strokeDasharray={`${2 * Math.PI * 42}`}
-                          strokeDashoffset={`${2 * Math.PI * 42 * (1 - completionValue / 100)}`}
-                          className="transition-all duration-1000 ease-out"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{completionValue}%</span>
-                      </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                         {completionValue < 50 ? 'Getting started' : completionValue < 80 ? 'Almost there' : 'Nearly complete'}
-                      </p>
-                      <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--color-text-tertiary)' }}>
+                      </span>
+                      <span className="font-bold" style={{ color: 'var(--workspace-primary)' }}>{completionValue}%</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full" style={{ background: 'var(--color-border-subtle)' }}>
+                      <div
+                        className="h-1.5 rounded-full transition-all duration-500 ease-out"
+                        style={{
+                          width: `${completionValue}%`,
+                          background: 'var(--workspace-primary)',
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between mt-2 pt-1">
+                      <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                         {checklist.filter(i => !i.done).length} item{checklist.filter(i => !i.done).length !== 1 ? 's' : ''} remaining
                       </p>
                       <button
                         type="button"
                         onClick={() => navigate(nextProfileFixPath)}
-                        className="mt-2 text-xs font-semibold flex items-center gap-1 transition-opacity hover:opacity-70"
+                        className="text-xs font-semibold flex items-center gap-1 transition-opacity hover:opacity-70"
                         style={{ color: 'var(--workspace-primary)' }}
                       >
                         Complete profile <ArrowRight className="w-3 h-3" />
@@ -911,7 +878,7 @@ function FreelancerDashboardPage() {
               )}
 
               {/* Quick Links */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <p className="px-5 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>
                   {tx('dashboard.freelancer.quickActions', undefined, 'Quick Links')}
                 </p>
@@ -926,9 +893,7 @@ function FreelancerDashboardPage() {
                       key={action.label}
                       type="button"
                       onClick={() => navigate(action.path)}
-                      className="group w-full flex items-center justify-between px-5 py-3 transition-all duration-150"
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-bg-subtle)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                      className="group w-full flex items-center justify-between px-5 py-3 transition-all duration-150 hover:bg-[var(--color-bg-subtle)] bg-transparent"
                     >
                       <span className="flex items-center gap-3 text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                         <action.icon className="w-4 h-4 shrink-0" style={{ color: 'var(--color-text-tertiary)' }} />
@@ -943,7 +908,6 @@ function FreelancerDashboardPage() {
             </aside>
           </div>
         </div>
-      </div>
       </main>
     </div>
   );

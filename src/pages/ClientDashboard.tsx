@@ -416,70 +416,50 @@ function ClientDashboardPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Card 1: Total Projects */}
             <div
-              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--workspace-primary)_35%,transparent)]"
-              style={{
-                background: 'color-mix(in srgb, var(--workspace-primary) 8%, var(--color-bg-elevated))',
-                boxShadow: '0 0 0 1px color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
-                borderLeft: '4px solid var(--workspace-primary)',
-              }}
+              className="rounded-2xl p-5 flex flex-col gap-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-default)]"
             >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 85%, transparent)' }}>Total Projects</p>
-                <FolderOpen className="w-4 h-4" style={{ color: 'var(--workspace-primary)' }} />
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">Total Projects</p>
+                <FolderOpen className="w-4 h-4 text-[var(--color-text-tertiary)]" />
               </div>
-              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--workspace-primary)' }}>{statsData.totalJobs}</p>
-              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 70%, transparent)' }}>projects posted</p>
+              <p className="text-3xl font-bold tabular-nums leading-none mt-1 text-[var(--color-text-primary)]">{statsData.totalJobs}</p>
+              <p className="text-[11px] text-[var(--color-text-tertiary)]">projects posted</p>
             </div>
 
             {/* Card 2: Active Projects */}
             <div
-              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--color-status-info)_35%,transparent)]"
-              style={{
-                background: 'color-mix(in srgb, var(--color-status-info) 8%, var(--color-bg-elevated))',
-                boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-status-info) 20%, transparent)',
-                borderLeft: '4px solid var(--color-status-info)',
-              }}
+              className="rounded-2xl p-5 flex flex-col gap-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-default)]"
             >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--color-status-info) 85%, transparent)' }}>Active</p>
-                <Sparkles className="w-4 h-4" style={{ color: 'var(--color-status-info)' }} />
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">Active</p>
+                <Sparkles className="w-4 h-4 text-[var(--color-text-tertiary)]" />
               </div>
-              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--color-status-info)' }}>{statsData.activeJobs}</p>
-              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--color-status-info) 70%, transparent)' }}>open & in progress</p>
+              <p className="text-3xl font-bold tabular-nums leading-none mt-1 text-[var(--color-text-primary)]">{statsData.activeJobs}</p>
+              <p className="text-[11px] text-[var(--color-text-tertiary)]">open & in progress</p>
             </div>
 
             {/* Card 3: Proposals */}
             <div
-              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--color-status-warning)_35%,transparent)]"
-              style={{
-                background: 'color-mix(in srgb, var(--color-status-warning) 8%, var(--color-bg-elevated))',
-                boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-status-warning) 20%, transparent)',
-                borderLeft: '4px solid var(--color-status-warning)',
-              }}
+              className="rounded-2xl p-5 flex flex-col gap-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-default)]"
             >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--color-status-warning) 85%, transparent)' }}>Proposals</p>
-                <FileText className="w-4 h-4" style={{ color: 'var(--color-status-warning)' }} />
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">Proposals</p>
+                <FileText className="w-4 h-4 text-[var(--color-text-tertiary)]" />
               </div>
-              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--color-status-warning)' }}>{statsData.totalProposals}</p>
-              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--color-status-warning) 70%, transparent)' }}>received total</p>
+              <p className="text-3xl font-bold tabular-nums leading-none mt-1 text-[var(--color-text-primary)]">{statsData.totalProposals}</p>
+              <p className="text-[11px] text-[var(--color-text-tertiary)]">received total</p>
             </div>
 
             {/* Card 4: Total Spent */}
             <div
-              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--color-status-success)_35%,transparent)]"
-              style={{
-                background: 'color-mix(in srgb, var(--color-status-success) 8%, var(--color-bg-elevated))',
-                boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-status-success) 20%, transparent)',
-                borderLeft: '4px solid var(--color-status-success)',
-              }}
+              className="rounded-2xl p-5 flex flex-col gap-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-default)]"
             >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--color-status-success) 85%, transparent)' }}>Total Spent</p>
-                <Briefcase className="w-4 h-4" style={{ color: 'var(--color-status-success)' }} />
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">Total Spent</p>
+                <Briefcase className="w-4 h-4 text-[var(--color-text-tertiary)]" />
               </div>
-              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--color-status-success)' }}>{formatCurrency(statsData.totalSpent, true, language)}</p>
-              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--color-status-success) 70%, transparent)' }}>across all projects</p>
+              <p className="text-3xl font-bold tabular-nums leading-none mt-1 text-[var(--color-text-primary)]">{formatCurrency(statsData.totalSpent, true, language)}</p>
+              <p className="text-[11px] text-[var(--color-text-tertiary)]">across all projects</p>
             </div>
           </div>
 
@@ -490,7 +470,7 @@ function ClientDashboardPage() {
             <section className="lg:col-span-8 flex flex-col gap-5">
 
               {/* Your Projects */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
                   <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                     {tx('dashboard.client.activeProjects', undefined, 'Your Projects')}
@@ -530,12 +510,7 @@ function ClientDashboardPage() {
                             navigate(`/client/jobs/${job.id}/proposals`);
                           }
                         }}
-                        className="group flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-150 hover:translate-x-0.5 active:scale-[0.99]"
-                        style={{
-                          background: 'var(--color-bg-base)',
-                          boxShadow: '0 0 0 1px var(--color-border-subtle)',
-                          borderLeft: `3px solid ${job.status === 'open' ? 'var(--workspace-primary)' : job.status === 'in_progress' ? 'var(--color-status-info)' : 'var(--color-status-success)'}`,
-                        }}
+                        className="group flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-150 border border-[var(--color-border-subtle)] hover:border-[var(--color-border-default)] bg-[var(--color-bg-base)] active:scale-[0.99]"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
@@ -562,7 +537,7 @@ function ClientDashboardPage() {
               </div>
 
               {/* Proposals to Review */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <div className="flex items-center justify-between px-5 pt-5 pb-4">
                   <div className="flex items-center gap-2">
                     <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
@@ -633,7 +608,7 @@ function ClientDashboardPage() {
 
               {/* Active Contracts */}
               {activeContracts.length > 0 && (
-                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+                <div className="rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                   <div className="flex items-center justify-between px-5 pt-5 pb-4">
                     <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                       {tx('dashboard.client.activeContracts', undefined, 'Active Contracts')}
@@ -648,8 +623,7 @@ function ClientDashboardPage() {
                         key={contract.id}
                         type="button"
                         onClick={() => navigate(`/contracts/${contract.id}`)}
-                        className="group flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-150 hover:translate-x-0.5"
-                        style={{ background: 'var(--color-bg-base)', boxShadow: '0 0 0 1px var(--color-border-subtle)', borderLeft: '3px solid var(--color-status-info)' }}
+                        className="group flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-150 border border-[var(--color-border-subtle)] hover:border-[var(--color-border-default)] bg-[var(--color-bg-base)] active:scale-[0.99]"
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 flex items-center justify-center text-[11px] font-bold" style={{ background: 'color-mix(in srgb, var(--color-status-info) 10%, var(--color-bg-elevated))', color: 'var(--color-status-info)' }}>
@@ -676,7 +650,7 @@ function ClientDashboardPage() {
             <aside className="lg:col-span-4 flex flex-col gap-4 lg:sticky lg:top-20">
 
               {/* Spending Card */}
-              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl p-5 border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Total Spent</p>
                 <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--color-text-primary)' }}>
                   {formatCurrency(statsData.totalSpent, true, language)}
@@ -694,8 +668,7 @@ function ClientDashboardPage() {
                 <button
                   type="button"
                   onClick={() => navigate('/wallet')}
-                  className="w-full mt-4 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80 active:scale-95"
-                  style={{ background: 'var(--color-bg-base)', boxShadow: '0 0 0 1px var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
+                  className="w-full mt-4 py-2.5 rounded-xl text-sm font-semibold border border-[var(--color-border-subtle)] hover:bg-[var(--color-bg-subtle)] transition-colors text-[var(--color-text-primary)]"
                 >
                   {tx('dashboard.client.viewWallet', undefined, 'View Wallet')}
                 </button>
@@ -703,30 +676,27 @@ function ClientDashboardPage() {
 
               {/* Post a Project CTA */}
               <div
-                className="rounded-2xl p-5"
-                style={{
-                  background: 'linear-gradient(135deg, var(--workspace-primary) 0%, color-mix(in srgb, var(--workspace-primary) 80%, #000) 100%)',
-                }}
+                className="rounded-2xl p-5 border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
               >
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>Get it done</p>
-                <p className="text-base font-bold leading-snug text-white mb-1">
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--workspace-primary)' }}>Get it done</p>
+                <p className="text-base font-bold leading-snug text-[var(--color-text-primary)] mb-1">
                   Need something done?
                 </p>
-                <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                <p className="text-xs mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
                   Post a project free and get proposals from verified Tunisian talent.
                 </p>
                 <button
                   type="button"
                   onClick={() => navigate('/jobs/new')}
-                  className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
-                  style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)' }}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-95"
+                  style={{ background: 'var(--workspace-primary)' }}
                 >
                   {tx('dashboard.client.postAProject', undefined, 'Post a Project')} — It's free
                 </button>
               </div>
 
               {/* Quick Links */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="rounded-2xl overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]">
                 <p className="px-5 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Quick Links</p>
                 <div className="pb-2">
                   {[
@@ -739,9 +709,7 @@ function ClientDashboardPage() {
                       key={action.label}
                       type="button"
                       onClick={() => navigate(action.path)}
-                      className="group w-full flex items-center justify-between px-5 py-3 transition-all duration-150"
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-bg-subtle)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                      className="group w-full flex items-center justify-between px-5 py-3 transition-all duration-150 hover:bg-[var(--color-bg-subtle)] bg-transparent"
                     >
                       <span className="flex items-center gap-3 text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                         <action.icon className="w-4 h-4 shrink-0" style={{ color: 'var(--color-text-tertiary)' }} />
