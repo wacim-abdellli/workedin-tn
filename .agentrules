@@ -29,6 +29,7 @@ This file contains the complete database schema, design token systems, project s
 ### 3. Supabase & Database Integrity
 - Client queries must use `supabase` from `src/lib/supabase.ts`.
 - Never alter RLS (Row Level Security) configurations without double-checking RLS policies in `supabase/schema_v2.sql`.
+- **Contract Delivery Uploads**: Uploads under the `contract-files` bucket must use the prefix `/submissions/` (not `/deliveries/`) to bypass ad-blockers. Since the remote `secure-upload` Edge function might be outdated, use direct uploads via `supabase.storage.from('contract-files').upload()` instead of `uploadFileWithMetadata()`, as authenticated users are allowed direct inserts by default.
 - Maintain transactional safety.
 
 ### 4. Internationalization (i18n)

@@ -142,6 +142,17 @@ Realtime
 Chat → useRealtimeChat
 Notifications → useRealtimeNotifications
 Presence → usePresence
+
+Payment & Verification Flow
+
+- Flouci payments and deposits can run in DEV mode by appending `mock_success=true` in `flouci.ts`.
+- `PaymentSuccess.tsx` intercepts these mock transactions to instantly credit the user's wallet or fund the contract's escrow directly, bypassing the production webhook requirement.
+
+Upload & Delivery Flow
+
+- Contract delivery uploads MUST use the prefix `submissions/review/` or `submissions/final/` instead of `deliveries/` to prevent Brave Shields/ad-blockers from blocking requests.
+- Since the remote `secure-upload` Edge function can be outdated (and can reject the submissions prefix), uploads in both `ContractWorkspacePage.tsx` and `Messages.tsx` use direct storage uploads via `supabase.storage.from('contract-files').upload()`, matching database RLS permissions.
+
 🔥 10. HOT FILES (START HERE ALWAYS)
 Tier 1 (critical)
 src/App.tsx
