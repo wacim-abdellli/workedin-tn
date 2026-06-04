@@ -3452,30 +3452,21 @@ function MessagesComponent() {
                 const uploadedAssets: Array<{ name: string; storage_bucket: string; storage_path: string; mime_type: string; size_bytes: number }> = [];
 
                 for (const file of files) {
-                    const uniqueFileName = `${Date.now()}-${crypto.randomUUID()}-${file.name}`;
-                    let result: Awaited<ReturnType<typeof uploadFileWithMetadata>>;
-                    try {
-                        result = await uploadFileWithMetadata(
-                            'contract-files',
-                            `${user.id}/${contractId}/submissions/${assetKind}/${uniqueFileName}`,
-                            file,
-                        );
-                    } catch (error) {
-                        const message = getErrorMessage(error, 'Upload was blocked by storage policy');
-                        if (message.toLowerCase().includes('row-level security')) {
-                            throw new Error(
-                                `File upload failed (${assetKind}): protected delivery storage is not configured yet. `
-                                + 'Redeploy the secure-upload Edge Function with SUPABASE_SERVICE_ROLE_KEY, or add an INSERT policy for contract-files.'
-                            );
-                        }
+                    const uniqueFileName = `${Date.now()}-${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+                    const path = `${user.id}/${contractId}/submissions/${assetKind}/${uniqueFileName}`;
+                    
+                    const { data: uploadData, error: uploadErr } = await supabase.storage
+                        .from('contract-files')
+                        .upload(path, file, { upsert: false });
 
-                        throw new Error(`File upload failed (${assetKind}): ${message}`);
+                    if (uploadErr) {
+                        throw new Error(`File upload failed (${assetKind}): ${uploadErr.message}`);
                     }
 
                     uploadedAssets.push({
                         name: file.name,
-                        storage_bucket: result.bucket,
-                        storage_path: result.path,
+                        storage_bucket: 'contract-files',
+                        storage_path: uploadData.path,
                         mime_type: file.type,
                         size_bytes: file.size,
                     });
