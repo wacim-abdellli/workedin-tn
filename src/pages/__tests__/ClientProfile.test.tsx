@@ -5,6 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const supabaseMock = vi.hoisted(() => ({
     from: vi.fn(),
+    channel: vi.fn(() => ({
+        on: vi.fn().mockReturnThis(),
+        subscribe: vi.fn().mockReturnThis(),
+        track: vi.fn().mockReturnThis(),
+    })),
+    removeChannel: vi.fn(),
 }));
 
 const captured = vi.hoisted(() => ({

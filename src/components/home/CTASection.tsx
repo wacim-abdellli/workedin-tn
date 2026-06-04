@@ -1,10 +1,19 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, LayoutDashboard } from 'lucide-react';
 import { useTranslation } from '@/i18n';
+import { useAuth } from '@/contexts/AuthContext';
+import { useWorkspaceStore } from '@/lib/workspaceState';
 
 export function CTASection() {
   const navigate = useNavigate();
   const { tx } = useTranslation();
+  const { user } = useAuth();
+  const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
+  const isAuthenticated = Boolean(user);
+  const isFreelancer = activeWorkspace === 'freelancer';
+
+  const dashboardPath = isFreelancer ? '/freelancer/dashboard' : '/client/dashboard';
+  const workspaceActionPath = isFreelancer ? '/jobs' : '/find-freelancers';
 
   return (
     <section className="py-24" style={{ background: 'var(--page-bg)' }}>
@@ -35,25 +44,53 @@ export function CTASection() {
             {tx('ctaSection.subtitle')}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <button
-              onClick={() => navigate('/signup')}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-white transition-all hover:opacity-90 hover:-translate-y-0.5"
-              style={{ background: 'var(--workspace-primary)', fontSize: '1rem' }}
-            >
-              {tx('ctaSection.primary')} <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => navigate('/jobs/new')}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold transition-all hover:-translate-y-0.5 border"
-              style={{
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-strong)',
-                background: 'var(--card-bg)',
-                fontSize: '1rem',
-              }}
-            >
-              {tx('ctaSection.secondary')}
-            </button>
+            {isAuthenticated ? (
+              <>
+                <button
+                  onClick={() => navigate(dashboardPath)}
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-white transition-all hover:opacity-90 hover:-translate-y-0.5"
+                  style={{ background: 'var(--workspace-primary)', fontSize: '1rem' }}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  {isFreelancer ? 'Go to Dashboard' : 'Client Dashboard'}
+                </button>
+                <button
+                  onClick={() => navigate(workspaceActionPath)}
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold transition-all hover:-translate-y-0.5 border"
+                  style={{
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-strong)',
+                    background: 'var(--card-bg)',
+                    fontSize: '1rem',
+                  }}
+                >
+                  {isFreelancer ? 'Browse Jobs' : 'Find Freelancers'}
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-white transition-all hover:opacity-90 hover:-translate-y-0.5"
+                  style={{ background: 'var(--workspace-primary)', fontSize: '1rem' }}
+                >
+                  {tx('ctaSection.primary')} <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => navigate('/jobs/new')}
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold transition-all hover:-translate-y-0.5 border"
+                  style={{
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-strong)',
+                    background: 'var(--card-bg)',
+                    fontSize: '1rem',
+                  }}
+                >
+                  {tx('ctaSection.secondary')}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -62,3 +99,4 @@ export function CTASection() {
 }
 
 export default CTASection;
+

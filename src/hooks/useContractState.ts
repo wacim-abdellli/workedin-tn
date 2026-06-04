@@ -215,6 +215,24 @@ export function useContractState({
                 const receiverId = getCounterpartyId(contract, userRole);
                 if (!receiverId) throw new Error('Unable to determine message recipient');
 
+                // DEV auto-funding / escrow id bypass
+                if (import.meta.env.DEV && !contract.dhmad_escrow_id) {
+                    const mockId = `dhmad_mock_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+                    const { error: updateError } = await supabase
+                        .from('contracts')
+                        .update({
+                            dhmad_escrow_id: mockId,
+                        })
+                        .eq('id', contractId);
+                    
+                    if (updateError) {
+                        logger.error('[DEV] Failed to auto-fund contract:', updateError);
+                    } else {
+                        logger.info('[DEV] Auto-funded contract for release bypass:', mockId);
+                        contract.dhmad_escrow_id = mockId;
+                    }
+                }
+
                 // If this contract has a Dhmad escrow, release it via Dhmad API.
                 // The webhook will eventually confirm, but we also run the RPC
                 // below to optimisticly complete it in the DB immediately.

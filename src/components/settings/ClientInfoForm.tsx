@@ -86,7 +86,7 @@ export function ClientInfoForm({ form, onChange }: ClientInfoFormProps) {
 
     return (
         <div className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div id="field-company" className="grid grid-cols-1 md:grid-cols-2 gap-5 transition-all duration-300 rounded-xl p-1">
                 <Input
                     label={tx('profile.companyName', undefined, 'Company name')}
                     value={form.company_name}
@@ -159,33 +159,35 @@ export function ClientInfoForm({ form, onChange }: ClientInfoFormProps) {
                 </div>
             </div>
 
-            <Input
-                as="textarea"
-                rows={3}
-                label={tx('profile.communicationPreferences', undefined, 'Communication preferences')}
-                value={form.communication_preferences}
-                onChange={e => set({ communication_preferences: e.target.value })}
-                placeholder="e.g. Prefer Slack or email, weekly updates expected..."
-                leftIcon={<MessageCircle className="w-4 h-4" />}
-            />
-            <Input
-                as="textarea"
-                rows={3}
-                label={tx('profile.screeningPreferences', undefined, 'Screening preferences')}
-                value={form.screening_preferences}
-                onChange={e => set({ screening_preferences: e.target.value })}
-                placeholder="e.g. Portfolio required, technical test expected..."
-                leftIcon={<ShieldCheck className="w-4 h-4" />}
-            />
-            <Input
-                as="textarea"
-                rows={3}
-                label={tx('profile.legalPreferences', undefined, 'Legal preferences')}
-                value={form.legal_preferences}
-                onChange={e => set({ legal_preferences: e.target.value })}
-                placeholder="e.g. NDA required before starting..."
-                leftIcon={<FileText className="w-4 h-4" />}
-            />
+            <div id="field-preferences" className="space-y-5 transition-all duration-300 rounded-xl p-1">
+                <Input
+                    as="textarea"
+                    rows={3}
+                    label={tx('profile.communicationPreferences', undefined, 'Communication preferences')}
+                    value={form.communication_preferences}
+                    onChange={e => set({ communication_preferences: e.target.value })}
+                    placeholder="e.g. Prefer Slack or email, weekly updates expected..."
+                    leftIcon={<MessageCircle className="w-4 h-4" />}
+                />
+                <Input
+                    as="textarea"
+                    rows={3}
+                    label={tx('profile.screeningPreferences', undefined, 'Screening preferences')}
+                    value={form.screening_preferences}
+                    onChange={e => set({ screening_preferences: e.target.value })}
+                    placeholder="e.g. Portfolio required, technical test expected..."
+                    leftIcon={<ShieldCheck className="w-4 h-4" />}
+                />
+                <Input
+                    as="textarea"
+                    rows={3}
+                    label={tx('profile.legalPreferences', undefined, 'Legal preferences')}
+                    value={form.legal_preferences}
+                    onChange={e => set({ legal_preferences: e.target.value })}
+                    placeholder="e.g. NDA required before starting..."
+                    leftIcon={<FileText className="w-4 h-4" />}
+                />
+            </div>
         </div>
     );
 }

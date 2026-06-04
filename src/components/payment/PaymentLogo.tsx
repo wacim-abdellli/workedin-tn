@@ -16,33 +16,33 @@ const PAYMENT_LOGOS: Record<PaymentProviderId, PaymentLogoMeta> = {
   dhmad: {
     id: "dhmad",
     name: "Dhmad Escrow",
-    bgClass: "bg-gradient-to-br from-violet-500 to-indigo-700",
-    borderClass: "border-violet-400/35",
-    iconClass: "text-white/95",
+    bgClass: "bg-violet-500/10",
+    borderClass: "border-violet-500/20",
+    iconClass: "text-violet-400",
     Icon: ShieldCheck,
   },
   flouci: {
     id: "flouci",
     name: "Flouci",
-    bgClass: "bg-gradient-to-br from-amber-400 via-orange-500 to-rose-600",
-    borderClass: "border-amber-300/35",
-    iconClass: "text-white/95",
+    bgClass: "bg-amber-500/10",
+    borderClass: "border-amber-500/20",
+    iconClass: "text-amber-400",
     Icon: WalletCards,
   },
   d17: {
     id: "d17",
     name: "D17",
-    bgClass: "bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-800",
-    borderClass: "border-cyan-300/35",
-    iconClass: "text-white/95",
+    bgClass: "bg-cyan-500/10",
+    borderClass: "border-cyan-500/20",
+    iconClass: "text-cyan-400",
     Icon: Building2,
   },
   bank: {
     id: "bank",
     name: "Bank Transfer",
-    bgClass: "bg-gradient-to-br from-blue-600 to-blue-900",
-    borderClass: "border-blue-500/30",
-    iconClass: "text-white/90",
+    bgClass: "bg-blue-500/10",
+    borderClass: "border-blue-500/20",
+    iconClass: "text-blue-400",
     Icon: CreditCard,
   },
 };
@@ -76,10 +76,10 @@ export function PaymentLogo({
   const Icon = logo.Icon;
 
   const base = [
-    "relative isolate flex shrink-0 items-center justify-center overflow-hidden border shadow-[0_12px_30px_rgba(0,0,0,0.22)]",
+    "relative flex shrink-0 items-center justify-center overflow-hidden border transition-all duration-200",
     SIZE_CLASS[size],
     logo.borderClass,
-    muted ? "opacity-75 saturate-[0.78]" : "",
+    muted ? "opacity-40 saturate-[0.5]" : "",
     className,
   ]
     .filter(Boolean)
@@ -87,8 +87,7 @@ export function PaymentLogo({
 
   return (
     <div className={[base, logo.bgClass].join(" ")} aria-label={`${logo.name} logo`}>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_18%,rgba(255,255,255,0.22),transparent_34%)]" />
-      <Icon className={["relative z-10 drop-shadow-sm", ICON_SIZE_CLASS[size], logo.iconClass].join(" ")} />
+      <Icon className={["relative z-10", ICON_SIZE_CLASS[size], logo.iconClass].join(" ")} />
       <span className="sr-only">{logo.name}</span>
     </div>
   );

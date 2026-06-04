@@ -1,4 +1,5 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { ChangeEvent } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -95,6 +96,16 @@ export default function ProposalModal({
         }
     }, [isOpen, job.job_type, job.budget_min, job.hourly_rate, reset]);
 
+    useEffect(() => {
+        if (isOpen) {
+            const originalStyle = window.getComputedStyle(document.body).overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalStyle;
+            };
+        }
+    }, [isOpen]);
+
     const bidAmount = useWatch({ control, name: 'bid_amount' }) || 0;
     const coverLetter = useWatch({ control, name: 'cover_letter' }) || '';
     const platformFee = (bidAmount * PLATFORM_FEE_PERCENT) / 100;
@@ -128,16 +139,17 @@ export default function ProposalModal({
         return null;
     }
 
-    return (
+    return createPortal(
         <div
-            className="fixed inset-0 z-50 bg-[var(--color-bg-base)]/80 backdrop-blur-sm px-4 py-8 overflow-y-auto"
+            className="fixed inset-0 z-50 bg-[var(--color-bg-base)]/80 backdrop-blur-sm px-4 py-8 overflow-y-auto flex items-center justify-center"
             onClick={onClose}
         >
             <div
-                className="mx-auto w-full max-w-3xl bg-[var(--color-bg-base)] border border-white/5 rounded-2xl shadow-2xl flex flex-col max-h-[92vh]"
+                className="w-full max-w-3xl bg-[var(--color-bg-base)] border border-white/5 rounded-2xl shadow-2xl flex flex-col max-h-[90vh]"
                 onClick={(event) => event.stopPropagation()}
             >
-                <div className="px-6 py-5 border-b border-white/5 flex items-start justify-between gap-4 bg-[var(--color-bg-elevated)]">
+                {/* Header */}
+                <div className="px-6 py-5 border-b border-white/5 flex items-start justify-between gap-4 bg-[var(--color-bg-elevated)] flex-none rounded-t-2xl">
                     <div className="min-w-0">
                         <h2 className="text-xl font-bold text-[var(--color-text-primary)] truncate">
                             {tx('jobDetail.submitProposal', undefined, 'Submit Proposal')}
@@ -155,9 +167,10 @@ export default function ProposalModal({
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col min-h-0">
-                    <fieldset disabled={isSubmitting} className="contents">
-                        <div className="px-6 py-6 overflow-y-auto space-y-7 min-h-0">
+                {/* Form & Scrollable Content */}
+                <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col min-h-0 flex-1 overflow-hidden">
+                    {/* Inner scroll container */}
+                    <div className="px-6 py-6 overflow-y-auto space-y-7 min-h-0 flex-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                             <div className="rounded-xl border border-white/5 bg-[var(--color-bg-elevated)] p-4">
                                 <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-primary)]/40 mb-1">
                                     {tx('proposalModal.jobContext', undefined, 'Job context')}
@@ -178,8 +191,9 @@ export default function ProposalModal({
                                             type="number"
                                             min={10}
                                             step={1}
+                                            disabled={isSubmitting}
                                             {...register('bid_amount', { valueAsNumber: true })}
-                                            className={`w-full rounded-xl bg-black/20 border px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/30 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-colors ${errors.bid_amount ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/10 focus:border-violet-500'}`}
+                                            className={`w-full rounded-xl bg-black/20 border px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/30 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${errors.bid_amount ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/10 focus:border-violet-500'}`}
                                             placeholder="0"
                                         />
                                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--color-text-primary)]/40">{currency}</span>
@@ -217,6 +231,7 @@ export default function ProposalModal({
                                                 onChange={(nextValue) => field.onChange(Number(nextValue))}
                                                 options={deliveryOptions}
                                                 error={errors.delivery_days?.message}
+                                                disabled={isSubmitting}
                                             />
                                         )}
                                     />
@@ -230,7 +245,8 @@ export default function ProposalModal({
                                 <textarea
                                     {...register('cover_letter')}
                                     rows={8}
-                                    className={`w-full rounded-xl bg-black/20 border px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/30 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-colors ${errors.cover_letter ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/10 focus:border-violet-500'}`}
+                                    disabled={isSubmitting}
+                                    className={`w-full rounded-xl bg-black/20 border px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/30 resize-none focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${errors.cover_letter ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/10 focus:border-violet-500'}`}
                                     placeholder={tx('proposalModal.coverLetterPlaceholder', undefined, 'Explain your approach, relevant experience, and delivery plan...')}
                                 />
                                 <div className="flex items-center justify-between text-xs">
@@ -259,7 +275,8 @@ export default function ProposalModal({
                                             <button
                                                 type="button"
                                                 onClick={() => removeAttachment(index)}
-                                                className="absolute -top-2 -right-2 rounded-full bg-rose-500 border border-white/10 p-1 text-[var(--color-text-primary)] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-600"
+                                                disabled={isSubmitting}
+                                                className="absolute -top-2 -right-2 rounded-full bg-rose-500 border border-white/10 p-1 text-[var(--color-text-primary)] opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-600 disabled:opacity-0 disabled:cursor-not-allowed"
                                                 aria-label={tx('proposalModal.removeAttachmentAria', { name: file.name }, 'Remove attachment: {{name}}')}
                                             >
                                                 <Trash2 className="w-3 h-3" />
@@ -277,7 +294,8 @@ export default function ProposalModal({
                                         <button
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="rounded-xl border border-dashed border-white/20 bg-[var(--color-bg-elevated)] p-3 flex flex-col items-center justify-center gap-2 text-[var(--color-text-primary)]/40 hover:text-violet-300 hover:border-violet-500/50 hover:bg-violet-500/5 transition-colors"
+                                            disabled={isSubmitting}
+                                            className="rounded-xl border border-dashed border-white/20 bg-[var(--color-bg-elevated)] p-3 flex flex-col items-center justify-center gap-2 text-[var(--color-text-primary)]/40 hover:text-violet-300 hover:border-violet-500/50 hover:bg-violet-500/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <Upload className="w-5 h-5" />
                                             <span className="text-[11px] font-bold uppercase tracking-wider leading-4 text-center">
@@ -292,6 +310,7 @@ export default function ProposalModal({
                                     ref={fileInputRef}
                                     onChange={handleFileChange}
                                     multiple
+                                    disabled={isSubmitting}
                                     className="hidden"
                                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                 />
@@ -300,31 +319,33 @@ export default function ProposalModal({
                                 </p>
                             </div>
                         </div>
-                    </fieldset>
 
-                    <div className="px-6 py-4 border-t border-white/5 bg-[var(--color-bg-elevated)] flex items-center justify-end gap-3 rounded-b-2xl">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            disabled={isSubmitting}
-                            className="px-5 py-2.5 rounded-xl border border-white/10 text-sm font-bold text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)] hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {tx('common.cancel', undefined, 'Cancel')}
-                        </button>
+                        {/* Footer */}
+                        <div className="px-6 py-4 border-t border-white/5 bg-[var(--color-bg-elevated)] flex items-center justify-end gap-3 rounded-b-2xl flex-none">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                disabled={isSubmitting}
+                                className="px-5 py-2.5 rounded-xl border border-white/10 text-sm font-bold text-[var(--color-text-primary)]/50 hover:text-[var(--color-text-primary)] hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {tx('common.cancel', undefined, 'Cancel')}
+                            </button>
 
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-bold text-[var(--color-text-primary)] shadow-[0_4px_14px_0_rgba(139,92,246,0.39)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.23)] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-w-[170px]"
-                        >
-                            {isSubmitting
-                                ? tx('proposalModal.submitting', undefined, 'Submitting...')
-                                : tx('jobDetail.submitProposal', undefined, 'Submit Proposal')}
-                        </button>
-                    </div>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-bold text-[var(--color-text-primary)] shadow-[0_4px_14px_0_rgba(139,92,246,0.39)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.23)] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-w-[170px]"
+                            >
+                                {isSubmitting
+                                    ? tx('proposalModal.submitting', undefined, 'Submitting...')
+                                    : tx('jobDetail.submitProposal', undefined, 'Submit Proposal')}
+                            </button>
+                        </div>
+                    {/* </fieldset> was removed here */}
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 

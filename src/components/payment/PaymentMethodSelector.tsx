@@ -1,8 +1,8 @@
-import { Check, Clock, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import type { PaymentMethodConfig } from '@/config/paymentMethods';
 import { PAYMENT_METHODS } from '@/config/paymentMethods';
 import { useTranslation } from '@/i18n';
-import { PaymentLogo, type PaymentProviderId } from './PaymentLogo';
+import { PaymentMethodCard } from './PaymentMethodCard';
 
 // --- Helpers -------------------------------------------------------------
 
@@ -22,146 +22,6 @@ function localiseList(
   if (lang === 'ar') return map.ar;
   if (lang === 'fr') return map.fr;
   return map.en;
-}
-
-// --- Sub-components ------------------------------------------------------
-
-interface AvailableCardProps {
-  method: PaymentMethodConfig;
-  selected: boolean;
-  onSelect: (id: string) => void;
-  lang: string;
-}
-
-function AvailableCard({ method, selected, onSelect, lang }: AvailableCardProps) {
-    const { tx } = useTranslation();
-  const name = localise(method.name, lang);
-  const description = localise(method.description, lang);
-  const features = localiseList(method.features, lang);
-
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(method.id)}
-      aria-pressed={selected}
-      className={[
-        'w-full text-start rounded-2xl border-2 p-4 transition-all duration-200',
-        'bg-card hover:shadow-md',
-        selected
-          ? 'border-[color:var(--workspace-primary)] shadow-sm ring-1 ring-[color:var(--workspace-primary)]/20'
-          : 'border-border hover:border-[color:var(--workspace-primary)]/50',
-      ].join(' ')}
-    >
-      <div className="flex items-start gap-3">
-        {/* Icon circle */}
-        <div
-          className={[
-            'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden',
-            selected ? '' : 'opacity-90',
-          ].join(' ')}
-        >
-          <PaymentLogo id={method.id as PaymentProviderId} size="sm" />
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Name row */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-foreground">{name}</span>
-            {method.recommended && (
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                {tx('ui.recommended')}</span>
-            )}
-          </div>
-
-          {/* Description */}
-          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-            {description}
-          </p>
-
-          {/* Feature pills */}
-          <div className="flex flex-wrap gap-1.5 mt-2.5">
-            {features.map((feat) => (
-              <span
-                key={feat}
-                className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-surface text-muted-foreground/80"
-              >
-                <Check className="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" />
-                {feat}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Selection indicator */}
-        <div
-          className={[
-            'flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
-            selected
-              ? 'border-[color:var(--workspace-primary)] bg-[color:var(--workspace-primary)]'
-              : 'border-border',
-          ].join(' ')}
-        >
-          {selected && <Check className="w-3 h-3 text-white" />}
-        </div>
-      </div>
-    </button>
-  );
-}
-
-interface ComingSoonCardProps {
-  method: PaymentMethodConfig;
-  lang: string;
-}
-
-function ComingSoonCard({ method, lang }: ComingSoonCardProps) {
-    const { tx } = useTranslation();
-  const name = localise(method.name, lang);
-  const description = localise(method.description, lang);
-  const features = localiseList(method.features, lang);
-
-  return (
-    <div
-      aria-disabled="true"
-      className="w-full text-start rounded-2xl border-2 border-dashed border-border p-4 bg-muted/30 cursor-not-allowed"
-    >
-      <div className="flex items-start gap-3">
-        {/* Icon circle — muted */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden opacity-80 saturate-[.82]">
-          <PaymentLogo id={method.id as PaymentProviderId} size="sm" muted />
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Name row */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-muted-foreground">{name}</span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-amber-500/10 text-amber-600">
-              <Clock className="w-2.5 h-2.5" />
-              {tx('ui.coming_soon')}</span>
-          </div>
-
-          {/* Description */}
-          <p className="text-xs text-muted-foreground/70 mt-1 leading-relaxed">
-            {description}
-          </p>
-
-          {/* Feature pills — greyed */}
-          <div className="flex flex-wrap gap-1.5 mt-2.5">
-            {features.map((feat) => (
-              <span
-                key={feat}
-                className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-surface text-muted-foreground/60"
-              >
-                <Check className="w-2.5 h-2.5 text-muted-foreground/40 flex-shrink-0" />
-                {feat}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // --- Main component ------------------------------------------------------
@@ -189,12 +49,16 @@ export default function PaymentMethodSelector({
       {/* Available methods */}
       <div className="space-y-2">
         {available.map((method) => (
-          <AvailableCard
+          <PaymentMethodCard
             key={method.id}
-            method={method}
+            id={method.id}
+            name={localise(method.name, language)}
+            description={localise(method.description, language)}
+            features={localiseList(method.features, language)}
+            recommended={method.recommended}
             selected={selectedMethod === method.id}
-            onSelect={onSelect}
-            lang={language}
+            showRadio
+            onSelect={() => onSelect(method.id)}
           />
         ))}
       </div>
@@ -212,7 +76,15 @@ export default function PaymentMethodSelector({
 
           <div className="space-y-2">
             {comingSoon.map((method) => (
-              <ComingSoonCard key={method.id} method={method} lang={language} />
+              <PaymentMethodCard
+                key={method.id}
+                id={method.id}
+                name={localise(method.name, language)}
+                description={localise(method.description, language)}
+                features={localiseList(method.features, language)}
+                status="soon"
+                disabled
+              />
             ))}
           </div>
         </>

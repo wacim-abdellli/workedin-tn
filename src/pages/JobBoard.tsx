@@ -163,6 +163,20 @@ function getCategoryLabel(category: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function formatProposalsCount(count: number): string {
+  if (!count || count === 0) return '0 proposals';
+  if (count < 5) return 'Less than 5 proposals';
+  if (count < 10) return '5 to 10 proposals';
+  if (count < 15) return '10 to 15 proposals';
+  if (count < 20) return '15 to 20 proposals';
+  return '20+ proposals';
+}
+
+function formatExperienceLevel(level: string): string {
+  if (!level) return 'Any Level';
+  return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+}
+
 function getSkillIdentifiers(skill: any): string[] {
   if (!skill) return [];
   const ids: string[] = [];
@@ -600,7 +614,7 @@ function JobBoard() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
           {/* ── Sidebar Filters ── */}
-          <aside className="lg:col-span-1">
+          <aside className="lg:col-span-1 lg:sticky lg:top-24 self-start max-h-[calc(100vh-120px)] overflow-y-auto no-scrollbar pr-1 select-none">
             <div className="">
               <div className="surface-card border rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-5">
@@ -733,24 +747,33 @@ function JobBoard() {
           <section className="lg:col-span-3 flex flex-col gap-5">
 
             {/* Search bar */}
-            <div className="relative w-full">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-subtle pointer-events-none" />
+            <div className="relative w-full group">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-subtle pointer-events-none group-focus-within:text-[var(--workspace-primary)] transition-colors" />
               <input
                 type="text"
                 value={filters.search}
                 onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
                 placeholder={tx('pages.jobBoard.filters.searchPlaceholder', undefined, 'Search jobs...')}
-                className="w-full rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]"
-                onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--workspace-primary,#8b5cf6)'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-subtle)'; }}
+                className="w-full rounded-xl pl-10 pr-10 py-3 text-sm outline-none transition-all border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] hover:border-[var(--color-border-default)] focus:border-[var(--workspace-primary,#8b5cf6)] focus:ring-1 focus:ring-[var(--workspace-primary,#8b5cf6)]"
               />
+              {filters.search && (
+                <button
+                  type="button"
+                  onClick={() => setFilters((prev) => ({ ...prev, search: '' }))}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-subtle hover:text-on-surface p-1 rounded-full hover:bg-white/10 transition-all"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             {/* Upwork-style Tabs Navigation */}
-            <div className="mt-2">
-              <h2 className="text-xl font-bold text-on-surface mb-3">Jobs you might like</h2>
+            <div className="mt-1">
+              <h2 className="text-lg font-extrabold text-on-surface mb-2">Jobs you might like</h2>
               
-              <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] mb-3">
+              <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] mb-2.5">
                 <div className="flex gap-6">
                   {([
                     { id: 'best-match', label: 'Best Matches' },
@@ -769,20 +792,25 @@ function JobBoard() {
                         onClick={() => {
                           setFilters((prev) => ({ ...prev, sortBy: tab.id }));
                         }}
-                        className={`pb-3.5 text-sm font-semibold transition-all relative -mb-px border-b-2 ${
+                        className={`pb-2 text-sm font-semibold transition-all relative -mb-px border-b-2 ${
                           isActive 
                             ? 'text-[var(--workspace-primary,#8b5cf6)] border-[var(--workspace-primary,#8b5cf6)]' 
                             : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
                         }`}
                       >
-                        {tab.id === 'saved' && savedJobIds.size > 0 ? (
-                          <span className="inline-flex items-center gap-1.5">
-                            {tab.label}
+                        <span className="inline-flex items-center gap-1.5">
+                          {tab.label}
+                          {!showSkeleton && isActive && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--workspace-primary,#8b5cf6)]/10 text-[var(--workspace-primary,#8b5cf6)] font-bold">
+                              {displayedCount}
+                            </span>
+                          )}
+                          {!showSkeleton && !isActive && tab.id === 'saved' && savedJobIds.size > 0 && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--color-bg-muted)] text-on-surface-muted font-semibold">
                               {savedJobIds.size}
                             </span>
-                          </span>
-                        ) : tab.label}
+                          )}
+                        </span>
                       </button>
                     );
                   })}
@@ -823,71 +851,31 @@ function JobBoard() {
                   </div>
                 )}
               </div>
-
-              {/* Tab description text */}
-              <p className="text-xs text-[var(--color-text-tertiary)] mb-4">
-                {filters.sortBy === 'best-match' && "Browse jobs that match your experience to a client's hiring preferences. Ordered by most relevant."}
-                {filters.sortBy === 'saved' && "Keep track of the jobs you saved to apply later."}
-                {filters.sortBy !== 'best-match' && filters.sortBy !== 'saved' && "Browse the most recent jobs posted on the marketplace."}
-              </p>
             </div>
-
-            {/* Count — hidden while loading to avoid flickering numbers */}
-            {!showSkeleton && (
-              <p className="text-xs text-on-surface-subtle flex items-center gap-1.5 mb-2">
-                <span className="font-semibold text-on-surface tabular-nums">{displayedCount}</span>
-                <span>{tx('pages.jobBoard.filters.showing', { count: displayedCount }, 'jobs')}</span>
-              </p>
-            )}
 
             {/* Best Matches Info Banner */}
             {!showSkeleton && filters.sortBy === 'best-match' && (
               <div 
-                className="rounded-xl border p-4 text-sm flex items-start gap-3 transition-all mb-2"
+                className="rounded-xl border px-3 py-2 text-xs flex items-center gap-2.5 transition-all mb-1.5"
                 style={{
-                  background: 'color-mix(in srgb, var(--workspace-primary, #8b5cf6) 8%, transparent)',
-                  borderColor: 'color-mix(in srgb, var(--workspace-primary, #8b5cf6) 20%, transparent)',
+                  background: 'color-mix(in srgb, var(--workspace-primary, #8b5cf6) 5%, transparent)',
+                  borderColor: 'color-mix(in srgb, var(--workspace-primary, #8b5cf6) 12%, transparent)',
                 }}
               >
-                <SlidersHorizontal className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--workspace-primary, #8b5cf6)' }} />
-                <div className="flex-1">
+                <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--workspace-primary, #8b5cf6)' }} />
+                <div className="flex-1 text-on-surface-muted/90 leading-normal">
                   {!user?.id ? (
-                    <p style={{ color: 'var(--color-text-secondary)' }}>
-                      Log in as a freelancer and add skills to your profile to see jobs matching your expertise.
-                    </p>
+                    "Log in as a freelancer and add skills to your profile to see jobs matching your expertise."
                   ) : !freelancerProfile ? (
-                    <p style={{ color: 'var(--color-text-secondary)' }}>
-                      You are in client mode. Switch to freelancer mode to view best matching jobs.
-                    </p>
+                    "You are in client mode. Switch to freelancer mode to view best matching jobs."
                   ) : !Array.isArray(freelancerProfile.skills) || freelancerProfile.skills.length === 0 ? (
-                    <div>
-                      <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                        You haven't set up skills on your profile yet!
-                      </p>
-                      <p className="mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-                        We are currently showing jobs sorted by newest first. To see customized opportunities, add skills to your freelancer profile.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/settings?tab=profile')}
-                        className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-                        style={{
-                          background: 'var(--workspace-primary, #8b5cf6)',
-                          color: '#ffffff',
-                        }}
-                      >
-                        Add Skills to Profile
-                      </button>
-                    </div>
+                    <span>
+                      You haven't set up skills on your profile yet! We are currently showing jobs sorted by newest first. To see customized opportunities, <button type="button" onClick={() => navigate('/settings?tab=profile')} className="underline font-bold text-[var(--workspace-primary)] hover:opacity-85">Add Skills to Profile</button>.
+                    </span>
                   ) : (
-                    <div>
-                      <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                        Sorting by skills match
-                      </p>
-                      <p className="mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                        Jobs with skills matching your profile are displayed at the top. Currently matching based on: <span className="font-medium text-on-surface">{(Array.isArray(freelancerProfile.skills) ? freelancerProfile.skills : []).map((s: any) => typeof s === 'string' ? s : s.name_en || s.name || '').filter(Boolean).join(', ')}</span>
-                      </p>
-                    </div>
+                    <span>
+                      Matching jobs based on your skills: <strong className="text-on-surface">{(Array.isArray(freelancerProfile.skills) ? freelancerProfile.skills : []).map((s: any) => typeof s === 'string' ? s : s.name_en || s.name || '').filter(Boolean).slice(0, 8).join(', ')}</strong>
+                    </span>
                   )}
                 </div>
               </div>
@@ -952,123 +940,140 @@ function JobBoard() {
                           navigate(`/jobs/${job.id}`);
                         }
                       }}
-                      className="group relative rounded-xl border border-surface surface-card p-4 sm:p-5 cursor-pointer transition-all duration-200 hover:border-[var(--workspace-primary)] hover:shadow-[0_4px_20px_-4px_color-mix(in_srgb,var(--workspace-primary)_20%,transparent)] hover:-translate-y-0.5"
+                      className="group relative rounded-xl border border-surface surface-card p-5 cursor-pointer transition-all duration-200 hover:border-[var(--workspace-primary)] hover:shadow-[0_4px_24px_-4px_color-mix(in_srgb,var(--workspace-primary)_12%,transparent)] hover:-translate-y-0.5 flex flex-col gap-3.5"
                     >
-                      {/* Subtle glow on hover */}
+                      {/* Subtle hover glow background */}
                       <div
                         className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                        style={{ background: 'linear-gradient(135deg,rgba(139,92,246,0.03) 0%,transparent 60%)' }}
+                        style={{ background: 'linear-gradient(135deg,rgba(139,92,246,0.02) 0%,transparent 60%)' }}
                       />
 
-                      <div className="relative flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-                        {/* Main Content Area */}
-                        <div className="min-w-0 flex-1 flex flex-col">
-                          {/* Top Row: Title & Budget */}
-                          <div className="flex items-start justify-between gap-3 mb-1.5">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <h3 className="text-sm font-bold text-on-surface transition-colors line-clamp-1 [overflow-wrap:anywhere]"
-                                style={{ color: 'var(--color-text-primary)' }}
-                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
-                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
-                              >
-                                {job.title || 'Untitled job'}
-                              </h3>
-                              <span
-                                className="shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded"
-                                style={{
-                                  background: isFixed ? 'rgba(59,130,246,0.1)' : 'rgba(16,185,129,0.1)',
-                                  color: isFixed ? '#3b82f6' : '#10b981',
-                                  border: `1px solid ${isFixed ? 'rgba(59,130,246,0.2)' : 'rgba(16,185,129,0.2)'}`,
-                                }}
-                              >
-                                {isFixed ? 'Fixed' : 'Hourly'}
-                              </span>
-                            </div>
-                            
-                            {/* Budget */}
-                            <span className="shrink-0 text-sm font-black whitespace-nowrap" style={{ color: 'var(--workspace-primary,#8b5cf6)' }}>
-                              {getBudgetLabel(job, tx)}
+                      {/* Header Row: Title, Job Type and Save button */}
+                      <div className="relative flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-2">
+                          <h3 
+                            className="text-base sm:text-lg font-bold text-on-surface transition-colors leading-snug line-clamp-1 break-words"
+                            style={{ color: 'var(--color-text-primary)' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                          >
+                            {job.title || 'Untitled job'}
+                          </h3>
+                          <span
+                            className="shrink-0 inline-flex items-center text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border self-start sm:self-auto"
+                            style={{
+                              background: isFixed ? 'rgba(59,130,246,0.06)' : 'rgba(16,185,129,0.06)',
+                              color: isFixed ? '#3b82f6' : '#10b981',
+                              borderColor: isFixed ? 'rgba(59,130,246,0.15)' : 'rgba(16,185,129,0.15)',
+                            }}
+                          >
+                            {isFixed ? 'Fixed-price' : 'Hourly'}
+                          </span>
+                        </div>
+
+                        {/* Save (Heart) Button */}
+                        <button
+                          type="button"
+                          aria-label={isSaved ? 'Unsave job' : 'Save job'}
+                          onClick={async (e) => { e.stopPropagation(); await handleToggleSave(job); }}
+                          className="relative h-8 w-8 flex items-center justify-center rounded-lg border border-surface surface-sunken transition-all hover:bg-[var(--color-bg-muted)] group/save shrink-0 active:scale-90"
+                        >
+                          <Heart className={`w-4 h-4 transition-colors ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-on-surface-muted group-hover/save:text-rose-500'}`} />
+                        </button>
+                      </div>
+
+                      {/* Meta Details Row: Budget, Experience, Proposals, Posted */}
+                      <div className="relative flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-on-surface-muted/70 font-medium">
+                        <span className="font-bold text-[var(--workspace-primary,#8b5cf6)] shrink-0">
+                          {getBudgetLabel(job, tx)}
+                        </span>
+                        <span className="text-on-surface-subtle/40 select-none">•</span>
+                        <span className="shrink-0">
+                          {formatExperienceLevel(job.experience_level)}
+                        </span>
+                        <span className="text-on-surface-subtle/40 select-none">•</span>
+                        <span className="shrink-0">
+                          {formatProposalsCount(job.proposals_count)}
+                        </span>
+                        <span className="text-on-surface-subtle/40 select-none">•</span>
+                        <span className="flex items-center gap-1 shrink-0">
+                          <Clock className="w-3.5 h-3.5 opacity-60" />
+                          {postedAgo}
+                        </span>
+                      </div>
+
+                      {/* Job Description (Clamped, clean lines) */}
+                      <p className="relative text-xs sm:text-sm text-on-surface-muted/90 line-clamp-3 leading-relaxed [overflow-wrap:anywhere] pr-2">
+                        {job.description || 'No description provided.'}
+                      </p>
+
+                      {/* Skills section */}
+                      {skillLabels.length > 0 && (
+                        <div className="relative flex flex-wrap gap-1.5 my-1">
+                          {skillLabels.map((skill) => (
+                            <span 
+                              key={`${job.id}-${skill}`} 
+                              className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full border border-surface/80 bg-[var(--color-bg-muted)] hover:bg-white/[0.04] text-on-surface-muted transition-colors select-none"
+                            >
+                              {skill}
                             </span>
-                          </div>
+                          ))}
+                        </div>
+                      )}
 
-                          {/* Description */}
-                          <p className="text-xs text-on-surface-muted line-clamp-1 mb-2.5 [overflow-wrap:anywhere] leading-relaxed pr-4">
-                            {job.description || 'No description provided.'}
-                          </p>
+                      {/* Client Credentials & Actions Footer */}
+                      <div className="relative pt-4 border-t border-surface/50 flex flex-wrap items-center justify-between gap-4 mt-auto">
+                        <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-[11px] text-on-surface-subtle">
+                          {/* Payment Verified */}
+                          <span className="flex items-center gap-1 shrink-0">
+                            <BadgeCheck className={`w-3.5 h-3.5 ${job.client?.payment_verified ? 'text-emerald-500' : 'opacity-60 text-on-surface-subtle'}`} />
+                            <span className={job.client?.payment_verified ? 'text-emerald-500/90 font-medium' : ''}>
+                              {job.client?.payment_verified ? 'Payment verified' : 'Payment unverified'}
+                            </span>
+                          </span>
 
-                          {/* Bottom Row: Meta & Actions */}
-                          <div className="flex flex-wrap items-center justify-between gap-3 mt-auto">
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-on-surface-subtle">
-                                <span className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3 opacity-70" />
-                                  {postedAgo}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <BadgeCheck className={`w-3 h-3 ${job.client?.payment_verified ? 'text-emerald-500' : 'opacity-70'}`} />
-                                  {job.client?.payment_verified ? 'Verified' : 'Unverified'}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Star className="w-3 h-3 text-amber-500 fill-amber-400/60" />
-                                  <span>{clientName} ({ratingValue})</span>
-                                </span>
+                          {/* Client Rating */}
+                          <span className="flex items-center gap-1 shrink-0">
+                            <Star className="w-3 h-3 text-amber-500 fill-amber-400/60" />
+                            <span className="font-medium text-on-surface-muted">{clientName}</span>
+                            <span className="opacity-80">({ratingValue})</span>
+                          </span>
 
-                                {/* Minimal Skill tags */}
-                                <div className="hidden sm:flex items-center gap-1 ml-2 border-l border-surface pl-3">
-                                  {skillLabels.length > 0 ? (
-                                    <>
-                                      {skillLabels.slice(0, 3).map((skill) => (
-                                          <span key={`${job.id}-${skill}`} className="text-[10px] px-1.5 py-0.5 rounded border border-surface surface-sunken text-on-surface-muted">
-                                            {skill}
-                                          </span>
-                                      ))}
-                                      {skillLabels.length > 3 && (
-                                          <span className="text-[10px] text-on-surface-subtle">+{skillLabels.length - 3}</span>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded border border-surface surface-sunken text-on-surface-muted">General</span>
-                                  )}
-                                </div>
-                            </div>
+                          {/* Location */}
+                          <span className="flex items-center gap-1 shrink-0">
+                            <MapPin className="w-3 h-3 opacity-60" />
+                            <span>{job.client?.location || 'Tunisia'}</span>
+                          </span>
 
-                            {/* Actions Group */}
-                            <div className="flex items-center gap-2 shrink-0">
-                                {isAlreadyApplied && (
-                                  <span className="hidden sm:inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                                    ✓ Applied
-                                  </span>
-                                )}
-                                <button
-                                  type="button"
-                                  aria-label={isSaved ? 'Unsave job' : 'Save job'}
-                                  onClick={async (e) => { e.stopPropagation(); await handleToggleSave(job); }}
-                                  className="h-7 w-7 flex items-center justify-center rounded-lg border border-surface surface-sunken transition-all hover:bg-[var(--color-bg-muted)] group/save"
-                                >
-                                  <Heart className={`w-3.5 h-3.5 transition-colors ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-on-surface-muted group-hover/save:text-rose-500'}`} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => { e.stopPropagation(); navigate(`/jobs/${job.id}`); }}
-                                  className={`h-7 px-3 rounded-lg text-[11px] font-bold transition-all active:scale-[0.97] ${
-                                    isAlreadyApplied
-                                      ? 'text-on-surface-muted border border-surface surface-sunken hover-surface'
-                                      : ''
-                                  }`}
-                                  style={isAlreadyApplied
-                                    ? undefined
-                                    : {
-                                      background: 'linear-gradient(135deg,var(--workspace-primary) 0%,color-mix(in srgb,var(--workspace-primary) 70%,transparent) 100%)',
-                                      color: 'var(--workspace-primary-text)'
-                                    }}
-                                  onMouseEnter={(e) => !isAlreadyApplied && (e.currentTarget.style.filter = 'brightness(1.1)')}
-                                  onMouseLeave={(e) => !isAlreadyApplied && (e.currentTarget.style.filter = 'brightness(1)')}
-                                >
-                                  {isAlreadyApplied
-                                    ? tx('pages.jobBoard.actions.applied', undefined, 'Applied')
-                                    : tx('pages.jobBoard.actions.applyNow', undefined, 'Apply')}
-                                </button>
-                            </div>
-                          </div>
+                          {/* Applied Badge */}
+                          {isAlreadyApplied && (
+                            <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-500 border border-emerald-500/10 shrink-0">
+                              ✓ Applied
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Apply Now button */}
+                        <div className="flex items-center gap-2 shrink-0 ml-auto">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/jobs/${job.id}`); }}
+                            className={`h-8 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                              isAlreadyApplied
+                                ? 'text-on-surface-muted border border-surface surface-sunken hover:bg-[var(--color-bg-muted)]'
+                                : 'shadow-sm hover:brightness-110 active:brightness-95'
+                            }`}
+                            style={isAlreadyApplied
+                              ? undefined
+                              : {
+                                  background: 'linear-gradient(135deg,var(--workspace-primary) 0%,color-mix(in srgb,var(--workspace-primary) 80%,transparent) 100%)',
+                                  color: 'var(--workspace-primary-text)'
+                                }}
+                          >
+                            {isAlreadyApplied
+                              ? tx('pages.jobBoard.actions.applied', undefined, 'Applied')
+                              : tx('pages.jobBoard.actions.applyNow', undefined, 'Apply')}
+                          </button>
                         </div>
                       </div>
                     </article>

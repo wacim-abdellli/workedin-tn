@@ -1,8 +1,8 @@
-﻿import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Trash2, Upload } from 'lucide-react';
+import { Loader2, Trash2, Upload, Plus } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -807,409 +807,423 @@ export default function PortfolioModal({
             isOpen={isOpen}
             onClose={onClose}
             title={initialData ? tx('portfolio.form.editTitle') : tx('portfolio.form.addTitle')}
-            size="lg"
+            size="4xl"
         >
             <div className="space-y-4" style={fieldThemeVars}>
-                <div className="rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_85%_18%,rgba(139,92,246,0.14),transparent_48%),#151515] px-4 py-3">
-                    <p className="text-sm text-[var(--color-text-primary)]/75">
-                        {tx('portfolio.form.imageHint')}
-                    </p>
-                </div>
-
-                <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-5">
-                    <Input
-                        label={tx('portfolio.form.fields.title.label')}
-                        placeholder={tx('portfolio.form.fields.title.placeholder')}
-                        error={errors.title?.message}
-                        className={inputClassName}
-                        {...register('title')}
-                    />
-
-                    <div className="space-y-1.5">
-                        <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">{tx('portfolio.form.fields.description.label')}</label>
-                        <textarea
-                            {...register('description')}
-                            rows={4}
-                            className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all resize-none"
-                            placeholder={tx('portfolio.form.fields.description.placeholder')}
-                        />
-                        {errors.description && (
-                            <p className="text-red-400 text-xs">{errors.description.message}</p>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Input
-                            label={tx('portfolio.form.fields.projectUrl.label')}
-                            placeholder={tx('portfolio.form.fields.projectUrl.placeholder')}
-                            error={errors.project_url?.message}
-                            className={inputClassName}
-                            {...register('project_url')}
-                            dir="ltr"
-                        />
-
-                        <Input
-                            label={tx('portfolio.form.fields.completionDate.label')}
-                            type="date"
-                            error={errors.completion_date?.message}
-                            className={inputClassName}
-                            {...register('completion_date')}
-                        />
-                    </div>
-
-                    <Input
-                        label={tx('portfolio.form.fields.clientName.label', undefined, 'Client / Brand (optional)')}
-                        placeholder={tx('portfolio.form.fields.clientName.placeholder', undefined, 'Example: Acme Corp')}
-                        error={errors.client_name?.message}
-                        className={inputClassName}
-                        {...register('client_name')}
-                    />
-
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-2">
-                            <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">
-                                {tx('portfolio.form.fields.skills.label')}
-                            </label>
-
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs text-[var(--color-text-primary)]/45">
-                                    {selectedSkills.length}/{MAX_SKILLS}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => skillsInputRef.current?.focus()}
-                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
-                                >
-                                    {tx('portfolio.form.skills.edit', undefined, 'Edit')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={clearAllSkills}
-                                    disabled={selectedSkills.length === 0}
-                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                >
-                                    {tx('portfolio.form.skills.clearAll', undefined, 'Delete all')}
-                                </button>
-                            </div>
-                        </div>
-
-                        <input
-                            ref={skillsInputRef}
-                            type="text"
-                            value={skillsQuery}
-                            onChange={(event) => setSkillsQuery(event.target.value)}
-                            placeholder={tx(
-                                'portfolio.form.fields.skills.searchPlaceholder',
-                                undefined,
-                                'Search and select skills...',
-                            )}
-                            className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all"
-                        />
-
-                        {selectedSkills.length > 0 ? (
-                            <div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-[var(--color-bg-subtle)] p-2.5">
-                                {selectedSkills.map((skill) => (
-                                    <button
-                                        key={skill}
-                                        type="button"
-                                        onClick={() => toggleSkill(skill)}
-                                        className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#8B5CF6]/35 bg-[#8B5CF6]/12 px-2.5 py-1 text-xs text-[#c4b5fd] hover:border-[#8B5CF6]/60 hover:text-[var(--color-text-primary)] transition-colors"
-                                        title={tx('portfolio.form.skills.remove', undefined, 'Remove skill')}
-                                    >
-                                        <span className="truncate">{getSkillLabel(skill)}</span>
-                                        <span className="text-[var(--color-text-primary)]/60">×</span>
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="rounded-xl border border-dashed border-white/15 bg-[var(--color-bg-base)] px-3 py-2 text-xs text-[var(--color-text-primary)]/45">
-                                {tx('portfolio.form.skills.noneSelected', undefined, 'No skills selected yet.')}
-                            </div>
-                        )}
-
-                        <div className="max-h-52 overflow-y-auto rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-2.5 space-y-2">
-                            {hasFilteredSkillOptions ? (
-                                SKILL_CATEGORY_ORDER.map((category) => {
-                                    const categoryOptions = filteredSkillsByCategory[category];
-                                    if (categoryOptions.length === 0) {
-                                        return null;
-                                    }
-
-                                    return (
-                                        <div key={category} className="rounded-lg border border-white/10 bg-[var(--color-bg-base)] p-2">
-                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8B5CF6] mb-1.5">
-                                                {getSkillCategoryLabel(category)}
-                                            </p>
-
-                                            <div className="flex flex-wrap gap-2">
-                                                {categoryOptions.map((option) => (
-                                                    <button
-                                                        key={option.value}
-                                                        type="button"
-                                                        onClick={() => toggleSkill(option.value)}
-                                                        className="rounded-full border border-white/15 px-2.5 py-1 text-xs text-[var(--color-text-primary)]/75 hover:border-[#8B5CF6]/50 hover:text-[var(--color-text-primary)] transition-colors"
-                                                        title={option.label}
-                                                    >
-                                                        {option.label}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            ) : (
-                                <p className="px-1 py-1 text-xs text-[var(--color-text-primary)]/45">
-                                    {tx('portfolio.form.skills.noResults', undefined, 'No matching skills found.')}
-                                </p>
-                            )}
-                        </div>
-
-                        {errors.skills_used ? (
-                            <p className="text-red-400 text-xs">{errors.skills_used.message as string}</p>
-                        ) : null}
-                    </div>
-
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-2">
-                            <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">
-                                {tx('portfolio.form.fields.tools.label', undefined, 'Tools used (optional)')}
-                            </label>
-
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs text-[var(--color-text-primary)]/45">
-                                    {selectedTools.length}/{MAX_TOOLS}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => toolsInputRef.current?.focus()}
-                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
-                                >
-                                    {tx('portfolio.form.tools.edit', undefined, 'Edit')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={clearAllTools}
-                                    disabled={selectedTools.length === 0}
-                                    className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                >
-                                    {tx('portfolio.form.tools.clearAll', undefined, 'Delete all')}
-                                </button>
-                            </div>
-                        </div>
-
-                        <input
-                            ref={toolsInputRef}
-                            type="text"
-                            value={toolsQuery}
-                            onChange={(event) => setToolsQuery(event.target.value)}
-                            placeholder={tx(
-                                'portfolio.form.fields.tools.searchPlaceholder',
-                                undefined,
-                                'Search and select tools...',
-                            )}
-                            className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/25 focus:border-[#f59e0b]/70 transition-all"
-                        />
-
-                        {selectedTools.length > 0 ? (
-                            <div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-[var(--color-bg-subtle)] p-2.5">
-                                {selectedTools.map((tool) => (
-                                    <button
-                                        key={tool}
-                                        type="button"
-                                        onClick={() => toggleTool(tool)}
-                                        className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#f59e0b]/35 bg-[#f59e0b]/12 px-2.5 py-1 text-xs text-[#fcd34d] hover:border-[#f59e0b]/60 hover:text-[var(--color-text-primary)] transition-colors"
-                                        title={tx('portfolio.form.tools.remove', undefined, 'Remove tool')}
-                                    >
-                                        <span className="truncate">{getToolLabel(tool)}</span>
-                                        <span className="text-[var(--color-text-primary)]/60">×</span>
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="rounded-xl border border-dashed border-white/15 bg-[var(--color-bg-base)] px-3 py-2 text-xs text-[var(--color-text-primary)]/45">
-                                {tx('portfolio.form.tools.noneSelected', undefined, 'No tools selected yet.')}
-                            </div>
-                        )}
-
-                        <div className="max-h-52 overflow-y-auto rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-2.5 space-y-2">
-                            {hasFilteredToolOptions ? (
-                                TOOL_CATEGORY_ORDER.map((category) => {
-                                    const categoryOptions = filteredToolsByCategory[category];
-                                    if (categoryOptions.length === 0) {
-                                        return null;
-                                    }
-
-                                    return (
-                                        <div key={category} className="rounded-lg border border-white/10 bg-[var(--color-bg-base)] p-2">
-                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#f59e0b] mb-1.5">
-                                                {getToolCategoryLabel(category)}
-                                            </p>
-
-                                            <div className="flex flex-wrap gap-2">
-                                                {categoryOptions.map((option) => (
-                                                    <button
-                                                        key={option.value}
-                                                        type="button"
-                                                        onClick={() => toggleTool(option.value)}
-                                                        className="rounded-full border border-white/15 px-2.5 py-1 text-xs text-[var(--color-text-primary)]/75 hover:border-[#f59e0b]/50 hover:text-[var(--color-text-primary)] transition-colors"
-                                                        title={option.label}
-                                                    >
-                                                        {option.label}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            ) : (
-                                <p className="px-1 py-1 text-xs text-[var(--color-text-primary)]/45">
-                                    {tx('portfolio.form.tools.noResults', undefined, 'No matching tools found.')}
-                                </p>
-                            )}
-                        </div>
-
-                        {errors.tools_used ? (
-                            <p className="text-red-400 text-xs">{errors.tools_used.message as string}</p>
-                        ) : null}
-                    </div>
-
-                    <div className="space-y-2">
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".jpg,.jpeg,.png,.webp"
-                            className="hidden"
-                            onChange={handleImageUpload}
-                        />
-                        <input
-                            ref={additionalImageInputRef}
-                            type="file"
-                            accept=".jpg,.jpeg,.png,.webp"
-                            className="hidden"
-                            onChange={handleAdditionalImageUpload}
-                        />
-
-                        <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">
-                            {tx('portfolio.form.fields.imageUpload.label', undefined, 'Upload preview image')}
-                        </label>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isSubmitting || isUploading}
-                                className="!rounded-xl !border !border-white/15 !bg-white/5 !text-[var(--color-text-primary)]/80 hover:!bg-white/10"
-                            >
-                                {isUploading ? (
-                                    <span className="inline-flex items-center gap-2">
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        {tx('portfolio.form.upload.uploading', undefined, 'Uploading...')}
-                                    </span>
-                                ) : (
-                                    <span className="inline-flex items-center gap-2">
-                                        <Upload className="w-4 h-4" />
-                                        {resolvedPreviewUrl
-                                            ? tx('portfolio.form.upload.edit', undefined, 'Edit image')
-                                            : tx('portfolio.form.upload.action', undefined, 'Upload image')}
-                                    </span>
-                                )}
-                            </Button>
-
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => additionalImageInputRef.current?.click()}
-                                disabled={isSubmitting || isUploading}
-                                className="!rounded-xl !border !border-white/15 !bg-white/5 !text-[var(--color-text-primary)]/80 hover:!bg-white/10"
-                            >
-                                <span className="inline-flex items-center gap-2">
-                                    <Upload className="w-4 h-4" />
-                                    {tx('portfolio.form.upload.addMore', undefined, 'Add image')}
-                                </span>
-                            </Button>
-
-                            <button
-                                type="button"
-                                onClick={clearSelectedImage}
-                                disabled={!resolvedPreviewUrl}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border border-white/15 text-[var(--color-text-primary)]/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                {tx('portfolio.form.upload.delete', undefined, 'Delete image')}
-                            </button>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row gap-2">
-                            <input
-                                type="url"
-                                value={extraImageUrlInput}
-                                onChange={(event) => setExtraImageUrlInput(event.target.value)}
-                                placeholder={tx('portfolio.form.upload.extraUrlPlaceholder', undefined, 'https://image-url.com/preview.jpg')}
-                                className="flex-1 px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all"
-                                dir="ltr"
+                <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        {/* Left column (Content: Title, Description, Media) */}
+                        <div className="lg:col-span-6 lg:sticky lg:top-0 space-y-5">
+                            <Input
+                                label={tx('portfolio.form.fields.title.label')}
+                                placeholder={tx('portfolio.form.fields.title.placeholder')}
+                                error={errors.title?.message}
+                                className={inputClassName}
+                                {...register('title')}
                             />
-                            <button
-                                type="button"
-                                onClick={handleAddExtraImageUrl}
-                                className="px-3 py-2.5 rounded-xl border border-white/15 text-xs text-[var(--color-text-primary)]/75 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
-                            >
-                                {tx('portfolio.form.upload.addUrl', undefined, 'Add URL')}
-                            </button>
-                        </div>
 
-                        {resolvedPreviewUrl ? (
-                            <div className="rounded-xl border border-white/10 overflow-hidden bg-[var(--color-bg-base)] h-40">
-                                <OptimizedImage
-                                    src={resolvedPreviewUrl}
-                                    alt={tx('portfolio.form.upload.previewAlt', undefined, 'Portfolio preview image')}
-                                    className="h-full w-full"
-                                    imgClassName="object-cover"
+                            <div className="space-y-1.5">
+                                <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">
+                                    {tx('portfolio.form.fields.description.label')}
+                                </label>
+                                <textarea
+                                    {...register('description')}
+                                    rows={5}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all resize-none"
+                                    placeholder={tx('portfolio.form.fields.description.placeholder')}
                                 />
+                                {errors.description && (
+                                    <p className="text-red-400 text-xs">{errors.description.message}</p>
+                                )}
                             </div>
-                        ) : null}
 
-                        {extraMediaUrls.length > 0 ? (
-                            <div className="rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-2.5 space-y-2">
-                                <p className="text-xs text-[var(--color-text-primary)]/65">
-                                    {tx('portfolio.form.upload.galleryLabel', undefined, 'Additional images')}
-                                </p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                    {extraMediaUrls.map((url, index) => (
-                                        <div key={`${url}-${index}`} className="relative rounded-lg overflow-hidden border border-white/10 bg-[var(--color-bg-base)] h-24">
-                                            <OptimizedImage
-                                                src={url}
-                                                alt={tx('portfolio.form.upload.previewAlt', undefined, 'Portfolio preview image')}
-                                                className="w-full h-full"
-                                                imgClassName="object-cover"
-                                            />
+                            {/* Media Showcase Panel */}
+                            <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.01] p-4">
+                                <div className="flex items-center justify-between">
+                                    <label className="block text-sm font-semibold text-[var(--color-text-primary)]/90">
+                                        {tx('portfolio.form.fields.imageUpload.label', undefined, 'Project Media & Showcase')}
+                                    </label>
+                                    {isUploading && (
+                                        <span className="flex items-center gap-1.5 text-xs text-purple-400">
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            {tx('portfolio.form.upload.uploading', undefined, 'Uploading Cover...')}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.webp"
+                                    className="hidden"
+                                    onChange={handleImageUpload}
+                                />
+                                <input
+                                    ref={additionalImageInputRef}
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.webp"
+                                    className="hidden"
+                                    onChange={handleAdditionalImageUpload}
+                                />
+
+                                {resolvedPreviewUrl ? (
+                                    <div className="relative h-48 w-full rounded-xl overflow-hidden border border-white/10 group bg-[#111] transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/5">
+                                        <OptimizedImage
+                                            src={resolvedPreviewUrl}
+                                            alt="Portfolio cover"
+                                            className="h-full w-full"
+                                            imgClassName="object-cover transition-transform duration-500 group-hover:scale-103"
+                                        />
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
                                             <button
                                                 type="button"
-                                                onClick={() => removeExtraMediaUrl(index)}
-                                                className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/70 border border-white/20 text-[var(--color-text-primary)]/80 hover:text-red-300 transition-colors inline-flex items-center justify-center"
-                                                title={tx('portfolio.form.upload.remove', undefined, 'Remove')}
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="px-3.5 py-2 rounded-xl bg-white text-black hover:bg-white/90 text-xs font-semibold flex items-center gap-1.5 shadow-lg transition-transform duration-150 active:scale-95"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5" />
+                                                <Upload className="w-3.5 h-3.5" />
+                                                Replace Cover
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={clearSelectedImage}
+                                                className="p-2 rounded-xl bg-red-500/90 text-white hover:bg-red-600 text-xs font-semibold flex items-center justify-center shadow-lg transition-transform duration-150 active:scale-95"
+                                                title="Delete Cover"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : null}
+                                    </div>
+                                ) : (
+                                    <div
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="h-40 w-full border border-dashed border-white/20 hover:border-purple-500/40 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-all flex flex-col items-center justify-center cursor-pointer gap-2 group"
+                                    >
+                                        <span className="p-3 rounded-full bg-white/[0.04] group-hover:bg-purple-500/10 text-white/40 group-hover:text-purple-400 transition-colors">
+                                            <Upload className="w-5 h-5" />
+                                        </span>
+                                        <div className="text-center">
+                                            <p className="text-sm font-semibold text-white/70 group-hover:text-white transition-colors">Upload Cover Image</p>
+                                            <p className="text-[11px] text-white/35 mt-0.5">Drag & drop or click to browse. JPEG, PNG, WEBP (Max 5MB)</p>
+                                        </div>
+                                    </div>
+                                )}
 
-                        {uploadError ? <p className="text-red-400 text-xs">{uploadError}</p> : null}
+                                {/* Image URL Input Drawer - Only show when no cover image is set */}
+                                {!resolvedPreviewUrl && (
+                                    <div className="pt-3 border-t border-white/[0.05]">
+                                        <p className="text-[11px] text-white/40 mb-2 font-medium">Or paste a direct image URL for the cover:</p>
+                                        <input
+                                            type="url"
+                                            placeholder="https://example.com/cover-image.jpg"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/25 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all"
+                                            dir="ltr"
+                                            {...register('media_url')}
+                                        />
+                                        {errors.media_url && (
+                                            <p className="text-red-400 text-xs mt-1">{errors.media_url.message}</p>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="pt-4 border-t border-white/[0.05] space-y-2">
+                                    <p className="text-xs font-semibold text-[var(--color-text-primary)]/75">Project Gallery (Optional)</p>
+                                    
+                                    <div className="grid grid-cols-4 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => additionalImageInputRef.current?.click()}
+                                            className="h-16 border border-dashed border-white/15 hover:border-purple-500/30 rounded-xl flex flex-col items-center justify-center bg-white/[0.01] hover:bg-white/[0.03] text-white/40 hover:text-purple-400 transition-all gap-1"
+                                            title="Add gallery image"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            <span className="text-[9px] font-bold uppercase tracking-wider">Add</span>
+                                        </button>
+
+                                        {extraMediaUrls.map((url, index) => (
+                                            <div key={`${url}-${index}`} className="relative h-16 rounded-xl overflow-hidden border border-white/10 bg-black/40 group">
+                                                <OptimizedImage
+                                                    src={url}
+                                                    alt={`Gallery preview ${index + 1}`}
+                                                    className="w-full h-full"
+                                                    imgClassName="object-cover"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeExtraMediaUrl(index)}
+                                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white hover:text-red-400 transition-opacity"
+                                                    title="Delete image"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex gap-2 mt-2 pt-2">
+                                        <input
+                                            type="url"
+                                            value={extraImageUrlInput}
+                                            onChange={(event) => setExtraImageUrlInput(event.target.value)}
+                                            placeholder="Add extra image URL..."
+                                            className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-white/10 bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/25 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all"
+                                            dir="ltr"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleAddExtraImageUrl}
+                                            className="px-3 py-1.5 rounded-xl border border-white/15 text-xs font-semibold text-[var(--color-text-primary)]/75 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {uploadError && <p className="text-red-400 text-xs mt-1">{uploadError}</p>}
+                            </div>
+                        </div>
+
+                        {/* Right column (Metadata: URL, Date, Brand, Skills, Tools) */}
+                        <div className="lg:col-span-6 space-y-5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Input
+                                    label={tx('portfolio.form.fields.projectUrl.label')}
+                                    placeholder={tx('portfolio.form.fields.projectUrl.placeholder')}
+                                    error={errors.project_url?.message}
+                                    className={inputClassName}
+                                    {...register('project_url')}
+                                    dir="ltr"
+                                />
+
+                                <Input
+                                    label={tx('portfolio.form.fields.completionDate.label')}
+                                    type="date"
+                                    error={errors.completion_date?.message}
+                                    className={inputClassName}
+                                    {...register('completion_date')}
+                                />
+                            </div>
+
+                            <Input
+                                label={tx('portfolio.form.fields.clientName.label', undefined, 'Client / Brand (optional)')}
+                                placeholder={tx('portfolio.form.fields.clientName.placeholder', undefined, 'Example: Acme Corp')}
+                                error={errors.client_name?.message}
+                                className={inputClassName}
+                                {...register('client_name')}
+                            />
+
+                            {/* Skills Used */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                    <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">
+                                        {tx('portfolio.form.fields.skills.label')}
+                                    </label>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-[var(--color-text-primary)]/45">
+                                            {selectedSkills.length}/{MAX_SKILLS}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => skillsInputRef.current?.focus()}
+                                            className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
+                                        >
+                                            {tx('portfolio.form.skills.edit', undefined, 'Edit')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={clearAllSkills}
+                                            disabled={selectedSkills.length === 0}
+                                            className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                        >
+                                            {tx('portfolio.form.skills.clearAll', undefined, 'Delete all')}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <input
+                                    ref={skillsInputRef}
+                                    type="text"
+                                    value={skillsQuery}
+                                    onChange={(event) => setSkillsQuery(event.target.value)}
+                                    placeholder={tx(
+                                        'portfolio.form.fields.skills.searchPlaceholder',
+                                        undefined,
+                                        'Search and select skills...',
+                                    )}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/25 focus:border-[#8B5CF6]/70 transition-all"
+                                />
+
+                                {selectedSkills.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-[var(--color-bg-subtle)] p-2.5">
+                                        {selectedSkills.map((skill) => (
+                                            <button
+                                                key={skill}
+                                                type="button"
+                                                onClick={() => toggleSkill(skill)}
+                                                className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#8B5CF6]/35 bg-[#8B5CF6]/12 px-2.5 py-1 text-xs text-[#c4b5fd] hover:border-[#8B5CF6]/60 hover:text-[var(--color-text-primary)] transition-colors"
+                                                title={tx('portfolio.form.skills.remove', undefined, 'Remove skill')}
+                                            >
+                                                <span className="truncate">{getSkillLabel(skill)}</span>
+                                                <span className="text-[var(--color-text-primary)]/60">×</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="rounded-xl border border-dashed border-white/15 bg-[var(--color-bg-base)] px-3 py-2 text-xs text-[var(--color-text-primary)]/45">
+                                        {tx('portfolio.form.skills.noneSelected', undefined, 'No skills selected yet.')}
+                                    </div>
+                                )}
+
+                                <div className="max-h-36 overflow-y-auto rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-2.5 space-y-2">
+                                    {hasFilteredSkillOptions ? (
+                                        SKILL_CATEGORY_ORDER.map((category) => {
+                                            const categoryOptions = filteredSkillsByCategory[category];
+                                            if (categoryOptions.length === 0) {
+                                                return null;
+                                            }
+
+                                            return (
+                                                <div key={category} className="rounded-lg border border-white/10 bg-[var(--color-bg-base)] p-2">
+                                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8B5CF6] mb-1.5">
+                                                        {getSkillCategoryLabel(category)}
+                                                    </p>
+
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {categoryOptions.map((option) => (
+                                                            <button
+                                                                key={option.value}
+                                                                type="button"
+                                                                onClick={() => toggleSkill(option.value)}
+                                                                className="rounded-full border border-white/15 px-2.5 py-1 text-xs text-[var(--color-text-primary)]/75 hover:border-[#8B5CF6]/50 hover:text-[var(--color-text-primary)] transition-colors"
+                                                                title={option.label}
+                                                            >
+                                                                {option.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="px-1 py-1 text-xs text-[var(--color-text-primary)]/45">
+                                            {tx('portfolio.form.skills.noResults', undefined, 'No matching skills found.')}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {errors.skills_used ? (
+                                    <p className="text-red-400 text-xs">{errors.skills_used.message as string}</p>
+                                ) : null}
+                            </div>
+
+                            {/* Tools Used */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                    <label className="block text-sm font-medium text-[var(--color-text-primary)]/85">
+                                        {tx('portfolio.form.fields.tools.label', undefined, 'Tools used (optional)')}
+                                    </label>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-[var(--color-text-primary)]/45">
+                                            {selectedTools.length}/{MAX_TOOLS}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => toolsInputRef.current?.focus()}
+                                            className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
+                                        >
+                                            {tx('portfolio.form.tools.edit', undefined, 'Edit')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={clearAllTools}
+                                            disabled={selectedTools.length === 0}
+                                            className="text-xs px-2 py-1 rounded-lg border border-white/15 text-[var(--color-text-primary)]/65 hover:text-red-300 hover:border-red-400/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                        >
+                                            {tx('portfolio.form.tools.clearAll', undefined, 'Delete all')}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <input
+                                    ref={toolsInputRef}
+                                    type="text"
+                                    value={toolsQuery}
+                                    onChange={(event) => setToolsQuery(event.target.value)}
+                                    placeholder={tx(
+                                        'portfolio.form.fields.tools.searchPlaceholder',
+                                        undefined,
+                                        'Search and select tools...',
+                                    )}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-white/15 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-[#f59e0b]/25 focus:border-[#f59e0b]/70 transition-all"
+                                />
+
+                                {selectedTools.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-[var(--color-bg-subtle)] p-2.5">
+                                        {selectedTools.map((tool) => (
+                                            <button
+                                                key={tool}
+                                                type="button"
+                                                onClick={() => toggleTool(tool)}
+                                                className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#f59e0b]/35 bg-[#f59e0b]/12 px-2.5 py-1 text-xs text-[#fcd34d] hover:border-[#f59e0b]/60 hover:text-[var(--color-text-primary)] transition-colors"
+                                                title={tx('portfolio.form.tools.remove', undefined, 'Remove tool')}
+                                            >
+                                                <span className="truncate">{getToolLabel(tool)}</span>
+                                                <span className="text-[var(--color-text-primary)]/60">×</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="rounded-xl border border-dashed border-white/15 bg-[var(--color-bg-base)] px-3 py-2 text-xs text-[var(--color-text-primary)]/45">
+                                        {tx('portfolio.form.tools.noneSelected', undefined, 'No tools selected yet.')}
+                                    </div>
+                                )}
+
+                                <div className="max-h-36 overflow-y-auto rounded-xl border border-white/10 bg-[var(--color-bg-base)] p-2.5 space-y-2">
+                                    {hasFilteredToolOptions ? (
+                                        TOOL_CATEGORY_ORDER.map((category) => {
+                                            const categoryOptions = filteredToolsByCategory[category];
+                                            if (categoryOptions.length === 0) {
+                                                return null;
+                                            }
+
+                                            return (
+                                                <div key={category} className="rounded-lg border border-white/10 bg-[var(--color-bg-base)] p-2">
+                                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#f59e0b] mb-1.5">
+                                                        {getToolCategoryLabel(category)}
+                                                    </p>
+
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {categoryOptions.map((option) => (
+                                                            <button
+                                                                key={option.value}
+                                                                type="button"
+                                                                onClick={() => toggleTool(option.value)}
+                                                                className="rounded-full border border-white/15 px-2.5 py-1 text-xs text-[var(--color-text-primary)]/75 hover:border-[#f59e0b]/50 hover:text-[var(--color-text-primary)] transition-colors"
+                                                                title={option.label}
+                                                            >
+                                                                {option.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="px-1 py-1 text-xs text-[var(--color-text-primary)]/45">
+                                            {tx('portfolio.form.tools.noResults', undefined, 'No matching tools found.')}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {errors.tools_used ? (
+                                    <p className="text-red-400 text-xs">{errors.tools_used.message as string}</p>
+                                ) : null}
+                            </div>
+                        </div>
                     </div>
 
-                    <Input
-                        label={tx('portfolio.form.fields.imageUrl.label')}
-                        placeholder={tx('portfolio.form.fields.imageUrl.placeholder')}
-                        error={errors.media_url?.message}
-                        className={inputClassName}
-                        {...register('media_url')}
-                        dir="ltr"
-                    />
-
-                    <div className="pt-4 flex justify-end gap-3">
+                    <div className="pt-4 flex justify-end gap-3 border-t border-white/10">
                         <Button
                             type="button"
                             variant="ghost"

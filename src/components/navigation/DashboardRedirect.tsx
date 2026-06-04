@@ -8,6 +8,7 @@ import {
   shouldRequireUserTypeSelection,
 } from '@/lib/workspaceRoutes';
 import { useWorkspaceStore } from '@/lib/workspaceState';
+import { FullScreenLoader } from '@/components/ui';
 
 export const DashboardRedirect = () => {
   const location = useLocation();
@@ -45,10 +46,13 @@ export const DashboardRedirect = () => {
   }, [retryState, isFullyReady, profile, refreshProfile, user]);
 
   if (!isFullyReady || (user && !profile && retryState !== 'failed')) {
+    const workspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[color:var(--workspace-primary)] border-t-transparent" />
-      </div>
+      <FullScreenLoader
+        label="Redirecting to dashboard"
+        hint="Resolving your workspace selection and checking authentication state."
+        mode={workspace as 'freelancer' | 'client' | 'admin'}
+      />
     );
   }
 

@@ -44,6 +44,7 @@ import {
 } from '@/lib/currencyUtils';
 import { MIN_WITHDRAWAL_AMOUNT } from '@/types/payment';
 import PaymentMethodSelector from '@/components/payment/PaymentMethodSelector';
+import { PaymentMethodCard } from '@/components/payment/PaymentMethodCard';
 import type {
   Transaction,
   TransactionsPage,
@@ -608,25 +609,32 @@ function WithdrawPanel({
             <label className="block text-sm font-semibold text-foreground mb-3">
               {t.wallet?.method || 'Withdrawal Method'} <span className="text-rose-500">*</span>
             </label>
-            <div className="grid grid-cols-3 gap-3">
-              {([['bank_transfer', <Building className="w-5 h-5" />, 'Bank Transfer'], ['d17', <span className="text-sm font-black">D17</span>, 'D17 (La Poste)'], ['flouci', <Phone className="w-5 h-5" />, 'Flouci']] as [WithdrawalMethod, React.ReactNode, string][]).map(([m, icon, label]) => (
-                <button
-                  key={m} type="button"
-                  onClick={() => { setMethod(m); setTouched(false); }}
-                  className={`group relative flex flex-col items-center justify-center gap-2 p-4 min-h-[88px] rounded-2xl border-2 text-center transition-all ${
-                    method === m ? 'border-[color:var(--workspace-primary)]' : 'border-border hover:border-[color:var(--workspace-primary)]/40'
-                  }`}
-                  style={{ background: method === m ? 'var(--workspace-primary-dim)' : 'var(--color-bg-subtle)' }}
-                >
-                  {method === m && (
-                    <span className="absolute top-2 end-2 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'var(--workspace-primary)' }}>
-                      <CheckCircle className="w-3 h-3 text-white" />
-                    </span>
-                  )}
-                  <span style={{ color: method === m ? 'var(--workspace-primary)' : 'var(--color-text-secondary)' }}>{icon}</span>
-                  <span className="text-xs font-semibold" style={{ color: method === m ? 'var(--workspace-primary)' : 'var(--color-text-secondary)' }}>{label}</span>
-                </button>
-              ))}
+            <div className="space-y-2">
+              <PaymentMethodCard
+                id="bank"
+                name="Bank Transfer"
+                description={tx('wallet.bankTransferDesc', undefined, 'Withdraw directly to your local bank account')}
+                status="live"
+                selected={method === 'bank_transfer'}
+                showRadio
+                onSelect={() => { setMethod('bank_transfer'); setTouched(false); }}
+              />
+              <PaymentMethodCard
+                id="d17"
+                name="D17 (La Poste)"
+                description={tx('wallet.d17Desc', undefined, 'Withdraw via e-Dinar. Coming soon.')}
+                status="soon"
+                selected={method === 'd17'}
+                disabled
+              />
+              <PaymentMethodCard
+                id="flouci"
+                name="Flouci"
+                description={tx('wallet.flouciDesc', undefined, 'Withdraw via Flouci mobile wallet. Coming soon.')}
+                status="soon"
+                selected={method === 'flouci'}
+                disabled
+              />
             </div>
           </div>
 

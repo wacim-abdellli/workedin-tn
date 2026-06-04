@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, FileText, Sparkles, User, Search, MessageSquare } from "lucide-react";
+import { Briefcase, FileText, Sparkles, User, Search, MessageSquare, ArrowRight } from "lucide-react";
 
 import { Header } from "../components/layout";
 import SEO, { SEO_CONFIG } from "../components/common/SEO";
@@ -81,6 +81,13 @@ type ProposalRow = {
   proposedRate: string;
   status: string;
 };
+
+function getTimeGreeting(tx: (key: string, params?: any, fallback?: string) => string): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return tx('dashboard.greeting.morning', undefined, 'Good morning');
+  if (hour < 18) return tx('dashboard.greeting.afternoon', undefined, 'Good afternoon');
+  return tx('dashboard.greeting.evening', undefined, 'Good evening');
+}
 
 function proposalStatusLabel(
   status: string,
@@ -525,301 +532,188 @@ function FreelancerDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-base)]">
+    <div className="min-h-screen" style={{ background: 'var(--color-bg-base)' }}>
       <SEO {...SEO_CONFIG.dashboard} url="/freelancer/dashboard" noIndex />
       <Header />
 
-      <main className="min-h-screen bg-[var(--color-bg-base)] pt-6 pb-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-5">
-          {/* ── COMMAND CENTER BANNER ── */}
-          <section 
-            className="relative overflow-hidden border rounded-xl" 
-            style={{ 
-              background: 'radial-gradient(90% 160% at 0% 0%, color-mix(in srgb, var(--workspace-primary) 12%, transparent) 0%, transparent 48%), var(--color-bg-base)',
-              borderColor: 'color-mix(in srgb, var(--workspace-primary) 15%, transparent)'
-            }}
-          >
-            <div 
-              className="pointer-events-none absolute -top-8 right-8 h-20 w-20 rounded-full blur-3xl" 
-              style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}
-            />
+      <main className="pt-8 pb-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-7">
 
-            <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 p-5">
-              <div className="min-w-0 flex items-center gap-4">
-                {profile.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={firstName}
-                    className="h-12 w-12 rounded-full border object-cover ring-2"
-                    style={{ 
-                      borderColor: 'var(--color-border-default)',
-                      ringColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
-                    }}
-                  />
-                ) : (
-                  <div 
-                    className="h-12 w-12 rounded-full border bg-[var(--color-bg-elevated)] flex items-center justify-center ring-2"
-                    style={{ 
-                      borderColor: 'var(--color-border-default)',
-                      ringColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)'
-                    }}
-                  >
-                    <User className="h-5 w-5" style={{ color: 'var(--workspace-primary-mid)' }} />
-                  </div>
+          {/* ── HERO ROW ── */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={firstName}
+                  className="h-14 w-14 rounded-full object-cover shrink-0"
+                  style={{ boxShadow: '0 0 0 3px var(--color-bg-base), 0 0 0 5px color-mix(in srgb, var(--workspace-primary) 40%, transparent)' }}
+                />
+              ) : (
+                <div
+                  className="h-14 w-14 rounded-full flex items-center justify-center shrink-0 text-xl font-bold"
+                  style={{
+                    background: 'color-mix(in srgb, var(--workspace-primary) 12%, var(--color-bg-elevated))',
+                    color: 'var(--workspace-primary)',
+                    boxShadow: '0 0 0 3px var(--color-bg-base), 0 0 0 5px color-mix(in srgb, var(--workspace-primary) 40%, transparent)',
+                  }}
+                >
+                  {firstName[0]}
+                </div>
+              )}
+              <div>
+                <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--workspace-primary)' }}>
+                  {getTimeGreeting(tx)}
+                </p>
+                <h1 className="text-2xl font-bold tracking-tight leading-none" style={{ color: 'var(--color-text-primary)' }}>
+                  {firstName}
+                </h1>
+                {stats?.freelancerTitle && (
+                  <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {stats.freelancerTitle}
+                  </p>
                 )}
-
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Sparkles className="h-3.5 w-3.5" style={{ color: 'var(--workspace-primary)' }} />
-                    <span 
-                      className="text-[10px] font-bold uppercase tracking-wider"
-                      style={{ color: 'color-mix(in srgb, var(--workspace-primary-mid) 80%, transparent)' }}
-                    >
-                      {tx("dashboard.freelancer.commandCenter", undefined, "Freelancer Dashboard")}
-                    </span>
-                  </div>
-                  <h1 
-                    className="text-xl sm:text-2xl font-black tracking-tight truncate leading-none"
-                    style={{ color: 'var(--color-text-primary)' }}
-                  >
-                    {tx("dashboard.freelancer.welcomeBack", undefined, "Welcome back")}, {firstName}
-                  </h1>
-                  <p 
-                    className="text-xs mt-1.5 truncate"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  >
-                    {tx(
-                      "dashboard.freelancer.matchingHint",
-                      { count: jobs.length },
-                      `${jobs.length} fresh job matches are currently visible for you.`,
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-row items-center gap-3 overflow-x-auto pb-1 lg:pb-0 scrollbar-hide shrink-0">
-                <div 
-                  className="rounded-lg border px-4 py-2 min-w-[120px]"
-                  style={{ 
-                    borderColor: 'var(--color-border-subtle)',
-                    background: 'var(--color-bg-subtle)'
-                  }}
-                >
-                  <p 
-                    className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  >
-                    {tx("dashboard.freelancer.dailyApplicationsRemaining", undefined, "Applications")}
-                  </p>
-                  <p 
-                    className="text-lg font-black"
-                    style={{ color: 'var(--color-text-primary)' }}
-                  >
-                    {dailyProposalUsage.remaining}
-                  </p>
-                </div>
-
-                <div 
-                  className="rounded-lg border px-4 py-2 min-w-[120px]"
-                  style={{ 
-                    borderColor: 'var(--color-border-subtle)',
-                    background: 'var(--color-bg-subtle)'
-                  }}
-                >
-                  <p 
-                    className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  >
-                    {tx("dashboard.freelancer.activeContracts", undefined, "Contracts")}
-                  </p>
-                  <p 
-                    className="text-lg font-black"
-                    style={{ color: 'var(--color-text-primary)' }}
-                  >
-                    {activeContractsCount}
-                  </p>
-                </div>
-
-                <div 
-                  className="rounded-lg border px-4 py-2 min-w-[120px]"
-                  style={{ 
-                    borderColor: 'var(--color-border-subtle)',
-                    background: 'var(--color-bg-subtle)'
-                  }}
-                >
-                  <p 
-                    className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  >
-                    {tx("dashboard.freelancer.pendingProposals", undefined, "Pending")}
-                  </p>
-                  <p 
-                    className="text-lg font-black"
-                    style={{ color: 'var(--color-text-primary)' }}
-                  >
-                    {pendingProposalsCount}
-                  </p>
-                </div>
               </div>
             </div>
-          </section>
+            <button
+              type="button"
+              onClick={() => navigate(ROUTES.jobs)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:brightness-110 active:scale-95 shrink-0"
+              style={{
+                background: 'var(--workspace-primary)',
+                boxShadow: '0 4px 14px -4px color-mix(in srgb, var(--workspace-primary) 60%, transparent)',
+              }}
+            >
+              <Search className="w-4 h-4" />
+              {tx('nav.findWork', undefined, 'Find Work')}
+            </button>
+          </div>
 
-          {/* ── MAIN CONTENT GRID ── */}
+          {/* ── 4 STAT TILES ── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div
+              className="rounded-2xl p-5 flex flex-col gap-2"
+              style={{
+                background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--color-bg-elevated))',
+                boxShadow: '0 0 0 1px color-mix(in srgb, var(--workspace-primary) 22%, transparent)',
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 75%, transparent)' }}>Applications</p>
+                <FileText className="w-3.5 h-3.5" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 50%, transparent)' }} />
+              </div>
+              <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--workspace-primary)' }}>{dailyProposalUsage.remaining}</p>
+              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 60%, transparent)' }}>of {dailyProposalUsage.limit} left today</p>
+            </div>
+
+            <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Contracts</p>
+                <Briefcase className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+              </div>
+              <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--color-text-primary)' }}>{activeContractsCount}</p>
+              <p className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>active now</p>
+            </div>
+
+            <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Proposals</p>
+                <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+              </div>
+              <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--color-text-primary)' }}>{pendingProposalsCount}</p>
+              <p className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>awaiting reply</p>
+            </div>
+
+            <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Profile Views</p>
+                <User className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+              </div>
+              <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--color-text-primary)' }}>{profileViewsCount}</p>
+              <p className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>total views</p>
+            </div>
+          </div>
+
+          {/* ── TWO-COLUMN GRID ── */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            {/* Left Column - Primary Content */}
-            <section className="lg:col-span-8 flex flex-col gap-5">
-              
-              {/* Active Contracts */}
-              <div 
-                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden flex flex-col"
-                style={{ borderColor: 'var(--color-border-subtle)' }}
-              >
-                <header 
-                  className="px-5 py-3 border-b flex justify-between items-center"
-                  style={{ 
-                    borderColor: 'var(--color-border-subtle)',
-                    background: 'var(--color-bg-subtle)'
-                  }}
-                >
-                  <h2 
-                    className="text-xs font-bold uppercase tracking-wider"
-                    style={{ color: 'var(--workspace-primary-mid)' }}
-                  >
-                    {tx("dashboard.freelancer.activeContracts", undefined, "Active Contracts")}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/contracts")}
-                    className="text-[11px] font-semibold transition-colors"
-                    style={{ color: 'var(--workspace-primary)' }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
-                  >
-                    {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
-                  </button>
-                </header>
 
+            {/* LEFT: 8 cols */}
+            <section className="lg:col-span-8 flex flex-col gap-5">
+
+              {/* Active Contracts */}
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+                <div className="flex items-center justify-between px-5 pt-5 pb-4">
+                  <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    {tx('dashboard.freelancer.activeContracts', undefined, 'Active Contracts')}
+                  </h2>
+                  <button type="button" onClick={() => navigate('/contracts')} className="text-xs font-medium flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: 'var(--workspace-primary)' }}>
+                    View all <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
                 {isLoading ? (
-                  <div className="p-5 space-y-2">
-                    <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
-                    <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
-                  </div>
+                  <div className="px-5 pb-5 space-y-3">{[1,2].map(i => <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--color-bg-subtle)' }} />)}</div>
                 ) : activeContractRows.length === 0 ? (
-                  <div 
-                    className="px-5 py-6 text-sm text-center"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  >
-                    {tx("dashboard.freelancer.noActiveContracts", undefined, "No active contracts yet.")}
+                  <div className="flex flex-col items-center gap-3 text-center px-5 pb-8 pt-2">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--color-bg-subtle)' }}>
+                      <Briefcase className="w-5 h-5" style={{ color: 'var(--color-text-tertiary)' }} />
+                    </div>
+                    <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No active contracts yet</p>
+                    <button type="button" onClick={() => navigate(ROUTES.jobs)} className="text-xs font-semibold px-4 py-2 rounded-lg text-white transition-all hover:brightness-110" style={{ background: 'var(--workspace-primary)' }}>
+                      Browse Jobs
+                    </button>
                   </div>
                 ) : (
-                  <div className="flex flex-col">
-                    {activeContractRows.map((row, index) => (
-                      <div
+                  <div className="px-5 pb-5 flex flex-col gap-2">
+                    {activeContractRows.map((row) => (
+                      <button
                         key={row.id}
-                        className={`px-5 py-3.5 hover:bg-[var(--color-bg-subtle)] transition-colors flex items-center justify-between gap-3 ${index < activeContractRows.length - 1 ? "border-b" : ""}`}
-                        style={{ borderColor: 'var(--color-border-subtle)' }}
+                        type="button"
+                        onClick={() => navigate(row.submitPath)}
+                        className="group flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl text-left transition-all duration-150 hover:translate-x-0.5 active:scale-[0.99]"
+                        style={{ background: 'var(--color-bg-base)', boxShadow: '0 0 0 1px var(--color-border-subtle)', borderLeft: '3px solid var(--workspace-primary)' }}
                       >
                         <div className="min-w-0">
-                          <p 
-                            className="text-sm font-semibold truncate"
-                            style={{ color: 'var(--color-text-primary)' }}
-                          >
-                            {row.jobTitle}
-                          </p>
-                          <p 
-                            className="text-xs truncate mt-0.5"
-                            style={{ color: 'var(--color-text-tertiary)' }}
-                          >
-                            {row.clientName}
-                          </p>
+                          <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>{row.jobTitle}</p>
+                          <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--color-text-tertiary)' }}>with {row.clientName}</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => navigate(row.submitPath)}
-                          className="shrink-0 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
-                          style={{ 
-                            background: 'var(--color-bg-subtle)',
-                            borderColor: 'var(--color-border-default)',
-                            color: 'var(--color-text-primary)'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
-                        >
-                          {tx("dashboard.freelancer.submitWork", undefined, "Workspace")}
-                        </button>
-                      </div>
+                        <span className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)', color: 'var(--workspace-primary)' }}>
+                          Open <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </button>
                     ))}
                   </div>
                 )}
               </div>
 
               {/* Recent Proposals */}
-              <div 
-                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden flex flex-col"
-                style={{ borderColor: 'var(--color-border-subtle)' }}
-              >
-                <header 
-                  className="px-5 py-3 border-b flex justify-between items-center"
-                  style={{ 
-                    borderColor: 'var(--color-border-subtle)',
-                    background: 'var(--color-bg-subtle)'
-                  }}
-                >
-                  <h2 
-                    className="text-xs font-bold uppercase tracking-wider"
-                    style={{ color: 'var(--workspace-primary-mid)' }}
-                  >
-                    {tx("dashboard.freelancer.recentProposals", undefined, "Recent Proposals")}
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+                <div className="flex items-center justify-between px-5 pt-5 pb-4">
+                  <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    {tx('dashboard.freelancer.recentProposals', undefined, 'Recent Proposals')}
                   </h2>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/my-proposals")}
-                    className="text-[11px] font-semibold transition-colors"
-                    style={{ color: 'var(--workspace-primary)' }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
-                  >
-                    {tx("dashboard.freelancer.viewAll", undefined, "View All")} -&gt;
+                  <button type="button" onClick={() => navigate('/my-proposals')} className="text-xs font-medium flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: 'var(--workspace-primary)' }}>
+                    View all <ArrowRight className="w-3 h-3" />
                   </button>
-                </header>
-
+                </div>
                 {isLoading ? (
-                  <div className="p-5 space-y-2">
-                    <div className="animate-pulse h-10 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
-                    <div className="animate-pulse h-10 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
-                  </div>
+                  <div className="px-5 pb-5 space-y-2">{[1,2,3].map(i => <div key={i} className="h-14 rounded-xl animate-pulse" style={{ background: 'var(--color-bg-subtle)' }} />)}</div>
                 ) : proposalRows.length === 0 ? (
-                  <div 
-                    className="px-5 py-6 text-sm text-center"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  >
-                    {tx("dashboard.freelancer.noProposalsYet", undefined, "No proposals yet.")}
+                  <div className="px-5 pb-8 pt-2 text-center">
+                    <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No proposals submitted yet</p>
                   </div>
                 ) : (
-                  <div className="flex flex-col">
+                  <div className="px-5 pb-5">
                     {proposalRows.map((row, index) => (
                       <div
                         key={row.id}
-                        className={`px-5 py-3 hover:bg-[var(--color-bg-subtle)] transition-colors flex items-center justify-between gap-3 ${index < proposalRows.length - 1 ? "border-b" : ""}`}
+                        className={`flex items-center justify-between gap-3 py-3.5 ${index < proposalRows.length - 1 ? 'border-b' : ''}`}
                         style={{ borderColor: 'var(--color-border-subtle)' }}
                       >
-                        <div className="min-w-0">
-                          <p 
-                            className="text-sm font-medium truncate"
-                            style={{ color: 'var(--color-text-primary)' }}
-                          >
-                            {row.jobTitle}
-                          </p>
-                          <p 
-                            className="text-[11px] mt-0.5"
-                            style={{ color: 'var(--color-text-tertiary)' }}
-                          >
-                            {row.proposedRate}
-                          </p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{row.jobTitle}</p>
+                          <p className="text-xs mt-0.5 font-semibold" style={{ color: 'var(--workspace-primary)' }}>{row.proposedRate}</p>
                         </div>
-                        <span
-                          className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${proposalStatusClass(row.status)}`}
-                        >
+                        <span className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold ${proposalStatusClass(row.status)}`}>
                           {proposalStatusLabel(row.status, tx)}
                         </span>
                       </div>
@@ -828,266 +722,191 @@ function FreelancerDashboardPage() {
                 )}
               </div>
 
-              {/* Matched Jobs */}
-              <div 
-                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden flex flex-col"
-                style={{ borderColor: 'var(--color-border-subtle)' }}
-              >
-                <header 
-                  className="px-5 py-3 border-b flex justify-between items-center"
-                  style={{ 
-                    borderColor: 'var(--color-border-subtle)',
-                    background: 'var(--color-bg-subtle)'
-                  }}
-                >
-                  <h2 
-                    className="text-xs font-bold uppercase tracking-wider"
-                    style={{ color: 'var(--workspace-primary-mid)' }}
-                  >
-                    {tx("dashboard.freelancer.matchedForYou", undefined, "Matched Jobs")}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => navigate(ROUTES.jobs)}
-                    className="text-[11px] font-semibold transition-colors"
-                    style={{ color: 'var(--workspace-primary)' }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
-                  >
-                    {tx("dashboard.freelancer.browseJobs", undefined, "Browse")} -&gt;
-                  </button>
-                </header>
-
-                {isLoadingJobs ? (
-                  <div className="p-5 space-y-2">
-                    <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
-                    <div className="animate-pulse h-12 rounded-lg" style={{ background: 'var(--color-bg-subtle)' }} />
+              {/* Job Matches */}
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+                <div className="flex items-center justify-between px-5 pt-5 pb-4">
+                  <div>
+                    <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      {tx('dashboard.freelancer.matchedForYou', undefined, 'Jobs For You')}
+                    </h2>
+                    {jobs.length > 0 && (
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {jobs.length} fresh match{jobs.length !== 1 ? 'es' : ''} right now
+                      </p>
+                    )}
                   </div>
+                  <button type="button" onClick={() => navigate(ROUTES.jobs)} className="text-xs font-medium flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: 'var(--workspace-primary)' }}>
+                    Browse all <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+                {isLoadingJobs ? (
+                  <div className="px-5 pb-5 space-y-3">{[1,2,3].map(i => <div key={i} className="h-20 rounded-xl animate-pulse" style={{ background: 'var(--color-bg-subtle)' }} />)}</div>
                 ) : jobs.length === 0 ? (
-                  <div 
-                    className="px-5 py-6 text-sm text-center"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  >
-                    {tx("dashboard.freelancer.noMatchesYet", undefined, "No new job matches right now.")}
+                  <div className="px-5 pb-8 pt-2 text-center">
+                    <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No new job matches right now</p>
                   </div>
                 ) : (
-                  <div className="flex flex-col">
-                    {jobs.map((job, index) => (
-                      <button
+                  <div className="px-5 pb-5 flex flex-col gap-2">
+                    {jobs.map((job) => (
+                      <div
                         key={job.id}
-                        type="button"
-                        onClick={() => navigate(`/jobs/${job.id}`)}
-                        className={`w-full text-left px-5 py-3.5 hover:bg-[var(--color-bg-subtle)] transition-colors ${index < jobs.length - 1 ? "border-b" : ""}`}
-                        style={{ borderColor: 'var(--color-border-subtle)' }}
+                        className="flex items-center justify-between gap-4 p-4 rounded-xl"
+                        style={{ background: 'var(--color-bg-base)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}
                       >
-                        <p 
-                          className="text-sm font-semibold truncate"
-                          style={{ color: 'var(--color-text-primary)' }}
-                        >
-                          {job.title}
-                        </p>
-                        <div 
-                          className="mt-1 flex items-center gap-2 text-xs"
-                          style={{ color: 'var(--color-text-tertiary)' }}
-                        >
-                          <span>
-                            {job.category
-                              ? tx(`categories.${job.category}`, undefined, job.category)
-                              : tx("common.general", undefined, "General")}
-                          </span>
-                          <span style={{ color: 'var(--color-border-default)' }}>•</span>
-                          <span 
-                            className="font-medium"
-                            style={{ color: 'var(--color-text-secondary)' }}
-                          >
-                            {formatJobBudget(job, language)}
-                          </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>{job.title}</p>
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            {job.category && (
+                              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 9%, transparent)', color: 'var(--workspace-primary)' }}>
+                                {tx(`categories.${job.category}`, undefined, job.category)}
+                              </span>
+                            )}
+                            <span className="text-xs font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                              {formatJobBudget(job, language)}
+                            </span>
+                          </div>
                         </div>
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/jobs/${job.id}`)}
+                          className="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-lg text-white transition-all hover:brightness-110 active:scale-95"
+                          style={{ background: 'var(--workspace-primary)' }}
+                        >
+                          Apply →
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}
               </div>
+
             </section>
 
-            {/* Right Column - Secondary Content & Widgets */}
-            <aside className="lg:col-span-4 flex flex-col gap-5 sticky top-20">
-              
-              {/* Earnings Widget */}
-              <div 
-                className="rounded-xl border bg-[var(--color-bg-base)] p-5"
-                style={{ borderColor: 'var(--color-border-subtle)' }}
-              >
-                <p 
-                  className="text-[10px] font-bold uppercase tracking-wider"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
-                  {tx("dashboard.freelancer.earningsThisMonth", undefined, "Earnings this month")}
+            {/* RIGHT: Sidebar 4 cols */}
+            <aside className="lg:col-span-4 flex flex-col gap-4 lg:sticky lg:top-20">
+
+              {/* Earnings */}
+              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+                <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {tx('dashboard.freelancer.earningsThisMonth', undefined, 'Earnings This Month')}
                 </p>
-                <p 
-                  className="text-2xl font-black mt-1 leading-none"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
+                <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--color-text-primary)' }}>
                   {monthlyEarningsLabel}
                 </p>
-
-                <p 
-                  className="text-[11px] mt-2"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
-                  {tx(
-                    "dashboard.freelancer.lastMonthReference",
-                    { value: formatCurrency(lastMonthEarnings, true, language) },
-                    `Last month: ${formatCurrency(lastMonthEarnings, true, language)}`,
-                  )}
-                  <br />
-                  {tx(
-                    "dashboard.freelancer.pendingBalanceReference",
-                    { value: formatCurrency(stats?.pendingBalance ?? 0, true, language) },
-                    `Pending: ${formatCurrency(stats?.pendingBalance ?? 0, true, language)}`,
-                  )}
-                </p>
-
+                <div className="mt-4 space-y-2 border-t pt-3" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                  <div className="flex items-center justify-between text-xs">
+                    <span style={{ color: 'var(--color-text-tertiary)' }}>Last month</span>
+                    <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{formatCurrency(lastMonthEarnings, true, language)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span style={{ color: 'var(--color-text-tertiary)' }}>In review</span>
+                    <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{formatCurrency(stats?.pendingBalance ?? 0, true, language)}</span>
+                  </div>
+                </div>
                 <button
                   type="button"
-                  onClick={() => navigate("/wallet")}
-                  className="w-full mt-4 border py-2 rounded-lg text-xs font-bold transition-colors"
-                  style={{ 
-                    background: 'var(--color-bg-subtle)',
-                    borderColor: 'var(--color-border-default)',
-                    color: 'var(--color-text-primary)'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-muted)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-bg-subtle)'}
+                  onClick={() => navigate('/wallet')}
+                  className="w-full mt-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-95"
+                  style={{ background: 'var(--workspace-primary)' }}
                 >
-                  {tx("dashboard.freelancer.withdrawFunds", undefined, "Withdraw Funds")}
+                  {tx('dashboard.freelancer.withdrawFunds', undefined, 'Withdraw Funds')}
                 </button>
               </div>
 
-              {/* Profile Completion Widget */}
+              {/* Daily Quota — segmented bar */}
+              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Daily Applications</p>
+                  <span className="text-xs font-bold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
+                    {dailyProposalUsage.used} / {dailyProposalUsage.limit}
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  {Array.from({ length: dailyProposalUsage.limit }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 h-2 rounded-full transition-all duration-300"
+                      style={{ background: i < dailyProposalUsage.used ? 'var(--workspace-primary)' : 'var(--color-border-subtle)' }}
+                    />
+                  ))}
+                </div>
+                <p className="text-[11px] mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {dailyProposalUsage.remaining} remaining today
+                </p>
+              </div>
+
+              {/* Profile Completion Ring */}
               {profileCompletion < 100 && (
-                <div 
-                  className="rounded-xl border bg-[var(--color-bg-base)] p-5"
-                  style={{ borderColor: 'var(--color-border-subtle)' }}
-                >
-                  <p 
-                    className="text-[10px] font-bold uppercase tracking-wider mb-4"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  >
-                    {tx("dashboard.freelancer.profileCompletion", undefined, "Profile Completion")}
+                <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {tx('dashboard.freelancer.profileCompletion', undefined, 'Profile Strength')}
                   </p>
-                  
                   <div className="flex items-center gap-4">
-                    <div className="relative h-12 w-12 shrink-0">
-                      <svg className="h-12 w-12 -rotate-90 transform" viewBox="0 0 100 100">
+                    <div className="relative h-16 w-16 shrink-0">
+                      <svg className="h-16 w-16 -rotate-90" viewBox="0 0 100 100">
+                        <circle stroke="var(--color-border-subtle)" strokeWidth="7" cx="50" cy="50" r="42" fill="transparent" />
                         <circle
-                          className="stroke-current"
-                          style={{ color: 'var(--color-border-subtle)' }}
-                          strokeWidth="8"
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          fill="transparent"
-                        />
-                        <circle
-                          className="stroke-current transition-all duration-1000 ease-out"
-                          style={{ color: 'var(--workspace-primary)' }}
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                          cx="50"
-                          cy="50"
-                          r="40"
-                          fill="transparent"
-                          strokeDasharray={`${2 * Math.PI * 40}`}
-                          strokeDashoffset={`${2 * Math.PI * 40 * (1 - profileCompletion / 100)}`}
+                          stroke="var(--workspace-primary)" strokeWidth="7" strokeLinecap="round"
+                          cx="50" cy="50" r="42" fill="transparent"
+                          strokeDasharray={`${2 * Math.PI * 42}`}
+                          strokeDashoffset={`${2 * Math.PI * 42 * (1 - completionValue / 100)}`}
+                          className="transition-all duration-1000 ease-out"
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span 
-                          className="text-[10px] font-bold"
-                          style={{ color: 'var(--color-text-primary)' }}
-                        >
-                          {profileCompletion}%
-                        </span>
+                        <span className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{completionValue}%</span>
                       </div>
                     </div>
-                    
-                    <div className="min-w-0">
-                      <p 
-                        className="text-xs font-semibold"
-                        style={{ color: 'var(--color-text-primary)' }}
-                      >
-                        {tx("dashboard.freelancer.completeProfileLabel", undefined, "Complete your profile")}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                        {completionValue < 50 ? 'Getting started' : completionValue < 80 ? 'Almost there' : 'Nearly complete'}
+                      </p>
+                      <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {checklist.filter(i => !i.done).length} item{checklist.filter(i => !i.done).length !== 1 ? 's' : ''} remaining
                       </p>
                       <button
                         type="button"
-                        onClick={() => navigate("/profile")}
-                        className="mt-1 text-[11px] font-medium transition-colors"
+                        onClick={() => navigate(nextProfileFixPath)}
+                        className="mt-2 text-xs font-semibold flex items-center gap-1 transition-opacity hover:opacity-70"
                         style={{ color: 'var(--workspace-primary)' }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary-hover)'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                       >
-                        {tx("dashboard.freelancer.editProfileLink", undefined, "Edit profile")} -&gt;
+                        Complete profile <ArrowRight className="w-3 h-3" />
                       </button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Quick Actions */}
-              <div 
-                className="rounded-xl border bg-[var(--color-bg-base)] overflow-hidden"
-                style={{ borderColor: 'var(--color-border-subtle)' }}
-              >
-                <p 
-                  className="px-5 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider"
-                  style={{ color: 'var(--color-text-tertiary)' }}
-                >
-                  {tx("dashboard.freelancer.quickActions", undefined, "Quick Actions")}
+              {/* Quick Links */}
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+                <p className="px-5 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {tx('dashboard.freelancer.quickActions', undefined, 'Quick Links')}
                 </p>
-                <div className="flex flex-col p-2 pt-0">
+                <div className="pb-2">
                   {[
-                    {
-                      label: tx("nav.findWork", undefined, "Find Work"),
-                      icon: Search,
-                      path: ROUTES.jobs,
-                    },
-                    {
-                      label: tx("nav.contracts", undefined, "Contracts"),
-                      icon: Briefcase,
-                      path: ROUTES.contracts,
-                    },
-                    {
-                      label: tx("nav.messages", undefined, "Messages"),
-                      icon: MessageSquare,
-                      path: ROUTES.messages,
-                    },
-                    {
-                      label: tx("dashboard.freelancer.myProposals", undefined, "My Proposals"),
-                      icon: FileText,
-                      path: ROUTES.myProposals,
-                    },
+                    { label: tx('nav.findWork', undefined, 'Find Work'), icon: Search, path: ROUTES.jobs },
+                    { label: tx('nav.contracts', undefined, 'Contracts'), icon: Briefcase, path: ROUTES.contracts },
+                    { label: tx('nav.messages', undefined, 'Messages'), icon: MessageSquare, path: ROUTES.messages },
+                    { label: tx('dashboard.freelancer.myProposals', undefined, 'My Proposals'), icon: FileText, path: ROUTES.myProposals },
                   ].map((action) => (
                     <button
                       key={action.label}
                       type="button"
                       onClick={() => navigate(action.path)}
-                      className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[var(--color-bg-subtle)] transition-colors text-left"
+                      className="group w-full flex items-center justify-between px-5 py-3 transition-all duration-150"
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-bg-subtle)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                     >
-                      <span 
-                        className="text-xs font-semibold"
-                        style={{ color: 'var(--color-text-secondary)' }}
-                      >
+                      <span className="flex items-center gap-3 text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                        <action.icon className="w-4 h-4 shrink-0" style={{ color: 'var(--color-text-tertiary)' }} />
                         {action.label}
                       </span>
-                      <action.icon 
-                        className="h-3.5 w-3.5"
-                        style={{ color: 'var(--color-text-tertiary)' }}
-                      />
+                      <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--workspace-primary)' }} />
                     </button>
                   ))}
                 </div>
               </div>
+
             </aside>
           </div>
         </div>
@@ -1096,6 +915,4 @@ function FreelancerDashboardPage() {
   );
 }
 
-export default FreelancerDashboardPage;
-
-
+export default FreelancerDashboardPage;

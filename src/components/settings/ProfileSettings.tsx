@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Save, User, Briefcase, Building2, Zap, Check, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslation } from '@/i18n';
@@ -26,24 +26,71 @@ export default function ProfileSettings() {
     const { showToast } = useToast();
     const { tx, t } = useTranslation();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const focusField = searchParams.get('focus');
 
     const isFreelancer = profile?.user_type === 'freelancer' || profile?.user_type === 'both';
     const isClient     = profile?.user_type === 'client'     || profile?.user_type === 'both';
     const isBoth       = profile?.user_type === 'both';
 
-    // Sync the active tab whenever the user switches workspace mode
+    // Sync the active tab whenever the user switches workspace mode or query param
     const computeTab = useCallback((): ProfileTab => {
+        const focus = searchParams.get('focus');
+        if (focus) {
+            const basicFields = ['bio', 'location', 'full_name', 'phone', 'email'];
+            if (basicFields.includes(focus)) {
+                return 'basic';
+            }
+            const freelancerFields = [
+                'title', 'hourly_rate', 'availability', 'skills', 'tools',
+                'industries', 'languages', 'education', 'portfolio_links',
+                'revision_policy', 'project_preferences'
+            ];
+            if (freelancerFields.includes(focus) && isFreelancer) {
+                return 'freelancer';
+            }
+            const clientFields = [
+                'company_name', 'company_website', 'company_industry', 'company_size',
+                'company_role', 'hiring_needs', 'project_budget_preference',
+                'project_timeline_preference', 'communication_preferences',
+                'screening_preferences', 'legal_preferences', 'company', 'preferences'
+            ];
+            if (clientFields.includes(focus) && isClient) {
+                return 'client';
+            }
+        }
         if (activeMode === 'freelancer' && isFreelancer) return 'freelancer';
         if (activeMode === 'client' && isClient) return 'client';
         return 'basic';
-    }, [activeMode, isFreelancer, isClient]);
+    }, [activeMode, isFreelancer, isClient, searchParams]);
 
     const [activeTab, setActiveTab] = useState<ProfileTab>(computeTab);
 
-    // Keep tab in sync whenever the workspace mode changes externally
+    // Keep tab in sync whenever the workspace mode changes externally or searchParams update
     useEffect(() => {
         setActiveTab(computeTab());
-    }, [activeMode]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [activeMode, computeTab]);
+
+    // Scroll to the focused field if specified
+    useEffect(() => {
+        if (!focusField) return;
+
+        const timer = setTimeout(() => {
+            const element = document.getElementById(`field-${focusField}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('animate-highlight-glow');
+                
+                const removeTimer = setTimeout(() => {
+                    element.classList.remove('animate-highlight-glow');
+                }, 2600);
+                
+                return () => clearTimeout(removeTimer);
+            }
+        }, 150);
+
+        return () => clearTimeout(timer);
+    }, [activeTab, focusField]);
 
     // ── Form state (controlled, lifted here so we can do one global save) ──
     const [basicForm,      setBasicForm]      = useState<BasicFormData>(() => buildBasicInitialForm(profile, user?.email));

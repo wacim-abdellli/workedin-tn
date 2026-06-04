@@ -670,26 +670,28 @@ function PaymentSettingsTab({
                 Today, contracts are funded directly during checkout via Dhmad Escrow. No pre-loading needed - just post a job and pay when you hire.
               </p>
             </div>
-            <div className="space-y-2 opacity-55">
-              {[
-                { icon: CreditCard, label: 'Credit / Debit Card', sub: 'Visa, Mastercard, CIB' },
-                { icon: Wallet, label: 'Flouci Top-Up', sub: 'Fund via Flouci mobile wallet' },
-                { icon: Building2, label: 'D17 (La Poste)', sub: 'Fund via e-Dinar account' },
-              ].map(({ icon: Icon, label, sub }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-3 p-3.5 rounded-xl border border-[var(--color-border-subtle)] cursor-not-allowed"
-                >
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `color-mix(in srgb,${accentColor} 10%,transparent)` }}>
-                    <Icon className="w-4 h-4" style={{ color: accentColor }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-on-surface">{label}</p>
-                    <p className="text-xs text-on-surface-muted">{sub}</p>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 shrink-0">SOON</span>
-                </div>
-              ))}
+            <div className="space-y-2">
+              <PaymentMethodCard
+                id="bank"
+                name="Credit / Debit Card"
+                description="Visa, Mastercard, CIB"
+                status="soon"
+                disabled
+              />
+              <PaymentMethodCard
+                id="flouci"
+                name="Flouci Top-Up"
+                description="Fund via Flouci mobile wallet"
+                status="soon"
+                disabled
+              />
+              <PaymentMethodCard
+                id="d17"
+                name="D17 (La Poste)"
+                description="Fund via e-Dinar account"
+                status="soon"
+                disabled
+              />
             </div>
           </div>
         </div>
@@ -881,8 +883,8 @@ export default function Settings() {
   const dashboardPath = activeMode === 'freelancer' ? '/freelancer/dashboard' : '/client/dashboard';
   const publicProfilePath = user?.id
     ? activeMode === 'freelancer'
-      ? `/freelancer/${profile?.username || user.id}`
-      : `/client/${user.id}`
+      ? `/freelancer/${profile?.username || user.id}?preview=public`
+      : `/client/${user.id}?preview=public`
     : dashboardPath;
   const authProvider = user?.app_metadata?.provider || user?.app_metadata?.providers?.[0] || 'email';
   const workspaceLabel = activeMode === 'freelancer' ? 'Freelancer Mode' : 'Client Mode';

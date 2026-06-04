@@ -241,11 +241,6 @@ export const sortConversationsByActivity = (
     contractStatusById: Record<string, string> = {}
 ): import('../services/messages').Conversation[] => {
     return [...items].sort((a, b) => {
-        const aStatus = a.contract_id ? contractStatusById[a.contract_id] ?? '' : '';
-        const bStatus = b.contract_id ? contractStatusById[b.contract_id] ?? '' : '';
-        const aTerminal = TERMINAL_STATUSES.has(aStatus);
-        const bTerminal = TERMINAL_STATUSES.has(bStatus);
-        if (aTerminal !== bTerminal) return aTerminal ? 1 : -1;
         return new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime();
     });
 };

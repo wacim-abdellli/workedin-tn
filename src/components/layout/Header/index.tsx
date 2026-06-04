@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Bookmark,
   Briefcase,
@@ -94,7 +94,15 @@ export default function Header() {
     const handler = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "k") {
         event.preventDefault();
-        setSearchOpen(true);
+        if (window.innerWidth >= 1280) {
+          const input = document.querySelector('.header-search-input') as HTMLInputElement | null;
+          if (input) {
+            input.focus();
+            input.select();
+          }
+        } else {
+          setSearchOpen(true);
+        }
       }
     };
     document.addEventListener("keydown", handler);
@@ -234,22 +242,58 @@ export default function Header() {
               <button onClick={() => setSearchOpen(true)} className="header-icon-btn" aria-label={openSearchLabel}>
                 <Search className="h-4 w-4" />
               </button>
+              {user && (
+                <NotificationBell workspace={resolvedWorkspace} isDark={isDark} variant="icon" />
+              )}
               <button onClick={() => setMobileMenuOpen(true)} className="header-icon-btn" aria-label={openMenuLabel}>
                 <Menu className="h-4 w-4" />
               </button>
             </div>
           </div>
         </div>
+
+        {/* Mobile Horizontal Sub-Navigation Strip */}
+        {navItems && navItems.length > 0 && (
+          <div className="border-t border-white/[0.05] dark:border-white/[0.04] py-1 bg-black/5 dark:bg-white/[0.01]">
+            <div className="mx-auto max-w-[1536px] px-4 sm:px-6">
+              <div className="flex h-9 items-center overflow-x-auto no-scrollbar">
+                <nav className="flex items-center gap-2 min-w-max">
+                  {navItems.map((item) => {
+                    const Icon = item.Icon;
+                    return (
+                      <NavLink
+                        key={item.label}
+                        to={item.href}
+                        className={({ isActive }) =>
+                          `flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                            isActive
+                              ? "text-[var(--workspace-primary)] bg-[color-mix(in srgb,var(--workspace-primary)_12%,transparent)]"
+                              : "text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/[0.04]"
+                          }`
+                        }
+                      >
+                        {Icon && <Icon className="w-3.5 h-3.5" />}
+                        <span>{item.label}</span>
+                      </NavLink>
+                    );
+                  })}
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       <header
         dir={dir}
-        className="desktop-header fixed top-0 left-0 right-0 z-[100] hidden xl:flex h-16 w-full items-center px-8 gap-8 border-b transition-colors duration-300"
+        className="desktop-header fixed top-0 left-0 right-0 z-[100] hidden xl:flex h-16 w-full items-center px-8 gap-8 border-b transition-all duration-300"
         style={{
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.07)' : 'var(--color-border-default)',
-          background: isDark 
-            ? '#0d0d0d'
-            : 'var(--color-background-elevated)',
+          borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)',
+          background: isDark
+            ? 'rgba(9,9,11,0.92)'
+            : 'rgba(255,255,255,0.9)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
         }}
       >
         <div className="flex-none flex items-center">
@@ -264,45 +308,64 @@ export default function Header() {
 
         <HeaderSearch />
 
-        <div className="flex-none flex items-center gap-2">
+        <div className="flex-none flex items-center gap-1.5">
           {user && (
             <>
-              {/* Messages Button - Premium Capsule */}
-              <button
-                onClick={() => navigate("/messages")}
-                className="relative flex items-center justify-center h-10 w-10 rounded-xl border border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c0e] hover:bg-gray-50 dark:hover:bg-[#141414] hover:border-gray-300 dark:hover:border-white/[0.12] shadow-sm transition-all duration-200"
-                style={{
-                  color: isDark ? 'rgba(255, 255, 255, 0.65)' : 'var(--color-text-secondary)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = isDark ? '#ffffff' : 'var(--color-text-primary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = isDark ? 'rgba(255, 255, 255, 0.65)' : 'var(--color-text-secondary)';
-                }}
-                aria-label={t.nav?.messages || "Messages"}
-              >
-                <MessageSquare className="w-[18px] h-[18px]" strokeWidth={2} />
-                {unreadCount > 0 && (
-                  <span 
-                    className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-4.5 rounded-full text-[9px] font-black shadow-md ring-2 ring-white dark:ring-black"
-                    style={{ 
-                      background: 'var(--workspace-primary)',
-                      color: '#ffffff',
-                      padding: unreadCount > 9 ? '0 5px' : '0',
-                    }}
-                  >
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </button>
+              {/* Action button group: messages + notifications */}
+              <div className="flex items-center gap-0.5 rounded-full p-1" style={{
+                background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
+                border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.07)',
+              }}>
 
-              {/* Notifications Button - Clean & Simple */}
-              <NotificationBell workspace={resolvedWorkspace} isDark={isDark} />
+                {/* Messages */}
+                <button
+                  onClick={() => navigate("/messages")}
+                  className="group relative flex items-center justify-center h-9 w-9 rounded-full transition-all duration-200 active:scale-90"
+                  style={{
+                    color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)',
+                  }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget;
+                    el.style.background = isDark
+                      ? 'color-mix(in srgb, var(--workspace-primary) 14%, transparent)'
+                      : 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)';
+                    el.style.color = 'var(--workspace-primary)';
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget;
+                    el.style.background = 'transparent';
+                    el.style.color = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
+                  }}
+                  aria-label={t.nav?.messages || "Messages"}
+                >
+                  <MessageSquare className="w-[17px] h-[17px] transition-transform duration-200 group-hover:scale-110" strokeWidth={2} />
+                  {unreadCount > 0 && (
+                    <span
+                      className="absolute top-0.5 right-0.5 flex items-center justify-center min-w-[16px] h-4 rounded-full text-[9px] font-black leading-none"
+                      style={{
+                        background: 'var(--workspace-primary)',
+                        color: '#fff',
+                        padding: unreadCount > 9 ? '0 4px' : '0',
+                        boxShadow: '0 0 0 2px ' + (isDark ? 'rgba(9,9,11,0.92)' : 'rgba(255,255,255,0.9)'),
+                      }}
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
 
-              <div className="w-px h-5 mx-2.5 bg-gradient-to-b from-transparent via-gray-200 dark:via-white/[0.08] to-transparent" />
+                {/* Notifications */}
+                <NotificationBell workspace={resolvedWorkspace} isDark={isDark} />
+              </div>
 
-              {/* User Profile - Clean & Compact */}
+              {/* Vertical divider */}
+              <div className="w-px h-5 mx-1" style={{
+                background: isDark
+                  ? 'rgba(255,255,255,0.08)'
+                  : 'rgba(0,0,0,0.10)',
+              }} />
+
+              {/* User Profile */}
               <UserMenu isDark={isDark} toggleTheme={toggleTheme} isDesktopCondensed={true} />
             </>
           )}
@@ -320,7 +383,16 @@ export default function Header() {
         toggleTheme={toggleTheme}
       />
 
-      <div className="h-16 md:h-16" />
+      <div className={navItems && navItems.length > 0 ? "h-[104px] xl:h-16" : "h-16"} />
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
       {searchOpen && (
         <Suspense fallback={null}>
           <SearchModal onClose={() => setSearchOpen(false)} />

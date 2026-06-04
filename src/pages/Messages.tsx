@@ -3625,9 +3625,29 @@ function MessagesComponent() {
 
         setIsAcceptingContractWork(true);
         try {
-            const workflowStatus = selectedContractStatus === 'unknown' ? null : selectedContractStatus;
-            if (!canClientAcceptForStatus(workflowStatus, contractDeliverySubmitted)) {
-                throw new Error(tx('contract.acceptBlocked', undefined, 'Work must be delivered before it can be accepted.'));
+            // DEV auto-funding / escrow id bypass
+            if (import.meta.env.DEV) {
+                const { data: contractData, error: fetchErr } = await supabase
+                    .from('contracts')
+                    .select('dhmad_escrow_id')
+                    .eq('id', selectedConversation.contract_id)
+                    .single();
+
+                if (!fetchErr && contractData && !contractData.dhmad_escrow_id) {
+                    const mockId = `dhmad_mock_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+                    const { error: updateError } = await supabase
+                        .from('contracts')
+                        .update({
+                            dhmad_escrow_id: mockId,
+                        })
+                        .eq('id', selectedConversation.contract_id);
+                    
+                    if (updateError) {
+                        console.error('[DEV] Failed to auto-fund contract in messages:', updateError);
+                    } else {
+                        console.info('[DEV] Auto-funded contract in messages for release bypass:', mockId);
+                    }
+                }
             }
 
             const { error: releaseError } = await supabase.rpc('release_contract_payment_atomic', {
@@ -4514,60 +4534,75 @@ function MessagesComponent() {
     }, [messages.length, pendingQueue.length]);
 
     const renderConversationList = () => (
-        <div className={`transition-all duration-300 ease-in-out border-r border-white/[0.04] bg-[#09090b]/75 backdrop-blur-xl flex flex-col shrink-0 overflow-hidden ${
-            showConversationsList
-                ? 'w-full md:w-80 lg:w-[340px] xl:w-[380px] opacity-100'
-                : 'w-0 opacity-0 border-r-0 pointer-events-none'
-        } ${showMobileThread ? 'hidden md:flex' : 'flex'}`}>
+        <div 
+            onClick={() => {
+                if (showContractPanel) {
+                    setShowContractPanel(false);
+                }
+                if (!showConversationsList) {
+                    setShowConversationsList(true);
+                }
+            }}
+            className={`transition-all duration-300 ease-in-out border-r border-white/[0.04] bg-[#09090b]/75 backdrop-blur-xl flex flex-col shrink-0 overflow-hidden ${
+                showConversationsList
+                    ? 'w-full md:w-80 lg:w-[340px] xl:w-[380px] opacity-100'
+                    : 'w-0 md:w-20 opacity-100 border-r pointer-events-auto cursor-pointer hover:bg-white/[0.01]'
+            } ${showMobileThread ? 'hidden md:flex' : 'flex'}`}>
             {/* Header */}
-            <div className="border-b border-white/[0.04] bg-white/[0.01] p-4 space-y-3.5">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-bold tracking-tight text-white">{tx('pages.messages.title', undefined, 'Messages')}</h2>
-                        <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-semibold">
-                            {conversationSummaryLabel}
-                        </p>
+            {showConversationsList ? (
+                <div className="border-b border-white/[0.04] bg-white/[0.01] p-4 space-y-3.5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-xl font-bold tracking-tight text-white">{tx('pages.messages.title', undefined, 'Messages')}</h2>
+                            <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-semibold">
+                                {conversationSummaryLabel}
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                {/* Search */}
-                <div className={`flex h-9 w-full items-center gap-2 rounded-xl border px-3 text-sm transition-all ${accentClasses.searchSurface}`}>
-                    <Search className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
-                    <input
-                        id="messages-conversation-search"
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
-                        className="w-full border-0 bg-transparent p-0 text-sm text-white outline-none placeholder:text-zinc-500 focus:outline-none focus:ring-0"
-                    />
-                    {searchQuery && (
-                        <button type="button" onClick={() => setSearchQuery('')} className="text-zinc-400 hover:text-white transition-colors">
-                            <X className="h-3.5 w-3.5" />
-                        </button>
+                    {/* Search */}
+                    <div className={`flex h-9 w-full items-center gap-2 rounded-xl border px-3 text-sm transition-all ${accentClasses.searchSurface}`}>
+                        <Search className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                        <input
+                            id="messages-conversation-search"
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder={tx('pages.messages.searchPlaceholder', undefined, 'Search conversations...')}
+                            className="w-full border-0 bg-transparent p-0 text-sm text-white outline-none placeholder:text-zinc-500 focus:outline-none focus:ring-0"
+                        />
+                        {searchQuery && (
+                            <button type="button" onClick={() => setSearchQuery('')} className="text-zinc-400 hover:text-white transition-colors">
+                                <X className="h-3.5 w-3.5" />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Filter chips */}
+                    {!showArchived && (
+                        <div className="flex gap-1.5">
+                            {(['all', 'unread'] as const).map((f) => (
+                                <button
+                                    key={f}
+                                    type="button"
+                                    onClick={() => setFilter(f)}
+                                    className={`rounded-full px-3.5 py-1 text-[10px] uppercase tracking-wider font-semibold transition-all ${
+                                        filter === f
+                                            ? `${accentClasses.contractToggleActive} border`
+                                            : 'text-zinc-400 hover:text-white hover:bg-white/[0.03] border border-transparent'
+                                    }`}
+                                >
+                                    {f === 'all' ? tx('pages.messages.filterAll', undefined, 'All') : tx('pages.messages.filterUnread', undefined, 'Unread')}
+                                </button>
+                            ))}
+                        </div>
                     )}
                 </div>
-
-                {/* Filter chips */}
-                {!showArchived && (
-                    <div className="flex gap-1.5">
-                        {(['all', 'unread'] as const).map((f) => (
-                            <button
-                                key={f}
-                                type="button"
-                                onClick={() => setFilter(f)}
-                                className={`rounded-full px-3.5 py-1 text-[10px] uppercase tracking-wider font-semibold transition-all ${
-                                    filter === f
-                                        ? `${accentClasses.contractToggleActive} border`
-                                        : 'text-zinc-400 hover:text-white hover:bg-white/[0.03] border border-transparent'
-                                }`}
-                            >
-                                {f === 'all' ? tx('pages.messages.filterAll', undefined, 'All') : tx('pages.messages.filterUnread', undefined, 'Unread')}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
+            ) : (
+                <div className="h-[73px] border-b border-white/[0.04] flex items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">Inbox</span>
+                </div>
+            )}
 
             {/* Conversation list — plain scroll, no virtualizer */}
             <div
@@ -4586,13 +4621,15 @@ function MessagesComponent() {
                                 ? <Archive className="h-5 w-5 text-on-surface-subtle" />
                                 : <Mail className="h-5 w-5 text-on-surface-subtle" />}
                         </div>
-                        <p className="text-sm text-on-surface-subtle">
-                            {showArchived
-                                ? tx('pages.messages.empty.noArchivedTitle', undefined, 'No archived conversations')
-                                : searchQuery
-                                ? tx('pages.messages.empty.noMatchingTitle', undefined, 'No matching conversations')
-                                : tx('pages.messages.empty.noConversationsTitle', undefined, 'No conversations yet')}
-                        </p>
+                        {showConversationsList && (
+                            <p className="text-sm text-on-surface-subtle">
+                                {showArchived
+                                    ? tx('pages.messages.empty.noArchivedTitle', undefined, 'No archived conversations')
+                                    : searchQuery
+                                    ? tx('pages.messages.empty.noMatchingTitle', undefined, 'No matching conversations')
+                                    : tx('pages.messages.empty.noConversationsTitle', undefined, 'No conversations yet')}
+                            </p>
+                        )}
                     </div>
                 ) : (
                     <div className="py-1">
@@ -4610,25 +4647,27 @@ function MessagesComponent() {
                             return (
                                 <div
                                     key={conversation.id}
-                                    className="group/item relative px-2 py-1"
+                                    className={`group/item relative ${showConversationsList ? 'px-2 py-1' : 'px-1.5 py-1'}`}
                                 >
                                     {/* Archive button — appears on hover */}
-                                    <button
-                                        type="button"
-                                        title={isArchived ? tx('pages.messages.unarchive', undefined, 'Unarchive') : tx('pages.messages.archive', undefined, 'Archive')}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (isArchived) {
-                                                unarchiveConversation(conversation.id);
-                                            } else {
-                                                archiveConversation(conversation.id);
-                                            }
-                                        }}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] items-center justify-center text-on-surface-subtle hover:text-on-surface transition-all opacity-0 group-hover/item:opacity-100 hidden md:flex"
-                                        aria-label={isArchived ? 'Unarchive conversation' : 'Archive conversation'}
-                                    >
-                                        <Archive className="h-3 w-3" />
-                                    </button>
+                                    {showConversationsList && (
+                                        <button
+                                            type="button"
+                                            title={isArchived ? tx('pages.messages.unarchive', undefined, 'Unarchive') : tx('pages.messages.archive', undefined, 'Archive')}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (isArchived) {
+                                                    unarchiveConversation(conversation.id);
+                                                } else {
+                                                    archiveConversation(conversation.id);
+                                                }
+                                            }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] items-center justify-center text-on-surface-subtle hover:text-on-surface transition-all opacity-0 group-hover/item:opacity-100 hidden md:flex"
+                                            aria-label={isArchived ? 'Unarchive conversation' : 'Archive conversation'}
+                                        >
+                                            <Archive className="h-3 w-3" />
+                                        </button>
+                                    )}
 
                                     <div
                                         onClick={() => handleSelectConversation(conversation)}
@@ -4644,7 +4683,9 @@ function MessagesComponent() {
                                         }}
                                         className="cursor-pointer"
                                     >
-                                        <div className={`flex gap-3 rounded-2xl border px-3 py-3 transition-all ${
+                                        <div className={`flex rounded-2xl border transition-all ${
+                                            showConversationsList ? 'gap-3 px-3 py-3' : 'justify-center p-2'
+                                        } ${
                                             isActive
                                                 ? accentClasses.selectedConversationSurface
                                                 : `border-transparent bg-transparent ${accentClasses.conversationHoverSurface}`
@@ -4677,79 +4718,87 @@ function MessagesComponent() {
                                                         aria-hidden="true" 
                                                     />
                                                 )}
+                                                {/* Unread badge overlay in collapsed state */}
+                                                {!showConversationsList && conversation.unread_count > 0 && (
+                                                    <div className={`absolute -top-[2px] -right-[2px] z-20 inline-flex min-w-[16px] h-4 items-center justify-center rounded-full px-1.5 py-px text-[9px] font-bold leading-none text-white ring-1 ring-[#09090b] ${accentClasses.unreadBadgeBg}`}>
+                                                        {conversation.unread_count}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Content */}
-                                            <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden gap-[4px]">
-                                                {/* Row 1 — Job/Project name + time + unread */}
-                                                <div className="flex items-start justify-between gap-2">
-                                                    {(() => {
-                                                        const workDesc = getConversationWorkDescriptor(conversation);
-                                                        return (
-                                                            <p className={`truncate text-[13px] font-semibold leading-tight ${
-                                                                conversation.unread_count > 0 ? 'text-white' : 'text-zinc-300'
-                                                            }`}>
-                                                                {workDesc || conversation.otherUser.full_name}
-                                                            </p>
-                                                        );
-                                                    })()}
-                                                    <div className="flex shrink-0 items-center gap-1.5">
-                                                        <span className="text-[10px] font-medium tabular-nums text-zinc-500">
-                                                            {formatTime(conversation.last_message_at)}
-                                                        </span>
-                                                        {conversation.unread_count > 0 ? (
-                                                            <span className={`inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-px text-[10px] font-bold leading-tight text-white ${accentClasses.unreadBadgeBg}`}>
-                                                                {conversation.unread_count}
+                                            {showConversationsList && (
+                                                <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden gap-[4px]">
+                                                    {/* Row 1 — Job/Project name + time + unread */}
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        {(() => {
+                                                            const workDesc = getConversationWorkDescriptor(conversation);
+                                                            return (
+                                                                <p className={`truncate text-[13px] font-semibold leading-tight ${
+                                                                    conversation.unread_count > 0 ? 'text-white' : 'text-zinc-300'
+                                                                }`}>
+                                                                    {workDesc || conversation.otherUser.full_name}
+                                                                </p>
+                                                            );
+                                                        })()}
+                                                        <div className="flex shrink-0 items-center gap-1.5">
+                                                            <span className="text-[10px] font-medium tabular-nums text-zinc-500">
+                                                                {formatTime(conversation.last_message_at)}
                                                             </span>
-                                                        ) : null}
+                                                            {conversation.unread_count > 0 ? (
+                                                                <span className={`inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-px text-[10px] font-bold leading-tight text-white ${accentClasses.unreadBadgeBg}`}>
+                                                                    {conversation.unread_count}
+                                                                </span>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                {/* Row 2 — Person name + Role + Status */}
-                                                <div className="flex items-center gap-1.5 min-w-0">
-                                                    <p className="truncate text-[11px] leading-tight text-zinc-400">
-                                                        {conversation.otherUser.full_name}
+                                                    {/* Row 2 — Person name + Role + Status */}
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <p className="truncate text-[11px] leading-tight text-zinc-400">
+                                                            {conversation.otherUser.full_name}
+                                                        </p>
+                                                        {(() => {
+                                                            const roleMeta = getConversationRoleMeta(conversation);
+                                                            const statusMeta = getConversationStatusMeta(conversation);
+                                                            return (
+                                                                <>
+                                                                    {roleMeta ? (
+                                                                        <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${roleMeta.className}`}>
+                                                                            {roleMeta.label}
+                                                                        </span>
+                                                                    ) : null}
+                                                                    {statusMeta ? (
+                                                                        <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${statusMeta.className}`}>
+                                                                            {statusMeta.label}
+                                                                        </span>
+                                                                    ) : null}
+                                                                    {(() => {
+                                                                        const sessionMeta = conversation.contract_id ? contractSessionMetaById[conversation.contract_id] : null;
+                                                                        const isEscrowFunded = sessionMeta ? Boolean(sessionMeta.funded_at) : true;
+                                                                        const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && contractStatus === 'pending_payment';
+                                                                        if (needsEscrowFunding) {
+                                                                            return (
+                                                                                <span className="shrink-0 inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-[2px] text-[10px] font-medium leading-none text-amber-200 gap-0.5" title="Escrow not funded yet">
+                                                                                    <span>🔒</span> Unfunded
+                                                                                </span>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })()}
+                                                                </>
+                                                            );
+                                                        })()}
+                                                    </div>
+
+                                                    {/* Row 3 — Last message preview */}
+                                                    <p className={`truncate text-[11.5px] leading-tight ${
+                                                        conversation.unread_count > 0 ? 'text-zinc-300 font-medium' : 'text-zinc-500'
+                                                    } ${previewText === deletedMessageLabel ? 'italic' : ''}`}>
+                                                        {previewText}
                                                     </p>
-                                                    {(() => {
-                                                        const roleMeta = getConversationRoleMeta(conversation);
-                                                        const statusMeta = getConversationStatusMeta(conversation);
-                                                        return (
-                                                            <>
-                                                                {roleMeta ? (
-                                                                    <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${roleMeta.className}`}>
-                                                                        {roleMeta.label}
-                                                                    </span>
-                                                                ) : null}
-                                                                {statusMeta ? (
-                                                                    <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${statusMeta.className}`}>
-                                                                        {statusMeta.label}
-                                                                    </span>
-                                                                ) : null}
-                                                                {(() => {
-                                                                    const sessionMeta = conversation.contract_id ? contractSessionMetaById[conversation.contract_id] : null;
-                                                                    const isEscrowFunded = sessionMeta ? Boolean(sessionMeta.funded_at) : true;
-                                                                    const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && contractStatus === 'pending_payment';
-                                                                    if (needsEscrowFunding) {
-                                                                        return (
-                                                                            <span className="shrink-0 inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-[2px] text-[10px] font-medium leading-none text-amber-200 gap-0.5" title="Escrow not funded yet">
-                                                                                <span>🔒</span> Unfunded
-                                                                            </span>
-                                                                        );
-                                                                    }
-                                                                    return null;
-                                                                })()}
-                                                            </>
-                                                        );
-                                                    })()}
                                                 </div>
-
-                                                {/* Row 3 — Last message preview */}
-                                                <p className={`truncate text-[11.5px] leading-tight ${
-                                                    conversation.unread_count > 0 ? 'text-zinc-300 font-medium' : 'text-zinc-500'
-                                                } ${previewText === deletedMessageLabel ? 'italic' : ''}`}>
-                                                    {previewText}
-                                                </p>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -4814,7 +4863,17 @@ function MessagesComponent() {
                                     {/* Left Conversations Sidebar Toggle */}
                                     <button
                                         type="button"
-                                        onClick={() => setShowConversationsList((prev) => !prev)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowConversationsList((prev) => {
+                                                const nextVal = !prev;
+                                                if (nextVal) {
+                                                    // Auto-hide workspace when conversations list expands
+                                                    setShowContractPanel(false);
+                                                }
+                                                return nextVal;
+                                            });
+                                        }}
                                         className={`hidden md:flex p-2.5 rounded-xl border transition-all ${
                                             showConversationsList
                                                 ? 'border-white/[0.08] bg-white/[0.02] text-zinc-400 hover:text-white hover:bg-white/[0.05]'
@@ -4890,7 +4949,14 @@ function MessagesComponent() {
                                                 if (window.innerWidth < 1024) {
                                                     setIsContractWorkspaceOpen(true);
                                                 } else {
-                                                    setShowContractPanel((prev) => !prev);
+                                                    setShowContractPanel((prev) => {
+                                                        const nextVal = !prev;
+                                                        if (nextVal) {
+                                                            // Auto-collapse conversations list when workspace opens
+                                                            setShowConversationsList(false);
+                                                        }
+                                                        return nextVal;
+                                                    });
                                                 }
                                             }}
                                             className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${

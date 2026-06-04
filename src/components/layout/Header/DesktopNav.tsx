@@ -90,13 +90,11 @@ function SimpleNavItem({ item, workspace }: { item: NavItem; workspace: Workspac
     <NavLink
       to={item.href}
       className={({ isActive }) =>
-        [
-          "flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium",
-          "transition-colors duration-150 whitespace-nowrap",
+        `relative flex items-center gap-1 px-3 py-1.5 rounded-lg text-[13.5px] font-medium transition-all duration-200 select-none ${
           isActive
-            ? accentClass(workspace)
-            : "text-white/55 hover:text-white hover:bg-white/[0.05]",
-        ].join(" ")
+            ? "text-[var(--workspace-primary)] bg-[color-mix(in_srgb,var(--workspace-primary)_9%,transparent)]"
+            : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/[0.05]"
+        }`
       }
     >
       {item.label}
@@ -106,23 +104,45 @@ function SimpleNavItem({ item, workspace }: { item: NavItem; workspace: Workspac
 
 function DropdownMenu({ items }: { items: DropdownItem[] }) {
   return (
-    <div className="absolute top-full left-0 mt-1 w-56 z-50 rounded-xl border border-white/[0.08] bg-[#111111] shadow-2xl shadow-black/50 py-1.5 overflow-hidden invisible opacity-0 translate-y-1 pointer-events-none transition-all duration-150 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto">
-      {items.map((subItem) => (
-        <NavLink
-          key={subItem.label}
-          to={subItem.href}
-          end
-          className="flex items-center gap-3 px-4 py-2.5 text-sm text-white/60 hover:text-white hover:bg-white/[0.05] transition-colors duration-100"
-        >
-          <subItem.icon className="w-4 h-4 text-white/30 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-white/80">{subItem.label}</p>
-            {subItem.description && (
-              <p className="text-xs text-white/35 mt-0.5">{subItem.description}</p>
-            )}
-          </div>
-        </NavLink>
-      ))}
+    <div
+      className="absolute top-full left-0 mt-2.5 w-56 z-50 rounded-xl overflow-hidden
+        invisible opacity-0 translate-y-1 pointer-events-none
+        transition-all duration-200
+        group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto
+        group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto"
+      style={{
+        background: 'rgba(14, 14, 17, 0.96)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        boxShadow: '0 16px 48px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4)',
+        backdropFilter: 'blur(20px)',
+      }}
+    >
+      <div className="py-1.5">
+        {items.map((subItem) => (
+          <NavLink
+            key={subItem.label}
+            to={subItem.href}
+            end
+            className="group/item flex items-center gap-3 px-3.5 py-2.5 transition-colors duration-150 hover:bg-white/[0.05]"
+          >
+            <div
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all duration-150"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                color: 'rgba(255,255,255,0.35)',
+              }}
+            >
+              <subItem.icon className="w-3.5 h-3.5 group-hover/item:text-[var(--workspace-primary)] transition-colors duration-150" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-medium text-zinc-200 group-hover/item:text-white leading-tight transition-colors duration-150">{subItem.label}</p>
+              {subItem.description && (
+                <p className="text-[11px] text-zinc-500 group-hover/item:text-zinc-400 mt-0.5 leading-tight truncate transition-colors duration-150">{subItem.description}</p>
+              )}
+            </div>
+          </NavLink>
+        ))}
+      </div>
     </div>
   );
 }
@@ -143,14 +163,18 @@ function DropdownNavItem({
     <div className="relative group">
       <button
         type="button"
-        className={[
-          "flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium",
-          "transition-colors duration-150 whitespace-nowrap",
-          isActive ? accentClass(workspace) : "text-white/55 hover:text-white hover:bg-white/[0.05]",
-        ].join(" ")}
+        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[13.5px] font-medium transition-all duration-200 select-none ${
+          isActive
+            ? "text-[var(--workspace-primary)] bg-[color-mix(in_srgb,var(--workspace-primary)_9%,transparent)]"
+            : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/[0.05]"
+        }`}
       >
         {item.label}
-        <ChevronDown className="w-3.5 h-3.5 text-white/35 group-hover:text-white/70 group-focus-within:text-white/70 transition-transform duration-150 group-hover:rotate-180 group-focus-within:rotate-180" />
+        <ChevronDown
+          className={`w-3 h-3 ml-0.5 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180 ${
+            isActive ? "opacity-70" : "opacity-40"
+          }`}
+        />
       </button>
       <DropdownMenu items={children} />
     </div>

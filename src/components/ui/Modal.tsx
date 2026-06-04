@@ -9,7 +9,7 @@ interface ModalProps {
     title?: string;
     children: React.ReactNode;
     footer?: React.ReactNode;
-    size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full';
     showCloseButton?: boolean;
     closeOnBackdropClick?: boolean;
     closeOnEscape?: boolean;
@@ -122,6 +122,9 @@ function Modal({
         md: 'sm:max-w-md',
         lg: 'sm:max-w-lg',
         xl: 'sm:max-w-xl',
+        '2xl': 'sm:max-w-2xl',
+        '3xl': 'sm:max-w-3xl',
+        '4xl': 'sm:max-w-4xl',
         full: 'sm:max-w-[calc(100vw-4rem)]',
     };
 

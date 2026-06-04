@@ -122,8 +122,14 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
                         <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                             {form.full_name || tx('settings.userFallback', undefined, 'User')}
                         </h3>
-                        {(profile?.user_type === 'freelancer' || profile?.user_type === 'both') && (
-                            <Button type="button" variant="outline" size="xs" className="h-5 text-xs px-2 py-0 gap-1" onClick={() => navigate(`/freelancer/${profile?.username || user?.id}`)}>
+                        {profile?.user_type && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="xs"
+                                className="h-5 text-xs px-2 py-0 gap-1"
+                                onClick={() => navigate(activeMode === 'freelancer' ? `/freelancer/${profile?.username || user?.id}?preview=public` : `/client/${user?.id}?preview=public`)}
+                            >
                                 <Eye className="w-3 h-3" />
                                 {tx('settings.viewProfile', undefined, 'View public profile')}
                             </Button>
@@ -161,15 +167,17 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <Input
-                        label={tx('settings.fullName', undefined, 'Full name')}
-                        value={form.full_name}
-                        onChange={e => set({ full_name: e.target.value })}
-                        placeholder="e.g. Wissem Abdelali"
-                    />
+                    <div id="field-full_name" className="transition-all duration-300 rounded-xl p-0.5">
+                        <Input
+                            label={tx('settings.fullName', undefined, 'Full name')}
+                            value={form.full_name}
+                            onChange={e => set({ full_name: e.target.value })}
+                            placeholder="e.g. Wissem Abdelali"
+                        />
+                    </div>
 
                     {/* Email field with verification badge below */}
-                    <div className="space-y-1.5">
+                    <div id="field-email" className="space-y-1.5 transition-all duration-300 rounded-xl p-0.5">
                         <Input
                             label={tx('settings.emailOptionalLabel', undefined, 'Email (optional)')}
                             type="email"
@@ -177,14 +185,14 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
                             onChange={e => set({ email: e.target.value })}
                             placeholder="you@example.com"
                         />
-                        <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                        <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium pl-1">
                             <Check className="w-3.5 h-3.5" />
                             <span>{tx('settings.verifiedLoginEmail', undefined, 'Registered login email (Verified)')}</span>
                         </div>
                     </div>
 
                     {/* Phone field with trust badge below */}
-                    <div className="space-y-1.5">
+                    <div id="field-phone" className="space-y-1.5 transition-all duration-300 rounded-xl p-0.5">
                         <Input
                             label={tx('settings.phoneNumberLabel', undefined, 'Phone number')}
                             type="tel"
@@ -195,12 +203,12 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
                             placeholder="+216 XX XXX XXX"
                         />
                         {form.phone ? (
-                            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium pl-1">
                                 <Check className="w-3.5 h-3.5" />
                                 <span>{tx('settings.phoneVerifiedBadge', undefined, 'Verified for project and transaction notifications')}</span>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-medium pl-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
                                 <span>{tx('settings.phoneUnverifiedBadge', undefined, 'Add a number to show a phone-verified trust badge on job posts & profiles')}</span>
                             </div>
@@ -217,7 +225,7 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="relative" style={{ zIndex: 50 }}>
+                    <div id="field-location" className="relative transition-all duration-300 rounded-xl p-0.5" style={{ zIndex: 50 }}>
                         <CustomSelect
                             name="location"
                             label={tx('settings.location', undefined, 'Location')}
@@ -228,7 +236,7 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
                             onChange={value => set({ location: value })}
                         />
                     </div>
-                    <div className="md:col-span-2">
+                    <div id="field-bio" className="md:col-span-2 transition-all duration-300 rounded-xl p-0.5">
                         <Input
                             as="textarea"
                             rows={3}

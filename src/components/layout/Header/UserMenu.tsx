@@ -217,7 +217,8 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
     }
   };
 
-  const workspaceRingClass = isFreelancer ? "ring-purple-500/25" : "ring-amber-500/25";
+  const workspaceRingClass = "ring-2 ring-offset-1 ring-[var(--workspace-primary)]/30";
+  const workspaceRingOffsetClass = isDark ? "ring-offset-[rgba(9,9,11,0.92)]" : "ring-offset-white";
 
   return (
     <div className="relative" ref={userMenuRef}>
@@ -248,50 +249,62 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             setUserMenuOpen((open) => !open);
           }
         }}
-        className="group flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full border border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c0e] hover:bg-gray-50 dark:hover:bg-[#141414] hover:border-gray-300 dark:hover:border-white/[0.12] transition-all duration-200 shadow-sm"
+        className="group flex items-center gap-2 rounded-xl px-2 py-1.5 transition-all duration-200 active:scale-95"
+        style={{
+          background: 'transparent',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'transparent';
+        }}
         aria-expanded={userMenuOpen}
         aria-haspopup="menu"
       >
-        <div className="relative shrink-0 flex items-center">
+        {/* Avatar */}
+        <div className="relative shrink-0">
           {avatarUrl ? (
             <img
               src={avatarUrl}
               alt=""
-              className={`w-8 h-8 rounded-full object-cover ring-2 ${workspaceRingClass}`}
+              className={`w-8 h-8 rounded-full object-cover ${workspaceRingClass} ${workspaceRingOffsetClass}`}
               onError={() => setAvatarFailed(true)}
             />
           ) : (
-            <div 
-              className={`flex w-8 h-8 items-center justify-center rounded-full text-[10px] font-bold ring-2 ${workspaceRingClass}`}
+            <div
+              className={`flex w-8 h-8 items-center justify-center rounded-full text-[11px] font-bold ${workspaceRingClass} ${workspaceRingOffsetClass}`}
               style={{
-                color: isDark ? '#ffffff' : 'var(--color-text-primary)',
-                background: isDark ? 'rgba(255, 255, 255, 0.12)' : 'var(--color-bg-muted)',
+                color: 'var(--workspace-primary)',
+                background: isDark
+                  ? 'color-mix(in srgb, var(--workspace-primary) 12%, rgba(255,255,255,0.05))'
+                  : 'color-mix(in srgb, var(--workspace-primary) 10%, rgba(0,0,0,0.03))',
               }}
             >
               {avatarInitials}
             </div>
           )}
         </div>
-        <div className="flex flex-col items-start leading-none pr-0.5">
-          <span 
-            className="text-[12.5px] font-bold tracking-tight text-gray-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white"
+
+        {/* Name + role */}
+        <div className="flex flex-col items-start leading-none min-w-0">
+          <span
+            className="text-[13px] font-semibold tracking-tight truncate max-w-[80px] transition-colors duration-200"
+            style={{ color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)' }}
           >
             {firstName}
           </span>
-          <span 
-            className={`text-[9.5px] font-bold uppercase tracking-wider mt-0.5 ${
-              isFreelancer 
-                ? 'text-purple-600 dark:text-purple-400' 
-                : 'text-amber-600 dark:text-amber-400'
-            }`}
+          <span
+            className="text-[9px] font-black uppercase tracking-wider mt-0.5 transition-colors duration-200"
+            style={{ color: 'var(--workspace-primary)', opacity: 0.8 }}
           >
             {workspaceLabel}
           </span>
         </div>
-        <ChevronDown 
-          className={`w-3.5 h-3.5 text-gray-400 dark:text-zinc-500 group-hover:text-gray-900 dark:group-hover:text-zinc-100 transition-transform duration-200 ${
-            userMenuOpen ? 'rotate-180' : 'rotate-0'
-          }`}
+
+        <ChevronDown
+          className={`w-3 h-3 shrink-0 transition-all duration-200 ${userMenuOpen ? 'rotate-180' : 'rotate-0'}`}
+          style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}
         />
       </button>
 

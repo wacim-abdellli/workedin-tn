@@ -137,15 +137,17 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <Input
-                        label={tx('profile.headline', undefined, 'Professional title')}
-                        value={form.title}
-                        onChange={e => set({ title: e.target.value })}
-                        placeholder={tx('profile.headlinePlaceholder', undefined, 'UI/UX Designer, Full-stack Developer...')}
-                        leftIcon={<Briefcase className="w-4 h-4 text-purple-400" />}
-                    />
+                    <div id="field-title" className="transition-all duration-300 rounded-xl p-0.5">
+                        <Input
+                            label={tx('profile.headline', undefined, 'Professional title')}
+                            value={form.title}
+                            onChange={e => set({ title: e.target.value })}
+                            placeholder={tx('profile.headlinePlaceholder', undefined, 'UI/UX Designer, Full-stack Developer...')}
+                            leftIcon={<Briefcase className="w-4 h-4 text-purple-400" />}
+                        />
+                    </div>
 
-                    <div className="relative z-40">
+                    <div id="field-availability" className="relative z-40 transition-all duration-300 rounded-xl p-0.5">
                         <CustomSelect
                             name="availability"
                             label={tx('profile.availability', undefined, 'Availability')}
@@ -156,27 +158,31 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                         />
                     </div>
 
-                    <Input
-                        label={tx('onboarding.freelancer.hourlyRateLabel', undefined, `Hourly rate (${tx('common.tnd', undefined, 'TND')}/hr)`)}
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={form.hourly_rate}
-                        onChange={e => set({ hourly_rate: e.target.value })}
-                        placeholder="e.g. 35"
-                        leftIcon={<DollarSign className="w-4 h-4 text-purple-400" />}
-                    />
+                    <div id="field-hourly_rate" className="transition-all duration-300 rounded-xl p-0.5">
+                        <Input
+                            label={tx('onboarding.freelancer.hourlyRateLabel', undefined, `Hourly rate (${tx('common.tnd', undefined, 'TND')}/hr)`)}
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={form.hourly_rate}
+                            onChange={e => set({ hourly_rate: e.target.value })}
+                            placeholder="e.g. 35"
+                            leftIcon={<DollarSign className="w-4 h-4 text-purple-400" />}
+                        />
+                    </div>
 
-                    <Input
-                        label={tx('profile.yearsExperience', undefined, 'Years of experience')}
-                        type="number"
-                        min="0"
-                        value={form.years_experience}
-                        onChange={e => set({ years_experience: e.target.value })}
-                        placeholder="e.g. 3"
-                    />
+                    <div id="field-years_experience" className="transition-all duration-300 rounded-xl p-0.5">
+                        <Input
+                            label={tx('profile.yearsExperience', undefined, 'Years of experience')}
+                            type="number"
+                            min="0"
+                            value={form.years_experience}
+                            onChange={e => set({ years_experience: e.target.value })}
+                            placeholder="e.g. 3"
+                        />
+                    </div>
 
-                    <div className="md:col-span-2">
+                    <div id="field-weekly_availability_hours" className="md:col-span-2 transition-all duration-300 rounded-xl p-0.5">
                         <Input
                             label={tx('profile.weeklyAvailabilityHours', undefined, 'Weekly availability (hrs)')}
                             type="number"
@@ -199,7 +205,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                 </div>
 
                 {/* Skills Section */}
-                <div className="space-y-3">
+                <div id="field-skills" className="space-y-3 transition-all duration-300 rounded-xl p-0.5">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500">
                             Skills you specialize in
@@ -314,7 +320,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                 </div>
 
                 {/* Tools Section */}
-                <div className="space-y-3">
+                <div id="field-tools" className="space-y-3 transition-all duration-300 rounded-xl p-0.5">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500 flex items-center gap-1.5">
                             <Wrench className="w-3.5 h-3.5" />
@@ -341,13 +347,13 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                                 >
                                     {tool}
                                 </button>
-                            );
+                              );
                         })}
                     </div>
                 </div>
 
                 {/* Industries Section */}
-                <div className="space-y-3">
+                <div id="field-industries" className="space-y-3 transition-all duration-300 rounded-xl p-0.5">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500 flex items-center gap-1.5">
                             <Briefcase className="w-3.5 h-3.5" />
@@ -381,7 +387,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
             </div>
 
             {/* Languages Card */}
-            <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
+            <div id="field-languages" className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05] transition-all duration-300">
                 <div className="flex items-center justify-between pb-3 border-b border-gray-150 dark:border-white/[0.04]">
                     <div className="flex items-center gap-2">
                         <Languages className="w-4 h-4 text-purple-500" />
@@ -458,7 +464,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
             </div>
 
             {/* Education Card */}
-            <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
+            <div id="field-education" className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05] transition-all duration-300">
                 <div className="flex items-center justify-between pb-3 border-b border-gray-150 dark:border-white/[0.04]">
                     <div className="flex items-center gap-2">
                         <GraduationCap className="w-4 h-4 text-purple-500" />
@@ -570,33 +576,37 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                 </div>
 
                 <div className="space-y-5">
-                    <Input
-                        label={tx('profile.portfolioLinks', undefined, 'Portfolio links (comma separated)')}
-                        value={form.portfolio_links}
-                        onChange={e => set({ portfolio_links: e.target.value })}
-                        placeholder="https://site.com/work-1, https://behance.net/mywork"
-                        leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
-                    />
+                    <div id="field-portfolio_links" className="transition-all duration-300 rounded-xl p-0.5">
+                        <Input
+                            label={tx('profile.portfolioLinks', undefined, 'Portfolio links (comma separated)')}
+                            value={form.portfolio_links}
+                            onChange={e => set({ portfolio_links: e.target.value })}
+                            placeholder="https://site.com/work-1, https://behance.net/mywork"
+                            leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
+                        />
+                    </div>
 
-                    <Input
-                        as="textarea"
-                        rows={3}
-                        label={tx('profile.revisionPolicy', undefined, 'Revision policy')}
-                        value={form.revision_policy}
-                        onChange={e => set({ revision_policy: e.target.value })}
-                        placeholder={tx('profile.revisionPolicyPlaceholder', undefined, 'e.g. 2 revisions included, additional billed separately.')}
-                        leftIcon={<Repeat className="w-4 h-4 text-purple-400" />}
-                    />
+                    <div id="field-revision_policy" className="transition-all duration-300 rounded-xl p-0.5">
+                        <Input
+                            label={tx('profile.revisionPolicy', undefined, 'Revision policy')}
+                            value={form.revision_policy}
+                            onChange={e => set({ revision_policy: e.target.value })}
+                            placeholder={tx('profile.revisionPolicyPlaceholder', undefined, 'e.g. 2 revisions included, additional billed separately.')}
+                            leftIcon={<Repeat className="w-4 h-4 text-purple-400" />}
+                        />
+                    </div>
 
-                    <Input
-                        as="textarea"
-                        rows={4}
-                        label={tx('profile.projectPreferences', undefined, 'Project preferences')}
-                        value={form.project_preferences}
-                        onChange={e => set({ project_preferences: e.target.value })}
-                        placeholder={tx('profile.projectPreferencesPlaceholder', undefined, 'Describe ideal project size, communication style, and client type.')}
-                        leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
-                    />
+                    <div id="field-project_preferences" className="transition-all duration-300 rounded-xl p-0.5">
+                        <Input
+                            as="textarea"
+                            rows={4}
+                            label={tx('profile.projectPreferences', undefined, 'Project preferences')}
+                            value={form.project_preferences}
+                            onChange={e => set({ project_preferences: e.target.value })}
+                            placeholder={tx('profile.projectPreferencesPlaceholder', undefined, 'Describe ideal project size, communication style, and client type.')}
+                            leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

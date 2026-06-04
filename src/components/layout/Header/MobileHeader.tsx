@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
+  Bell,
   Bookmark,
   LayoutDashboard,
   LogOut,
@@ -23,6 +24,7 @@ import { switchWorkspace } from "@/lib/switchWorkspace";
 import { getInitials, resolveAccountAvatarUrl } from "@/lib/avatar";
 import { hasAdminAccess } from "@/lib/adminAccess";
 import { useToast } from "@/components/ui/Toast";
+import { useNotifications } from "@/contexts/NotificationsContext";
 
 interface NavItem {
   label: string;
@@ -62,6 +64,7 @@ export function MobileHeader({
   const { t, language, setLanguage, dir } = useTranslation();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { unreadCount: notificationUnreadCount } = useNotifications();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -290,6 +293,22 @@ export function MobileHeader({
                       style={{ background: "var(--workspace-primary)" }}
                     >
                       {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  ) : null}
+                </button>
+                <button
+                  onClick={() => { navigate("/notifications"); setMobileMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors relative"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  <Bell className="h-4 w-4 flex-shrink-0" />
+                  {t.notifications?.title || "Notifications"}
+                  {notificationUnreadCount > 0 ? (
+                    <span
+                      className="ms-auto flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
+                      style={{ background: "var(--workspace-primary)" }}
+                    >
+                      {notificationUnreadCount > 99 ? "99+" : notificationUnreadCount}
                     </span>
                   ) : null}
                 </button>

@@ -38,15 +38,15 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
         const colors = variant === 'freelancer'
             ? {
                 icon: 'text-purple-400',
-                optionHover: 'hover:bg-purple-500/20',
-                optionSelected: 'bg-purple-500/30 text-purple-300',
+                optionHover: 'hover:bg-purple-500/10 hover:text-purple-300',
+                optionSelected: 'bg-purple-500/15 text-purple-300 font-semibold',
                 checkIcon: 'text-purple-400',
             }
             : {
-                icon: 'text-[#E8820C]',
-                optionHover: 'hover:bg-[#E8820C]/20',
-                optionSelected: 'bg-[#E8820C]/30 text-amber-300',
-                checkIcon: 'text-[#E8820C]',
+                icon: 'text-[#F59E0B]',
+                optionHover: 'hover:bg-[#F59E0B]/10 hover:text-amber-300',
+                optionSelected: 'bg-[#F59E0B]/15 text-amber-300 font-semibold',
+                checkIcon: 'text-[#F59E0B]',
             };
 
         useEffect(() => {
@@ -141,18 +141,18 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                     {isOpen && (
                         <div 
                             className={`
-                                absolute z-50 w-full mt-2 
-                                bg-[var(--card-bg)] 
-                                border border-[var(--border)]
+                                absolute z-50 w-full mt-1.5 
+                                bg-[#121214]/95 dark:bg-[#121214]/95
+                                border border-zinc-800/80 dark:border-zinc-800/80
                                 rounded-xl 
-                                shadow-2xl shadow-black/50
-                                overflow-hidden
+                                shadow-[0_12px_45px_rgba(0,0,0,0.55)]
+                                p-1.5
                                 animate-in fade-in slide-in-from-top-2 duration-200
-                                backdrop-blur-sm
+                                backdrop-blur-md
                             `}
                             role="listbox"
                         >
-                            <div className="max-h-60 overflow-y-auto py-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                            <div className="max-h-60 overflow-y-auto space-y-0.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                                 {options.map((option) => {
                                     const isSelected = option.value === selectedValue;
                                     return (
@@ -164,13 +164,12 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                                             role="option"
                                             aria-selected={isSelected}
                                             className={`
-                                                w-full px-4 py-3 text-left text-base
+                                                w-full px-3.5 py-2 rounded-lg text-sm text-left
                                                 transition-all duration-150
                                                 flex items-center justify-between gap-3
-                                                font-medium
                                                 ${isSelected 
-                                                    ? `${colors.optionSelected} font-semibold` 
-                                                    : 'text-[var(--text-primary)]'
+                                                    ? `${colors.optionSelected}` 
+                                                    : 'text-zinc-300 hover:text-white'
                                                 }
                                                 ${!option.disabled && !isSelected ? colors.optionHover : ''}
                                                 ${option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -178,7 +177,7 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                                         >
                                             <span className="flex-1 truncate">{option.label}</span>
                                             {isSelected && (
-                                                <Check className={`w-5 h-5 flex-shrink-0 ${colors.checkIcon}`} />
+                                                <Check className={`w-4 h-4 flex-shrink-0 ${colors.checkIcon}`} />
                                             )}
                                         </button>
                                     );

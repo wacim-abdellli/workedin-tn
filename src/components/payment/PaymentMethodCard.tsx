@@ -1,4 +1,5 @@
-import { CheckCircle2, Clock3, ExternalLink, Trash2 } from "lucide-react";
+import { Check, CheckCircle2, Clock3, ExternalLink, Trash2 } from "lucide-react";
+import { useTranslation } from "@/i18n";
 import { PaymentLogo, type PaymentProviderId } from "./PaymentLogo";
 
 export type PaymentMethodStatus = "live" | "soon" | "default";
@@ -19,6 +20,9 @@ type PaymentMethodCardProps = {
   onDelete?: () => void;
   onSelect?: () => void;
   className?: string;
+  recommended?: boolean;
+  features?: string[];
+  showRadio?: boolean;
 };
 
 type StatusCfg = { label: string; cls: string; Icon: React.ComponentType<{ className?: string }> };
@@ -130,15 +134,21 @@ export function PaymentMethodCard({
   onDelete,
   onSelect,
   className = "",
+  recommended = false,
+  features,
+  showRadio = false,
 }: PaymentMethodCardProps) {
+  const { tx } = useTranslation();
   const cfg = status ? getStatusCfg(status, id) : null;
   const theme = CARD_THEME[id];
+
+  const isHighlighted = active || selected;
 
   return (
     <div
       className={[
         "group relative overflow-hidden rounded-2xl border p-4 transition-all duration-200",
-        active ? theme.active : "border-white/10 bg-[var(--color-bg-elevated)]",
+        isHighlighted ? theme.active : "border-white/10 bg-[var(--color-bg-elevated)]",
         selected ? theme.selected : "",
         disabled
           ? theme.disabled
@@ -169,6 +179,11 @@ export function PaymentMethodCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">{name}</h3>
+            {recommended && (
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-400/20">
+                {tx("ui.recommended", undefined, "RECOMMENDED")}
+              </span>
+            )}
             {cfg && (
               <span className={["inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold", cfg.cls].join(" ")}>
                 <cfg.Icon className="h-3 w-3" />
@@ -179,10 +194,41 @@ export function PaymentMethodCard({
           <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[var(--color-text-tertiary)]">
             {description}
           </p>
+
+          {features && features.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2.5">
+              {features.map((feat) => (
+                <span
+                  key={feat}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded-full bg-white/5 text-[var(--color-text-secondary)]"
+                >
+                  <Check className="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" />
+                  {feat}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Action buttons */}
+        {/* Action buttons / selection radio */}
         <div className="flex shrink-0 items-center gap-2">
+          {showRadio && (
+            <div
+              className={[
+                "flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                selected
+                  ? "border-[color:var(--workspace-primary)] bg-[color:var(--workspace-primary)] shadow-[0_0_8px_rgba(var(--workspace-primary-rgb),0.3)]"
+                  : "border-white/20",
+              ].join(" ")}
+              style={{
+                borderColor: selected ? "var(--workspace-primary)" : undefined,
+                background: selected ? "var(--workspace-primary)" : undefined,
+              }}
+            >
+              {selected && <Check className="w-3 h-3 text-white" />}
+            </div>
+          )}
+
           {onWallet && !disabled && (
             <button
               type="button"

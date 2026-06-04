@@ -36,10 +36,12 @@ export function NotificationBell({
     className = '',
     workspace = 'client',
     isDark = false,
+    variant = 'capsule',
 }: {
     className?: string;
     workspace?: 'client' | 'freelancer';
     isDark?: boolean;
+    variant?: 'capsule' | 'icon';
 }) {
     const { t, tx, language } = useTranslation();
     const navigate = useNavigate();
@@ -93,29 +95,42 @@ export function NotificationBell({
 
     return (
         <div ref={dropdownRef} className={`relative ${className}`}>
-            {/* Bell trigger - Premium Capsule */}
+            {/* Bell trigger */}
             <button
                 onClick={() => setIsOpen(v => !v)}
-                className="relative flex items-center justify-center h-10 w-10 rounded-xl border border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#0c0c0e] hover:bg-gray-50 dark:hover:bg-[#141414] hover:border-gray-300 dark:hover:border-white/[0.12] shadow-sm transition-all duration-200"
-                style={{
-                  color: isDark ? 'rgba(255, 255, 255, 0.65)' : 'var(--color-text-secondary)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = isDark ? '#ffffff' : 'var(--color-text-primary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = isDark ? 'rgba(255, 255, 255, 0.65)' : 'var(--color-text-secondary)';
-                }}
+                className={
+                    variant === 'icon'
+                        ? "relative header-icon-btn group"
+                        : "group relative flex items-center justify-center h-9 w-9 rounded-full transition-all duration-200 active:scale-90"
+                }
+                style={
+                    variant !== 'icon' ? {
+                        color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)',
+                    } : undefined
+                }
+                onMouseEnter={variant !== 'icon' ? e => {
+                    e.currentTarget.style.background = isDark
+                        ? 'color-mix(in srgb, var(--workspace-primary) 14%, transparent)'
+                        : 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)';
+                    e.currentTarget.style.color = 'var(--workspace-primary)';
+                } : undefined}
+                onMouseLeave={variant !== 'icon' ? e => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
+                } : undefined}
                 aria-label={`${t.notifications?.title || 'Notifications'}${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
             >
-                <Bell className="w-[18px] h-[18px]" strokeWidth={2} />
+                <Bell className="w-[17px] h-[17px] transition-transform duration-200 group-hover:scale-110" strokeWidth={2} />
                 {unreadCount > 0 && (
-                    <span 
-                      className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-4.5 rounded-full text-[9px] font-black shadow-md ring-2 ring-white dark:ring-black"
-                      style={{ 
+                    <span
+                      className={`absolute flex items-center justify-center min-w-[16px] h-4 rounded-full text-[9px] font-black leading-none ${
+                        variant === 'icon' ? 'top-1.5 right-1.5' : 'top-0.5 right-0.5'
+                      }`}
+                      style={{
                         background: 'var(--workspace-primary)',
-                        color: '#ffffff',
-                        padding: unreadCount > 9 ? '0 5px' : '0',
+                        color: '#fff',
+                        padding: unreadCount > 9 ? '0 4px' : '0',
+                        boxShadow: `0 0 0 2px ${isDark ? 'rgba(9,9,11,0.92)' : 'rgba(255,255,255,0.9)'}`,
                       }}
                     >
                       {unreadCount > 99 ? '99+' : unreadCount}

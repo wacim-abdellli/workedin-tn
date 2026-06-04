@@ -86,14 +86,11 @@ function AppContent() {
   return (
     <div className={`min-h-screen animate-fade-in ${workspaceClass}`}>
       {isWorkspaceSwitching && (
-        <div className={`fixed inset-0 z-50 bg-[var(--page-bg)] flex items-center justify-center transition-opacity duration-150 no-transition ${workspaceClass}`}>
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-[color:var(--workspace-primary)] border-t-transparent animate-spin no-transition" />
-            <p className="text-xs text-[var(--text-muted)]">
-              {tx("workspace.switching", undefined, "Switching workspace...")}
-            </p>
-          </div>
-        </div>
+        <FullScreenLoader
+          label={tx("workspace.switching", undefined, "Switching workspace...")}
+          hint="We are aligning your dashboard configurations and shortcuts."
+          mode={resolvedWorkspace as 'freelancer' | 'client' | 'admin'}
+        />
       )}
       <RouteProgress />
       <ScrollToTop />

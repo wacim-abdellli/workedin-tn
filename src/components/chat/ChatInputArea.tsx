@@ -120,6 +120,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                 {/* Text Input */}
                 <textarea
                     ref={textareaRef}
+                    id="messages-thread-composer-input"
                     value={value}
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}

@@ -207,6 +207,10 @@ function getAvatarUpdateErrorMessage(error: unknown): string {
 }
 
 function getFreelancerIntro(projectPreferences: unknown, fallbackBio: string | null | undefined): string {
+    if (typeof fallbackBio === 'string' && fallbackBio.trim().length > 0) {
+        return fallbackBio.trim();
+    }
+
     const preferences = toRecord(projectPreferences);
     const intro = preferences.bio;
 
@@ -214,7 +218,7 @@ function getFreelancerIntro(projectPreferences: unknown, fallbackBio: string | n
         return intro.trim();
     }
 
-    return fallbackBio?.trim() || '';
+    return '';
 }
 
 type WorkSample = FreelancerData['work_samples'][number];
@@ -366,6 +370,12 @@ function ProfileView({
     const [activeWorkSampleId, setActiveWorkSampleId] = useState<string | null>(null);
     const [activeWorkImageIndex, setActiveWorkImageIndex] = useState(0);
     const [deletingWorkSampleId, setDeletingWorkSampleId] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const [localTime, setLocalTime] = useState(() => {
         return new Date().toLocaleTimeString('en-US', {
@@ -693,39 +703,45 @@ function ProfileView({
 
   return (
     <div className="min-h-screen w-full bg-[#f9fafb] dark:bg-black py-6 px-2 sm:px-4 transition-colors duration-200">
-      <div className="max-w-[1400px] mx-auto bg-white dark:bg-[#0c0c0e] border border-gray-200 dark:border-[#2d2d2d] rounded-2xl shadow-sm overflow-hidden transition-colors duration-200">
+      <div className="max-w-[1400px] mx-auto bg-white dark:bg-[#0c0c0e] border border-gray-200 dark:border-[#2d2d2d] rounded-2xl shadow-sm overflow-hidden transition-colors duration-200 relative">
         
         {/* ─── Profile Header ────────────────────────────────────────────── */}
-        <header className="p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 flex-1 w-full">
-            {/* Avatar block with green dot */}
+        <header className="relative p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
+          {/* Ambient Glows */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/5 dark:bg-[#8B5CF6]/5 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-60 h-60 bg-blue-500/5 dark:bg-[#3B82F6]/5 rounded-full blur-[80px] pointer-events-none" />
+          
+          <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6 flex-1 w-full">
+            {/* Avatar block with green dot and gradient ambient border */}
             <div className="relative group shrink-0">
+              <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#D946EF] opacity-20 group-hover:opacity-70 blur-sm transition duration-500" />
               {freelancer.avatar_url ? (
                 <img
                   src={freelancer.avatar_url}
                   alt={freelancer.full_name}
-                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border border-gray-200 dark:border-[#2d2d2d]"
+                  className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border border-gray-200 dark:border-[#2d2d2d] bg-white dark:bg-[#0c0c0e]"
                 />
               ) : (
                 <div
-                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center text-3xl font-bold text-white select-none"
+                  className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center text-3xl font-bold text-white select-none"
                   style={{ background: '#10B981' }}
                 >
                   {initialAvatar}
                 </div>
               )}
               
-              {/* Availability Status Dot */}
+              {/* Availability Status Dot with breathing pulse */}
               {isOnline(freelancer.id) && (
-                <span
-                  className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-[3px] border-white dark:border-[#0c0c0e] bg-[#10B981]"
-                  aria-hidden="true"
-                />
+                <span className="absolute bottom-1 right-1 w-4 h-4 shrink-0 flex items-center justify-center">
+                  <span className="animate-ping absolute inline-flex h-4 w-4 rounded-full bg-[#10B981] opacity-40" />
+                  <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-[#10B981] opacity-75" style={{ animationDelay: '500ms', animationDuration: '2s' }} />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#10B981] border border-white dark:border-[#0c0c0e]" />
+                </span>
               )}
 
               {/* Camera overlay for avatar upload (owner only) */}
               {isOwner && typeof onSaveAvatar === 'function' && (
-                <label className="absolute inset-0 rounded-full flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
+                <label className="absolute inset-0 rounded-full flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer z-10">
                   {savingAvatar ? (
                     <Loader2 className="w-6 h-6 text-white animate-spin" />
                   ) : (
@@ -791,7 +807,7 @@ function ProfileView({
           </div>
 
           {/* Action buttons (Right side) */}
-          <div className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end mt-4 md:mt-0 shrink-0 flex-wrap">
+          <div className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end mt-4 md:mt-0 shrink-0 flex-wrap z-10">
             {isOwner ? (
               <button
                 type="button"
@@ -834,12 +850,27 @@ function ProfileView({
               type="button"
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
+                setCopied(true);
                 showToast(tx('pages.freelancerProfile.toasts.linkCopied', undefined, 'Profile link copied to clipboard'), 'success');
+                setTimeout(() => setCopied(false), 2000);
               }}
-              className="rounded-full border border-gray-300 dark:border-[#2d2d2d] hover:bg-gray-50 dark:hover:bg-[#161618] text-gray-700 dark:text-zinc-300 px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
+              className={`rounded-full border px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-300 transform active:scale-95 ${
+                copied 
+                  ? 'bg-green-500/10 border-green-500/30 text-green-600 dark:text-green-400' 
+                  : 'border-gray-300 dark:border-[#2d2d2d] hover:bg-gray-50 dark:hover:bg-[#161618] text-gray-700 dark:text-zinc-300'
+              }`}
             >
-              <Share2 className="w-3.5 h-3.5" />
-              Share
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-3.5 h-3.5" />
+                  Share
+                </>
+              )}
             </button>
           </div>
         </header>
@@ -847,8 +878,10 @@ function ProfileView({
         {/* Divider */}
         <div className="border-b border-gray-200 dark:border-[#2d2d2d]" />
 
-        {/* ─── Two-Column Split Grid ─────────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-4">
+        {/* ─── Two-Column Split Grid with Mount Transition ───────────────── */}
+        <div className={`grid grid-cols-1 lg:grid-cols-4 transition-all duration-700 transform ${
+          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+        }`}>
           
           {/* ─── Left Column (3/4 width) ──────────────────────────────────── */}
           <main className="lg:col-span-3 flex flex-col divide-y divide-gray-200 dark:divide-[#2d2d2d]">
@@ -871,7 +904,7 @@ function ProfileView({
                   {isOwner && (
                     <button
                       type="button"
-                      onClick={() => navigate('/settings?tab=profile')}
+                      onClick={() => navigate('/settings?tab=profile&focus=title')}
                       className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
                       aria-label="Edit title and rate"
                     >
@@ -889,7 +922,7 @@ function ProfileView({
               {isOwner && !freelancer.bio && (
                 <button
                   type="button"
-                  onClick={() => navigate('/settings?tab=profile')}
+                  onClick={() => navigate('/settings?tab=profile&focus=bio')}
                   className="text-sm font-semibold text-[#8B5CF6] hover:underline self-start"
                 >
                   + Add description
@@ -906,7 +939,7 @@ function ProfileView({
                 {isOwner && (
                   <button
                     type="button"
-                    onClick={() => navigate('/settings?tab=profile')}
+                    onClick={() => navigate('/settings?tab=profile&focus=skills')}
                     className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
                     aria-label="Edit skills and tools"
                   >
@@ -926,7 +959,7 @@ function ProfileView({
                       {freelancer.skills.map((skill) => (
                         <span
                           key={skill.id}
-                          className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
+                          className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:scale-105 hover:bg-[#8B5CF6]/5 hover:border-[#8B5CF6]/40 dark:hover:bg-[#8B5CF6]/10 dark:hover:border-[#a78bfa]/40 transition-all duration-200"
                         >
                           {getFreelancerSkillName(skill)}
                         </span>
@@ -945,7 +978,7 @@ function ProfileView({
                       {freelancer.tools.map((tool) => (
                         <span
                           key={tool}
-                          className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
+                          className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:scale-105 hover:bg-[#8B5CF6]/5 hover:border-[#8B5CF6]/40 dark:hover:bg-[#8B5CF6]/10 dark:hover:border-[#a78bfa]/40 transition-all duration-200"
                         >
                           {tool}
                         </span>
@@ -964,7 +997,7 @@ function ProfileView({
                       {freelancer.industries.map((industry) => (
                         <span
                           key={industry}
-                          className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-[#2d2d2d] hover:border-gray-300 dark:hover:border-zinc-700 transition-colors"
+                          className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:scale-105 hover:bg-[#8B5CF6]/5 hover:border-[#8B5CF6]/40 dark:hover:bg-[#8B5CF6]/10 dark:hover:border-[#a78bfa]/40 transition-all duration-200"
                         >
                           {industry}
                         </span>
@@ -984,7 +1017,7 @@ function ProfileView({
                 {isOwner && (
                   <button
                     type="button"
-                    onClick={() => navigate('/settings?tab=profile')}
+                    onClick={() => navigate('/settings?tab=profile&focus=project_preferences')}
                     className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
                     aria-label="Edit project preferences"
                   >
@@ -994,7 +1027,7 @@ function ProfileView({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30">
+                <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30 hover:-translate-y-0.5 hover:border-[#8B5CF6]/20 hover:shadow-sm transition-all duration-300">
                   <h4 className="font-semibold text-gray-800 dark:text-zinc-200 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-[#8B5CF6]" />
                     Revision Policy
@@ -1004,7 +1037,7 @@ function ProfileView({
                   </p>
                 </div>
 
-                <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30">
+                <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30 hover:-translate-y-0.5 hover:border-[#8B5CF6]/20 hover:shadow-sm transition-all duration-300">
                   <h4 className="font-semibold text-gray-800 dark:text-zinc-200 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-[#8B5CF6]" />
                     Project Preferences
@@ -1044,7 +1077,7 @@ function ProfileView({
                     return (
                       <article
                         key={item.id}
-                        className="group flex flex-col border border-gray-200 dark:border-[#2d2d2d] rounded-xl overflow-hidden bg-white dark:bg-[#0c0c0e] hover:border-gray-300 dark:hover:border-[#2d2d2d] transition-all duration-200"
+                        className="group flex flex-col border border-gray-200 dark:border-[#2d2d2d] rounded-xl overflow-hidden bg-white dark:bg-[#0c0c0e] hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/50 hover:border-[#8B5CF6]/30 transition-all duration-300"
                       >
                         {/* Image wrapper */}
                         <div className="relative h-44 w-full bg-gray-50 dark:bg-black overflow-hidden border-b border-gray-200 dark:border-[#2d2d2d]">
@@ -1204,15 +1237,15 @@ function ProfileView({
 
                 <div className="space-y-2 flex-1">
                   {reviewBuckets.map(({ score, pct }) => (
-                    <div key={score} className="flex items-center gap-3 text-xs">
+                    <div key={score} className="flex items-center gap-3 text-xs group">
                       <span className="w-3 text-gray-500 dark:text-zinc-400">{score}</span>
                       <div className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-[#161618] overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-[#8B5CF6] transition-all duration-500"
+                          className="h-full rounded-full bg-[#8B5CF6] transition-all duration-500 group-hover:brightness-110"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="w-8 text-right text-gray-400 dark:text-zinc-500">{pct}%</span>
+                      <span className="w-8 text-right text-gray-400 dark:text-zinc-500 group-hover:text-[#8B5CF6] group-hover:font-medium transition-all">{pct}%</span>
                     </div>
                   ))}
                 </div>
@@ -1264,7 +1297,7 @@ function ProfileView({
                 {isOwner && (
                   <button
                     type="button"
-                    onClick={() => navigate('/settings?tab=profile')}
+                    onClick={() => navigate('/settings?tab=profile&focus=availability')}
                     className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
                     aria-label="Edit availability settings"
                   >
@@ -1332,7 +1365,7 @@ function ProfileView({
                 {isOwner && (
                   <button
                     type="button"
-                    onClick={() => navigate('/settings?tab=profile')}
+                    onClick={() => navigate('/settings?tab=profile&focus=portfolio_links')}
                     className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
                     aria-label="Edit portfolio links"
                   >
@@ -1353,7 +1386,7 @@ function ProfileView({
                           href={cleanLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm text-[#8B5CF6] dark:text-[#a78bfa] hover:underline"
+                          className="flex items-center gap-2 text-sm text-[#8B5CF6] dark:text-[#a78bfa] hover:underline hover:translate-x-1 transition-transform duration-200"
                         >
                           <Globe className="w-4 h-4 shrink-0 text-gray-400 dark:text-zinc-500" />
                           <span className="truncate">{displayLabel}</span>
@@ -1369,7 +1402,7 @@ function ProfileView({
                   {isOwner && (
                     <button
                       type="button"
-                      onClick={() => navigate('/settings?tab=profile')}
+                      onClick={() => navigate('/settings?tab=profile&focus=portfolio_links')}
                       className="text-xs font-semibold text-[#8B5CF6] hover:underline mt-1"
                     >
                       + Add portfolio links
@@ -1441,7 +1474,7 @@ function ProfileView({
                 {isOwner && (
                   <button
                     type="button"
-                    onClick={() => navigate('/settings?tab=profile')}
+                    onClick={() => navigate('/settings?tab=profile&focus=languages')}
                     className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
                     aria-label="Edit languages"
                   >
@@ -1473,7 +1506,7 @@ function ProfileView({
                 {isOwner && (
                   <button
                     type="button"
-                    onClick={() => navigate('/settings?tab=profile')}
+                    onClick={() => navigate('/settings?tab=profile&focus=education')}
                     className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
                     aria-label="Add education"
                   >
@@ -1498,7 +1531,7 @@ function ProfileView({
                   {isOwner && (
                     <button
                       type="button"
-                      onClick={() => navigate('/settings?tab=profile')}
+                      onClick={() => navigate('/settings?tab=profile&focus=education')}
                       className="text-xs font-semibold text-[#8B5CF6] hover:underline mt-1"
                     >
                       + Add education details
@@ -1757,25 +1790,30 @@ export default function FreelancerProfile() {
         }
 
         const normalizedBio = bio.trim();
-        const currentPreferences = toRecord(freelancer?.project_preferences);
-        const nextPreferences: Record<string, unknown> = {
-            ...currentPreferences,
-        };
 
-        if (normalizedBio) {
-            nextPreferences.bio = normalizedBio;
-        } else {
-            delete nextPreferences.bio;
+        // 1. Update profiles table bio (the single source of truth)
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .update({ bio: normalizedBio })
+            .eq('id', user.id);
+
+        if (profileError) {
+            logger.error('Error updating profile bio in profiles table', profileError);
+            throw profileError;
         }
 
-        const { error } = await supabase
+        // 2. Clear bio from freelancer_profiles project_preferences to prevent shadowing
+        const currentPreferences = toRecord(freelancer?.project_preferences);
+        const nextPreferences = { ...currentPreferences };
+        delete nextPreferences.bio;
+
+        const { error: prefsError } = await supabase
             .from('freelancer_profiles')
             .update({ project_preferences: nextPreferences })
             .eq('id', user.id);
 
-        if (error) {
-            logger.error('Error updating profile bio', error);
-            throw error;
+        if (prefsError) {
+            logger.error('Error clearing profile bio from project_preferences', prefsError);
         }
 
         setFreelancer((prev) => {

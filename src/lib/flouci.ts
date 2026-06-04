@@ -43,11 +43,12 @@ export async function initiatePayment(
     if (IS_DEV_MODE) {
         logger.log('[Flouci] Running in DEV mode - returning mock payment');
         const mockPaymentId = `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const separator = payment.success_link.includes('?') ? '&' : '?';
 
         return {
             payment_id: mockPaymentId,
             // In dev mode, redirect directly to success page
-            link: `${payment.success_link}&payment_id=${mockPaymentId}`,
+            link: `${payment.success_link}${separator}payment_id=${mockPaymentId}`,
         };
     }
 

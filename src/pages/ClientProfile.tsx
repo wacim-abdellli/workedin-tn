@@ -1,4 +1,4 @@
-﻿  import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import SEO, { SEO_CONFIG } from "@/components/common/SEO";
 import {
@@ -23,6 +23,11 @@ import {
   Eye,
   Globe,
   Loader2,
+  Camera,
+  Check,
+  Share2,
+  Clock,
+  ExternalLink,
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import { supabase } from "@/lib/supabase";
@@ -38,12 +43,10 @@ import { localizeGovernorate, getLocalizedGovernorateOptions } from "@/lib/gover
 import { useToast } from "@/components/ui/Toast";
 import { GOVERNORATES } from "@/types";
 import { Skeleton } from "@/components/common/SkeletonCard";
-import { ProfileHero } from "@/components/profile/ProfileHero";
-import { ProfileStatBar } from "@/components/profile/ProfileStatBar";
-import { ProfileSection, ProfileTag, ProfileEmptySlot } from "@/components/profile/ProfileSection";
-import { ProfileActionSidebar } from "@/components/profile/ProfileActionSidebar";
+import { uploadAvatar } from "@/services/profiles";
+import { usePresence } from "@/hooks/usePresence";
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// === Types ===
 
 interface ClientProfileData {
   id: string;
@@ -87,7 +90,7 @@ interface RecentJob {
   proposals_count: number | null;
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// === Helpers ===
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString(undefined, {
@@ -104,7 +107,6 @@ function toRecord(value: unknown): Record<string, unknown> {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     return value as Record<string, unknown>;
   }
-
   return {};
 }
 
@@ -112,44 +114,21 @@ function getClientIntro(profile: ClientProfileData | null | undefined): string {
   if (!profile) {
     return "";
   }
-
+  if (typeof profile.bio === "string" && profile.bio.trim().length > 0) {
+    return profile.bio.trim();
+  }
   const communication = toRecord(profile.communication_preferences);
   const intro = communication.profile_intro;
-
   if (typeof intro === "string" && intro.trim().length > 0) {
     return intro.trim();
   }
-
-  return profile.bio?.trim() || "";
+  return "";
 }
 
 function getSummary(value: unknown): string {
   const record = toRecord(value);
   const summary = record.summary;
   return typeof summary === "string" ? summary.trim() : "";
-}
-
-function normalizeGovernorateValue(value: string | null | undefined): string {
-  if (!value) {
-    return "";
-  }
-
-  const normalized = value.trim().toLowerCase();
-
-  const directMatch = GOVERNORATES.find((gov) => gov.toLowerCase() === normalized);
-  if (directMatch) {
-    return directMatch;
-  }
-
-  const mappedMatch = GOVERNORATES.find((gov) => {
-    const ar = localizeGovernorate(gov, "ar").toLowerCase();
-    const en = localizeGovernorate(gov, "en").toLowerCase();
-    const fr = localizeGovernorate(gov, "fr").toLowerCase();
-
-    return normalized === ar || normalized === en || normalized === fr;
-  });
-
-  return mappedMatch ?? value.trim();
 }
 
 function normalizeClientProfileData(data: Record<string, unknown>): ClientProfileData {
@@ -164,87 +143,57 @@ function normalizeClientProfileData(data: Record<string, unknown>): ClientProfil
     location: typeof data.location === "string" ? data.location : null,
     bio: typeof data.bio === "string" ? data.bio : null,
     company_name: typeof data.company_name === "string" ? data.company_name : null,
-    company_industry:
-      typeof data.company_industry === "string" ? data.company_industry : null,
+    company_industry: typeof data.company_industry === "string" ? data.company_industry : null,
     company_size: typeof data.company_size === "string" ? data.company_size : null,
     company_role: typeof data.company_role === "string" ? data.company_role : null,
     company_website: typeof data.company_website === "string" ? data.company_website : null,
     hiring_needs: hiringNeeds,
-    project_budget_preference:
-      typeof data.project_budget_preference === "string"
-        ? data.project_budget_preference
-        : null,
-    project_timeline_preference:
-      typeof data.project_timeline_preference === "string"
-        ? data.project_timeline_preference
-        : null,
-    communication_preferences:
-      data.communication_preferences &&
-      typeof data.communication_preferences === "object" &&
-      !Array.isArray(data.communication_preferences)
-        ? (data.communication_preferences as Record<string, unknown>)
-        : null,
-    screening_preferences:
-      data.screening_preferences &&
-      typeof data.screening_preferences === "object" &&
-      !Array.isArray(data.screening_preferences)
-        ? (data.screening_preferences as Record<string, unknown>)
-        : null,
-    legal_preferences:
-      data.legal_preferences &&
-      typeof data.legal_preferences === "object" &&
-      !Array.isArray(data.legal_preferences)
-        ? (data.legal_preferences as Record<string, unknown>)
-        : null,
-    created_at:
-      typeof data.created_at === "string"
-        ? data.created_at
-        : new Date().toISOString(),
-    cin_verified:
-      typeof data.cin_verified === "boolean" ? data.cin_verified : null,
-    phone_verified:
-      typeof data.phone_verified === "boolean" ? data.phone_verified : null,
-    payment_verified:
-      typeof data.payment_verified === "boolean" ? data.payment_verified : null,
+    project_budget_preference: typeof data.project_budget_preference === "string" ? data.project_budget_preference : null,
+    project_timeline_preference: typeof data.project_timeline_preference === "string" ? data.project_timeline_preference : null,
+    communication_preferences: data.communication_preferences && typeof data.communication_preferences === "object" && !Array.isArray(data.communication_preferences) ? (data.communication_preferences as Record<string, unknown>) : null,
+    screening_preferences: data.screening_preferences && typeof data.screening_preferences === "object" && !Array.isArray(data.screening_preferences) ? (data.screening_preferences as Record<string, unknown>) : null,
+    legal_preferences: data.legal_preferences && typeof data.legal_preferences === "object" && !Array.isArray(data.legal_preferences) ? (data.legal_preferences as Record<string, unknown>) : null,
+    created_at: typeof data.created_at === "string" ? data.created_at : new Date().toISOString(),
+    cin_verified: typeof data.cin_verified === "boolean" ? data.cin_verified : null,
+    phone_verified: typeof data.phone_verified === "boolean" ? data.phone_verified : null,
+    payment_verified: typeof data.payment_verified === "boolean" ? data.payment_verified : null,
   };
 }
 
-// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 function ProfileSkeleton() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10 space-y-5">
-      {/* Header card */}
-      <div className="surface-card border border-surface rounded-2xl p-6 space-y-4">
-        <div className="flex items-start gap-4">
-          <Skeleton className="w-20 h-20 rounded-full flex-shrink-0" />
-          <div className="flex-1 space-y-2 pt-1">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-40" />
+    <div className="max-w-[1400px] mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
+      <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="surface-card border border-surface rounded-2xl p-6">
+          <div className="flex items-center gap-6">
+            <div className="w-24 h-24 rounded-full bg-[#262626]" />
+            <div className="flex-1 space-y-3">
+              <div className="h-6 w-48 bg-[#262626] rounded-lg" />
+              <div className="h-4 w-32 bg-[#262626] rounded-lg" />
+              <div className="flex gap-2">
+                <div className="h-6 w-20 bg-[#262626] rounded-full" />
+                <div className="h-6 w-20 bg-[#262626] rounded-full" />
+              </div>
+            </div>
           </div>
         </div>
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
+        <div className="surface-card border border-surface rounded-2xl p-6 space-y-3">
+          <div className="h-4 w-32 bg-[#262626] rounded" />
+          <div className="h-4 w-full bg-[#262626] rounded" />
+          <div className="h-4 w-3/4 bg-[#262626] rounded" />
+        </div>
       </div>
-      {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 rounded-xl" />
-        ))}
-      </div>
-      {/* Jobs */}
-      <div className="surface-card border border-surface rounded-2xl p-5 space-y-3">
-        <Skeleton className="h-5 w-40" />
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-16 rounded-xl" />
-        ))}
+      <div className="flex flex-col gap-4">
+        <div className="surface-card border border-surface rounded-2xl p-6 space-y-3">
+          <div className="h-10 w-full bg-[#262626] rounded-xl" />
+          <div className="h-10 w-full bg-[#262626] rounded-xl" />
+        </div>
       </div>
     </div>
   );
 }
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// === Page ===
 
 export default function ClientProfile() {
   const { clientId } = useParams<{ clientId: string }>();
@@ -256,6 +205,37 @@ export default function ClientProfile() {
   const queryClient = useQueryClient();
 
   const [isStartingConversation, setIsStartingConversation] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const [localTime, setLocalTime] = useState(() => {
+    return new Date().toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLocalTime(new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }));
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const { isOnline } = usePresence({
+    userId: user?.id,
+    isOnlineForMessages: profile?.is_online_for_messages !== false,
+  });
 
   const isPublicPreview = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -267,7 +247,7 @@ export default function ClientProfile() {
     [language],
   );
 
-  // â”€â”€ Fetch client profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fetch client profile ──
   const {
     data: client,
     isLoading,
@@ -299,7 +279,7 @@ export default function ClientProfile() {
     retry: 1,
   });
 
-  // â”€â”€ Fetch client stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fetch client stats ──
   const { data: stats } = useQuery<ClientStats>({
     queryKey: ["client-stats", clientId],
     queryFn: async () => {
@@ -339,7 +319,7 @@ export default function ClientProfile() {
     enabled: !!clientId,
   });
 
-  // â”€â”€ Fetch recent open jobs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fetch recent open jobs ──
   const { data: recentJobs = [] } = useQuery<RecentJob[]>({
     queryKey: ["client-jobs", clientId],
     queryFn: async () => {
@@ -357,6 +337,98 @@ export default function ClientProfile() {
     },
     enabled: !!clientId,
   });
+
+  // ── Fetch client reviews ──
+  const { data: clientReviews = [], refetch: refetchReviews } = useQuery({
+    queryKey: ["client-reviews", clientId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select(`
+          id,
+          rating,
+          comment,
+          created_at,
+          reviewer:public_profiles!reviewer_id (
+            full_name,
+            avatar_url
+          ),
+          contract:contracts!contract_id (
+            job:jobs (
+              title
+            )
+          )
+        `)
+        .eq("reviewee_id", clientId!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      
+      return (data ?? []).map((review: any) => {
+        const reviewer = Array.isArray(review.reviewer) ? review.reviewer[0] : review.reviewer;
+        const contract = Array.isArray(review.contract) ? review.contract[0] : review.contract;
+        const job = contract?.job;
+        const jobRow = Array.isArray(job) ? job[0] : job;
+
+        return {
+          id: review.id,
+          client_name: reviewer?.full_name || 'Freelancer',
+          client_avatar: reviewer?.avatar_url || undefined,
+          rating: review.rating,
+          comment: review.comment || '',
+          created_at: review.created_at,
+          job_title: jobRow?.title || 'Project Collaboration',
+        };
+      });
+    },
+    enabled: !!clientId,
+  });
+
+  const handleAvatarUploadSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    const allowedTypes = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']);
+    if (!allowedTypes.has(file.type)) {
+      showToast(tx('pages.freelancerProfile.validation.avatarType', undefined, 'Please upload JPG, PNG, WEBP, or GIF image.'), 'warning');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast(tx('pages.freelancerProfile.validation.avatarSize', undefined, 'Image size should be less than 5MB.'), 'warning');
+      return;
+    }
+
+    try {
+      setSavingAvatar(true);
+      const avatarUrl = await uploadAvatar(client!.id, file);
+      
+      try {
+        await updateProfile({
+          avatar_url: avatarUrl,
+          avatar_url_client: avatarUrl,
+          avatar_url_freelancer: avatarUrl,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+        if (message.includes('could not find') && message.includes('schema cache')) {
+          await updateProfile({ avatar_url: avatarUrl });
+        } else {
+          throw error;
+        }
+      }
+      showToast(tx('pages.freelancerProfile.toasts.avatarUpdated', undefined, 'Profile picture updated'), 'success');
+      await refetchClient();
+    } catch (error) {
+      logger.error('Failed to upload profile picture', error);
+      showToast('Could not update profile picture', 'error');
+    } finally {
+      setSavingAvatar(false);
+    }
+  };
 
   const isOwnerProfile = Boolean(user?.id && client?.id && user.id === client.id);
   const isOwnProfile = isOwnerProfile && !isPublicPreview;
@@ -387,8 +459,6 @@ export default function ClientProfile() {
     profile?.username,
     user?.id,
   ]);
-
-
 
   const handleStartConversation = async () => {
     if (!user) {
@@ -458,7 +528,7 @@ export default function ClientProfile() {
     }
   };
 
-  // â”€â”€ Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Loading ──
   if (isLoading) {
     return (
       <>
@@ -471,7 +541,7 @@ export default function ClientProfile() {
     );
   }
 
-  // â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Error ──
   if (isError) {
     const errorMessage =
       clientError instanceof Error
@@ -504,7 +574,7 @@ export default function ClientProfile() {
     );
   }
 
-  // â”€â”€ Not found â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Not found ──
   if (!client) {
     return (
       <>
@@ -539,38 +609,28 @@ export default function ClientProfile() {
 
   const canContact = !!user && !isOwnerProfile;
 
-  // ── Main render ─────────────────────────────────────────────────────────
-  // ── Computed values for new layout ────────────────────────────────────────
+  // === Main Render ===
+  // === Computed values for new layout ===
   const accentColor = "#F59E0B";
   const clientIntro = getClientIntro(client);
   const communicationSummary = getSummary(client.communication_preferences);
   const screeningSummary = getSummary(client.screening_preferences);
   const legalSummary = getSummary(client.legal_preferences);
 
-  const heroBadges = [
-    { label: tx("clientProfile.client", undefined, "Client"), style: "filled" as const },
-    ...(client.cin_verified
-      ? [{ label: tx("clientProfile.verifiedClient", undefined, "Verified Client"), style: "success" as const, icon: <CheckCircle className="w-3 h-3" /> }]
-      : []),
-  ];
+  const initialAvatar = client.full_name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(p => p[0]?.toUpperCase() ?? '')
+    .join('');
 
-  const heroMeta = [
-    ...(client.location ? [{ icon: <MapPin className="w-3.5 h-3.5" />, label: localizeGovernorate(client.location, language) }] : []),
-    { icon: <Calendar className="w-3.5 h-3.5" />, label: `${tx("clientProfile.memberSince", undefined, "Member since")} ${formatDate(client.created_at)}` },
-    ...(stats ? [{ icon: <Target className="w-3.5 h-3.5" />, label: `${stats.totalJobs} ${tx("clientProfile.stats.jobsPosted", undefined, "Jobs Posted")}` }] : []),
-  ];
+  const reviewBuckets = [5, 4, 3, 2, 1].map((score) => {
+    const total = stats?.reviewCount || 0;
+    const count = clientReviews.filter((r: any) => Math.round(r.rating) === score).length;
+    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
 
-  const heroActions = isOwnProfile ? (
-      <button
-        type="button"
-        onClick={() => navigate('/settings?tab=profile')}
-        className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-xl border transition-all duration-150 hover:bg-white/5"
-        style={{ color: "rgba(255,255,255,0.55)", borderColor: "rgba(255,255,255,0.12)" }}
-      >
-        <Edit2 className="w-3.5 h-3.5" />
-        {tx("clientProfile.editProfile", undefined, "Edit Profile")}
-      </button>
-  ) : null;
+    return { score, pct };
+  });
 
   return (
     <>
@@ -580,24 +640,18 @@ export default function ClientProfile() {
 
         {/* Preview banner */}
         {isPublicPreview && isOwnerProfile && (
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
+          <div className="max-w-[1400px] mx-auto px-4 pt-4">
             <div
-              className="rounded-xl border px-4 py-3 flex items-center justify-between gap-3"
-              style={{ 
-                background: 'var(--workspace-primary-dim)', 
-                borderColor: 'color-mix(in srgb, var(--workspace-primary) 25%, transparent)' 
-              }}
+              className="rounded-xl border px-4 py-3 flex items-center justify-between gap-3 bg-yellow-500/10 border-yellow-500/20"
             >
               <div>
                 <p 
-                  className="text-sm font-semibold"
-                  style={{ color: 'var(--color-text-primary)' }}
+                  className="text-sm font-semibold text-gray-900 dark:text-zinc-50"
                 >
                   {tx("clientProfile.previewTitle", undefined, "Public Profile Preview")}
                 </p>
                 <p 
-                  className="text-xs"
-                  style={{ color: 'var(--color-text-secondary)' }}
+                  className="text-xs text-gray-500 dark:text-zinc-400"
                 >
                   {tx("clientProfile.previewDesc", undefined, "You are viewing your profile as other users see it.")}
                 </p>
@@ -605,14 +659,7 @@ export default function ClientProfile() {
               <button
                 type="button"
                 onClick={() => navigate(`/client/${client.id}`)}
-                className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-all"
-                style={{ 
-                  color: 'var(--workspace-primary)', 
-                  borderColor: 'color-mix(in srgb, var(--workspace-primary) 35%, transparent)', 
-                  background: 'color-mix(in srgb, var(--workspace-primary) 8%, transparent)' 
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                className="inline-flex items-center gap-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-sm font-medium transition-all text-[#F59E0B] hover:bg-yellow-500/20"
               >
                 <ArrowLeft className="w-4 h-4" />
                 {tx("clientProfile.exitPreview", undefined, "Exit Preview")}
@@ -621,277 +668,696 @@ export default function ClientProfile() {
           </div>
         )}
 
-        {/* â”€â”€ Hero banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        <ProfileHero
-          variant="client"
-          name={client.full_name}
-          subtitle={client.company_role || client.company_industry || tx("clientProfile.client", undefined, "Client")}
-          avatarUrl={client.avatar_url}
-          badges={heroBadges}
-          meta={heroMeta}
-          actions={heroActions}
-        />
+        <div className="w-full bg-[#f9fafb] dark:bg-black py-6 px-2 sm:px-4 transition-colors duration-200">
+          <div className="max-w-[1400px] mx-auto bg-white dark:bg-[#0c0c0e] border border-gray-200 dark:border-[#2d2d2d] rounded-2xl shadow-sm overflow-hidden transition-colors duration-200 relative">
+            
+            {/* === Profile Header === */}
+            <header className="relative p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden">
+              {/* Ambient Glows */}
+              <div className="absolute top-0 right-0 w-80 h-80 bg-yellow-500/5 dark:bg-[#F59E0B]/5 rounded-full blur-[100px] pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-60 h-60 bg-red-500/5 dark:bg-[#EF4444]/5 rounded-full blur-[80px] pointer-events-none" />
+              
+              <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6 flex-1 w-full">
+                {/* Avatar block with green dot and gradient ambient border */}
+                <div className="relative group shrink-0">
+                  <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-[#F59E0B] to-[#EF4444] opacity-20 group-hover:opacity-70 blur-sm transition duration-500" />
+                  {client.avatar_url ? (
+                    <img
+                      src={client.avatar_url}
+                      alt={client.full_name}
+                      className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border border-gray-200 dark:border-[#2d2d2d] bg-white dark:bg-[#0c0c0e]"
+                    />
+                  ) : (
+                    <div
+                      className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center text-3xl font-bold text-white select-none"
+                      style={{ background: '#F59E0B' }}
+                    >
+                      {initialAvatar}
+                    </div>
+                  )}
+                  
+                  {/* Availability Status Dot with breathing pulse */}
+                  {isOnline(client.id) && (
+                    <span className="absolute bottom-1 right-1 w-4 h-4 shrink-0 flex items-center justify-center">
+                      <span className="animate-ping absolute inline-flex h-4 w-4 rounded-full bg-[#10B981] opacity-40" />
+                      <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-[#10B981] opacity-75" style={{ animationDelay: '500ms', animationDuration: '2s' }} />
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-[#10B981] border border-white dark:border-[#0c0c0e]" />
+                    </span>
+                  )}
 
-        {/* â”€â”€ Stat bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        {stats && (
-          <ProfileStatBar
-            variant="client"
-            stats={[
-              { icon: <Briefcase className="w-4 h-4" />, label: tx("clientProfile.stats.jobsPosted", undefined, "Jobs Posted"), value: stats.totalJobs },
-              { icon: <FileText className="w-4 h-4" />, label: tx("clientProfile.stats.completedContracts", undefined, "Completed"), value: stats.completedContracts },
-              { icon: <DollarSign className="w-4 h-4" />, label: tx("clientProfile.stats.totalSpent", undefined, "Total Spent"), value: stats.totalSpent > 0 ? formatCurrency(stats.totalSpent) : "", highlight: true },
-              { icon: <Star className="w-4 h-4" />, label: tx("clientProfile.stats.avgRating", undefined, "Avg Rating"), value: stats.reviewCount > 0 ? stats.avgRating.toFixed(1) : "" },
-            ]}
-          />
-        )}
+                  {/* Camera overlay for avatar upload (owner only) */}
+                  {isOwnProfile && (
+                    <label className="absolute inset-0 rounded-full flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer z-10">
+                      {savingAvatar ? (
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      ) : (
+                        <Camera className="w-6 h-6 text-white" />
+                      )}
+                      <input
+                        type="file"
+                        aria-label="Upload profile picture"
+                        className="hidden"
+                        onChange={handleAvatarUploadSelection}
+                        disabled={savingAvatar}
+                      />
+                    </label>
+                  )}
+                </div>
 
-        {/* â”€â”€ Main grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Info details */}
+                <div className="flex-1 min-w-0 text-center sm:text-left">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                    <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-zinc-50 tracking-tight">
+                      {client.full_name || 'Client'}
+                    </h1>
+                    
+                    {/* Verification badge */}
+                    {client.cin_verified && (
+                      <CheckCircle 
+                        className="w-5 h-5 text-[#10B981] fill-white dark:fill-[#0c0c0e] shrink-0"
+                        aria-label="Verified"
+                      />
+                    )}
+                  </div>
 
-            {/* â”€â”€ Left column â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-            <div className="lg:col-span-2 flex flex-col gap-5">
-
-              {/* About / Intro */}
-              <ProfileSection
-                title={tx("clientProfile.about", undefined, "About")}
-                animationDelay={0}
-              >
-                {clientIntro ? (
-                  <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
-                    {clientIntro}
+                  {/* Company Role / Subtitle */}
+                  <p className="text-sm font-medium text-gray-600 dark:text-zinc-300 mt-1">
+                    {client.company_role || client.company_industry || tx("clientProfile.client", undefined, "Client")}
                   </p>
-                ) : (
-                  <ProfileEmptySlot
-                    message={tx("clientProfile.noIntro", undefined, "No introduction added yet.")}
-                    cta={isOwnProfile ? (
-                      <Link to="/settings?tab=profile" className="text-xs font-medium" style={{ color: accentColor }}>
-                        + Add introduction
-                      </Link>
-                    ) : undefined}
-                  />
-                )}
-              </ProfileSection>
 
-              {/* Company info */}
-              {(isOwnProfile || client.company_name || client.company_industry || client.company_size || client.company_role || client.company_website || (Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0)) && (
-                <ProfileSection
-                  title={tx("clientProfile.companyInfo", undefined, "Company")}
-                  icon={<Briefcase className="w-3.5 h-3.5" />}
-                  animationDelay={80}
+                  {/* Location & Local Time */}
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 mt-2 text-sm text-gray-500 dark:text-zinc-400">
+                    {client.location && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                        <span>{localizeGovernorate(client.location, language)}</span>
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                      <span>{localTime} local time</span>
+                    </span>
+                  </div>
+
+                  {/* Stats: Rating, Jobs, Response Time */}
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1.5 mt-4 text-sm text-gray-500 dark:text-zinc-400">
+                    {stats && (
+                      <>
+                        <span className="inline-flex items-center gap-1 text-[#F59E0B] font-medium">
+                          <Star className="w-4 h-4 fill-current" />
+                          <span>{stats.avgRating.toFixed(1)} ({stats.reviewCount} {stats.reviewCount === 1 ? 'review' : 'reviews'})</span>
+                        </span>
+                        <span className="text-gray-300 dark:text-[#2d2d2d] select-none">•</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Briefcase className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                          <span>{stats.totalJobs} {stats.totalJobs === 1 ? 'job posted' : 'jobs posted'}</span>
+                        </span>
+                        <span className="text-gray-300 dark:text-[#2d2d2d] select-none">•</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
+                          <span>Member since {formatDate(client.created_at)}</span>
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action buttons (Right side) */}
+              <div className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end mt-4 md:mt-0 shrink-0 flex-wrap z-10">
+                {isOwnProfile ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/settings?tab=profile&focus=full_name')}
+                    className="rounded-full border border-[#F59E0B] hover:bg-[#F59E0B]/5 text-[#F59E0B] dark:text-[#F59E0B] dark:border-[#F59E0B] px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    Edit Profile
+                  </button>
+                ) : canContact ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleStartConversation()}
+                    disabled={isStartingConversation}
+                    className="rounded-full bg-[#F59E0B] hover:bg-[#d97706] text-white px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150 disabled:opacity-60"
+                  >
+                    {isStartingConversation ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <MessageSquare className="w-3.5 h-3.5" />
+                    )}
+                    Send Message
+                  </button>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    setCopied(true);
+                    showToast(tx('pages.freelancerProfile.toasts.linkCopied', undefined, 'Profile link copied to clipboard'), 'success');
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className={`rounded-full border px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-300 transform active:scale-95 ${
+                    copied 
+                      ? 'bg-green-500/10 border-green-500/30 text-green-600 dark:text-green-400' 
+                      : 'border-gray-300 dark:border-[#2d2d2d] hover:bg-gray-50 dark:hover:bg-[#161618] text-gray-700 dark:text-zinc-300'
+                  }`}
                 >
-                  {(client.company_name || client.company_industry || client.company_size || client.company_role || client.company_website || (Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0)) ? (
+                  {copied ? (
                     <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        {[
-                          { label: tx("profile.companyName", undefined, "Company"), value: client.company_name },
-                          { label: tx("profile.companyIndustry", undefined, "Industry"), value: client.company_industry },
-                          { label: tx("profile.companySize", undefined, "Size"), value: client.company_size },
-                          { label: tx("profile.companyRole", undefined, "Your role"), value: client.company_role },
-                        ].filter(r => r.value).map(row => (
-                          <div
-                            key={row.label}
-                            className="flex items-center gap-3 rounded-xl px-4 py-3 border"
-                            style={{ background: "var(--color-background-elevated)", borderColor: "var(--color-border-subtle)" }}
-                          >
-                            <span className="text-xs font-medium shrink-0" style={{ color: "var(--color-text-tertiary)" }}>{row.label}</span>
-                            <span className="font-semibold truncate" style={{ color: "var(--color-text-primary)" }}>{row.value}</span>
-                          </div>
-                        ))}
-                        {client.company_website && (
-                          <div
-                            className="sm:col-span-2 flex items-center gap-3 rounded-xl px-4 py-3 border"
-                            style={{ background: "var(--color-background-elevated)", borderColor: "var(--color-border-subtle)" }}
-                          >
-                            <Globe className="w-4 h-4 shrink-0" style={{ color: "var(--color-text-tertiary)" }} />
-                            <a
-                              href={client.company_website}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-sm font-medium hover:underline break-all"
-                              style={{ color: accentColor }}
+                      <Check className="w-3.5 h-3.5" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="w-3.5 h-3.5" />
+                      Share
+                    </>
+                  )}
+                </button>
+              </div>
+            </header>
+
+            {/* Divider */}
+            <div className="border-b border-gray-200 dark:border-[#2d2d2d]" />
+
+            {/* Two-Column Split Grid with Mount Transition */}
+            <div className={`grid grid-cols-1 lg:grid-cols-4 transition-all duration-700 transform ${
+              mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+            }`}>
+              
+              {/* Left Column (3/4 width) */}
+              <main className="lg:col-span-3 flex flex-col divide-y divide-gray-200 dark:divide-[#2d2d2d]">
+                
+                {/* Title & Bio Section */}
+                <section className="p-6 sm:p-8 flex flex-col gap-4">
+                  <div className="flex items-start justify-between gap-4 flex-wrap w-full">
+                    <div className="space-y-1 flex-1">
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50">
+                        {client.company_role && client.company_name 
+                          ? `${client.company_role} at ${client.company_name}` 
+                          : client.company_role || client.company_name || 'Business Owner'}
+                      </h2>
+                      {client.company_industry && (
+                        <p className="text-xs text-gray-400 dark:text-zinc-500">
+                          Specialized in {client.company_industry}
+                        </p>
+                      )}
+                    </div>
+                    {isOwnProfile && (
+                      <button
+                        type="button"
+                        onClick={() => navigate('/settings?tab=profile&focus=bio')}
+                        className="p-1.5 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors shrink-0"
+                        aria-label="Edit bio and headline details"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Biography Paragraph */}
+                  <div className="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                    {clientIntro || 'No biography or about details provided yet.'}
+                  </div>
+
+                  {isOwnProfile && !clientIntro && (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/settings?tab=profile&focus=bio')}
+                      className="text-sm font-semibold text-[#F59E0B] hover:underline self-start"
+                    >
+                      + Add description
+                    </button>
+                  )}
+                </section>
+
+                {/* Company Information */}
+                {(isOwnProfile || client.company_name || client.company_industry || client.company_size || client.company_role || client.company_website || (Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0)) && (
+                  <section className="p-6 sm:p-8 flex flex-col gap-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+                        Company Information
+                      </h3>
+                      {isOwnProfile && (
+                        <button
+                          type="button"
+                          onClick={() => navigate('/settings?tab=profile&focus=company')}
+                          className="p-1.5 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                          aria-label="Edit company details"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="space-y-6">
+                      {(client.company_name || client.company_industry || client.company_size || client.company_role || client.company_website) ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                          {[
+                            { label: tx("profile.companyName", undefined, "Company"), value: client.company_name },
+                            { label: tx("profile.companyIndustry", undefined, "Industry"), value: client.company_industry },
+                            { label: tx("profile.companySize", undefined, "Size"), value: client.company_size },
+                            { label: tx("profile.companyRole", undefined, "Your role"), value: client.company_role },
+                          ].filter(r => r.value).map(row => (
+                            <div
+                              key={row.label}
+                              className="flex items-center gap-3 rounded-xl px-4 py-3 border border-gray-150 dark:border-[#2d2d2d] bg-gray-50/30 dark:bg-[#161618]/30 hover:-translate-y-0.5 hover:border-[#F59E0B]/20 hover:shadow-sm transition-all duration-300"
                             >
-                              {client.company_website}
-                            </a>
-                          </div>
-                        )}
-                      </div>
+                              <span className="text-xs font-medium shrink-0 text-gray-400 dark:text-zinc-500">{row.label}</span>
+                              <span className="font-semibold truncate text-gray-900 dark:text-zinc-100">{row.value}</span>
+                            </div>
+                          ))}
+                          {client.company_website && (
+                            <div className="sm:col-span-2 flex items-center gap-3 rounded-xl px-4 py-3 border border-gray-150 dark:border-[#2d2d2d] bg-gray-50/30 dark:bg-[#161618]/30 hover:-translate-y-0.5 hover:border-[#F59E0B]/20 hover:shadow-sm transition-all duration-300">
+                              <Globe className="w-4 h-4 shrink-0 text-gray-400 dark:text-zinc-500" />
+                              <a
+                                href={client.company_website}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-sm font-medium hover:underline hover:translate-x-1 transition-transform break-all text-[#F59E0B]"
+                              >
+                                {client.company_website}
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 border border-dashed border-gray-300 dark:border-[#2d2d2d] rounded-xl bg-gray-50/20 dark:bg-[#161618]/10">
+                          <p className="text-xs text-gray-400 dark:text-zinc-500">No company details added yet.</p>
+                        </div>
+                      )}
+
                       {Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0 && (
-                        <div className="mt-4">
-                          <p className="text-xs font-medium mb-2" style={{ color: "var(--color-text-tertiary)" }}>Hiring needs</p>
+                        <div className="space-y-2.5">
+                          <h4 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
+                            Hiring Needs
+                          </h4>
                           <div className="flex flex-wrap gap-2">
-                            {client.hiring_needs.map(need => (
-                              <ProfileTag key={need} label={need} accentColor={accentColor} />
+                            {client.hiring_needs.map((need) => (
+                              <span
+                                key={need}
+                                className="px-3.5 py-1.5 bg-gray-50 dark:bg-[#161618] border border-gray-200 dark:border-[#2d2d2d] rounded-full text-xs font-medium text-gray-700 dark:text-zinc-300 hover:scale-105 hover:bg-[#F59E0B]/5 hover:border-[#F59E0B]/40 dark:hover:bg-[#F59E0B]/10 dark:hover:border-[#F59E0B]/40 transition-all duration-200"
+                              >
+                                {need}
+                              </span>
                             ))}
                           </div>
                         </div>
                       )}
-                    </>
-                  ) : (
-                    <ProfileEmptySlot
-                      message={tx("clientProfile.noCompanyInfo", undefined, "No company details added yet.")}
-                      cta={isOwnProfile ? (
-                        <Link to="/settings" className="text-xs font-medium" style={{ color: accentColor }}>
-                          + Add company details
-                        </Link>
-                      ) : undefined}
-                    />
-                  )}
-                </ProfileSection>
-              )}
+                    </div>
+                  </section>
+                )}
 
-              {/* Hiring preferences */}
-              {(isOwnProfile || client.project_budget_preference || client.project_timeline_preference || communicationSummary || screeningSummary || legalSummary) && (
-                <ProfileSection
-                  title={tx("clientProfile.hiringPreferences", undefined, "Hiring Preferences")}
-                  icon={<Target className="w-3.5 h-3.5" />}
-                  animationDelay={160}
-                >
-                  {(client.project_budget_preference || client.project_timeline_preference || communicationSummary || screeningSummary || legalSummary) ? (
-                    <dl className="space-y-3 text-sm">
+                {/* Hiring Preferences & Details */}
+                {(isOwnProfile || client.project_budget_preference || client.project_timeline_preference || communicationSummary || screeningSummary || legalSummary) && (
+                  <section className="p-6 sm:p-8 flex flex-col gap-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+                        Hiring Preferences & Details
+                      </h3>
+                      {isOwnProfile && (
+                        <button
+                          type="button"
+                          onClick={() => navigate('/settings?tab=profile&focus=preferences')}
+                          className="p-1.5 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                          aria-label="Edit hiring preferences"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                       {[
                         { label: tx("profile.budgetPreference", undefined, "Budget"), value: client.project_budget_preference },
                         { label: tx("profile.timelinePreference", undefined, "Timeline"), value: client.project_timeline_preference },
                         { label: tx("profile.communicationPreferences", undefined, "Communication"), value: communicationSummary },
                         { label: tx("profile.screeningPreferences", undefined, "Screening"), value: screeningSummary },
                         { label: tx("profile.legalPreferences", undefined, "Legal"), value: legalSummary },
-                      ].filter(r => r.value).map(row => (
-                        <div key={row.label} className="flex items-start gap-3">
-                          <dt className="w-28 shrink-0 font-medium" style={{ color: "var(--color-text-tertiary)" }}>{row.label}</dt>
-                          <dd className="leading-relaxed" style={{ color: "var(--color-text-primary)" }}>{row.value}</dd>
+                      ].filter(r => r.value).map((row, idx) => (
+                        <div key={idx} className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/55 dark:bg-[#161618]/30 hover:-translate-y-0.5 hover:border-[#F59E0B]/20 hover:shadow-sm transition-all duration-300">
+                          <h4 className="font-semibold text-gray-800 dark:text-zinc-200 flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-[#F59E0B]" />
+                            {row.label}
+                          </h4>
+                          <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-xs">
+                            {row.value}
+                          </p>
                         </div>
                       ))}
-                    </dl>
-                  ) : (
-                    <ProfileEmptySlot
-                      message={tx("clientProfile.noHiringPreferences", undefined, "No hiring preferences added yet.")}
-                      cta={isOwnProfile ? (
-                        <Link to="/settings" className="text-xs font-medium" style={{ color: accentColor }}>
-                          + Add preferences
-                        </Link>
-                      ) : undefined}
-                    />
-                  )}
-                </ProfileSection>
-              )}
+                    </div>
+                  </section>
+                )}
 
-              {/* Active jobs */}
-              {recentJobs.length > 0 && (
-                <ProfileSection
-                  title={tx("clientProfile.activeJobs", undefined, "Active Job Postings")}
-                  icon={<Briefcase className="w-3.5 h-3.5" />}
-                  trailing={
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full border" style={{ background: "rgba(245,158,11,0.08)", color: accentColor, borderColor: "rgba(245,158,11,0.25)" }}>
-                      {recentJobs.length}
-                    </span>
-                  }
-                  animationDelay={240}
-                >
-                  <div className="space-y-3">
-                    {recentJobs.map(job => (
-                      <div
-                        key={job.id}
-                        className="group flex items-start justify-between gap-3 rounded-xl border px-4 py-3.5 transition-colors hover:border-[rgba(245,158,11,0.25)] hover:bg-[rgba(245,158,11,0.03)]"
-                        style={{ borderColor: "var(--color-border-subtle)", background: "var(--color-background-elevated)" }}
+                {/* Active Job Postings */}
+                <section className="p-6 sm:p-8 flex flex-col gap-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+                      Active Job Postings
+                    </h3>
+                    {isOwnProfile && (
+                      <button
+                        type="button"
+                        onClick={() => navigate(ROUTES.jobsNew)}
+                        className="text-[#F59E0B] hover:underline text-sm font-semibold flex items-center gap-1"
                       >
-                        <div className="min-w-0 flex-1 space-y-1.5">
-                          <Link
-                            to={`/jobs/${job.id}`}
-                            className="text-sm font-semibold hover:underline block truncate"
-                            style={{ color: "var(--color-text-primary)" }}
-                          >
-                            {job.title}
-                          </Link>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <ProfileTag label={job.category} accentColor={accentColor} size="xs" />
-                            {(job.budget_min != null || job.budget_max != null) && (
-                              <span className="text-xs" style={{ color: "var(--color-text-tertiary)" }}>
+                        <Plus className="w-4 h-4" />
+                        Post a Job
+                      </button>
+                    )}
+                  </div>
+
+                  {recentJobs.length > 0 ? (
+                    <div className={`grid gap-5 ${recentJobs.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                      {recentJobs.map((job) => (
+                        <article
+                          key={job.id}
+                          className="group flex flex-col border border-gray-200 dark:border-[#2d2d2d] rounded-xl overflow-hidden bg-white dark:bg-[#0c0c0e] hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/50 hover:border-[#F59E0B]/30 transition-all duration-300 p-4 justify-between gap-4"
+                        >
+                          <div className="space-y-2">
+                            <Link
+                              to={`/jobs/${job.id}`}
+                              className="text-sm font-semibold hover:underline block truncate text-gray-900 dark:text-zinc-100"
+                            >
+                              {job.title}
+                            </Link>
+                            <div className="flex flex-wrap gap-1.5">
+                              <span className="text-[10px] px-2 py-0.5 rounded-full border border-gray-200 dark:border-[#2d2d2d] text-gray-600 dark:text-zinc-400 bg-gray-50 dark:bg-[#161618]/50">
+                                {job.category}
+                              </span>
+                              {job.proposals_count != null && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full border border-gray-200 dark:border-[#2d2d2d] text-gray-400 dark:text-zinc-500 bg-gray-50 dark:bg-[#161618]/50 flex items-center gap-1">
+                                  <Users className="w-3 h-3" />
+                                  {job.proposals_count} props
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-[#2d2d2d]/80 mt-1">
+                            {(job.budget_min != null || job.budget_max != null) ? (
+                              <span className="text-xs font-semibold text-[#F59E0B]">
                                 {job.budget_min != null && job.budget_max != null
-                                  ? `${job.budget_min.toLocaleString()} â€“ ${job.budget_max.toLocaleString()} TND`
+                                  ? `${job.budget_min.toLocaleString()} - ${job.budget_max.toLocaleString()} TND`
                                   : job.budget_min != null
                                     ? `From ${job.budget_min.toLocaleString()} TND`
                                     : `Up to ${job.budget_max!.toLocaleString()} TND`}
                               </span>
+                            ) : (
+                              <span />
                             )}
-                            {job.proposals_count != null && (
-                              <span className="text-xs flex items-center gap-1" style={{ color: "var(--color-text-tertiary)" }}>
-                                <Users className="w-3 h-3" />
-                                {job.proposals_count} {tx("clientProfile.proposals", undefined, "proposals")}
-                              </span>
-                            )}
+                            <Link to={`/jobs/${job.id}`} className="shrink-0">
+                              <Button variant="outline" size="sm">
+                                {isOwnProfile ? tx("jobDetail.manageJob", undefined, "Manage") : tx("clientProfile.apply", undefined, "Apply")}
+                              </Button>
+                            </Link>
                           </div>
-                        </div>
-                        <Link to={`/jobs/${job.id}`} className="shrink-0">
-                          <Button variant="outline" size="sm">
-                            {isOwnProfile ? tx("jobDetail.manageJob", undefined, "Manage") : tx("clientProfile.apply", undefined, "Apply")}
-                          </Button>
-                        </Link>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 px-4 border border-dashed border-gray-300 dark:border-[#2d2d2d] rounded-xl bg-gray-50/50 dark:bg-[#161618]/10 text-center">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-100 dark:bg-[#161618] text-gray-400 dark:text-[#2d2d2d] mb-3">
+                        <Briefcase className="w-5 h-5" />
                       </div>
-                    ))}
-                  </div>
-                </ProfileSection>
-              )}
-            </div>
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-1">
+                        No active jobs postings yet
+                      </h4>
+                      <p className="text-xs text-gray-500 dark:text-zinc-400 max-w-[280px] leading-relaxed mb-4">
+                        Post projects, launch milestone tasks, and collaborate with Top Freelancers.
+                      </p>
+                      {isOwnProfile && (
+                        <button
+                          type="button"
+                          onClick={() => navigate(ROUTES.jobsNew)}
+                          className="px-5 py-2 bg-[#F59E0B] hover:bg-[#d97706] text-white text-xs font-semibold rounded-full transition-colors shadow-sm"
+                        >
+                          Post your first job
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </section>
 
-            {/* â”€â”€ Right sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-            <ProfileActionSidebar
-              variant="client"
-              primaryCta={
-                canContact ? (
-                  <button
-                    type="button"
-                    onClick={() => void handleStartConversation()}
-                    disabled={isStartingConversation}
-                    className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-semibold text-white transition-all hover:opacity-90 disabled:opacity-60"
-                    style={{ background: accentColor, boxShadow: "0 8px 24px -8px rgba(245,158,11,0.50)" }}
-                  >
-                    {isStartingConversation
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <MessageSquare className="w-4 h-4" />}
-                    {isStartingConversation
-                      ? tx("common.loading", undefined, "Loading...")
-                      : tx("clientProfile.sendMessage", undefined, "Send Message")}
-                  </button>
-                ) : undefined
-              }
-              workspaceInfo={[
-                ...(client.location ? [{ label: tx("clientProfile.location", undefined, "Location"), value: localizeGovernorate(client.location, language) }] : []),
-                { label: tx("clientProfile.memberSince", undefined, "Member since"), value: formatDate(client.created_at) },
-              ]}
-              verifications={[
-                { label: tx("clientProfile.verifiedClient", undefined, "Identity Verified"), passed: Boolean(client.cin_verified) },
-                { label: "Phone Verified", passed: Boolean(client.phone_verified) },
-                { label: "Payment Method", passed: Boolean(client.payment_verified) },
-              ]}
-              ownerActions={isOwnProfile ? [
-                {
-                  icon: <Eye className="w-4 h-4" />,
-                  label: tx("clientProfile.viewPublicProfile", undefined, "View Public Profile"),
-                  description: tx("clientProfile.viewPublicProfileDesc", undefined, "Preview as freelancers see it"),
-                  onClick: () => navigate(`/client/${client.id}?preview=public`),
-                },
-                {
-                  icon: <Plus className="w-4 h-4" />,
-                  label: tx("pages.clientJobs.postProject", undefined, "Post a Project"),
-                  description: tx("clientProfile.actionPostDesc", undefined, "Create a new job and get proposals"),
-                  onClick: () => navigate(ROUTES.jobsNew),
-                },
-                {
-                  icon: <Briefcase className="w-4 h-4" />,
-                  label: tx("nav.myProjects", undefined, "My Projects"),
-                  description: tx("clientProfile.actionProjectsDesc", undefined, "Track open jobs and proposals"),
-                  onClick: () => navigate(ROUTES.clientJobs),
-                },
-                {
-                  icon: <Settings className="w-4 h-4" />,
-                  label: tx("clientProfile.actionSettings", undefined, "Workspace Settings"),
-                  description: tx("clientProfile.actionSettingsDesc", undefined, "Notifications and account controls"),
-                  onClick: () => navigate(ROUTES.settings),
-                },
-              ] : []}
-            />
+                {/* Work History & Reviews */}
+                <section className="p-6 sm:p-8 flex flex-col gap-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
+                    Work History & Reviews
+                  </h3>
+
+                  {stats && (
+                    <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 items-start">
+                      <div className="border border-gray-200 dark:border-[#2d2d2d] bg-gray-50/30 dark:bg-[#161618]/30 rounded-xl p-4 text-center">
+                        <p className="text-5xl font-black text-gray-900 dark:text-zinc-50 leading-none">
+                          {stats.avgRating.toFixed(1)}
+                        </p>
+                        <div className="mt-2 flex items-center justify-center gap-1">
+                          {[1, 2, 3, 4, 5].map((value) => (
+                            <Star
+                              key={value}
+                              className="w-4 h-4"
+                              style={{
+                                color: value <= Math.round(stats.avgRating) ? '#F59E0B' : '#d1d5db',
+                                fill: value <= Math.round(stats.avgRating) ? '#F59E0B' : 'none',
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-zinc-400 mt-2">
+                          {stats.reviewCount} {stats.reviewCount === 1 ? 'review' : 'reviews'}
+                        </p>
+                      </div>
+
+                      <div className="space-y-2 flex-1">
+                        {reviewBuckets.map(({ score, pct }) => (
+                          <div key={score} className="flex items-center gap-3 text-xs group">
+                            <span className="w-3 text-gray-500 dark:text-zinc-400">{score}</span>
+                            <div className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-[#161618] overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-[#F59E0B] transition-all duration-500 group-hover:brightness-110"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="w-8 text-right text-gray-400 dark:text-zinc-500 group-hover:text-[#F59E0B] group-hover:font-medium">{pct}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {clientReviews.length > 0 ? (
+                    <div className="divide-y divide-gray-100 dark:divide-[#2d2d2d] mt-4">
+                      {clientReviews.map((review) => (
+                        <article key={review.id} className="py-4 first:pt-0 last:pb-0 flex flex-col gap-2">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <h4 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
+                                {review.job_title}
+                              </h4>
+                              <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                                by {review.client_name} • {new Date(review.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                              </p>
+                            </div>
+                            <div className="inline-flex items-center gap-1 text-[#F59E0B] font-medium text-sm">
+                              <Star className="w-3.5 h-3.5 fill-current" />
+                              <span>{review.rating.toFixed(1)}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-zinc-300 italic font-normal leading-relaxed mt-1">
+                            "{review.comment}"
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center border border-gray-100 dark:border-[#2d2d2d] rounded-xl bg-gray-50/20 dark:bg-[#161618]/10">
+                      <p className="text-xs text-gray-400 dark:text-zinc-500">
+                        No reviews yet. Complete your first contract with a freelancer to receive feedback.
+                      </p>
+                    </div>
+                  )}
+                </section>
+              </main>
+
+              {/* Right Column Sidebar (1/4 width) */}
+              <aside className="lg:col-span-1 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-[#2d2d2d] flex flex-col divide-y divide-gray-200 dark:divide-[#2d2d2d]">
+                
+                {/* Stats Column */}
+                <section className="p-6 flex flex-col gap-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
+                      Hiring & Stats
+                    </h3>
+                    {isOwnProfile && (
+                      <button
+                        type="button"
+                        onClick={() => navigate('/settings?tab=profile&focus=location')}
+                        className="p-1 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-gray-150 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                        aria-label="Edit account settings"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {stats && (
+                    <dl className="space-y-3.5 text-sm">
+                      <div className="flex justify-between items-start gap-3">
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Hiring Status</dt>
+                        <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right flex items-center gap-1.5">
+                          <span
+                            className="w-2 h-2 rounded-full"
+                            style={{ background: client.payment_verified ? '#4ade80' : '#fbbf24' }}
+                          />
+                          {client.payment_verified ? 'Payment Verified' : 'Standard'}
+                        </dd>
+                      </div>
+
+                      {client.location && (
+                        <div className="flex justify-between items-start gap-3">
+                          <dt className="text-gray-500 dark:text-zinc-400 text-xs">Location</dt>
+                          <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
+                            {localizeGovernorate(client.location, language)}
+                          </dd>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-start gap-3">
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Member since</dt>
+                        <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
+                          {formatDate(client.created_at)}
+                        </dd>
+                      </div>
+
+                      <div className="flex justify-between items-start gap-3">
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Jobs Posted</dt>
+                        <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
+                          {stats.totalJobs}
+                        </dd>
+                      </div>
+
+                      <div className="flex justify-between items-start gap-3">
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Completed Contracts</dt>
+                        <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
+                          {stats.completedContracts}
+                        </dd>
+                      </div>
+
+                      <div className="flex justify-between items-start gap-3">
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Total spent</dt>
+                        <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right text-[#F59E0B]">
+                          {stats.totalSpent > 0 ? formatCurrency(stats.totalSpent) : '0 TND'}
+                        </dd>
+                      </div>
+
+                      <div className="flex justify-between items-start gap-3">
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Average Rating</dt>
+                        <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right flex items-center justify-end gap-1">
+                          <Star className="w-3.5 h-3.5 fill-[#F59E0B] text-[#F59E0B]" />
+                          <span>{stats.avgRating.toFixed(1)} / 5.0</span>
+                        </dd>
+                      </div>
+                    </dl>
+                  )}
+                </section>
+
+                {/* Company Website / Resource links */}
+                <section className="p-6 flex flex-col gap-4">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
+                    Links & Resources
+                  </h3>
+                  {client.company_website ? (
+                    <ul className="space-y-2.5">
+                      <li>
+                        <a
+                          href={client.company_website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-[#F59E0B] dark:text-[#fbbf24] hover:underline hover:translate-x-1 transition-transform duration-200"
+                        >
+                          <Globe className="w-4 h-4 shrink-0 text-gray-400 dark:text-zinc-500" />
+                          <span className="truncate">{client.company_name || 'Company Website'}</span>
+                          <ExternalLink className="w-3 h-3 shrink-0 opacity-60" />
+                        </a>
+                      </li>
+                    </ul>
+                  ) : (
+                    <div className="text-center py-2">
+                      <p className="text-xs text-gray-400 dark:text-zinc-500">No links added yet.</p>
+                    </div>
+                  )}
+                </section>
+
+                {/* Verifications Checklist */}
+                <section className="p-6 flex flex-col gap-4">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
+                    Verifications
+                  </h3>
+
+                  <ul className="space-y-3 text-sm">
+                    <li className="flex items-center gap-2.5">
+                      {client.cin_verified ? (
+                        <CheckCircle className="w-4 h-4 shrink-0 text-[#10B981] fill-white dark:fill-[#0c0c0e]" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border border-gray-300 dark:border-zinc-700 shrink-0" />
+                      )}
+                      <span className={client.cin_verified ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
+                        Identity Verified
+                      </span>
+                    </li>
+
+                    <li className="flex items-center gap-2.5">
+                      {client.phone_verified ? (
+                        <CheckCircle className="w-4 h-4 shrink-0 text-[#10B981] fill-white dark:fill-[#0c0c0e]" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border border-gray-300 dark:border-zinc-700 shrink-0" />
+                      )}
+                      <span className={client.phone_verified ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
+                        Phone Number
+                      </span>
+                    </li>
+
+                    <li className="flex items-center gap-2.5">
+                      {client.payment_verified ? (
+                        <CheckCircle className="w-4 h-4 shrink-0 text-[#10B981] fill-white dark:fill-[#0c0c0e]" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border border-gray-300 dark:border-zinc-700 shrink-0" />
+                      )}
+                      <span className={client.payment_verified ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
+                        Payment Method
+                      </span>
+                    </li>
+                  </ul>
+                </section>
+
+                {/* Owner Controls */}
+                {isOwnProfile && (
+                  <section className="p-6 flex flex-col gap-3">
+                    <h3 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1">
+                      Workspace Controls
+                    </h3>
+                    {[
+                      { icon: <Plus className="w-4 h-4" />, label: "Post a Job", onClick: () => navigate(ROUTES.jobsNew) },
+                      { icon: <Briefcase className="w-4 h-4" />, label: "My Projects", onClick: () => navigate(ROUTES.clientJobs) },
+                      { icon: <Settings className="w-4 h-4" />, label: "Settings", onClick: () => navigate(ROUTES.settings) },
+                    ].map((item, idx) => (
+                      <button
+                        key={idx}
+                        onClick={item.onClick}
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#2d2d2d] bg-gray-50/20 dark:bg-white/[0.02] hover:bg-gray-150 dark:hover:bg-white/[0.05] transition-all text-sm font-medium text-gray-700 dark:text-zinc-300"
+                      >
+                        {item.icon}
+                        {item.label}
+                      </button>
+                    ))}
+                  </section>
+                )}
+              </aside>
+            </div>
           </div>
-        </main>
+        </div>
       </div>
     </>
   );
