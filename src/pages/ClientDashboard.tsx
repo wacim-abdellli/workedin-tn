@@ -406,47 +406,73 @@ function ClientDashboardPage() {
           </div>
 
           {/* ── 4 STAT TILES ── */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Card 1: Total Projects */}
             <div
-              className="rounded-2xl p-5 flex flex-col gap-2"
+              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--workspace-primary)_35%,transparent)]"
               style={{
-                background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--color-bg-elevated))',
-                boxShadow: '0 0 0 1px color-mix(in srgb, var(--workspace-primary) 22%, transparent)',
+                background: 'color-mix(in srgb, var(--workspace-primary) 8%, var(--color-bg-elevated))',
+                boxShadow: '0 0 0 1px color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
+                borderLeft: '4px solid var(--workspace-primary)',
               }}
             >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 75%, transparent)' }}>Total Projects</p>
-                <FolderOpen className="w-3.5 h-3.5" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 50%, transparent)' }} />
+                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 85%, transparent)' }}>Total Projects</p>
+                <FolderOpen className="w-4 h-4" style={{ color: 'var(--workspace-primary)' }} />
               </div>
-              <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--workspace-primary)' }}>{statsData.totalJobs}</p>
-              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 60%, transparent)' }}>projects posted</p>
+              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--workspace-primary)' }}>{statsData.totalJobs}</p>
+              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--workspace-primary) 70%, transparent)' }}>projects posted</p>
             </div>
 
-            <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+            {/* Card 2: Active Projects */}
+            <div
+              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--color-status-info)_35%,transparent)]"
+              style={{
+                background: 'color-mix(in srgb, var(--color-status-info) 8%, var(--color-bg-elevated))',
+                boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-status-info) 20%, transparent)',
+                borderLeft: '4px solid var(--color-status-info)',
+              }}
+            >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Active</p>
-                <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--color-status-info) 85%, transparent)' }}>Active</p>
+                <Sparkles className="w-4 h-4" style={{ color: 'var(--color-status-info)' }} />
               </div>
-              <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--color-text-primary)' }}>{statsData.activeJobs}</p>
-              <p className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>open & in progress</p>
+              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--color-status-info)' }}>{statsData.activeJobs}</p>
+              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--color-status-info) 70%, transparent)' }}>open & in progress</p>
             </div>
 
-            <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+            {/* Card 3: Proposals */}
+            <div
+              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--color-status-warning)_35%,transparent)]"
+              style={{
+                background: 'color-mix(in srgb, var(--color-status-warning) 8%, var(--color-bg-elevated))',
+                boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-status-warning) 20%, transparent)',
+                borderLeft: '4px solid var(--color-status-warning)',
+              }}
+            >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Proposals</p>
-                <FileText className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--color-status-warning) 85%, transparent)' }}>Proposals</p>
+                <FileText className="w-4 h-4" style={{ color: 'var(--color-status-warning)' }} />
               </div>
-              <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--color-text-primary)' }}>{statsData.totalProposals}</p>
-              <p className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>received total</p>
+              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--color-status-warning)' }}>{statsData.totalProposals}</p>
+              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--color-status-warning) 70%, transparent)' }}>received total</p>
             </div>
 
-            <div className="rounded-2xl p-5 flex flex-col gap-2" style={{ background: 'var(--color-bg-elevated)', boxShadow: '0 0 0 1px var(--color-border-subtle)' }}>
+            {/* Card 4: Total Spent */}
+            <div
+              className="rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-10px_color-mix(in_srgb,var(--color-status-success)_35%,transparent)]"
+              style={{
+                background: 'color-mix(in srgb, var(--color-status-success) 8%, var(--color-bg-elevated))',
+                boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-status-success) 20%, transparent)',
+                borderLeft: '4px solid var(--color-status-success)',
+              }}
+            >
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Total Spent</p>
-                <Briefcase className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} />
+                <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'color-mix(in srgb, var(--color-status-success) 85%, transparent)' }}>Total Spent</p>
+                <Briefcase className="w-4 h-4" style={{ color: 'var(--color-status-success)' }} />
               </div>
-              <p className="text-3xl font-bold tabular-nums leading-none" style={{ color: 'var(--color-text-primary)' }}>{formatCurrency(statsData.totalSpent, true, language)}</p>
-              <p className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>across all projects</p>
+              <p className="text-3xl font-extrabold tabular-nums leading-none mt-1" style={{ color: 'var(--color-status-success)' }}>{formatCurrency(statsData.totalSpent, true, language)}</p>
+              <p className="text-[11px]" style={{ color: 'color-mix(in srgb, var(--color-status-success) 70%, transparent)' }}>across all projects</p>
             </div>
           </div>
 
