@@ -3457,7 +3457,7 @@ function MessagesComponent() {
                     try {
                         result = await uploadFileWithMetadata(
                             'contract-files',
-                            `${user.id}/${contractId}/deliveries/${assetKind}/${uniqueFileName}`,
+                            `${user.id}/${contractId}/submissions/${assetKind}/${uniqueFileName}`,
                             file,
                         );
                     } catch (error) {
