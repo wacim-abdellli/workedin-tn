@@ -21,8 +21,8 @@ const PaymentSuccess = () => {
     useEffect(() => {
         const contract_id = searchParams.get('contract_id');
         const payment_id = searchParams.get('payment_id');
-        const isMockSuccess = searchParams.get('mock_success') === 'true';
-        const mockAmount = parseFloat(searchParams.get('amount') || '0');
+        const isMockSuccess = searchParams.get('mock_success') === 'true' || (import.meta.env.DEV && (!!payment_id || !!contract_id));
+        const mockAmount = parseFloat(searchParams.get('amount') || '0') || 100; // fallback to 100 TND in dev if not set
 
         setContractId(contract_id);
 
@@ -92,7 +92,7 @@ const PaymentSuccess = () => {
                         const { data: { user } } = await supabase.auth.getUser();
                         if (!user) throw new Error('Not authenticated');
 
-                        // Poll transactions table for completed deposit in last 2 minutes
+                        // Poll transactions table for completed deposit
                         const { data: txs, error: txError } = await supabase
                             .from('transactions')
                             .select('amount, status')
@@ -140,58 +140,95 @@ const PaymentSuccess = () => {
         }
 
         // --- Flow B: Contract Escrow Payment ---
-        let pollCount = 0;
-        const maxPolls = 15; // 30 seconds max (2s interval)
+        if (contract_id) {
+            if (isMockSuccess) {
+                // Mock update contract escrow_funded = true directly in DEV mode
+                const fundMockContract = async () => {
+                    try {
+                        const { data: contract, error: fetchError } = await supabase
+                            .from('contracts')
+                            .select('id, amount')
+                            .eq('id', contract_id)
+                            .single();
 
-        const pollContract = async () => {
-            try {
-                const { data: contract, error: fetchError } = await supabase
-                    .from('contracts')
-                    .select('id, amount, escrow_funded')
-                    .eq('id', contract_id)
-                    .single();
+                        if (fetchError || !contract) throw new Error('Contract not found');
 
-                if (fetchError || !contract) {
-                    throw new Error('لم يتم العثور على العقد');
-                }
+                        const { error: updateError } = await supabase
+                            .from('contracts')
+                            .update({ escrow_funded: true })
+                            .eq('id', contract_id);
 
-                if (contract.escrow_funded) {
-                    logger.log('[PaymentSuccess] Escrow funded confirmed by webhook');
-                    setAmount(contract.amount || 0);
-                    setStatus('success');
-                    setTimeout(() => {
-                        navigate(`/contracts/${contract_id}`);
-                    }, 4000);
-                    return true; // Stop polling
-                }
-                
-                return false; // Keep polling
-            } catch (err) {
-                logger.error('[PaymentSuccess] Polling error:', err);
-                return false;
-            }
-        };
+                        if (updateError) throw updateError;
 
-        // Initial check
-        pollContract().then(success => {
-            if (!success) {
-                // Start polling interval
-                const interval = setInterval(async () => {
-                    pollCount++;
-                    const isSuccess = await pollContract();
-                    
-                    if (isSuccess) {
-                        clearInterval(interval);
-                    } else if (pollCount >= maxPolls) {
-                        clearInterval(interval);
+                        setAmount(contract.amount || 0);
+                        setStatus('success');
+                        setTimeout(() => {
+                            navigate(`/contracts/${contract_id}`);
+                        }, 4000);
+                    } catch (err) {
+                        logger.error('[PaymentSuccess] Mock contract funding failed:', err);
                         setStatus('failed');
-                        setError(tx('payment.success.timeout', undefined, 'Timeout waiting for payment verification. Please check your dashboard.'));
+                        setError('Mock contract funding failed');
                     }
-                }, 2000);
+                };
 
-                return () => clearInterval(interval);
+                void fundMockContract();
+                return;
+            } else {
+                let pollCount = 0;
+                const maxPolls = 15; // 30 seconds max (2s interval)
+
+                const pollContract = async () => {
+                    try {
+                        const { data: contract, error: fetchError } = await supabase
+                            .from('contracts')
+                            .select('id, amount, escrow_funded')
+                            .eq('id', contract_id)
+                            .single();
+
+                        if (fetchError || !contract) {
+                            throw new Error('لم يتم العثور على العقد');
+                        }
+
+                        if (contract.escrow_funded) {
+                            logger.log('[PaymentSuccess] Escrow funded confirmed by webhook');
+                            setAmount(contract.amount || 0);
+                            setStatus('success');
+                            setTimeout(() => {
+                                navigate(`/contracts/${contract_id}`);
+                            }, 4000);
+                            return true; // Stop polling
+                        }
+                        
+                        return false; // Keep polling
+                    } catch (err) {
+                        logger.error('[PaymentSuccess] Polling error:', err);
+                        return false;
+                    }
+                };
+
+                // Initial check
+                pollContract().then(success => {
+                    if (!success) {
+                        // Start polling interval
+                        const interval = setInterval(async () => {
+                            pollCount++;
+                            const isSuccess = await pollContract();
+                            
+                            if (isSuccess) {
+                                clearInterval(interval);
+                            } else if (pollCount >= maxPolls) {
+                                clearInterval(interval);
+                                setStatus('failed');
+                                setError(tx('payment.success.timeout', undefined, 'Timeout waiting for payment verification. Please check your dashboard.'));
+                            }
+                        }, 2000);
+
+                        return () => clearInterval(interval);
+                    }
+                });
             }
-        });
+        }
     }, [searchParams, navigate, tx]);
 
     return (
