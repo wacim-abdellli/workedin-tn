@@ -537,7 +537,14 @@ function FreelancerDashboardPage() {
       <Header />
 
       <main className="pt-8 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-7">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div
+            className="rounded-3xl p-6 sm:p-8 flex flex-col gap-8 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] transition-all duration-300"
+            style={{
+              background: 'color-mix(in srgb, var(--workspace-primary) 1.5%, var(--color-bg-elevated))',
+              boxShadow: '0 0 0 1px color-mix(in srgb, var(--color-border-subtle) 75%, var(--workspace-primary) 15%)',
+            }}
+          >
 
           {/* ── HERO ROW ── */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -936,6 +943,7 @@ function FreelancerDashboardPage() {
             </aside>
           </div>
         </div>
+      </div>
       </main>
     </div>
   );
