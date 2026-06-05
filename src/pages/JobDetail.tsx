@@ -594,7 +594,6 @@ function JobDetail() {
 
       // Close modal immediately for instant feedback
       setShowProposalModal(false);
-      showToast(t.jobDetail.proposalSent, "success");
 
       return { previousProposal };
     },
@@ -607,6 +606,8 @@ function JobDetail() {
         queryKey: ["dailyProposalUsage", user?.id],
       });
 
+      showToast(t.jobDetail.proposalSent, "success");
+
       // Notify client by email (fire-and-forget)
       if (jobId) {
         sendNewProposalEmail(jobId);
@@ -614,12 +615,10 @@ function JobDetail() {
     },
     onError: (err, _variables, context) => {
       // Rollback optimistic updates on error
-      if (context?.previousProposal !== undefined) {
-        queryClient.setQueryData(
-          ["myProposal", jobId, user?.id],
-          context.previousProposal,
-        );
-      }
+      queryClient.setQueryData(
+        ["myProposal", jobId, user?.id],
+        context?.previousProposal ?? null,
+      );
 
       logger.error("Error submitting proposal:", err);
       const message =
