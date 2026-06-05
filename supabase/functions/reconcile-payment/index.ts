@@ -1,10 +1,10 @@
-﻿// supabase/functions/reconcile-payment/index.ts
+// supabase/functions/reconcile-payment/index.ts
 // Admin-only Edge Function: retries a stuck escrow payment
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://khedmetna.tn',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://workedin.tn',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }

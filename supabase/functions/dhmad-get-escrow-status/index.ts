@@ -56,7 +56,14 @@ serve(async (req: Request): Promise<Response> => {
             return jsonResponse({ error: 'escrow_id مطلوب' }, 400);
         }
 
-        if (IS_DEV || !DHMAD_API_KEY) {
+        if (!IS_DEV && !DHMAD_API_KEY) {
+            console.error(`[${timestamp}][${requestId}][dhmad-get-escrow-status] FATAL: DHMAD_API_KEY not configured.`);
+            return jsonResponse({
+                error: 'خدمة الدفع غير متاحة حالياً. يرجى التواصل مع الدعم.',
+            }, 503);
+        }
+
+        if (IS_DEV) {
             console.log(`[${timestamp}][${requestId}][dhmad-get-escrow-status] DEV MODE: Returning mock status`);
             const mockData = { escrow_id, status: 'funded', amount: 0, created_at: new Date().toISOString() };
             console.log(`[${timestamp}][${requestId}][dhmad-get-escrow-status] Mock data:`, mockData);

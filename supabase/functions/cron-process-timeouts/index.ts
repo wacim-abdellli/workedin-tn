@@ -15,6 +15,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const DHMAD_API_KEY = Deno.env.get('DHMAD_API_KEY') ?? '';
 const DHMAD_BASE_URL = Deno.env.get('DHMAD_BASE_URL') ?? 'https://sandbox.dhmad.tn/api/v1';
 const IS_DEV = Deno.env.get('DENO_ENV') === 'development';
+const CRON_SECRET = Deno.env.get('CRON_SECRET');
 
 serve(async (req: Request): Promise<Response> => {
     // Only allow POST requests for security if not invoked via CRON
@@ -23,6 +24,20 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const timestamp = new Date().toISOString();
+
+    // Validate cron secret in production
+    if (!IS_DEV) {
+        if (!CRON_SECRET) {
+            console.error(`[${timestamp}] FATAL: CRON_SECRET is not configured.`);
+            return new Response('Cron service not configured', { status: 503 });
+        }
+        const requestSecret = req.headers.get('x-cron-secret');
+        if (!requestSecret || requestSecret !== CRON_SECRET) {
+            console.error(`[${timestamp}] Unauthorized cron attempt — invalid or missing x-cron-secret header`);
+            return new Response('Unauthorized', { status: 401 });
+        }
+    }
+
     console.log(`[${timestamp}] Starting cron-process-timeouts...`);
 
     try {
@@ -43,13 +58,18 @@ serve(async (req: Request): Promise<Response> => {
 
         let autoReleasedCount = 0;
         let autoReleaseFailures = 0;
+        let pendingCancelledCount = 0;
 
         console.log(`Found ${autoReleaseCandidates?.length || 0} contracts due for 14-day auto-release.`);
 
         for (const contract of autoReleaseCandidates || []) {
             try {
                 if (contract.dhmad_escrow_id) {
-                    if (IS_DEV || !DHMAD_API_KEY) {
+                    if (!IS_DEV && !DHMAD_API_KEY) {
+                        console.error(`[${timestamp}] FATAL: DHMAD_API_KEY not configured.`);
+                        throw new Error("DHMAD_API_KEY not configured.");
+                    }
+                    if (IS_DEV) {
                         console.log(`[DEV] Mocking Dhmad release for escrow ${contract.dhmad_escrow_id}`);
                     } else {
                         console.log(`Calling Dhmad to auto-release escrow ${contract.dhmad_escrow_id}...`);
@@ -83,6 +103,68 @@ serve(async (req: Request): Promise<Response> => {
             }
         }
 
+        // 1.5. Find all contracts stuck in pending_payment for >72 hours
+        const cutoff72h = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+        const { data: stuckPendingContracts, error: pendingFetchError } = await supabaseAdmin
+            .from('contracts')
+            .select('id, client_id, freelancer_id, title')
+            .eq('status', 'pending_payment')
+            .lte('created_at', cutoff72h);
+
+        if (pendingFetchError) {
+            console.error('Failed to fetch stuck pending_payment contracts:', pendingFetchError);
+        } else {
+            console.log(`Found ${stuckPendingContracts?.length || 0} contracts stuck in pending_payment > 72 hours.`);
+            for (const contract of stuckPendingContracts || []) {
+                try {
+                    // Update status to cancelled
+                    const { error: cancelError } = await supabaseAdmin
+                        .from('contracts')
+                        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+                        .eq('id', contract.id);
+
+                    if (cancelError) throw cancelError;
+
+                    // Send notification to client
+                    const clientTitle = 'Contract cancelled — unpaid escrow';
+                    const clientBody = `Your contract "${contract.title || 'Contract'}" was cancelled because the escrow payment was not funded within 72 hours.`;
+                    const { error: clientNotifError } = await supabaseAdmin.rpc('create_notification', {
+                        p_user_id: contract.client_id,
+                        p_type: 'contract',
+                        p_title: clientTitle,
+                        p_body: clientBody,
+                        p_link: `/contracts/${contract.id}`,
+                        p_related_id: contract.id
+                    });
+                    if (clientNotifError) {
+                        console.error(`Failed to notify client ${contract.client_id} for cancelled contract ${contract.id}:`, clientNotifError);
+                    }
+
+                    // Send notification to freelancer
+                    if (contract.freelancer_id) {
+                        const freelancerTitle = 'Contract cancelled — unpaid escrow';
+                        const freelancerBody = `The contract "${contract.title || 'Contract'}" was cancelled because the client did not fund the escrow within 72 hours.`;
+                        const { error: freelancerNotifError } = await supabaseAdmin.rpc('create_notification', {
+                            p_user_id: contract.freelancer_id,
+                            p_type: 'contract',
+                            p_title: freelancerTitle,
+                            p_body: freelancerBody,
+                            p_link: `/contracts/${contract.id}`,
+                            p_related_id: contract.id
+                        });
+                        if (freelancerNotifError) {
+                            console.error(`Failed to notify freelancer ${contract.freelancer_id} for cancelled contract ${contract.id}:`, freelancerNotifError);
+                        }
+                    }
+
+                    pendingCancelledCount++;
+                    console.log(`Successfully cancelled stuck contract ${contract.id} and notified parties.`);
+                } catch (err) {
+                    console.error(`Failed to process pending_payment timeout for contract ${contract.id}:`, err);
+                }
+            }
+        }
+
         // 2. Process standard reminders and notifications (24h warning, 0h overdue)
         console.log('Processing standard reminders and timeouts...');
         const { data: timeoutResults, error: timeoutError } = await supabaseAdmin.rpc('process_contract_review_timeouts');
@@ -95,6 +177,7 @@ serve(async (req: Request): Promise<Response> => {
             success: true,
             autoReleased: autoReleasedCount,
             autoReleaseFailures,
+            pendingCancelled: pendingCancelledCount,
             standardTimeouts: timeoutResults
         }), {
             headers: { 'Content-Type': 'application/json' },

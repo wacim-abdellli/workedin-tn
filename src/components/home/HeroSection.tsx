@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ChevronRight, LayoutDashboard, Shield, Zap, Star } from 'lucide-react';
 import { m, useReducedMotion } from 'framer-motion';
@@ -6,6 +6,70 @@ import { useWorkspaceStore } from '@/lib/workspaceState';
 import { useTranslation } from '@/i18n';
 import { useAuth } from '@/contexts/AuthContext';
 import TypewriterText from '@/components/ui/TypewriterText';
+
+/* ── CountUp: animates 0 → target when element enters viewport ── */
+function CountUp({ to, decimals = 0, suffix = '', duration = 1400 }: {
+  to: number;
+  decimals?: number;
+  suffix?: string;
+  duration?: number;
+}) {
+  const [val, setVal] = useState(to);           // start at final value (no flash of 0)
+  const ref = useRef<HTMLSpanElement>(null);
+  const hasEntered = useRef(false);             // did the element ever enter viewport?
+  const lastAnimated = useRef<number | null>(null); // which `to` did we last animate to?
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // If already visible and `to` changed, re-animate from current val to new target
+    if (hasEntered.current && lastAnimated.current !== to) {
+      lastAnimated.current = to;
+      const fromVal = val;
+      const startTime = performance.now();
+      let rafId: number;
+      const tick = (now: number) => {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        setVal(fromVal + eased * (to - fromVal));
+        if (progress < 1) rafId = requestAnimationFrame(tick);
+        else setVal(to);
+      };
+      rafId = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(rafId);
+    }
+
+    // First time: wait for viewport entry then animate from 0
+    if (hasEntered.current) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        hasEntered.current = true;
+        lastAnimated.current = to;
+        obs.disconnect();
+        setVal(0);
+        const startTime = performance.now();
+        let rafId: number;
+        const tick = (now: number) => {
+          const progress = Math.min((now - startTime) / duration, 1);
+          const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+          setVal(eased * to);
+          if (progress < 1) rafId = requestAnimationFrame(tick);
+          else setVal(to);
+        };
+        rafId = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(rafId);
+      },
+      { threshold: 0.2 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [to, duration]);
+
+  const display = decimals > 0 ? val.toFixed(decimals) : Math.round(val).toLocaleString();
+  return <span ref={ref}>{display}{suffix}</span>;
+}
 
 interface HeroSectionProps {
   stats?: {
@@ -51,10 +115,10 @@ function HeroSection({ stats }: HeroSectionProps) {
           { icon: Star, label: tx('heroSection.freelancer.trust.reputation') },
         ],
         statsCards: [
-          { value: `${stats?.freelancers || tx('heroSection.freelancer.stats.professionals.default')}+`, label: tx('heroSection.freelancer.stats.professionals.label') },
-          { value: `${stats?.contracts || tx('heroSection.freelancer.stats.contracts.default')}+`, label: tx('heroSection.freelancer.stats.contracts.label') },
-          { value: tx('heroSection.freelancer.stats.rating.value'), label: tx('heroSection.freelancer.stats.rating.label') },
-        ],
+          { to: stats?.freelancers || 2500, suffix: '+', decimals: 0, label: tx('heroSection.freelancer.stats.professionals.label') },
+          { to: stats?.contracts || 120, suffix: '+', decimals: 0, label: tx('heroSection.freelancer.stats.contracts.label') },
+          { to: 4.9, suffix: '/5', decimals: 1, label: tx('heroSection.freelancer.stats.rating.label') },
+        ] as { to: number; suffix: string; decimals: number; label: string }[],
         features: [
           {
             title: tx('heroSection.freelancer.features.apply.title'),
@@ -85,10 +149,10 @@ function HeroSection({ stats }: HeroSectionProps) {
           { icon: Star, label: tx('heroSection.client.trust.escrow') },
         ],
         statsCards: [
-          { value: `${stats?.freelancers || tx('heroSection.client.stats.professionals.default')}+`, label: tx('heroSection.client.stats.professionals.label') },
-          { value: `${stats?.jobs || tx('heroSection.client.stats.projects.default')}+`, label: tx('heroSection.client.stats.projects.label') },
-          { value: tx('heroSection.client.stats.trust.value'), label: tx('heroSection.client.stats.trust.label') },
-        ],
+          { to: stats?.freelancers || 2500, suffix: '+', decimals: 0, label: tx('heroSection.client.stats.professionals.label') },
+          { to: stats?.jobs || 120, suffix: '+', decimals: 0, label: tx('heroSection.client.stats.projects.label') },
+          { to: 4.9, suffix: '/5', decimals: 1, label: tx('heroSection.client.stats.trust.label') },
+        ] as { to: number; suffix: string; decimals: number; label: string }[],
         features: [
           {
             title: tx('heroSection.client.features.post.title'),
@@ -146,44 +210,45 @@ function HeroSection({ stats }: HeroSectionProps) {
               initial={reduceMotion ? false : { opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={enter(0.45)}
-              className="mb-5 inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium shadow-sm backdrop-blur-md sm:px-4"
+              className="mb-5 inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-sm font-medium shadow-sm backdrop-blur-md"
               style={{
                 background: 'color-mix(in srgb, var(--workspace-primary) 7%, var(--card-bg))',
                 borderColor: 'color-mix(in srgb, var(--workspace-primary) 18%, transparent)',
                 color: 'var(--workspace-primary-mid)',
               }}
             >
-              <span
-                className="h-2 w-2 shrink-0 rounded-full ring-2 ring-[color-mix(in_srgb,var(--color-status-success)_40%,transparent)]"
-                style={{ background: 'var(--color-status-success)' }}
-              />
-              <span className="text-balance">{heroContent.eyebrow}</span>
-            </m.div>
-
-            {/* Trust highlights — same prominent placement for client & freelancer (under eyebrow) */}
-            <m.div
-              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={enter(0.4, 0.04)}
-              className="mb-8 flex flex-wrap gap-x-6 gap-y-2.5 sm:gap-x-8"
-            >
-              {heroContent.trustItems.map(({ icon: Icon, label }, idx) => (
-                <div key={`hero-trust-${idx}-${label}`} className="flex items-center gap-2.5">
-                  <span
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
-                    style={{
-                      background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
-                      color: 'var(--workspace-primary-mid)',
-                    }}
-                  >
-                    <Icon className="h-4 w-4" strokeWidth={2} />
-                  </span>
-                  <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                    {label}
+              {isAuthenticated && firstName ? (
+                <div className="flex items-center gap-2">
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={firstName}
+                      className="h-5 w-5 rounded-full object-cover ring-1 ring-[color-mix(in_srgb,var(--workspace-primary)_20%,transparent)]"
+                    />
+                  ) : (
+                    <div
+                      className="h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                      style={{ background: 'var(--workspace-primary-mid)' }}
+                    >
+                      {firstName[0].toUpperCase()}
+                    </div>
+                  )}
+                  <span className="text-xs font-semibold pr-1.5">
+                    {tx('heroSection.auth.welcomeBack', { name: firstName }, `Welcome back, ${firstName} 👋`)}
                   </span>
                 </div>
-              ))}
+              ) : (
+                <div className="flex items-center gap-2 px-1 py-0.5">
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full ring-2 ring-[color-mix(in_srgb,var(--color-status-success)_40%,transparent)]"
+                    style={{ background: 'var(--color-status-success)' }}
+                  />
+                  <span className="text-balance text-xs">{heroContent.eyebrow}</span>
+                </div>
+              )}
             </m.div>
+
+
 
             <m.h1
               initial={reduceMotion ? false : { opacity: 0, y: 18 }}
@@ -296,18 +361,31 @@ function HeroSection({ stats }: HeroSectionProps) {
               )}
             </m.div>
 
-            {/* Welcome greeting badge — only for authenticated users */}
-            {isAuthenticated && firstName && (
-              <m.p
-                initial={reduceMotion ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={enter(0.4, 0.28)}
-                className="mt-5 text-sm"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                {tx('heroSection.auth.welcomeBack', { name: firstName }, `Welcome back, ${firstName} 👋`)}
-              </m.p>
-            )}
+            {/* Trust highlights — positioned under CTAs to reinforce credibility */}
+            <m.div
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={enter(0.4, 0.22)}
+              className="mt-8 flex flex-wrap gap-x-6 gap-y-3 sm:gap-x-8"
+            >
+              {heroContent.trustItems.map(({ icon: Icon, label }, idx) => (
+                <div key={`hero-trust-${idx}-${label}`} className="flex items-center gap-2.5">
+                  <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all duration-300 hover:scale-105"
+                    style={{
+                      background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
+                      color: 'var(--workspace-primary-mid)',
+                    }}
+                  >
+                    <Icon className="h-4 w-4" strokeWidth={2} />
+                  </span>
+                  <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </m.div>
+
 
             {/* Mobile / tablet: same stats as desktop panel */}
             <m.div
@@ -326,7 +404,7 @@ function HeroSection({ stats }: HeroSectionProps) {
                   }}
                 >
                   <p className="text-lg font-bold tabular-nums sm:text-xl" style={{ color: 'var(--workspace-primary-mid)' }}>
-                    {s.value}
+                    <CountUp to={s.to} decimals={s.decimals} suffix={s.suffix} />
                   </p>
                   <p className="mt-1 text-[10px] font-medium leading-tight sm:text-[11px]" style={{ color: 'var(--text-muted)' }}>
                     {s.label}
@@ -336,135 +414,70 @@ function HeroSection({ stats }: HeroSectionProps) {
             </m.div>
           </div>
 
-          {/* Desktop: compact stats + steps (trust line lives under eyebrow — not duplicated here) */}
+          {/* Desktop: stats strip + clean feature list */}
           <m.div
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={enter(0.55, 0.1)}
-            className="hidden lg:block lg:max-w-md lg:justify-self-end xl:max-w-sm"
+            className="hidden lg:flex lg:justify-self-end lg:w-full lg:max-w-[440px] xl:max-w-[420px]"
           >
-            <div
-              className="relative overflow-hidden rounded-2xl border p-3 shadow-lg"
-              style={{
-                borderColor: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
-                background: `
-                  linear-gradient(160deg,
-                    color-mix(in srgb, var(--workspace-primary) 5%, var(--card-bg)) 0%,
-                    var(--card-bg) 50%)
-                `,
-                boxShadow: '0 16px 48px -24px color-mix(in srgb, var(--workspace-primary) 28%, transparent), inset 0 1px 0 color-mix(in srgb, #fff 5%, transparent)',
-              }}
-            >
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full blur-3xl opacity-80"
-                style={{ background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)' }}
-              />
+            <div className="hero-panel-clean w-full">
 
-              <div className="relative flex flex-col gap-2.5">
-                <div className="grid grid-cols-3 gap-2">
-                  {heroContent.statsCards.map((s, i) => (
-                    <div
-                      key={s.label}
-                      className="rounded-xl border px-1.5 py-3 text-center"
-                      style={{
-                        background:
-                          i === 0
-                            ? 'linear-gradient(180deg, color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg)), var(--card-bg))'
-                            : 'color-mix(in srgb, var(--color-text-primary) 2.5%, var(--card-bg))',
-                        borderColor:
-                          i === 0
-                            ? 'color-mix(in srgb, var(--workspace-primary) 22%, transparent)'
-                            : 'color-mix(in srgb, var(--color-text-primary) 7%, transparent)',
-                      }}
-                    >
-                      <p
-                        className="text-lg font-bold tabular-nums leading-none tracking-tight xl:text-xl"
-                        style={{ color: i === 0 ? 'var(--workspace-primary-mid)' : 'var(--text-primary)' }}
-                      >
-                        {s.value}
-                      </p>
-                      <p className="mt-1 px-0.5 text-[9px] font-medium leading-tight xl:text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                        {s.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+              {/* ── Top accent bar ── */}
+              <div className="hero-panel-accent" aria-hidden />
 
-                <div
-                  className="overflow-hidden rounded-xl border"
-                  style={{
-                    borderColor: 'color-mix(in srgb, var(--color-text-primary) 7%, transparent)',
-                    background: 'color-mix(in srgb, var(--color-text-primary) 2%, var(--card-bg))',
-                  }}
-                >
-                  <div
-                    className="flex items-center justify-between border-b px-3 py-2"
-                    style={{ borderColor: 'color-mix(in srgb, var(--color-text-primary) 5%, transparent)' }}
-                  >
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="relative flex h-1.5 w-1.5 shrink-0">
-                        <span
-                          className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-35"
-                          style={{ background: 'var(--color-status-success)' }}
-                        />
-                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: 'var(--color-status-success)' }} />
-                      </span>
-                      <span className="truncate text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
-                        {panelTitle}
-                      </span>
-                    </div>
-                    <span
-                      className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide"
-                      style={{
-                        background: 'color-mix(in srgb, var(--workspace-primary) 12%, transparent)',
-                        color: 'var(--workspace-primary-mid)',
-                      }}
-                    >
-                      {liveBadge}
+              {/* ── Stats strip ── */}
+              <div className="hero-stats-strip">
+                {heroContent.statsCards.map((s, i) => (
+                  <div key={s.label} className="hero-stat-item">
+                    <span className="hero-stat-value">
+                      <CountUp to={s.to} decimals={s.decimals} suffix={s.suffix} />
                     </span>
+                    <span className="hero-stat-label">{s.label}</span>
+                    {i < heroContent.statsCards.length - 1 && (
+                      <div className="hero-stat-divider" aria-hidden />
+                    )}
                   </div>
-                  <ul className="divide-y" style={{ borderColor: 'color-mix(in srgb, var(--color-text-primary) 4%, transparent)' }}>
-                    {heroContent.features.map((item, i) => (
-                      <li key={item.title} className="flex items-start gap-2.5 px-3 py-2.5">
-                        <span
-                          className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
-                          style={{
-                            background: 'color-mix(in srgb, var(--workspace-primary) 10%, transparent)',
-                            color: 'var(--workspace-primary-mid)',
-                          }}
-                        >
-                          {i + 1}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
-                            {item.title}
-                          </p>
-                          <p className="mt-0.5 text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                            {item.sub}
-                          </p>
-                        </div>
-                        <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-35" style={{ color: 'var(--workspace-primary-mid)' }} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div
-                  className="rounded-xl border px-3 py-2.5"
-                  style={{
-                    background: 'color-mix(in srgb, var(--workspace-primary) 6%, var(--card-bg))',
-                    borderColor: 'color-mix(in srgb, var(--workspace-primary) 14%, transparent)',
-                  }}
-                >
-                  <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: 'var(--workspace-primary-mid)' }}>
-                    {tx('heroSection.promise.label')}
-                  </p>
-                  <p className="mt-1 text-[11px] font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                    {heroContent.promise}
-                  </p>
-                </div>
+                ))}
               </div>
+
+              {/* ── Panel header ── */}
+              <div className="hero-panel-header">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-1.5 w-1.5 shrink-0">
+                    <span
+                      className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-40"
+                      style={{ background: 'var(--color-status-success)' }}
+                    />
+                    <span
+                      className="relative inline-flex h-1.5 w-1.5 rounded-full"
+                      style={{ background: 'var(--color-status-success)' }}
+                    />
+                  </span>
+                  <span className="hero-panel-label">{panelTitle}</span>
+                </div>
+                <span className="hero-live-badge">{liveBadge}</span>
+              </div>
+
+              {/* ── Feature rows ── */}
+              <ul className="hero-feature-list">
+                {heroContent.features.map((item, i) => (
+                  <li key={item.title} className="hero-feature-row">
+                    <span className="hero-feature-index">{i + 1}</span>
+                    <div className="hero-feature-body">
+                      <p className="hero-feature-title">{item.title}</p>
+                      <p className="hero-feature-sub">{item.sub}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              {/* ── Promise footer ── */}
+              <div className="hero-promise-strip">
+                <span className="hero-promise-eyebrow">{tx('heroSection.promise.label')}</span>
+                <p className="hero-promise-text">{heroContent.promise}</p>
+              </div>
+
             </div>
           </m.div>
         </div>

@@ -84,7 +84,7 @@ serve(async (req: Request): Promise<Response> => {
 
         const { data: contract, error: contractError } = await supabaseAdmin
             .from('contracts')
-            .select('id, client_id, freelancer_id, dhmad_escrow_id')
+            .select('id, client_id, freelancer_id, dhmad_escrow_id, status')
             .eq('id', contract_id)
             .single();
 
@@ -93,10 +93,25 @@ serve(async (req: Request): Promise<Response> => {
             return jsonResponse({ error: 'العقد غير موجود.' }, 404);
         }
 
-        // Only the client or freelancer of this contract may request a refund
-        if (contract.client_id !== user.id && contract.freelancer_id !== user.id) {
-            console.error(`[${timestamp}][${requestId}][dhmad-refund-escrow] Authorization failed: user ${user.id} is not client or freelancer`);
+        // Fetch user profile to check if they are an admin
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', user.id)
+            .single();
+
+        const isAdmin = profile?.is_admin === true;
+
+        // Only the client, freelancer, or an admin may request a refund
+        if (contract.client_id !== user.id && contract.freelancer_id !== user.id && !isAdmin) {
+            console.error(`[${timestamp}][${requestId}][dhmad-refund-escrow] Authorization failed: user ${user.id} is not client, freelancer, or admin`);
             return jsonResponse({ error: 'غير مصرح بطلب استرجاع الضمان.' }, 403);
+        }
+
+        // Only callable when contract is in disputed or cancelled state
+        if (contract.status !== 'disputed' && contract.status !== 'cancelled') {
+            console.error(`[${timestamp}][${requestId}][dhmad-refund-escrow] Invalid status: ${contract.status} must be disputed or cancelled`);
+            return jsonResponse({ error: 'يمكن استرجاع الضمان فقط للعقود الملغاة أو المتنازع عليها.' }, 400);
         }
 
         if (contract.dhmad_escrow_id && contract.dhmad_escrow_id !== escrow_id) {
@@ -109,7 +124,15 @@ serve(async (req: Request): Promise<Response> => {
         // ── TODO: Replace mock with real Dhmad API call when credentials available ──
         let dhmadData: { success: boolean; escrow_id: string; status: 'refunded'; refunded_at: string };
 
-        if (IS_DEV || !DHMAD_API_KEY) {
+        // In production: DHMAD_API_KEY is required. Hard fail if not configured.
+        if (!IS_DEV && !DHMAD_API_KEY) {
+            console.error(`[${timestamp}][${requestId}][dhmad-refund-escrow] FATAL: DHMAD_API_KEY not configured.`);
+            return jsonResponse({
+                error: 'خدمة الدفع غير متاحة حالياً. يرجى التواصل مع الدعم.',
+            }, 503);
+        }
+
+        if (IS_DEV) {
             // DEV MOCK
             console.log(`[${timestamp}][${requestId}][dhmad-refund-escrow] DEV MODE: Creating mock refund`);
             dhmadData = {

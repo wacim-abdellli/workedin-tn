@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
     MessageSquare, Star, Bookmark, MapPin, Clock, Briefcase,
     Archive, CheckCircle, Loader2, User,
@@ -673,9 +674,25 @@ export default function ProposalDetailPane({
                 )}
             </div>
 
-            {hireConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in zoom-in-95 duration-200">
+            {hireConfirm && createPortal(
+                <div 
+                    className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-4 flex justify-center items-start pt-10 sm:pt-20 pb-10 animate-in fade-in duration-200"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setHireConfirm(false);
+                        }
+                    }}
+                >
                     <div className="w-full max-w-md rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black p-6 shadow-2xl space-y-6 relative overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => setHireConfirm(false)}
+                            className="absolute top-4 right-4 p-1.5 rounded-lg transition-colors hover:bg-white/5 text-white/50 hover:text-white z-10"
+                            aria-label="Close"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
                         <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
 
                         <div className="flex flex-col items-center text-center space-y-3">
@@ -716,7 +733,7 @@ export default function ProposalDetailPane({
                                 </div>
                                 <div>
                                     <p className="text-xs text-white/40">Delivery Time</p>
-                                    <p className="font-bold text-white/80">{proposal.delivery_time_days} days</p>
+                                    <p className="font-bold text-white/80">{proposal.duration} days</p>
                                 </div>
                             </div>
                         </div>
@@ -759,7 +776,8 @@ export default function ProposalDetailPane({
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {lightboxImage && (

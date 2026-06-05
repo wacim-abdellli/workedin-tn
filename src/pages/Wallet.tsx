@@ -478,7 +478,7 @@ function WithdrawPanel({
   const bankIbanError =
     touched && method === 'bank_transfer' && !bankIban.trim()
       ? tx('wallet.errors.ibanRequired', undefined, 'IBAN is required')
-      : touched && method === 'bank_transfer' && bankIban.trim() && !/^TN\d{2}/i.test(bankIban.trim())
+      : touched && method === 'bank_transfer' && bankIban.trim() && !/^TN\d{22}$/.test(bankIban.trim().replace(/\s/g, '').toUpperCase())
       ? tx('wallet.errors.ibanInvalid', undefined, 'IBAN must start with TN')
       : null;
   const phoneError =
@@ -653,7 +653,7 @@ function WithdrawPanel({
               </div>
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">IBAN</label>
-                <input type="text" value={bankIban} onChange={(e) => setBankIban(e.target.value.toUpperCase())} placeholder="TN59 XXXX XXXX XXXX XXXX" aria-label="IBAN" className={`${fieldClass(!!bankIbanError)} font-mono tracking-wider`} dir="ltr" />
+                <input type="text" value={bankIban} onChange={(e) => setBankIban(e.target.value.toUpperCase())} placeholder="TN59 XXXX XXXX XXXX XXXX XXXX" aria-label="IBAN" className={`${fieldClass(!!bankIbanError)} font-mono tracking-wider`} dir="ltr" />
                 {bankIbanError && <p className="text-rose-500 text-sm mt-1">{bankIbanError}</p>}
               </div>
             </div>

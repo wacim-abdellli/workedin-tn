@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Supabase Edge Function: Send Email via Resend
  *
  * SECURITY:
@@ -13,8 +13,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Resend } from 'npm:resend@2.0.0'
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://khedmetna.tn'
-const APP_URL = Deno.env.get('APP_URL') || 'https://Khedmetna-tn.vercel.app'
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://workedin.tn'
+const APP_URL = Deno.env.get('APP_URL') || 'https://workedin-tn.vercel.app'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
@@ -282,18 +282,18 @@ async function buildDisputeOpenedEmails(
 
     return recipients.map((recipient) => ({
         to: recipient.email,
-        subject: 'ØªÙ… ÙØªØ­ Ù†Ø²Ø§Ø¹ Ø¹Ù„Ù‰ Ø¹Ù‚Ø¯Ùƒ â€” Ø®Ø¯Ù…Ø©',
+        subject: 'ØªÙ… Ù ØªØ­ Ù†Ø²Ø§Ø¹ Ø¹Ù„Ù‰ Ø¹Ù‚Ø¯Ùƒ â€” Ø®Ø¯Ù…Ø©',
         html: `
             <div dir="rtl" style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px">
                 <h2 style="color:#d97706">Dispute opened</h2>
                 <p>Ù…Ø±Ø­Ø¨Ø§Ù‹ ${escapeHtml(recipient.full_name || 'Ù…Ø³ØªØ®Ø¯Ù…')}ØŒ</p>
-                <p>Ù‚Ø§Ù… <strong>${openedByRole}</strong> Ø¨ÙØªØ­ Ù†Ø²Ø§Ø¹ Ø¹Ù„Ù‰ Ø§Ù„Ø¹Ù‚Ø¯. Ø³ÙŠÙ‚ÙˆÙ… ÙØ±ÙŠÙ‚ Ø®Ø¯Ù…Ø© Ø¨Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„Ø­Ø§Ù„Ø© Ø®Ù„Ø§Ù„ 48 Ø³Ø§Ø¹Ø©.</p>
+                <p>Ù‚Ø§Ù… <strong>${openedByRole}</strong> Ø¨Ù ØªØ­ Ù†Ø²Ø§Ø¹ Ø¹Ù„Ù‰ Ø§Ù„Ø¹Ù‚Ø¯. Ø³ÙŠÙ‚ÙˆÙ… Ù Ø±ÙŠÙ‚ Ø®Ø¯Ù…Ø© Ø¨Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„Ø­Ø§Ù„Ø© Ø®Ù„Ø§Ù„ 48 Ø³Ø§Ø¹Ø©.</p>
                 <p><strong>Ø³Ø¨Ø¨ Ø§Ù„Ù†Ø²Ø§Ø¹:</strong> ${escapeHtml(reason)}</p>
                 <a href="${APP_URL}/contracts/${contractId}"
                    style="display:inline-block;background:#d97706;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px">
                     Ø¹Ø±Ø¶ Ø§Ù„Ø¹Ù‚Ø¯
                 </a>
-                <p style="color:#888;margin-top:24px;font-size:12px">ÙØ±ÙŠÙ‚ Ø®Ø¯Ù…Ø© â€” disputes@khedmetna.tn</p>
+                <p style="color:#888;margin-top:24px;font-size:12px">Ù Ø±ÙŠÙ‚ Ø®Ø¯Ù…Ø© â€” disputes@workedin.tn</p>
             </div>`,
         logAction: 'dispute_opened',
         logEntityType: 'dispute',
@@ -525,7 +525,7 @@ serve(async (req: Request) => {
             console.log('[SendEmail] Sending action email from user:', user.id, 'to:', payload.to, 'action:', action)
             try {
                 const providerResult = await resend.emails.send({
-                    from: 'Khedmetna <noreply@khedmetna.tn>',
+                    from: 'WorkedIn <noreply@workedin.tn>',
                     to: [payload.to],
                     subject: payload.subject,
                     html: payload.html,

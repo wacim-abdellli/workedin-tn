@@ -108,7 +108,15 @@ serve(async (req: Request): Promise<Response> => {
             created_at: string;
         };
 
-        if (IS_DEV || !DHMAD_API_KEY) {
+        // In production: DHMAD_API_KEY is required. Hard fail if not configured.
+        if (!IS_DEV && !DHMAD_API_KEY) {
+            console.error(`[${timestamp}][${requestId}][dhmad-create-escrow] FATAL: DHMAD_API_KEY not configured.`);
+            return jsonResponse({
+                error: 'خدمة الدفع غير متاحة حالياً. يرجى التواصل مع الدعم.',
+            }, 503);
+        }
+
+        if (IS_DEV) {
             // DEV MOCK — realistic shape, no network call
             console.log(`[${timestamp}][${requestId}][dhmad-create-escrow] DEV MODE: Creating mock escrow`);
             const escrow_id = `dhmad_mock_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;

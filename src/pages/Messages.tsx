@@ -753,9 +753,27 @@ function MessagesComponent() {
     const [showUnknownContractBanner, setShowUnknownContractBanner] = useState(false);
     const [isFundEscrowOpen, setIsFundEscrowOpen] = useState(false);
     const [walletBalance, setWalletBalance] = useState<number | null>(null);
-    const [showConversationsList, setShowConversationsList] = useState(true);
-    const [showContractPanel, setShowContractPanel] = useState(true);
+    const [showConversationsList, setShowConversationsList] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        const hasContract = params.has('contract') || params.has('with');
+        return !hasContract;
+    });
+    const [showContractPanel, setShowContractPanel] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        return params.has('contract');
+    });
     const [isBannerDismissed, setIsBannerDismissed] = useState(false);
+
+    // Enforce mutual exclusivity of sidebars (conversations list & contract panel)
+    useEffect(() => {
+        if (showConversationsList && showContractPanel) {
+            if (isContractSession) {
+                setShowConversationsList(false);
+            } else {
+                setShowContractPanel(false);
+            }
+        }
+    }, [showConversationsList, showContractPanel, isContractSession]);
 
     useEffect(() => {
         if (!user?.id || selectedContractStatus !== 'pending_payment' || selectedContractUserRole !== 'client') {

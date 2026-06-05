@@ -81,6 +81,7 @@ export function MessageAudioPlayer({ src, rawSource, name, mimeType, isOwn, acce
         setIsPlaying(false);
         setDuration(0);
         setCurrentTime(0);
+        
         setIsLoading(false);
         setHasError(false);
         didAttemptBlobFallbackRef.current = false;

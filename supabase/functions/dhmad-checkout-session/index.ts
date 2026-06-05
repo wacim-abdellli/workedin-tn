@@ -69,7 +69,14 @@ serve(async (req: Request): Promise<Response> => {
             return jsonResponse({ error: 'حقول مطلوبة: escrow_id, action, user_email, redirect_url' }, 400);
         }
 
-        if (IS_DEV || !DHMAD_API_KEY) {
+        if (!IS_DEV && !DHMAD_API_KEY) {
+            console.error(`[${timestamp}][${requestId}][dhmad-checkout-session] FATAL: DHMAD_API_KEY not configured.`);
+            return jsonResponse({
+                error: 'خدمة الدفع غير متاحة حالياً. يرجى التواصل مع الدعم.',
+            }, 503);
+        }
+
+        if (IS_DEV) {
             // DEV: return a fake checkout URL
             console.log(`[${timestamp}][${requestId}][dhmad-checkout-session] DEV MODE: Creating mock session`);
             const mockSessionId = `mock_session_${crypto.randomUUID().slice(0, 8)}`;

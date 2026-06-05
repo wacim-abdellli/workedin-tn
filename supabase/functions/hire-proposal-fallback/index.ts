@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const configuredOrigins = (
   Deno.env.get('ALLOWED_ORIGINS')
   || Deno.env.get('ALLOWED_ORIGIN')
-  || 'https://khedmetna.tn,https://workedin.tn,https://workedin-tn.vercel.app,http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174'
+  || 'https://workedin.tn,https://workedin.tn,https://workedin-tn.vercel.app,http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174'
 )
   .split(',')
   .map((origin) => origin.trim())

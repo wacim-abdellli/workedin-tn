@@ -21,7 +21,8 @@ const PaymentSuccess = () => {
     useEffect(() => {
         const contract_id = searchParams.get('contract_id');
         const payment_id = searchParams.get('payment_id');
-        const isMockSuccess = searchParams.get('mock_success') === 'true' || (import.meta.env.DEV && (!!payment_id || !!contract_id));
+        // Only allow mock path in development builds — tree-shaken out of production
+        const isMockSuccess = import.meta.env.DEV && searchParams.get('mock_success') === 'true';
         const mockAmount = parseFloat(searchParams.get('amount') || '0') || 100; // fallback to 100 TND in dev if not set
 
         setContractId(contract_id);
@@ -38,45 +39,48 @@ const PaymentSuccess = () => {
             if (isMockSuccess && mockAmount > 0) {
                 // Perform local wallet mock balance update (DEV mode)
                 const updateMockWallet = async () => {
-                    try {
-                        const { data: { user } } = await supabase.auth.getUser();
-                        if (!user) throw new Error('Not authenticated');
+                    if (import.meta.env.DEV) {
+                        try {
+                            const { data: { user } } = await supabase.auth.getUser();
+                            if (!user) throw new Error('Not authenticated');
 
-                        // Get current user wallet
-                        const { data: wallet, error: walletError } = await supabase
-                            .from('wallets')
-                            .select('id, balance')
-                            .eq('user_id', user.id)
-                            .single();
+                            // Get current user wallet
+                            const { data: wallet, error: walletError } = await supabase
+                                .from('wallets')
+                                .select('id, balance')
+                                .eq('user_id', user.id)
+                                .single();
 
-                        if (walletError || !wallet) throw new Error('Wallet not found');
+                            if (walletError || !wallet) throw new Error('Wallet not found');
 
-                        // Update wallet balance
-                        const { error: updateError } = await supabase
-                            .from('wallets')
-                            .update({ balance: wallet.balance + mockAmount })
-                            .eq('id', wallet.id);
+                            // DEV ONLY: Direct wallet write. In production, wallet updates happen via
+                            // server-side RPCs triggered by verified payment webhooks only.
+                            const { error: updateError } = await supabase
+                                .from('wallets')
+                                .update({ balance: wallet.balance + mockAmount })
+                                .eq('id', wallet.id);
 
-                        if (updateError) throw updateError;
+                            if (updateError) throw updateError;
 
-                        // Insert transaction history record
-                        await supabase.from('transactions').insert({
-                            user_id: user.id,
-                            amount: mockAmount,
-                            type: 'deposit',
-                            status: 'completed',
-                            description: `Wallet Deposit (Mock Payment)`,
-                        });
+                            // Insert transaction history record
+                            await supabase.from('transactions').insert({
+                                user_id: user.id,
+                                amount: mockAmount,
+                                type: 'deposit',
+                                status: 'completed',
+                                description: `Wallet Deposit (Mock Payment)`,
+                            });
 
-                        setAmount(mockAmount);
-                        setStatus('success');
-                        setTimeout(() => {
-                            navigate('/wallet');
-                        }, 4000);
-                    } catch (err) {
-                        logger.error('[PaymentSuccess] Mock wallet update failed:', err);
-                        setStatus('failed');
-                        setError(tx('wallet.mockDepositFailed', undefined, 'Failed to credit mock wallet deposit'));
+                            setAmount(mockAmount);
+                            setStatus('success');
+                            setTimeout(() => {
+                                navigate('/wallet');
+                            }, 4000);
+                        } catch (err) {
+                            logger.error('[PaymentSuccess] Mock wallet update failed:', err);
+                            setStatus('failed');
+                            setError(tx('wallet.mockDepositFailed', undefined, 'Failed to credit mock wallet deposit'));
+                        }
                     }
                 };
 
@@ -144,31 +148,33 @@ const PaymentSuccess = () => {
             if (isMockSuccess) {
                 // Mock update contract escrow_funded = true directly in DEV mode
                 const fundMockContract = async () => {
-                    try {
-                        const { data: contract, error: fetchError } = await supabase
-                            .from('contracts')
-                            .select('id, amount')
-                            .eq('id', contract_id)
-                            .single();
+                    if (import.meta.env.DEV) {
+                        try {
+                            const { data: contract, error: fetchError } = await supabase
+                                .from('contracts')
+                                .select('id, amount')
+                                .eq('id', contract_id)
+                                .single();
 
-                        if (fetchError || !contract) throw new Error('Contract not found');
+                            if (fetchError || !contract) throw new Error('Contract not found');
 
-                        const { error: updateError } = await supabase
-                            .from('contracts')
-                            .update({ escrow_funded: true })
-                            .eq('id', contract_id);
+                            const { error: updateError } = await supabase
+                                .from('contracts')
+                                .update({ escrow_funded: true })
+                                .eq('id', contract_id);
 
-                        if (updateError) throw updateError;
+                            if (updateError) throw updateError;
 
-                        setAmount(contract.amount || 0);
-                        setStatus('success');
-                        setTimeout(() => {
-                            navigate(`/contracts/${contract_id}`);
-                        }, 4000);
-                    } catch (err) {
-                        logger.error('[PaymentSuccess] Mock contract funding failed:', err);
-                        setStatus('failed');
-                        setError('Mock contract funding failed');
+                            setAmount(contract.amount || 0);
+                            setStatus('success');
+                            setTimeout(() => {
+                                navigate(`/contracts/${contract_id}`);
+                            }, 4000);
+                        } catch (err) {
+                            logger.error('[PaymentSuccess] Mock contract funding failed:', err);
+                            setStatus('failed');
+                            setError('Mock contract funding failed');
+                        }
                     }
                 };
 

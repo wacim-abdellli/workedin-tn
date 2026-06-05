@@ -84,7 +84,7 @@ serve(async (req: Request): Promise<Response> => {
 
         const { data: contract, error: contractError } = await supabaseAdmin
             .from('contracts')
-            .select('id, client_id, dhmad_escrow_id')
+            .select('id, client_id, dhmad_escrow_id, status')
             .eq('id', contract_id)
             .single();
 
@@ -98,6 +98,11 @@ serve(async (req: Request): Promise<Response> => {
             return jsonResponse({ error: 'يُسمح فقط للعميل بتحرير الضمان.' }, 403);
         }
 
+        if (contract.status !== 'delivery_submitted') {
+            console.error(`[${timestamp}][${requestId}][dhmad-release-escrow] Invalid status: ${contract.status} must be delivery_submitted`);
+            return jsonResponse({ error: 'يجب تقديم العمل قبل تحرير الضمان.' }, 400);
+        }
+
         if (contract.dhmad_escrow_id && contract.dhmad_escrow_id !== escrow_id) {
             console.error(`[${timestamp}][${requestId}][dhmad-release-escrow] Escrow ID mismatch: ${contract.dhmad_escrow_id} !== ${escrow_id}`);
             return jsonResponse({ error: 'معرّف الضمان لا يطابق العقد.' }, 400);
@@ -108,7 +113,15 @@ serve(async (req: Request): Promise<Response> => {
         // ── TODO: Replace mock with real Dhmad API call when credentials available ──
         let dhmadData: { success: boolean; escrow_id: string; status: 'released'; released_at: string };
 
-        if (IS_DEV || !DHMAD_API_KEY) {
+        // In production: DHMAD_API_KEY is required. Hard fail if not configured.
+        if (!IS_DEV && !DHMAD_API_KEY) {
+            console.error(`[${timestamp}][${requestId}][dhmad-release-escrow] FATAL: DHMAD_API_KEY not configured.`);
+            return jsonResponse({
+                error: 'خدمة الدفع غير متاحة حالياً. يرجى التواصل مع الدعم.',
+            }, 503);
+        }
+
+        if (IS_DEV) {
             // DEV MOCK
             console.log(`[${timestamp}][${requestId}][dhmad-release-escrow] DEV MODE: Creating mock release`);
             dhmadData = {

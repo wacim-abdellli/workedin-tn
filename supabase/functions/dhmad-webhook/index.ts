@@ -51,19 +51,24 @@ serve(async (req: Request) => {
         const rawBody = await req.text();
 
         // ── Signature verification ────────────────────────────────────────────
-        if (DHMAD_WEBHOOK_SECRET && !IS_DEV) {
+        // In production: DHMAD_WEBHOOK_SECRET is mandatory. Hard fail if missing.
+        if (!IS_DEV && !DHMAD_WEBHOOK_SECRET) {
+            console.error(`[${timestamp}][${requestId}][dhmad-webhook] FATAL: DHMAD_WEBHOOK_SECRET is not configured. Refusing all requests.`);
+            return new Response('Webhook not configured', { status: 503 });
+        }
+
+        // Verify signature in production (skip only in local dev)
+        if (!IS_DEV) {
             const signatureHeader = req.headers.get('x-dhmad-signature')
                 || req.headers.get('x-webhook-signature')
                 || req.headers.get('x-signature');
 
-            const isValid = await verifySignature(rawBody, signatureHeader, DHMAD_WEBHOOK_SECRET);
+            const isValid = await verifySignature(rawBody, signatureHeader, DHMAD_WEBHOOK_SECRET!);
             if (!isValid) {
                 console.error(`[${timestamp}][${requestId}][dhmad-webhook] Signature verification FAILED`);
                 return new Response('Invalid signature', { status: 401 });
             }
             console.log(`[${timestamp}][${requestId}][dhmad-webhook] Signature verified ✓`);
-        } else {
-            console.log(`[${timestamp}][${requestId}][dhmad-webhook] Signature verification skipped (DEV or no secret configured)`);
         }
 
         // Parse webhook payload
