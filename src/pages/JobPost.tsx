@@ -89,11 +89,11 @@ const DESCRIPTION_SNIPPETS = [
 ] as const;
 
 const FIELD_CLASS =
-  'w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3.5 text-[15px] text-white outline-none transition-all duration-300 placeholder:text-gray-400 hover:border-white/20 hover:bg-white/[0.08] focus:bg-white/[0.1] focus:border-orange-400 focus:ring-4 focus:ring-orange-500/20 shadow-inner backdrop-blur-sm';
+  'w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-sm text-white outline-none transition-all duration-300 placeholder:text-gray-500 hover:border-white/20 hover:bg-white/[0.05] focus:bg-white/[0.05] focus:border-workspace-primary focus:ring-4 focus:ring-workspace-primary/10 shadow-inner backdrop-blur-sm';
 
-const LABEL_CLASS = 'text-sm font-semibold text-gray-200 mb-1.5 inline-flex items-center gap-1.5 tracking-wide';
+const LABEL_CLASS = 'text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5 inline-flex items-center gap-1.5';
 const CHIP_CLASS =
-  'inline-flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 hover:text-white text-[13px] font-medium px-3.5 py-1.5 rounded-lg border border-white/10 hover:border-white/20 transition-all cursor-pointer backdrop-blur-sm';
+  'inline-flex items-center gap-1.5 bg-white/[0.02] hover:bg-white/[0.06] text-gray-400 hover:text-white text-xs font-medium px-3 py-1.5 rounded-lg border border-white/5 hover:border-white/10 transition-all cursor-pointer backdrop-blur-sm';
 
 const JOB_POST_DEFAULT_VALUES: Partial<JobFormData> = {
   job_type: 'fixed_price',
@@ -829,633 +829,749 @@ export default function JobPost() {
         )}
       />
       <Header />
-      <main className="page-bg-base min-h-screen">
-      <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="min-h-screen w-full page-bg-base p-4 md:p-8 flex justify-center pb-36 md:pb-40">
-          <div className="max-w-4xl w-full flex flex-col gap-6">
-            <section className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_18rem] gap-4 items-start">
-              <div className="space-y-4">
-                <h1 className="text-3xl font-bold max-w-xl text-on-surface">
-                  {tx('jobs.new.heroTitle', undefined, 'Post a project with clarity and attract better-fit freelancers.')}
+      <main className="page-bg-base min-h-screen pb-32">
+        <FormProvider {...methods}>
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-8">
+            
+            {/* Top Minimal Header */}
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6">
+              <div className="space-y-1">
+                <h1 className="text-3xl font-extrabold text-white tracking-tight font-display">
+                  {tx('jobs.new.seo.title', undefined, 'Post a Project')}
                 </h1>
-                <p className="text-on-surface-muted max-w-2xl leading-7">
-                  {tx(
-                    'jobs.new.heroDescription',
-                    undefined,
-                    'Move through the brief in focused phases so top talent can quickly understand what you need and respond with accurate proposals.'
-                  )}
+                <p className="text-gray-400 text-sm">
+                  {tx('jobs.new.heroDescription', undefined, 'Define your project brief in focused phases to find the perfect expert.')}
                 </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="surface-card border border-white/15 bg-white/[0.03] px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5 text-on-surface-muted">
-                    {autosaveStatus === 'saving' ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Check className="w-3.5 h-3.5" />
-                    )}
-                    {autosaveStatus === 'saving'
-                      ? tx('jobs.new.autosave.saving', undefined, 'Saving...')
-                      : lastSaved
-                      ? tx('jobs.new.autosave.lastSaved', { time: 'Just now' }, 'Last saved: Just now')
-                      : tx('jobs.new.autosave.ready', undefined, 'Autosave ready')}
-                  </span>
-                  <span className="surface-card border border-white/15 bg-white/[0.03] px-3 py-1.5 rounded-full text-xs inline-flex items-center gap-1.5 text-on-surface-muted">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    {tx('jobs.new.wizard.metaDraft', undefined, 'Draft-safe flow')}
-                  </span>
-                </div>
               </div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="surface-card border border-white/10 bg-white/[0.02] px-3.5 py-1.5 rounded-full text-xs inline-flex items-center gap-2 text-gray-400">
+                  {autosaveStatus === 'saving' ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-workspace-primary" />
+                  ) : (
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  )}
+                  {autosaveStatus === 'saving'
+                    ? tx('jobs.new.autosave.saving', undefined, 'Saving...')
+                    : lastSaved
+                    ? tx('jobs.new.autosave.lastSaved', { time: 'Just now' }, 'Last saved: Just now')
+                    : tx('jobs.new.autosave.ready', undefined, 'Autosave ready')}
+                </span>
+                <span className="surface-card border border-white/10 bg-white/[0.02] px-3.5 py-1.5 rounded-full text-xs inline-flex items-center gap-2 text-gray-400">
+                  <ShieldCheck className="w-3.5 h-3.5 text-workspace-primary" />
+                  {tx('jobs.new.wizard.metaDraft', undefined, 'Draft-safe flow')}
+                </span>
+              </div>
+            </header>
 
-              <aside className="surface-card border border-white/12 rounded-2xl p-5 w-full lg:w-72 shadow-[0_18px_45px_-36px_rgba(249,115,22,0.65)]">
-                <p className="text-orange-500 text-xs font-semibold tracking-wide">
-                  {tx('jobs.new.currentPhase', undefined, 'CURRENT PHASE')}
-                </p>
-                <h2 className="text-on-surface text-lg font-semibold mt-1">{currentStepMeta.label}</h2>
-                <p className="text-on-surface-muted text-sm mt-1">{currentStepMeta.description}</p>
-
-                <div className="mt-4">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-on-surface-muted">{tx('jobs.new.progress', undefined, 'Progress')}</span>
-                    <span className="text-on-surface">{progress}</span>
+            {/* Split Screen Container */}
+            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
+              
+              {/* Sticky Progress & Guide Sidebar */}
+              <aside className="space-y-6 lg:sticky lg:top-24">
+                
+                {/* Steps Checklist */}
+                <div className="surface-card border border-white/10 rounded-2xl p-5 w-full flex flex-col gap-6 bg-gradient-to-b from-white/[0.02] to-transparent">
+                  <div>
+                    <p className="text-workspace-primary text-[10px] font-bold tracking-widest uppercase mb-1">
+                      {tx('jobs.new.currentPhase', undefined, 'CURRENT PHASE')}
+                    </p>
+                    <h2 className="text-white text-base font-bold font-display leading-tight">{currentStepMeta.label}</h2>
                   </div>
-                  <div className="h-2 w-full bg-[var(--color-bg-muted)] rounded-full mt-2 overflow-hidden border border-white/5">
-                    <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: progress }} />
+
+                  <nav className="flex flex-col gap-4">
+                    {STEP_ITEMS.map((step, idx) => {
+                      const isCompleted = step.id < currentStep;
+                      const isActive = step.id === currentStep;
+
+                      return (
+                        <div key={step.id} className="flex items-start gap-3 relative">
+                          {idx < STEP_ITEMS.length - 1 && (
+                            <div
+                              className={`absolute left-3.5 top-8 bottom-0 w-0.5 -translate-x-1/2 ${
+                                isCompleted ? 'bg-workspace-primary' : 'bg-white/5'
+                              }`}
+                              style={{ height: 'calc(100% + 8px)' }}
+                            />
+                          )}
+                          <div
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                              isActive
+                                ? 'bg-workspace-primary text-white shadow-[0_0_15px_var(--workspace-shadow)] ring-4 ring-workspace-primary/20'
+                                : isCompleted
+                                ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.25)]'
+                                : 'bg-white/5 text-gray-500 border border-white/10'
+                            }`}
+                          >
+                            {isCompleted ? <Check className="w-4 h-4" /> : step.id}
+                          </div>
+                          <div className="flex flex-col">
+                            <span
+                              className={`text-xs font-semibold tracking-wide transition-colors ${
+                                isActive ? 'text-workspace-primary' : isCompleted ? 'text-emerald-400' : 'text-gray-500'
+                              }`}
+                            >
+                              {step.label}
+                            </span>
+                            <span className="text-[10px] text-gray-400 mt-0.5 leading-relaxed hidden xl:block">
+                              {step.description}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </nav>
+
+                  {/* Progress Indicator */}
+                  <div className="border-t border-white/5 pt-4">
+                    <div className="flex items-center justify-between text-[11px] mb-1.5">
+                      <span className="text-gray-500">{tx('jobs.new.progress', undefined, 'Progress')}</span>
+                      <span className="text-white font-bold">{progress}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                      <div className="h-full bg-workspace-primary rounded-full transition-all duration-300" style={{ width: progress }} />
+                    </div>
                   </div>
                 </div>
 
-                <p className="text-on-surface-muted text-xs mt-3">
-                  {tx('jobs.new.stepCounter', { current: currentStep, total: STEP_ITEMS.length }, `Step ${currentStep} of ${STEP_ITEMS.length}`)}
-                </p>
+                {/* Expert Tips Panel */}
+                <div className="surface-card border border-white/10 rounded-2xl p-5 w-full flex flex-col gap-3.5 bg-gradient-to-br from-white/[0.01] to-transparent">
+                  <div className="flex items-center gap-2 text-workspace-primary text-xs font-bold tracking-wider uppercase">
+                    <Lightbulb className="w-4 h-4 shrink-0" />
+                    <span>{tx('jobs.new.expertTips', undefined, 'Expert Tips')}</span>
+                  </div>
+                  <div className="text-[11px] text-gray-400 leading-relaxed space-y-2.5">
+                    {currentStep === 1 && (
+                      <>
+                        <p><strong>Specific Title:</strong> Describe exactly what you need. A clear title attracts matching specialists immediately.</p>
+                        <p><strong>Rich Context:</strong> Provide clear parameters on scope, final deliverables, and success criteria.</p>
+                      </>
+                    )}
+                    {currentStep === 2 && (
+                      <>
+                        <p><strong>Budget Model:</strong> Choose Fixed Price for well-defined outcomes, and Hourly for ongoing development or dynamic briefs.</p>
+                        <p><strong>Deadline Buffer:</strong> Setting a realistic date encourages high-quality, professional applications.</p>
+                      </>
+                    )}
+                    {currentStep === 3 && (
+                      <>
+                        <p><strong>Public Briefs:</strong> Great for maximum proposals and competitive price bidding.</p>
+                        <p><strong>Invite-only:</strong> Best for private/sensitive IP or when you personally select top freelancers.</p>
+                      </>
+                    )}
+                    {currentStep === 4 && (
+                      <>
+                        <p><strong>Lock Structure:</strong> Verify all specs. The core structure is finalized upon publishing to ensure bid consistency.</p>
+                      </>
+                    )}
+                  </div>
+                </div>
               </aside>
-            </section>
 
-            <section className="surface-card border border-white/12 rounded-2xl p-2 shadow-[0_14px_38px_-34px_rgba(249,115,22,0.7)]">
-              <ol className="flex items-center justify-between gap-2 overflow-x-auto">
-                {STEP_ITEMS.map((step, index) => {
-                  const isCompleted = step.id < currentStep;
-                  const isActive = step.id === currentStep;
+              {/* Right Form Card Container */}
+              <div className="flex-1 w-full min-w-0">
+                {currentStep === 1 ? (
+                  <div className="space-y-6">
+                    
+                    {/* Step 1 Title Header Card */}
+                    <header className="surface-card border border-white/10 rounded-2xl p-6 bg-gradient-to-r from-white/[0.02] to-transparent">
+                      <h2 className="text-lg font-bold text-white tracking-wide font-display">
+                        {tx('jobs.new.steps.basics', undefined, 'Job details')}
+                      </h2>
+                      <p className="text-gray-400 text-xs mt-1 leading-relaxed">
+                        {tx('jobs.new.step1.subtitle', undefined, 'Start with a clear title and strong context.')}
+                      </p>
+                    </header>
 
-                  return (
-                    <li key={step.id} className="flex items-center gap-2 shrink-0">
-                      <div className={`flex items-center gap-2 px-2 py-1.5 rounded-xl ${isActive ? 'bg-orange-500/10' : ''}`}>
-                        <span
-                          className={`w-7 h-7 rounded-full text-xs font-semibold inline-flex items-center justify-center ${
-                            isActive || isCompleted
-                              ? 'bg-orange-500 text-white shadow-[0_0_18px_rgba(249,115,22,0.35)]'
-                              : 'surface-sunken text-on-surface-muted'
+                    {/* Step 1 Form Card */}
+                    <div className="surface-card border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col gap-8 shadow-sm">
+                      
+                      {/* Project Title */}
+                      <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.01] p-4 md:p-5 transition-colors hover:border-white/10">
+                        <label className={LABEL_CLASS}>
+                          {tx('jobs.new.fields.title', undefined, 'Project title')}
+                          <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
+                        </label>
+                        <p className="text-[11px] text-gray-500">Use specific technical terms to help the right freelancers find you.</p>
+                        <input
+                          type="text"
+                          {...methods.register('title')}
+                          name="title"
+                          placeholder={tx(
+                            'jobs.new.fields.titlePlaceholder',
+                            undefined,
+                            'Example: Modern bilingual logo system for a Tunisian cafe'
+                          )}
+                          className={`${FIELD_CLASS} text-base`}
+                        />
+                        {methods.formState.errors.title ? (
+                          <p className="text-red-400 text-xs">{methods.formState.errors.title.message as string}</p>
+                        ) : null}
+                        
+                        {/* Title Templates */}
+                        <div className="flex flex-wrap gap-2 pt-1.5">
+                          {TITLE_TEMPLATES.map((template) => (
+                            <button
+                              key={template}
+                              type="button"
+                              onClick={() => applyTitleTemplate(template)}
+                              className={CHIP_CLASS}
+                            >
+                              <span className="text-workspace-primary font-semibold font-mono text-[10px]">+</span> {template}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Category Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        {/* Main Category */}
+                        <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.01] p-4 md:p-5 transition-colors hover:border-white/10">
+                          <label className={LABEL_CLASS}>
+                            {tx('jobs.new.fields.mainCategory', undefined, 'Main category')}
+                            <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
+                          </label>
+                          <p className="text-[11px] text-gray-500">Choose the best fit category to enable automated expert match alerts.</p>
+                          <div className="relative">
+                            <select
+                              name="category"
+                              aria-label={tx('jobs.new.fields.mainCategory', undefined, 'Main category')}
+                              value={selectedCategory}
+                              onChange={(event) => {
+                                methods.setValue('category', event.target.value, {
+                                  shouldDirty: true,
+                                  shouldValidate: true,
+                                });
+                                methods.setValue('subcategory', '', {
+                                  shouldDirty: true,
+                                  shouldValidate: true,
+                                });
+                              }}
+                              className={`${FIELD_CLASS} appearance-none pr-10`}
+                            >
+                              <option value="" className="bg-[#030303]">
+                                {tx('jobs.new.fields.selectCategory', undefined, 'Select category')}
+                              </option>
+                              {categories.map((category) => (
+                                <option key={category.id} value={category.id} className="bg-[#0c0c0e]">
+                                  {category.name}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                              ▼
+                            </div>
+                          </div>
+                          {methods.formState.errors.category ? (
+                            <p className="text-red-400 text-xs">{methods.formState.errors.category.message as string}</p>
+                          ) : null}
+                        </div>
+
+                        {/* Subcategory */}
+                        <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.01] p-4 md:p-5 transition-colors hover:border-white/10">
+                          <label className={LABEL_CLASS}>
+                            {tx('jobs.new.fields.subcategory', undefined, 'Subcategory')}
+                            <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
+                          </label>
+                          <p className="text-[11px] text-gray-500">Pick the exact specialty to filter bids and ensure precise skills matching.</p>
+                          <div className="relative">
+                            <select
+                              name="subcategory"
+                              aria-label={tx('jobs.new.fields.subcategory', undefined, 'Subcategory')}
+                              value={selectedSubcategory}
+                              onChange={(event) => {
+                                methods.setValue('subcategory', event.target.value, {
+                                  shouldDirty: true,
+                                  shouldValidate: true,
+                                });
+                              }}
+                              disabled={!selectedCategory}
+                              className={`${FIELD_CLASS} appearance-none pr-10 disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/[0.01] disabled:text-[#6c7485]`}
+                            >
+                              <option value="" className="bg-[#030303]">
+                                {tx('jobs.new.fields.selectSubcategory', undefined, 'Select subcategory')}
+                              </option>
+                              {availableSubcategories.map((subcategory) => (
+                                <option
+                                  key={subcategory.id}
+                                  value={subcategory.id}
+                                  className="bg-[#0c0c0e]"
+                                >
+                                  {subcategory.name}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                              ▼
+                            </div>
+                          </div>
+                          {methods.formState.errors.subcategory ? (
+                            <p className="text-red-400 text-xs">
+                              {methods.formState.errors.subcategory.message as string}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.01] p-4 md:p-5 transition-colors hover:border-white/10">
+                        <label className={LABEL_CLASS}>
+                          {tx('jobs.new.fields.description', undefined, 'Project description')}
+                          <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
+                        </label>
+                        <p className="text-[11px] text-gray-500">Explain the scope, expected parameters, and what successful deliverables look like.</p>
+                        <textarea
+                          rows={7}
+                          maxLength={2000}
+                          {...methods.register('description')}
+                          name="description"
+                          placeholder={tx(
+                            'jobs.new.fields.descriptionPlaceholder',
+                            undefined,
+                            'Provide detailed background, target audience, technical specifications, and key deliverables...'
+                          )}
+                          className={`${FIELD_CLASS} min-h-48 resize-y leading-relaxed`}
+                        />
+
+                        <div className="flex items-center justify-between text-xs pt-1">
+                          <span className="text-gray-500">{description.length} / 2000 characters</span>
+                          {methods.formState.errors.description ? (
+                            <span className="text-red-400 text-xs">
+                              {methods.formState.errors.description.message as string}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        {/* Description Snippets */}
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {DESCRIPTION_SNIPPETS.map((snippet) => (
+                            <button
+                              key={snippet.label}
+                              type="button"
+                              onClick={() => addDescriptionSnippet(snippet.text)}
+                              className={CHIP_CLASS}
+                            >
+                              <span className="text-workspace-primary font-semibold font-mono text-[10px]">+</span> {snippet.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Description Tips */}
+                        <div className="bg-workspace-primary/[0.03] border border-workspace-primary/15 rounded-xl p-4 flex gap-3 mt-4">
+                          <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-workspace-primary/10 text-workspace-primary">
+                            <Lightbulb className="w-4 h-4" />
+                          </span>
+                          <ul className="grid gap-2 text-xs text-gray-300 leading-normal sm:grid-cols-2 pt-0.5">
+                            <li className="inline-flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-workspace-primary" />
+                              {tx('jobs.new.tips.scope', undefined, 'Be specific about scope and expected quality.')}
+                            </li>
+                            <li className="inline-flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-workspace-primary" />
+                              {tx('jobs.new.tips.success', undefined, 'Clearly define what success looks like.')}
+                            </li>
+                            <li className="inline-flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-workspace-primary" />
+                              {tx('jobs.new.tips.references', undefined, 'Add links, references, or examples if available.')}
+                            </li>
+                            <li className="inline-flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-workspace-primary" />
+                              {tx('jobs.new.tips.handoff', undefined, 'Clarify what should be delivered at handoff.')}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      {/* Reference Links */}
+                      <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.01] p-4 md:p-5 transition-colors hover:border-white/10" data-field="reference_links">
+                        <JobLinksInput
+                          value={referenceLinks}
+                          onChange={(links) => {
+                            methods.setValue('reference_links', links, {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            });
+                          }}
+                          maxLinks={MAX_JOB_REFERENCE_LINKS}
+                        />
+                        {methods.formState.errors.reference_links ? (
+                          <p className="mt-2 text-red-500 text-xs">
+                            {methods.formState.errors.reference_links.message as string}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      {/* Required Skills */}
+                      <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.01] p-4 md:p-5 transition-colors hover:border-white/10" data-field="required_skills">
+                        <label className={LABEL_CLASS}>
+                          {tx('jobs.new.fields.requiredSkills', undefined, 'Required skills (max 5)')}
+                          <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
+                        </label>
+                        <p className="text-[11px] text-gray-500">Tag precise skills to target specialized freelancers for direct application invitations.</p>
+
+                        <div className="relative">
+                          <Search className="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            value={skillQuery}
+                            onChange={(event) => setSkillQuery(event.target.value)}
+                            placeholder={tx(
+                              'jobs.new.fields.skillsPlaceholder',
+                              undefined,
+                              'Try Graphic Design, React, Motion Design...'
+                            )}
+                            className={`${FIELD_CLASS} pl-10`}
+                          />
+                        </div>
+
+                        {/* Selected Skills */}
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {selectedSkills.map((skill) => {
+                            const label =
+                              language === 'ar'
+                                ? skill.name_ar
+                                : language === 'fr'
+                                  ? skill.name_fr
+                                  : skill.name_en;
+                            return (
+                              <span
+                                key={skill.id}
+                                className="flex items-center gap-1.5 rounded-lg border border-workspace-primary/20 bg-workspace-primary/10 px-2.5 py-1 text-xs text-white"
+                              >
+                                {label}
+                                <button
+                                  type="button"
+                                  onClick={() => removeSkill(skill.id)}
+                                  className="text-workspace-primary/60 hover:text-white transition-colors"
+                                  aria-label={`Remove ${label}`}
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+
+                        {/* Suggested Skills */}
+                        <div className="flex flex-wrap items-center gap-2 text-xs pt-2">
+                          <span className="text-gray-500">{tx('jobs.new.fields.suggested', undefined, 'Suggested:')}</span>
+                          {filteredSkillSuggestions.map((skill) => {
+                            const label =
+                              language === 'ar'
+                                ? skill.name_ar
+                                : language === 'fr'
+                                  ? skill.name_fr
+                                  : skill.name_en;
+
+                            return (
+                              <button
+                                key={skill.id}
+                                type="button"
+                                onClick={() => addSkill(skill)}
+                                className={CHIP_CLASS}
+                              >
+                                <span className="text-workspace-primary font-semibold font-mono text-[10px]">+</span> {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Quality Score Indicator */}
+                        <div className="mt-6 rounded-xl border border-white/5 bg-white/[0.01] p-4 md:p-5 shadow-sm transition-colors">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">{tx('jobs.new.quality.title', undefined, 'Quality Score')}</p>
+                            <p className="text-sm font-bold text-white">{qualityScore}%</p>
+                          </div>
+                          <div className="h-2 rounded-full bg-white/5 overflow-hidden mb-4 border border-white/5">
+                            <div
+                              className="h-full transition-all duration-500"
+                              style={{
+                                width: `${qualityScore}%`,
+                                background: qualityScore >= 75
+                                  ? 'linear-gradient(90deg,#10b981,#34d399)'
+                                  : qualityScore >= 50
+                                    ? 'linear-gradient(90deg,#f59e0b,#fbbf24)'
+                                    : 'linear-gradient(90deg,#f97316,#fb7185)',
+                              }}
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {qualityChecks.map((check) => (
+                              <div key={check.id} className="flex items-center gap-2.5 text-[13px]">
+                                <span className={`flex shrink-0 w-4.5 h-4.5 items-center justify-center rounded-full transition-colors ${check.pass ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-gray-500 border border-white/10'}`}>
+                                  {check.pass ? <Check className="w-2.5 h-2.5" /> : <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />}
+                                </span>
+                                <span className={check.pass ? 'text-gray-300 font-medium' : 'text-gray-500'}>{check.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {methods.formState.errors.required_skills ? (
+                          <p className="text-red-500 text-xs">
+                            {methods.formState.errors.required_skills.message as string}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      {/* Attachments */}
+                      <div className="space-y-3 rounded-xl border border-white/5 bg-white/[0.01] p-4 md:p-5 transition-colors hover:border-white/10" data-field="attachments_files">
+                        <label className={LABEL_CLASS}>
+                          {tx('jobs.new.fields.attachments', undefined, 'Attachments (optional)')}
+                        </label>
+                        <p className="text-[11px] text-gray-500">Provide assets, mockups, or detailed specs to clarify work deliverables.</p>
+
+                        <label
+                          htmlFor="attachments"
+                          onDrop={handleDrop}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          className={`border border-dashed rounded-xl bg-white/[0.01] px-5 py-8 flex flex-col items-center justify-center gap-3.5 cursor-pointer text-center transition-all duration-200 ${
+                            isDragging
+                              ? 'border-workspace-primary bg-workspace-primary/5'
+                              : 'border-white/10 hover:border-white/25 hover:bg-white/[0.02]'
                           }`}
                         >
-                          {isCompleted ? <Check className="w-4 h-4" /> : step.id}
-                        </span>
-                        <span
-                          className={`${
-                            isActive ? 'text-on-surface' : 'text-on-surface-muted'
-                          } text-sm font-medium`}
-                        >
-                          {step.label}
-                        </span>
-                      </div>
-                      {index < STEP_ITEMS.length - 1 ? (
-                        <ChevronRight className="w-4 h-4 text-on-surface-subtle" />
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ol>
-            </section>
-
-            {currentStep === 1 ? (
-              <section className="surface-card border border-white/12 rounded-2xl p-6 md:p-8 flex flex-col gap-8 shadow-sm">
-                <header className="rounded-2xl border border-white/10 bg-gradient-to-r from-white/[0.05] to-white/[0.02] p-5">
-                  <h2 className="text-xl font-bold text-on-surface">{tx('jobs.new.steps.basics', undefined, 'Job details')}</h2>
-                  <p className="text-on-surface-muted mt-1 leading-6 text-sm">
-                    {tx('jobs.new.step1.subtitle', undefined, 'Start with a clear title and strong context.')}
-                  </p>
-                </header>
-
-                <div className="space-y-8">
-                  <div className="space-y-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 md:p-5 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
-                    <label className={LABEL_CLASS}>
-                      {tx('jobs.new.fields.title', undefined, 'Project title')}
-                      <span className="text-orange-400" aria-hidden="true">*</span>
-                    </label>
-                    <p className="text-xs text-on-surface-subtle -mt-1">Use specific terms so freelancers immediately understand your project.</p>
-                    <input
-                      type="text"
-                      {...methods.register('title')}
-                      name="title"
-                      placeholder={tx(
-                        'jobs.new.fields.titlePlaceholder',
-                        undefined,
-                        'Example: Modern bilingual logo system for a Tunisian cafe'
-                      )}
-                      className={`${FIELD_CLASS} text-base`}
-                    />
-                    {methods.formState.errors.title ? (
-                      <p className="text-red-400 text-xs">{methods.formState.errors.title.message as string}</p>
-                    ) : null}
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {TITLE_TEMPLATES.map((template) => (
-                        <button
-                          key={template}
-                          type="button"
-                          onClick={() => applyTitleTemplate(template)}
-                          className={CHIP_CLASS}
-                        >
-                          <span className="text-orange-400 opacity-60 group-hover:opacity-100">+</span> {template}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 md:p-5 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
-                      <label className={LABEL_CLASS}>
-                        {tx('jobs.new.fields.mainCategory', undefined, 'Main category')}
-                        <span className="text-orange-400" aria-hidden="true">*</span>
-                      </label>
-                      <p className="text-xs text-on-surface-subtle -mt-1">Choose the closest category to improve matching quality.</p>
-                      <select
-                        name="category"
-                        aria-label={tx('jobs.new.fields.mainCategory', undefined, 'Main category')}
-                        value={selectedCategory}
-                        onChange={(event) => {
-                          methods.setValue('category', event.target.value, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                          methods.setValue('subcategory', '', {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        }}
-                        className={FIELD_CLASS}
-                      >
-                        <option value="">
-                          {tx('jobs.new.fields.selectCategory', undefined, 'Select category')}
-                        </option>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-                      {methods.formState.errors.category ? (
-                        <p className="text-red-400 text-xs">{methods.formState.errors.category.message as string}</p>
-                      ) : null}
-                    </div>
-
-                    <div className="space-y-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 md:p-5 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
-                      <label className={LABEL_CLASS}>
-                        {tx('jobs.new.fields.subcategory', undefined, 'Subcategory')}
-                        <span className="text-orange-400" aria-hidden="true">*</span>
-                      </label>
-                      <p className="text-xs text-on-surface-subtle -mt-1">Pick the exact specialty so experts can find your project faster.</p>
-                      <select
-                        name="subcategory"
-                        aria-label={tx('jobs.new.fields.subcategory', undefined, 'Subcategory')}
-                        value={selectedSubcategory}
-                        onChange={(event) => {
-                          methods.setValue('subcategory', event.target.value, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        }}
-                        disabled={!selectedCategory}
-                        className={`${FIELD_CLASS} disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-[#13161b] disabled:text-[#6c7485]`}
-                      >
-                          <option value="">
-                          {tx('jobs.new.fields.selectSubcategory', undefined, 'Select subcategory')}
-                        </option>
-                        {availableSubcategories.map((subcategory) => (
-                          <option
-                            key={subcategory.id}
-                            value={subcategory.id}
-                            className="bg-[#1f1b15] text-white"
-                          >
-                            {subcategory.name}
-                          </option>
-                        ))}
-                      </select>
-                      {methods.formState.errors.subcategory ? (
-                        <p className="text-red-400 text-xs">
-                          {methods.formState.errors.subcategory.message as string}
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 md:p-5 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
-                    <label className={LABEL_CLASS}>
-                      {tx('jobs.new.fields.description', undefined, 'Project description')}
-                      <span className="text-orange-400" aria-hidden="true">*</span>
-                    </label>
-                    <p className="text-xs text-on-surface-subtle -mt-1">Include scope, deliverables, quality expectations, and constraints.</p>
-                    <textarea
-                      rows={6}
-                      maxLength={2000}
-                      {...methods.register('description')}
-                      name="description"
-                      placeholder={tx(
-                        'jobs.new.fields.descriptionPlaceholder',
-                        undefined,
-                        'Tell freelancers what you need, who it is for, what should be delivered, and what "done" looks like...'
-                      )}
-                      className={`${FIELD_CLASS} min-h-48 resize-y leading-6`}
-                    />
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-on-surface-muted">{description.length} / 2000 characters</span>
-                      {methods.formState.errors.description ? (
-                        <span className="text-red-400 text-xs">
-                          {methods.formState.errors.description.message as string}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {DESCRIPTION_SNIPPETS.map((snippet) => (
-                        <button
-                          key={snippet.label}
-                          type="button"
-                          onClick={() => addDescriptionSnippet(snippet.text)}
-                          className={CHIP_CLASS}
-                        >
-                          <span className="text-orange-400 opacity-60 group-hover:opacity-100">+</span> {snippet.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="bg-orange-500/[0.06] border border-orange-500/20 rounded-xl p-4 md:p-5 flex gap-3.5 mt-4">
-                      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
-                        <Lightbulb className="w-4 h-4" />
-                      </span>
-                      <ul className="grid gap-2.5 text-[13px] text-orange-200/80 sm:grid-cols-2 pt-1.5">
-                        <li className="inline-flex items-center gap-2.5 leading-5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50" />
-                          {tx('jobs.new.tips.scope', undefined, 'Be specific about scope and expected quality.')}
-                        </li>
-                        <li className="inline-flex items-center gap-2.5 leading-5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50" />
-                          {tx('jobs.new.tips.success', undefined, 'Clearly define what success looks like.')}
-                        </li>
-                        <li className="inline-flex items-center gap-2.5 leading-5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50" />
-                          {tx('jobs.new.tips.references', undefined, 'Add links, references, or examples if available.')}
-                        </li>
-                        <li className="inline-flex items-center gap-2.5 leading-5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500/50" />
-                          {tx('jobs.new.tips.handoff', undefined, 'Clarify what should be delivered at handoff.')}
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2" data-field="reference_links">
-                    <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 shadow-sm sm:p-5 transition-colors hover:bg-white/[0.04] hover:border-white/10">
-                      <JobLinksInput
-                        value={referenceLinks}
-                        onChange={(links) => {
-                          methods.setValue('reference_links', links, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        }}
-                        maxLinks={MAX_JOB_REFERENCE_LINKS}
-                      />
-                      {methods.formState.errors.reference_links ? (
-                        <p className="mt-2 text-red-500 text-xs">
-                          {methods.formState.errors.reference_links.message as string}
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2" data-field="required_skills">
-                    <label className={LABEL_CLASS}>
-                      {tx('jobs.new.fields.requiredSkills', undefined, 'Required skills (max 5)')}
-                    </label>
-
-                    <div className="relative">
-                      <Search className="w-4 h-4 text-on-surface-subtle absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        value={skillQuery}
-                        onChange={(event) => setSkillQuery(event.target.value)}
-                        placeholder={tx(
-                          'jobs.new.fields.skillsPlaceholder',
-                          undefined,
-                          'Try Graphic Design, React, Motion Design...'
-                        )}
-                        className={`${FIELD_CLASS} pl-10`}
-                      />
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {selectedSkills.map((skill) => {
-                        const label =
-                          language === 'ar'
-                            ? skill.name_ar
-                            : language === 'fr'
-                              ? skill.name_fr
-                              : skill.name_en;
-                        return (
-                          <span
-                            key={skill.id}
-                            className="flex items-center gap-1.5 rounded-lg border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 text-sm text-orange-200"
-                          >
-                            {label}
-                            <button
-                              type="button"
-                              onClick={() => removeSkill(skill.id)}
-                              className="text-orange-200/50 hover:text-orange-100 transition-colors"
-                              aria-label={`Remove ${label}`}
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
+                          <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/5 bg-white/[0.03] text-gray-400">
+                            <UploadCloud className="w-6 h-6" />
                           </span>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 text-xs pt-1">
-                      <span className="text-on-surface-muted">{tx('jobs.new.fields.suggested', undefined, 'Suggested:')}</span>
-                      {filteredSkillSuggestions.map((skill) => {
-                        const label =
-                          language === 'ar'
-                            ? skill.name_ar
-                            : language === 'fr'
-                              ? skill.name_fr
-                              : skill.name_en;
-
-                        return (
+                          <div className="space-y-1">
+                            <p className="text-white text-sm font-semibold">
+                              {tx('jobs.new.fields.attachmentsDrop', undefined, 'Drag files here or click to browse')}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {tx(
+                                'jobs.new.fields.attachmentsHint',
+                                undefined,
+                                'PDF, DOC, DOCX, TXT, PNG, JPG, WEBP - Max 10MB per file'
+                              )}
+                            </p>
+                          </div>
                           <button
-                            key={skill.id}
                             type="button"
-                            onClick={() => addSkill(skill)}
-                            className={CHIP_CLASS}
+                            onClick={() => fileInputRef.current?.click()}
+                            className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-4 py-2 rounded-lg text-xs transition-colors font-semibold"
                           >
-                            <span className="text-orange-400 opacity-60 group-hover:opacity-100">+</span> {label}
+                            {tx('jobs.new.fields.chooseFiles', undefined, 'Choose files')}
                           </button>
-                        );
-                      })}
-                    </div>
+                          <input
+                            ref={fileInputRef}
+                            id="attachments"
+                            name="attachments_files"
+                            type="file"
+                            className="hidden"
+                            multiple
+                            accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"
+                            onChange={handleFileBrowse}
+                          />
+                        </label>
 
-                    <div className="mt-4 rounded-xl border border-white/5 bg-white/[0.03] p-4 shadow-sm transition-colors hover:bg-white/[0.04] hover:border-white/10">
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-muted">{tx('jobs.new.quality.title', undefined, 'Quality Score')}</p>
-                        <p className="text-sm font-bold text-on-surface">{qualityScore}%</p>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-surface overflow-hidden mb-4 border border-white/5">
-                        <div
-                          className="h-full transition-all duration-500"
-                          style={{
-                            width: `${qualityScore}%`,
-                            background: qualityScore >= 75
-                              ? 'linear-gradient(90deg,#22c55e,#86efac)'
-                              : qualityScore >= 50
-                                ? 'linear-gradient(90deg,#f59e0b,#fcd34d)'
-                                : 'linear-gradient(90deg,#f97316,#fb7185)',
-                          }}
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {qualityChecks.map((check) => (
-                          <div key={check.id} className="flex items-center gap-2.5 text-[13px]">
-                            <span className={`flex shrink-0 w-4 h-4 items-center justify-center rounded-full transition-colors ${check.pass ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-on-surface-subtle'}`}>
-                              {check.pass ? <Check className="w-2.5 h-2.5" /> : <span className="w-1 h-1 rounded-full bg-current opacity-50" />}
-                            </span>
-                            <span className={check.pass ? 'text-on-surface-muted' : 'text-on-surface-subtle'}>{check.label}</span>
+                        {/* File Preview list */}
+                        {attachments.length > 0 ? (
+                          <div className="space-y-2 mt-3">
+                            {attachments.map((file, index) => (
+                              <div
+                                key={`${file.name}-${file.size}-${index}`}
+                                className="rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3 flex items-center justify-between"
+                              >
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-white truncate">{file.name}</p>
+                                  <p className="text-xs text-gray-500 mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="text-gray-400 hover:text-red-400 transition-colors p-1"
+                                  onClick={() => removeAttachment(index)}
+                                  aria-label={`Remove ${file.name}`}
+                                >
+                                  <X className="w-4.5 h-4.5" />
+                                </button>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        ) : null}
+                        {methods.formState.errors.attachments_files ? (
+                          <p className="text-red-500 text-xs mt-1">
+                            {methods.formState.errors.attachments_files.message as string}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
-                    {methods.formState.errors.required_skills ? (
-                      <p className="text-red-500 text-xs">
-                        {methods.formState.errors.required_skills.message as string}
-                      </p>
-                    ) : null}
                   </div>
-
-                  <div className="space-y-2" data-field="attachments_files">
-                    <label className={LABEL_CLASS}>
-                      {tx('jobs.new.fields.attachments', undefined, 'Attachments (optional)')}
-                    </label>
-
-                    <label
-                      htmlFor="attachments"
-                      onDrop={handleDrop}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      className={`border-2 border-dashed rounded-xl bg-[var(--input-bg)] px-5 py-10 flex flex-col items-center justify-center gap-3 cursor-pointer text-center transition-all duration-200 ${
-                        isDragging
-                          ? 'border-[var(--workspace-primary)] bg-[var(--workspace-primary-dim)]'
-                          : 'border-[var(--input-border)] hover:border-white/20'
-                      }`}
-                    >
-                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/5 bg-white/[0.03] text-on-surface-subtle">
-                        <UploadCloud className="w-6 h-6" />
-                      </span>
-                      <div className="space-y-1">
-                        <p className="text-on-surface text-sm font-medium">
-                          {tx('jobs.new.fields.attachmentsDrop', undefined, 'Drag files here or click to browse')}
-                        </p>
-                        <p className="text-xs text-on-surface-subtle">
-                          {tx(
-                            'jobs.new.fields.attachmentsHint',
-                            undefined,
-                            'PDF, DOC, DOCX, TXT, PNG, JPG, WEBP - Max 10MB per file'
-                          )}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="bg-white/5 hover:bg-white/10 text-on-surface border border-transparent hover:border-white/10 px-4 py-2 rounded-lg text-sm mt-1 transition-colors font-medium"
-                      >
-                        {tx('jobs.new.fields.chooseFiles', undefined, 'Choose files')}
-                      </button>
-                      <input
-                        ref={fileInputRef}
-                        id="attachments"
-                        name="attachments_files"
-                        type="file"
-                        className="hidden"
-                        multiple
-                        accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"
-                        onChange={handleFileBrowse}
-                      />
-                    </label>
-
-                    {attachments.length > 0 ? (
-                      <div className="space-y-2 mt-3">
-                        {attachments.map((file, index) => (
-                          <div
-                            key={`${file.name}-${file.size}-${index}`}
-                            className="rounded-xl border border-white/5 bg-white/[0.02] px-3.5 py-2.5 flex items-center justify-between"
-                          >
-                            <span className="text-sm text-on-surface truncate pr-4">{file.name}</span>
-                            <button
-                              type="button"
-                              className="text-on-surface-subtle hover:text-red-400 transition-colors p-1"
-                              onClick={() => removeAttachment(index)}
-                              aria-label={`Remove ${file.name}`}
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
-                    {methods.formState.errors.attachments_files ? (
-                      <p className="text-red-500 text-xs mt-1">
-                        {methods.formState.errors.attachments_files.message as string}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              </section>
-            ) : null}
-            {currentStep === 2 ? (
-              <section className="surface-card border border-white/12 rounded-2xl p-6 md:p-8 shadow-sm">
-                <StepBudget />
-              </section>
-            ) : null}
-
-            {currentStep === 3 ? (
-              <section className="surface-card border border-white/12 rounded-2xl p-6 md:p-8 shadow-sm">
-                <StepVisibility />
-              </section>
-            ) : null}
-
-            {currentStep === 4 ? (
-              <section className="surface-card border border-white/12 rounded-2xl p-6 md:p-8 shadow-sm">
-                <StepReview />
-              </section>
-            ) : null}
-          </div>
-
-          <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-1.5rem)] md:w-[calc(100%-3rem)] md:max-w-4xl">
-            <div className="surface-card border border-white/15 backdrop-blur-md rounded-2xl px-3 py-3 md:px-4 md:py-3 flex items-center justify-between gap-3 shadow-[0_20px_45px_-28px_rgba(0,0,0,0.5)]">
-              <div className="min-w-0">
-                <p className="text-on-surface-muted text-xs">
-                  {tx(
-                    'jobs.new.stepCounter',
-                    { current: currentStep, total: STEP_ITEMS.length },
-                    `Step ${currentStep} of ${STEP_ITEMS.length}`
-                  )}{' '}
-                  - {currentStepMeta.label}
-                </p>
-                <p className="text-on-surface-subtle text-xs mt-0.5 hidden sm:block">
-                  {lastSaved
-                    ? tx('jobs.new.autosave.savedAt', { time: formatTime(lastSaved) }, `Saved at ${formatTime(lastSaved)}`)
-                    : tx('jobs.new.autosave.notSaved', undefined, 'Not saved yet')}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                {currentStep > 1 ? (
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    disabled={isSubmitting}
-                    className="border border-surface text-on-surface-muted hover:text-on-surface px-3.5 py-2 rounded-xl inline-flex items-center gap-2 transition-colors text-sm disabled:opacity-60"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    {tx('jobs.new.actions.previous', undefined, 'Previous')}
-                  </button>
                 ) : null}
 
-                <button
-                  type="button"
-                  onClick={handleSaveDraft}
-                  disabled={isSubmitting}
-                  className="border border-white/20 text-on-surface-muted hover:text-on-surface px-3.5 py-2 rounded-xl inline-flex items-center gap-2 transition-colors text-sm disabled:opacity-60"
-                >
-                  {isSubmitting && submitIntent === 'draft' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  {tx('jobs.new.actions.saveDraft', undefined, 'Save draft')}
-                </button>
+                {currentStep === 2 ? (
+                  <div className="space-y-6">
+                    <header className="surface-card border border-white/10 rounded-2xl p-6 bg-gradient-to-r from-white/[0.02] to-transparent">
+                      <h2 className="text-lg font-bold text-white tracking-wide font-display">
+                        {tx('jobs.new.stepBudget.title', undefined, 'Budget & Duration')}
+                      </h2>
+                      <p className="text-gray-400 text-xs mt-1 leading-relaxed">
+                        {tx('jobs.new.stepBudget.subtitle', undefined, 'Choose payment terms, timeframe, and contractor profile experience.')}
+                      </p>
+                    </header>
+                    <div className="surface-card border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-sm">
+                      <StepBudget />
+                    </div>
+                  </div>
+                ) : null}
 
-                {currentStep < STEP_ITEMS.length ? (
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    disabled={isSubmitting}
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-medium inline-flex items-center gap-2 transition-colors text-sm disabled:opacity-60"
-                  >
-                    {tx('jobs.new.actions.next', undefined, 'Next')}
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-medium inline-flex items-center gap-2 transition-colors text-sm disabled:opacity-60"
-                  >
-                    {isSubmitting && submitIntent === 'publish' ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : null}
-                    {tx('jobs.new.actions.publishJob', undefined, 'Publish job')}
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                )}
+                {currentStep === 3 ? (
+                  <div className="space-y-6">
+                    <header className="surface-card border border-white/10 rounded-2xl p-6 bg-gradient-to-r from-white/[0.02] to-transparent">
+                      <h2 className="text-lg font-bold text-white tracking-wide font-display">
+                        {tx('jobs.new.stepVisibility.title', undefined, 'Visibility')}
+                      </h2>
+                      <p className="text-gray-400 text-xs mt-1 leading-relaxed">
+                        {tx('jobs.new.stepVisibility.subtitle', undefined, 'Choose who can see your project brief.')}
+                      </p>
+                    </header>
+                    <div className="surface-card border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-sm">
+                      <StepVisibility />
+                    </div>
+                  </div>
+                ) : null}
+
+                {currentStep === 4 ? (
+                  <div className="space-y-6">
+                    <header className="surface-card border border-white/10 rounded-2xl p-6 bg-gradient-to-r from-white/[0.02] to-transparent">
+                      <h2 className="text-lg font-bold text-white tracking-wide font-display">
+                        {tx('jobs.new.stepReview.title', undefined, 'Review and Publish')}
+                      </h2>
+                      <p className="text-gray-400 text-xs mt-1 leading-relaxed">
+                        {tx('jobs.new.stepReview.subtitle', undefined, 'Final check before sending this project brief live to the marketplace.')}
+                      </p>
+                    </header>
+                    <div className="surface-card border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-sm">
+                      <StepReview />
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
-          </div>
-        </form>
-      </FormProvider>
 
-      <Modal
-        isOpen={showRestoreDraftModal}
-        onClose={dismissRestorePrompt}
-        title={tx('jobs.new.restoreDraft.title', undefined, 'Restore draft')}
-      >
-        <div className="space-y-4">
-          <p className="text-muted-foreground">
-            {tx(
-              'jobs.new.restoreDraft.description',
-              { time: draftToRestore ? timeAgo(draftToRestore.timestamp) : '' },
-              `We found a saved draft from ${draftToRestore ? timeAgo(draftToRestore.timestamp) : ''}. Do you want to restore and continue?`
-            )}
-          </p>
-          <div
-            className="rounded-lg border p-3 text-sm"
-            style={{
-              borderColor: 'color-mix(in srgb, var(--workspace-primary) 20%, transparent)',
-              background: 'color-mix(in srgb, var(--workspace-primary) 10%, var(--card-bg))',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            <strong style={{ color: 'var(--text-primary)' }}>
-              {tx('jobs.new.restoreDraft.jobTitle', undefined, 'Title')}:
-            </strong>{' '}
-            <span style={{ color: 'var(--text-secondary)' }}>
-              {draftToRestore?.data.title || tx('jobs.new.restoreDraft.untitled', undefined, '(Untitled)')}
-            </span>
-          </div>
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              type="button"
-              onClick={handleDiscardDraft}
-              className="px-4 py-2 rounded-xl border border-[#262626] text-sm text-gray-300 hover:text-white"
+            {/* Bottom Capsule Sticky Controls */}
+            <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-1.5rem)] md:w-[calc(100%-3rem)] md:max-w-7xl px-4 md:px-8">
+              <div className="surface-card border border-white/10 bg-[#0c0c0e]/80 backdrop-blur-md rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+                <div className="min-w-0">
+                  <p className="text-white text-xs font-semibold">
+                    {tx(
+                      'jobs.new.stepCounter',
+                      { current: currentStep, total: STEP_ITEMS.length },
+                      `Step ${currentStep} of ${STEP_ITEMS.length}`
+                    )}{' '}
+                    - {currentStepMeta.label}
+                  </p>
+                  <p className="text-gray-500 text-[10px] mt-0.5 hidden sm:block">
+                    {lastSaved
+                      ? tx('jobs.new.autosave.savedAt', { time: formatTime(lastSaved) }, `Saved at ${formatTime(lastSaved)}`)
+                      : tx('jobs.new.autosave.notSaved', undefined, 'Not saved yet')}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {currentStep > 1 ? (
+                    <button
+                      type="button"
+                      onClick={handleBack}
+                      disabled={isSubmitting}
+                      className="border border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-gray-300 hover:text-white px-3.5 py-2 rounded-xl inline-flex items-center gap-1.5 transition-all text-xs font-semibold disabled:opacity-60"
+                    >
+                      <ArrowLeft className="w-4.5 h-4.5" />
+                      {tx('jobs.new.actions.previous', undefined, 'Previous')}
+                    </button>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={handleSaveDraft}
+                    disabled={isSubmitting}
+                    className="border border-white/10 bg-white/[0.02] hover:bg-white/[0.06] text-gray-300 hover:text-white px-3.5 py-2 rounded-xl inline-flex items-center gap-1.5 transition-all text-xs font-semibold disabled:opacity-60"
+                  >
+                    {isSubmitting && submitIntent === 'draft' ? (
+                      <Loader2 className="w-4.5 h-4.5 animate-spin text-workspace-primary" />
+                    ) : (
+                      <Save className="w-4.5 h-4.5" />
+                    )}
+                    {tx('jobs.new.actions.saveDraft', undefined, 'Save draft')}
+                  </button>
+
+                  {currentStep < STEP_ITEMS.length ? (
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={isSubmitting}
+                      className="bg-workspace-primary hover:bg-workspace-primary-hover text-white px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-1.5 transition-all text-xs disabled:opacity-60 shadow-[0_0_15px_var(--workspace-shadow)]"
+                    >
+                      {tx('jobs.new.actions.next', undefined, 'Next')}
+                      <ChevronRight className="w-4.5 h-4.5 transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-workspace-primary hover:bg-workspace-primary-hover text-white px-4 py-2 rounded-xl font-semibold inline-flex items-center gap-1.5 transition-all text-xs disabled:opacity-60 shadow-[0_0_15px_var(--workspace-shadow)]"
+                    >
+                      {isSubmitting && submitIntent === 'publish' ? (
+                        <Loader2 className="w-4.5 h-4.5 animate-spin" />
+                      ) : null}
+                      {tx('jobs.new.actions.publishJob', undefined, 'Publish job')}
+                      <ChevronRight className="w-4.5 h-4.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </form>
+        </FormProvider>
+
+        {/* Restore Draft Modal */}
+        <Modal
+          isOpen={showRestoreDraftModal}
+          onClose={dismissRestorePrompt}
+          title={tx('jobs.new.restoreDraft.title', undefined, 'Restore draft')}
+        >
+          <div className="space-y-4">
+            <p className="text-gray-400 text-xs leading-relaxed">
+              {tx(
+                'jobs.new.restoreDraft.description',
+                { time: draftToRestore ? timeAgo(draftToRestore.timestamp) : '' },
+                `We found a saved draft from ${draftToRestore ? timeAgo(draftToRestore.timestamp) : ''}. Do you want to restore and continue?`
+              )}
+            </p>
+            <div
+              className="rounded-xl border p-4 text-xs"
+              style={{
+                borderColor: 'color-mix(in srgb, var(--workspace-primary) 15%, transparent)',
+                background: 'color-mix(in srgb, var(--workspace-primary) 5%, var(--card-bg))',
+                color: 'var(--text-secondary)',
+              }}
             >
-              {tx('jobs.new.restoreDraft.startFresh', undefined, 'Start fresh')}
-            </button>
-            <button
-              type="button"
-              onClick={handleRestoreDraft}
-              className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-sm text-white"
-            >
-              {tx('jobs.new.restoreDraft.restore', undefined, 'Restore draft')}
-            </button>
+              <strong style={{ color: 'var(--text-primary)' }}>
+                {tx('jobs.new.restoreDraft.jobTitle', undefined, 'Title')}:
+              </strong>{' '}
+              <span className="text-white">
+                {draftToRestore?.data.title || tx('jobs.new.restoreDraft.untitled', undefined, '(Untitled)')}
+              </span>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={handleDiscardDraft}
+                className="px-4 py-2 rounded-xl border border-white/10 text-xs text-gray-400 hover:text-white hover:bg-white/5 transition-colors font-semibold"
+              >
+                {tx('jobs.new.restoreDraft.startFresh', undefined, 'Start fresh')}
+              </button>
+              <button
+                type="button"
+                onClick={handleRestoreDraft}
+                className="px-4 py-2 rounded-xl bg-workspace-primary hover:bg-workspace-primary-hover text-xs text-white font-semibold transition-colors"
+              >
+                {tx('jobs.new.restoreDraft.restore', undefined, 'Restore draft')}
+              </button>
+            </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
       </main>
     </>
   );
 }
-
