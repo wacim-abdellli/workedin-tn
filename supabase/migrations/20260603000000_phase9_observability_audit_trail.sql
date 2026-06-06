@@ -15,14 +15,17 @@ CREATE INDEX IF NOT EXISTS idx_security_audit_logs_created_at ON public.security
 ALTER TABLE public.security_audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies
+DROP POLICY IF EXISTS "Users can insert security audit logs for themselves" ON public.security_audit_logs;
 CREATE POLICY "Users can insert security audit logs for themselves"
 ON public.security_audit_logs FOR INSERT
 WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view their own security audit logs" ON public.security_audit_logs;
 CREATE POLICY "Users can view their own security audit logs"
 ON public.security_audit_logs FOR SELECT
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admins can view all security audit logs" ON public.security_audit_logs;
 CREATE POLICY "Admins can view all security audit logs"
 ON public.security_audit_logs FOR SELECT
 USING (

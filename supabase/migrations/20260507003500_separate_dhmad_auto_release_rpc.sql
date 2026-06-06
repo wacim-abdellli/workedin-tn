@@ -77,6 +77,7 @@ $$;
 
 -- 2. Modify process_contract_review_timeouts to NOT auto-release the DB.
 -- We revert the overdue branch to just be a notification, since the Edge function handles auto-release.
+DROP FUNCTION IF EXISTS public.process_contract_review_timeouts(integer);
 CREATE OR REPLACE FUNCTION public.process_contract_review_timeouts(
     p_batch_limit integer DEFAULT 50
 )

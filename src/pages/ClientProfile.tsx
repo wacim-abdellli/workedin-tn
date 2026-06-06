@@ -30,7 +30,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Header } from "@/components/layout";
-import { supabase } from "@/lib/supabase";
+import { supabase, isMissingStorageBucketError, getStorageConfigErrorMessage } from "@/lib/supabase";
 import { supabaseWithRetry } from "@/lib/supabaseWithRetry";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@/i18n";
@@ -91,6 +91,58 @@ interface RecentJob {
 }
 
 // === Helpers ===
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (error && typeof error === 'object') {
+    const maybeMessage = 'message' in error && typeof error.message === 'string'
+      ? error.message
+      : '';
+    if (maybeMessage) {
+      return maybeMessage;
+    }
+  }
+
+  return String(error || '');
+}
+
+function isSchemaCacheMissingColumnError(
+  error: unknown,
+  tableName: string,
+  columnName: string,
+): boolean {
+  const message = getErrorMessage(error).toLowerCase();
+  return message.includes('could not find')
+    && message.includes('schema cache')
+    && message.includes(tableName.toLowerCase())
+    && message.includes(columnName.toLowerCase());
+}
+
+function isMissingAvatarModeColumnError(error: unknown): boolean {
+  return isSchemaCacheMissingColumnError(error, 'profiles', 'avatar_url_freelancer')
+    || isSchemaCacheMissingColumnError(error, 'profiles', 'avatar_url_client');
+}
+
+function getAvatarUpdateErrorMessage(error: unknown): string {
+  const message = getErrorMessage(error).toLowerCase();
+
+  if (message.includes('row-level security') || message.includes('42501')) {
+    return 'You do not have permission to update this profile picture.';
+  }
+
+  if (message.includes('timed out') || message.includes('failed to fetch') || message.includes('network')) {
+    return 'Network issue while updating profile picture. Please try again.';
+  }
+
+  if (isMissingAvatarModeColumnError(error)) {
+    return 'Your database schema is outdated. Please apply the latest migrations and try again.';
+  }
+
+  return 'Could not update profile picture';
+}
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString(undefined, {
@@ -424,7 +476,16 @@ export default function ClientProfile() {
       await refetchClient();
     } catch (error) {
       logger.error('Failed to upload profile picture', error);
-      showToast('Could not update profile picture', 'error');
+      const fallbackErrorText = getAvatarUpdateErrorMessage(error);
+      const rawErrorText = getErrorMessage(error);
+      showToast(
+        isMissingStorageBucketError(error)
+          ? getStorageConfigErrorMessage('avatars')
+          : fallbackErrorText === 'Could not update profile picture' && rawErrorText
+            ? `${fallbackErrorText}: ${rawErrorText}`
+            : fallbackErrorText,
+        'error',
+      );
     } finally {
       setSavingAvatar(false);
     }

@@ -88,6 +88,21 @@ export async function switchWorkspace({
   // If the user still needs onboarding, respect that redirect first.
   const landingPath = target.path;
 
+  if (typeof window !== 'undefined') {
+    try {
+      window.sessionStorage.setItem(
+        'wi_profile_cache',
+        JSON.stringify({
+          userId,
+          profile: nextProfile,
+          freelancerProfile,
+        })
+      );
+    } catch (e) {
+      // ignore
+    }
+  }
+
   sessionStorage.setItem('workspace_switched', targetWorkspace);
 
   navigate(landingPath, {

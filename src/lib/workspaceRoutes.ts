@@ -130,8 +130,32 @@ export function resolveActiveWorkspace(
   }
 
   const capabilities = getWorkspaceCapabilities(profile.user_type);
-  if (requestedWorkspace && capabilities.includes(requestedWorkspace)) {
-    return requestedWorkspace;
+  
+  if (requestedWorkspace) {
+    if (capabilities.includes(requestedWorkspace)) {
+      if (profile.active_mode === requestedWorkspace) {
+        if (typeof window !== 'undefined') {
+          try {
+            window.sessionStorage.removeItem('workspace_switched');
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+      return requestedWorkspace;
+    }
+    
+    // Check if there is a recent client-side workspace switch in progress
+    if (typeof window !== 'undefined') {
+      try {
+        const switched = window.sessionStorage.getItem('workspace_switched');
+        if (switched === requestedWorkspace) {
+          return requestedWorkspace;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
   }
 
   return getInitialWorkspace(profile, freelancerProfile);

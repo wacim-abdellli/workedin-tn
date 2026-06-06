@@ -270,7 +270,7 @@ export const uploadFile = async (
     return uploaded.publicUrl || uploaded.path;
 };
 
-function shouldFallbackToDirectAvatarUpload(bucket: string, error: unknown): boolean {
+function shouldFallbackToDirectAvatarUpload(bucket: string, _error: unknown): boolean {
     const fallbackBuckets = [
         'avatars',
         'identity-documents',
@@ -280,34 +280,7 @@ function shouldFallbackToDirectAvatarUpload(bucket: string, error: unknown): boo
         'contract-files',
         'message_attachments',
     ];
-    if (!fallbackBuckets.includes(bucket)) return false;
-
-    if (!error || typeof error !== 'object') {
-        const message = String(error || '').toLowerCase();
-        return message.includes('failed to fetch') || message.includes('timed out');
-    }
-
-    const errorRecord = error as Record<string, unknown>;
-    const message = typeof errorRecord.message === 'string' ? errorRecord.message.toLowerCase() : '';
-    const statusCode =
-        typeof errorRecord.statusCode === 'number'
-            ? errorRecord.statusCode
-            : typeof errorRecord.status === 'number'
-                ? errorRecord.status
-                : undefined;
-
-    return (
-        statusCode === 404
-        || statusCode === 500
-        || statusCode === 502
-        || statusCode === 503
-        || statusCode === 504
-        || message.includes('failed to fetch')
-        || message.includes('timed out')
-        || message.includes('networkerror')
-        || message.includes('cors')
-        || message.includes('secure-upload')
-    );
+    return fallbackBuckets.includes(bucket);
 }
 
 async function uploadFileDirectly(
