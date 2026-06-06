@@ -1,13 +1,3 @@
--- ─────────────────────────────────────────────────────────────────────────────
--- Migration: sandbox_fund_escrow
--- Purpose:   Allows escrow funding simulation during beta testing (no real
---            payment gateway credentials required).
--- Security:  Verifies the caller is authenticated AND is the client on the
---            contract. Only works on contracts in 'active' or 'pending_payment'
---            status with funded_at is null.
--- Removal:   Drop this function once real Dhmad webhook funding is live.
--- ─────────────────────────────────────────────────────────────────────────────
-
 CREATE OR REPLACE FUNCTION sandbox_fund_escrow(
     p_contract_id UUID
 )
@@ -66,10 +56,4 @@ BEGIN
 END;
 $$;
 
--- Grant execute to authenticated users only (SECURITY DEFINER handles row-level checks)
 GRANT EXECUTE ON FUNCTION sandbox_fund_escrow(UUID) TO authenticated;
-
-COMMENT ON FUNCTION sandbox_fund_escrow IS
-    'Sandbox/beta testing helper: funds escrow on a contract without a real payment gateway. '
-    'Enforces ownership (caller must be the contract client). '
-    'Remove or revoke when real Dhmad webhook integration is active.';

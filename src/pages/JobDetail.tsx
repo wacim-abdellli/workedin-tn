@@ -277,7 +277,7 @@ function JobDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, language, tx } = useTranslation();
-  const { user, profile, freelancerProfile } = useAuth();
+  const { user, profile, freelancerProfile, activeMode } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
@@ -294,6 +294,7 @@ function JobDetail() {
     isAuthenticated: !!user,
     profile,
     freelancerProfile,
+    activeMode,
   });
   const requiresFreelancerWorkspace =
     applyDecision.reason === 'freelancer_role_required' ||

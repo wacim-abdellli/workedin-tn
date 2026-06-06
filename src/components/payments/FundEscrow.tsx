@@ -9,6 +9,22 @@ import { PLATFORM_FEE_PERCENTAGE } from '../../types/payment';
 import type { FundEscrowProps } from '../../types/payment';
 import { useTranslation } from "../../i18n";
 
+type SupabaseLikeError = {
+    message?: string;
+    details?: string | null;
+    hint?: string | null;
+    code?: string;
+};
+
+const getPaymentErrorMessage = (error: unknown, fallback: string) => {
+    if (error instanceof Error) return error.message;
+    if (error && typeof error === 'object' && 'message' in error) {
+        const supabaseError = error as SupabaseLikeError;
+        return supabaseError.message || supabaseError.details || supabaseError.hint || fallback;
+    }
+    return fallback;
+};
+
 /**
  * FundEscrow Component
  * Allows clients to fund escrow for a contract via Flouci payment
@@ -75,9 +91,9 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
 
         } catch (error) {
             logger.error('[FundEscrow] Error:', error);
-            const message = error instanceof Error
-                ? tx(error.message, undefined, error.message)
-                : tx('payment.startFailed', undefined, 'Failed to start payment. Please try again.');
+            const fallback = tx('payment.startFailed', undefined, 'Failed to start payment. Please try again.');
+            const rawMessage = getPaymentErrorMessage(error, fallback);
+            const message = tx(rawMessage, undefined, rawMessage);
             showToast(message, 'error');
             onError?.(message);
         } finally {
@@ -85,7 +101,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
         }
     };
 
-    if (contract.escrow_funded) {
+    if (Boolean(contract.funded_at)) {
         return (
             <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
                 <div className="flex items-center gap-3">

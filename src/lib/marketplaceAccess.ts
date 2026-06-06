@@ -36,6 +36,7 @@ interface AccessContext {
   isAuthenticated: boolean;
   profile: Profile | null;
   freelancerProfile?: FreelancerProfile | null;
+  activeMode?: 'client' | 'freelancer' | null;
 }
 
 const FREELANCER_MARKET_READY_THRESHOLD = 60;
@@ -114,7 +115,7 @@ export function canSaveFreelancer(context: AccessContext): AccessDecision {
 
 export function canApplyToJob(context: AccessContext): AccessDecision {
   const state = getMarketplaceUserState(context);
-  const { isAuthenticated, profile, freelancerProfile } = context;
+  const { isAuthenticated, profile, freelancerProfile, activeMode } = context;
 
   if (!isAuthenticated || !profile) {
     return {
@@ -144,7 +145,8 @@ export function canApplyToJob(context: AccessContext): AccessDecision {
   }
 
   // Dual-role users must be in freelancer workspace before applying.
-  if (profile.user_type === 'both' && profile.active_mode === 'client') {
+  const currentMode = activeMode || profile.active_mode;
+  if (profile.user_type === 'both' && currentMode === 'client') {
     return {
       allowed: false,
       reason: 'freelancer_workspace_required',

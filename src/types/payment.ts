@@ -295,10 +295,10 @@ export interface FlouciPaymentHookResponse extends FlouciVerificationResponse {
 export interface FundEscrowProps {
     contract: {
         id: string;
-        client_id: string;
+        client_id?: string;
         freelancer_id: string;
         budget: number;
-        escrow_funded?: boolean;
+        funded_at?: string | null;
     };
     onSuccess?: () => void;
     onError?: (error: string) => void;

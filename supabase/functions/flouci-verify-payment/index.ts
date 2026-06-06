@@ -123,7 +123,7 @@ serve(async (req: Request) => {
             // SECURITY: Verify the authenticated user is the contract's client
             const { data: contract, error: contractError } = await supabaseAdmin
                 .from('contracts')
-                .select('client_id, freelancer_id, amount, escrow_funded')
+                .select('client_id, freelancer_id, amount, funded_at, payment_status')
                 .eq('id', contract_id)
                 .single()
 
@@ -170,7 +170,7 @@ serve(async (req: Request) => {
                 )
             }
 
-            if (transaction.status === 'completed' || contract.escrow_funded === true) {
+            if (transaction.status === 'completed' || contract.funded_at || ['in_escrow', 'released'].includes(contract.payment_status || '')) {
                 return new Response(
                     JSON.stringify({
                         verification: verificationResult,

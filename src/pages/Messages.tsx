@@ -5901,7 +5901,7 @@ function MessagesComponent() {
                                 id: selectedWorkspaceContractId,
                                 budget: selectedContractMeta.amount || 0,
                                 freelancer_id: selectedContractMeta.freelancer_id,
-                                escrow_funded: Boolean(selectedContractMeta.funded_at)
+                                funded_at: selectedContractMeta.funded_at ?? null
                             } as any}
                             onSuccess={() => {
                                 setIsFundEscrowOpen(false);

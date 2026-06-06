@@ -205,7 +205,7 @@ export interface Contract {
     client_id: string;
     amount: number; // ✅ ADDED: Match database
     escrow_amount?: number; // ✅ ADDED
-    escrow_funded?: boolean; // ✅ ADDED
+    funded_at?: string | null;
     status: ContractStatus;
     payment_status: PaymentStatus;
     payment_method?: PaymentMethod;

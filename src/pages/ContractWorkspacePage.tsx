@@ -25,7 +25,6 @@ type ContractRow = {
     revision_requests_count: number | null;
     max_revision_rounds: number | null;
     funded_at: string | null;
-    escrow_funded?: boolean | null;
     delivery_submitted_at: string | null;
     review_due_at: string | null;
     client_id: string | null;
@@ -397,7 +396,7 @@ export default function ContractWorkspacePage() {
             revisionRequestsCount: contract.revision_requests_count ?? 0,
             maxRevisionRounds: contract.max_revision_rounds ?? 2,
             fundedAt: contract.funded_at ?? null,
-            escrowFunded: contract.escrow_funded === true,
+            escrowFunded: Boolean(contract.funded_at),
             deliverySubmittedAt: contract.delivery_submitted_at ?? null,
             reviewDueAt: contract.review_due_at ?? latestDelivery?.review_due_at ?? null,
             reviewFiles,
@@ -707,7 +706,7 @@ export default function ContractWorkspacePage() {
                                 client_id: contract.client_id ?? '',
                                 freelancer_id: contract.freelancer_id ?? '',
                                 budget: contract.amount ?? 0,
-                                escrow_funded: contract.escrow_funded === true,
+                                funded_at: contract.funded_at,
                             }}
                             onSuccess={() => { setFundEscrowOpen(false); void loadWorkspace(); }}
                             onError={() => setFundEscrowOpen(false)}
@@ -735,7 +734,7 @@ export default function ContractWorkspacePage() {
                 isOpen={cancelOpen}
                 onClose={() => setCancelOpen(false)}
                 onSubmit={handleSubmitCancel}
-                escrowFunded={contract?.escrow_funded === true}
+                escrowFunded={Boolean(contract?.funded_at)}
             />
 
             {/* ─── Submit Delivery Modal ───────────────────────────────────── */}

@@ -149,7 +149,7 @@ const PaymentSuccess = () => {
         // --- Flow B: Contract Escrow Payment ---
         if (contract_id) {
             if (isMockSuccess) {
-                // Mock update contract escrow_funded = true directly in DEV mode
+                // Mock update contract funded_at directly in DEV mode
                 const fundMockContract = async () => {
                     if (import.meta.env.DEV) {
                         try {
@@ -163,7 +163,11 @@ const PaymentSuccess = () => {
 
                             const { error: updateError } = await supabase
                                 .from('contracts')
-                                .update({ escrow_funded: true })
+                                .update({
+                                    funded_at: new Date().toISOString(),
+                                    payment_status: 'in_escrow',
+                                    status: 'active',
+                                })
                                 .eq('id', contract_id);
 
                             if (updateError) throw updateError;
@@ -185,7 +189,7 @@ const PaymentSuccess = () => {
                 return;
             } else if (isSandbox) {
                 // Sandbox mode: edge function sent us back here with sandbox=true
-                // Call an RPC that verifies ownership and marks escrow_funded = true
+                // Call an RPC that verifies ownership and marks funded_at/payment_status.
                 const fundSandboxContract = async () => {
                     try {
                         logger.log('[PaymentSuccess] Sandbox: funding escrow via RPC for contract:', contract_id);
@@ -223,7 +227,7 @@ const PaymentSuccess = () => {
                     try {
                         const { data: contract, error: fetchError } = await supabase
                             .from('contracts')
-                            .select('id, amount, escrow_funded')
+                            .select('id, amount, funded_at, payment_status')
                             .eq('id', contract_id)
                             .single();
 
@@ -231,7 +235,7 @@ const PaymentSuccess = () => {
                             throw new Error('لم يتم العثور على العقد');
                         }
 
-                        if (contract.escrow_funded) {
+                        if (contract.funded_at || ['in_escrow', 'released'].includes(contract.payment_status || '')) {
                             logger.log('[PaymentSuccess] Escrow funded confirmed by webhook');
                             setAmount(contract.amount || 0);
                             setStatus('success');

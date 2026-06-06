@@ -97,7 +97,7 @@ serve(async (req: Request) => {
         // Fetch contract by escrow ID
         const { data: contract, error: contractError } = await supabaseAdmin
             .from('contracts')
-            .select('id, status, payment_status, escrow_funded')
+            .select('id, status, payment_status, funded_at')
             .eq('dhmad_escrow_id', escrowId)
             .maybeSingle();
 
@@ -113,9 +113,8 @@ serve(async (req: Request) => {
 
         // Map Dhmad status to our internal state
         if (status === 'funded') {
-            updates.escrow_funded = true;
             updates.payment_status = 'in_escrow';
-            updates.funded_at = new Date().toISOString();
+            updates.funded_at = contract.funded_at || new Date().toISOString();
             if (contract.status === 'pending_payment') {
                 updates.status = 'active';
             }
