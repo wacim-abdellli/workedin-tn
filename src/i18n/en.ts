@@ -415,8 +415,42 @@ export const en: Translations = {
             "freelancer": "Start earning today",
             "client": "Post a project free"
         },
-        "freelancerSteps": "[\r\n            {\r\n                \"title\": \"Build your profile once\",\r\n                \"description\": \"Add skills, portfolio, and rate. Clients find you — no bidding required.\"\r\n            },\r\n            {\r\n                \"title\": \"Get matched to real projects\",\r\n                \"description\": \"Our system surfaces you to clients looking for exactly your skills.\"\r\n            },\r\n            {\r\n                \"title\": \"Agree on terms, start work\",\r\n                \"description\": \"Chat, negotiate, and lock in the scope before any money moves.\"\r\n            },\r\n            {\r\n                \"title\": \"Get paid on approval\",\r\n                \"description\": \"Funds are in escrow from day one. Approve the milestone — receive your TND.\"\r\n            }\r\n        ]",
-        "clientSteps": "[\r\n            {\r\n                \"title\": \"Post in 2 minutes\",\r\n                \"description\": \"Describe the work, set your budget, choose fixed or hourly.\"\r\n            },\r\n            {\r\n                \"title\": \"Review verified proposals\",\r\n                \"description\": \"Every freelancer is ID-verified. Filter by rating, skill, and price.\"\r\n            },\r\n            {\r\n                \"title\": \"Track milestones, not guesses\",\r\n                \"description\": \"Clear deliverables, deadlines, and progress — all in one workspace.\"\r\n            },\r\n            {\r\n                \"title\": \"Release payment, leave a review\",\r\n                \"description\": \"Approve the work, release funds from escrow, rate the experience.\"\r\n            }\r\n        ]",
+        "freelancerSteps": [
+            {
+                "title": "Build your profile once",
+                "description": "Add skills, portfolio, and rate. Clients find you — no bidding required."
+            },
+            {
+                "title": "Get matched to real projects",
+                "description": "Our system surfaces you to clients looking for exactly your skills."
+            },
+            {
+                "title": "Agree on terms, start work",
+                "description": "Chat, negotiate, and lock in the scope before any money moves."
+            },
+            {
+                "title": "Get paid on approval",
+                "description": "Funds are in escrow from day one. Approve the milestone — receive your TND."
+            }
+        ],
+        "clientSteps": [
+            {
+                "title": "Post in 2 minutes",
+                "description": "Describe the work, set your budget, choose fixed or hourly."
+            },
+            {
+                "title": "Review verified proposals",
+                "description": "Every freelancer is ID-verified. Filter by rating, skill, and price."
+            },
+            {
+                "title": "Track milestones, not guesses",
+                "description": "Clear deliverables, deadlines, and progress — all in one workspace."
+            },
+            {
+                "title": "Release payment, leave a review",
+                "description": "Approve the work, release funds from escrow, rate the experience."
+            }
+        ],
         "trust": {
             "money": {
                 "title": "Full refund if unsatisfied",
@@ -433,7 +467,24 @@ export const en: Translations = {
         },
         "faq": {
             "title": "Common Questions",
-            "items": "[\r\n                {\r\n                    \"q\": \"Is registration free?\",\r\n                    \"a\": \"Yes, registration is completely free for both freelancers and clients. We only charge a small commission on successful projects.\"\r\n                },\r\n                {\r\n                    \"q\": \"How is my money secured?\",\r\n                    \"a\": \"WorkedIn acts as a trusted intermediary. Clients pay us, we hold funds until delivery is approved, then release to the freelancer.\"\r\n                },\r\n                {\r\n                    \"q\": \"What payment methods?\",\r\n                    \"a\": \"We support all local Tunisian methods: local/int'l cards, D17, bank transfer, and even cash for small amounts.\"\r\n                },\r\n                {\r\n                    \"q\": \"Can I register as a company?\",\r\n                    \"a\": \"Yes, you can register a company account to hire staff or offer services as a team.\"\r\n                }\r\n            ]"
+            "items": [
+                {
+                    "q": "Is registration free?",
+                    "a": "Yes, registration is completely free for both freelancers and clients. We only charge a small commission on successful projects."
+                },
+                {
+                    "q": "How is my money secured?",
+                    "a": "WorkedIn acts as a trusted intermediary. Clients pay us, we hold funds until delivery is approved, then release to the freelancer."
+                },
+                {
+                    "q": "What payment methods?",
+                    "a": "We support all local Tunisian methods: local/int'l cards, D17, bank transfer, and even cash for small amounts."
+                },
+                {
+                    "q": "Can I register as a company?",
+                    "a": "Yes, you can register a company account to hire staff or offer services as a team."
+                }
+            ]
         }
     },
     "forClients": {
@@ -461,7 +512,16 @@ export const en: Translations = {
         },
         "categories": {
             "title": "Every skill. One platform.",
-            "items": "[\r\n                \"Development\",\r\n                \"Design & Creative\",\r\n                \"Writing & Translation\",\r\n                \"Sales & Marketing\",\r\n                \"Video & Animation\",\r\n                \"Engineering\",\r\n                \"Support\",\r\n                \"Education\"\r\n            ]"
+            "items": [
+                "Development",
+                "Design & Creative",
+                "Writing & Translation",
+                "Sales & Marketing",
+                "Video & Animation",
+                "Engineering",
+                "Support",
+                "Education"
+            ]
         },
         "talent": {
             "title": "Who you'll be working with"
@@ -491,7 +551,29 @@ export const en: Translations = {
     },
     "testimonials": {
         "title": "Success Stories",
-        "items": "[\r\n            {\r\n                \"name\": \"Mohamed Ali\",\r\n                \"role\": \"Graphic Designer\",\r\n                \"quote\": \"Thanks to WorkedIn.tn, I earned over 5000 TND in just 2 months. The platform is easy to use and payment is fast.\",\r\n                \"earned\": \"5,200\",\r\n                \"image\": \"https://i.pravatar.cc/150?img=11\"\r\n            },\r\n            {\r\n                \"name\": \"Fatima Ben Said\",\r\n                \"role\": \"Translator\",\r\n                \"quote\": \"The best talent marketplace in Tunisia. No bidding wars, clients find me automatically.\",\r\n                \"earned\": \"3,800\",\r\n                \"image\": \"https://i.pravatar.cc/150?img=32\"\r\n            },\r\n            {\r\n                \"name\": \"Ahmed El Hadi\",\r\n                \"role\": \"Web Developer\",\r\n                \"quote\": \"Local payment made everything easy. D17 or bank transfer, all methods are available.\",\r\n                \"earned\": \"8,500\",\r\n                \"image\": \"https://i.pravatar.cc/150?img=53\"\r\n            }\r\n        ]"
+        "items": [
+            {
+                "name": "Mohamed Ali",
+                "role": "Graphic Designer",
+                "quote": "Thanks to WorkedIn.tn, I earned over 5000 TND in just 2 months. The platform is easy to use and payment is fast.",
+                "earned": "5,200",
+                "image": "https://i.pravatar.cc/150?img=11"
+            },
+            {
+                "name": "Fatima Ben Said",
+                "role": "Translator",
+                "quote": "The best talent marketplace in Tunisia. No bidding wars, clients find me automatically.",
+                "earned": "3,800",
+                "image": "https://i.pravatar.cc/150?img=32"
+            },
+            {
+                "name": "Ahmed El Hadi",
+                "role": "Web Developer",
+                "quote": "Local payment made everything easy. D17 or bank transfer, all methods are available.",
+                "earned": "8,500",
+                "image": "https://i.pravatar.cc/150?img=53"
+            }
+        ]
     },
     "auth": {
         "phone": "Phone Number",
@@ -3380,23 +3462,104 @@ export const en: Translations = {
         "categories": {
             "general": {
                 "title": "General",
-                "items": "[\r\n                    {\r\n                        \"q\": \"What is WorkedIn.tn?\",\r\n                        \"a\": \"WorkedIn.tn is a Tunisian freelance marketplace connecting businesses with talented professionals. We believe in fair payment, verified profiles, and secure escrow-protected transactions.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Is registration free?\",\r\n                        \"a\": \"Yes, registration is completely free for both freelancers and clients. We only charge a small commission on successfully completed projects.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"How long does verification take?\",\r\n                        \"a\": \"Identity verification typically takes 24-48 hours. You can start your profile setup immediately, and verification happens in the background.\"\r\n                    }\r\n                ]"
+                "items": [
+                    {
+                        "q": "What is WorkedIn.tn?",
+                        "a": "WorkedIn.tn is a Tunisian freelance marketplace connecting businesses with talented professionals. We believe in fair payment, verified profiles, and secure escrow-protected transactions."
+                    },
+                    {
+                        "q": "Is registration free?",
+                        "a": "Yes, registration is completely free for both freelancers and clients. We only charge a small commission on successfully completed projects."
+                    },
+                    {
+                        "q": "How long does verification take?",
+                        "a": "Identity verification typically takes 24-48 hours. You can start your profile setup immediately, and verification happens in the background."
+                    }
+                ]
             },
             "freelancer": {
                 "title": "For Freelancers",
-                "items": "[\r\n                    {\r\n                        \"q\": \"How do I get started as a freelancer?\",\r\n                        \"a\": \"Sign up, complete your profile with skills and portfolio, then start browsing available projects that match your expertise.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"How much can I earn?\",\r\n                        \"a\": \"Your earnings depend on the projects you take and the rates you set. Many Tunisian freelancers earn between 500-5000 TND per month.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"How do I get paid?\",\r\n                        \"a\": \"Payments are made via D17, bank transfer, or other local payment methods. You set your preferred payment method in your wallet settings.\"\r\n                    }\r\n                ]"
+                "items": [
+                    {
+                        "q": "How do I get started as a freelancer?",
+                        "a": "Sign up, complete your profile with skills and portfolio, then start browsing available projects that match your expertise."
+                    },
+                    {
+                        "q": "How much can I earn?",
+                        "a": "Your earnings depend on the projects you take and the rates you set. Many Tunisian freelancers earn between 500-5000 TND per month."
+                    },
+                    {
+                        "q": "How do I get paid?",
+                        "a": "Payments are made via D17, bank transfer, or other local payment methods. You set your preferred payment method in your wallet settings."
+                    }
+                ]
             },
             "client": {
                 "title": "For Clients",
-                "items": "[\r\n                    {\r\n                        \"q\": \"How do I post a project?\",\r\n                        \"a\": \"Click \\\"Post a Project\\\", describe your work, set your budget and timeline, then publish. You'll receive proposals from verified freelancers.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"What if I'm not satisfied with the work?\",\r\n                        \"a\": \"If work doesn't meet agreed terms, you get a full refund. Funds are held in escrow until you approve the delivery.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"How is my money protected?\",\r\n                        \"a\": \"Funds are held securely in escrow. The freelancer only receives payment when you approve the completed work.\"\r\n                    }\r\n                ]"
+                "items": [
+                    {
+                        "q": "How do I post a project?",
+                        "a": "Click \"Post a Project\", describe your work, set your budget and timeline, then publish. You'll receive proposals from verified freelancers."
+                    },
+                    {
+                        "q": "What if I'm not satisfied with the work?",
+                        "a": "If work doesn't meet agreed terms, you get a full refund. Funds are held in escrow until you approve the delivery."
+                    },
+                    {
+                        "q": "How is my money protected?",
+                        "a": "Funds are held securely in escrow. The freelancer only receives payment when you approve the completed work."
+                    }
+                ]
             },
             "payment": {
                 "title": "Payment & Earnings",
-                "items": "[\r\n                    {\r\n                        \"q\": \"What payment methods do you accept?\",\r\n                        \"a\": \"We support all local Tunisian methods: cards, D17, bank transfer, and cash for small amounts.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"When do I get paid?\",\r\n                        \"a\": \"Freelancers are paid within 48 hours after the client approves and releases the escrow.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Are there any hidden fees?\",\r\n                        \"a\": \"No. Our fees are transparent and clearly displayed. We charge a small commission only on completed projects.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"What payment methods are available?\",\r\n                        \"a\": \"Currently we support Dhmad escrow for secure transactions. Flouci wallet and D17 (La Poste) are coming soon. Dhmad holds your funds securely until work is approved — the same system used by Tunisie Freelance.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Is Dhmad safe?\",\r\n                        \"a\": \"Yes. Dhmad is a Tunisian escrow platform authorized to hold funds as a trusted third party. Your money is protected until you approve the work.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"When will Flouci and D17 be available?\",\r\n                        \"a\": \"We're actively working on adding Flouci and D17. They will be available soon. We'll notify all users when they launch.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"What happens if there's a dispute?\",\r\n                        \"a\": \"If there's a disagreement, Dhmad holds the funds while the dispute is resolved. Neither party can access the money until the issue is settled.\"\r\n                    }\r\n                ]"
+                "items": [
+                    {
+                        "q": "What payment methods do you accept?",
+                        "a": "We support all local Tunisian methods: cards, D17, bank transfer, and cash for small amounts."
+                    },
+                    {
+                        "q": "When do I get paid?",
+                        "a": "Freelancers are paid within 48 hours after the client approves and releases the escrow."
+                    },
+                    {
+                        "q": "Are there any hidden fees?",
+                        "a": "No. Our fees are transparent and clearly displayed. We charge a small commission only on completed projects."
+                    },
+                    {
+                        "q": "What payment methods are available?",
+                        "a": "Currently we support Dhmad escrow for secure transactions. Flouci wallet and D17 (La Poste) are coming soon. Dhmad holds your funds securely until work is approved — the same system used by Tunisie Freelance."
+                    },
+                    {
+                        "q": "Is Dhmad safe?",
+                        "a": "Yes. Dhmad is a Tunisian escrow platform authorized to hold funds as a trusted third party. Your money is protected until you approve the work."
+                    },
+                    {
+                        "q": "When will Flouci and D17 be available?",
+                        "a": "We're actively working on adding Flouci and D17. They will be available soon. We'll notify all users when they launch."
+                    },
+                    {
+                        "q": "What happens if there's a dispute?",
+                        "a": "If there's a disagreement, Dhmad holds the funds while the dispute is resolved. Neither party can access the money until the issue is settled."
+                    }
+                ]
             },
             "security": {
                 "title": "Security & Privacy",
-                "items": "[\r\n                    {\r\n                        \"q\": \"Is my personal information safe?\",\r\n                        \"a\": \"Yes. We use industry-standard encryption and security measures. Your data is never shared without your permission.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Why do you need ID verification?\",\r\n                        \"a\": \"ID verification ensures trust and safety for both freelancers and clients. Every professional on WorkedIn is ID-checked.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Can I remain anonymous?\",\r\n                        \"a\": \"No. Both freelancers and clients must be verified. This protects everyone and ensures accountability.\"\r\n                    }\r\n                ]"
+                "items": [
+                    {
+                        "q": "Is my personal information safe?",
+                        "a": "Yes. We use industry-standard encryption and security measures. Your data is never shared without your permission."
+                    },
+                    {
+                        "q": "Why do you need ID verification?",
+                        "a": "ID verification ensures trust and safety for both freelancers and clients. Every professional on WorkedIn is ID-checked."
+                    },
+                    {
+                        "q": "Can I remain anonymous?",
+                        "a": "No. Both freelancers and clients must be verified. This protects everyone and ensures accountability."
+                    }
+                ]
             }
         }
     },
