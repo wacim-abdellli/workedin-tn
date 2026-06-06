@@ -63,12 +63,10 @@ type SharedFile = {
 };
 
 const CONTRACT_SELECT_COLUMNS = [
-    'id, proposal_id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, escrow_funded, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
-    'id, proposal_id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, escrow_funded, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
     'id, proposal_id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
     'id, proposal_id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
     'id, proposal_id, status, title, amount, client_id, freelancer_id, job_id',
-    'id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, escrow_funded, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
+    'id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
     'id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
     'id, status, title, amount, client_id, freelancer_id, job_id',
 ];
@@ -181,12 +179,12 @@ export default function ContractWorkspacePage() {
 
     const currentStatus = useMemo(() => {
         const rawStatus = normalizeContractStatus(contract?.status) ?? 'unknown';
-        const isEscrowFunded = contract?.escrow_funded === true || Boolean(contract?.funded_at);
+        const isEscrowFunded = Boolean(contract?.funded_at);
         if (rawStatus === 'active' && !isEscrowFunded) {
             return 'pending_payment';
         }
         return rawStatus;
-    }, [contract?.status, contract?.escrow_funded, contract?.funded_at]);
+    }, [contract?.status, contract?.funded_at]);
     const resolvedContractId = contract?.id ?? contractId ?? '';
 
     const deliverySubmitted = Boolean(

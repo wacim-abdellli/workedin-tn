@@ -3,8 +3,8 @@
 -- Purpose:   Allows escrow funding simulation during beta testing (no real
 --            payment gateway credentials required).
 -- Security:  Verifies the caller is authenticated AND is the client on the
---            contract. Only works on contracts in 'active' status with
---            escrow_funded = false.
+--            contract. Only works on contracts in 'active' or 'pending_payment'
+--            status with funded_at is null.
 -- Removal:   Drop this function once real Dhmad webhook funding is live.
 -- ─────────────────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ BEGIN
     END IF;
 
     -- 2. Fetch contract with a lock to prevent double-funding
-    SELECT id, client_id, freelancer_id, status, escrow_funded, amount
+    SELECT id, client_id, freelancer_id, status, funded_at, amount
     INTO   v_contract
     FROM   contracts
     WHERE  id = p_contract_id
@@ -43,11 +43,11 @@ BEGIN
     END IF;
 
     -- 4. Idempotency: if already funded, return success without error
-    IF v_contract.escrow_funded = TRUE THEN
+    IF v_contract.funded_at IS NOT NULL THEN
         RETURN json_build_object('amount', v_contract.amount, 'already_funded', TRUE);
     END IF;
 
-    -- 5. Only allow funding on active contracts
+    -- 5. Only allow funding on active/pending_payment contracts
     IF v_contract.status NOT IN ('active', 'pending_payment') THEN
         RAISE EXCEPTION 'Contract is not in a fundable state (status: %)', v_contract.status
             USING ERRCODE = '22000';
@@ -56,7 +56,8 @@ BEGIN
     -- 6. Mark escrow as funded
     UPDATE contracts
     SET
-        escrow_funded = TRUE,
+        payment_status = 'in_escrow',
+        status        = 'active',
         funded_at     = NOW(),
         updated_at    = NOW()
     WHERE id = p_contract_id;
