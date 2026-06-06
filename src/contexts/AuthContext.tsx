@@ -130,6 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Prevents the onAuthStateChange SIGNED_IN handler from redundantly re-fetching
   // the profile and flipping the workspace.
   const initAuthCompletedForRef = useRef<string | null>(null);
+  const initialWorkspaceSyncCompletedRef = useRef(false);
 
   useEffect(() => {
     userRef.current = user;
@@ -176,6 +177,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
+      // If the initial workspace sync from the database profile has already completed
+      // during this session, do NOT let a subsequent profile reload/fetch override
+      // the client's active workspace preference.
+      if (initialWorkspaceSyncCompletedRef.current) {
+        logger.info('[AuthContext] Skipping workspace sync from profile: initial sync already completed.');
+        return;
+      }
+
       const dbWorkspace = nextProfile.active_mode;
       const capabilities = getWorkspaceCapabilities(nextProfile.user_type);
 
@@ -191,6 +200,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         store.setWorkspace(targetWorkspace);
       }
 
+      initialWorkspaceSyncCompletedRef.current = true;
       store.setSwitching(false);
 
       // Cache in localStorage to avoid theme flash on next load
@@ -237,6 +247,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       forceUserObj?: User,
       opts?: { suppressInitialCacheHydration?: boolean }
     ) => {
+      if (profileRef.current?.id !== userId) {
+        initialWorkspaceSyncCompletedRef.current = false;
+      }
       lastProfileAttemptRef.current = { userId, timestamp: Date.now() };
       const previousProfile = profileRef.current?.id === userId ? profileRef.current : null;
       const previousFreelancerProfile = previousProfile ? freelancerProfileRef.current : null;
@@ -665,6 +678,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     manualSignInInProgressRef.current = false;
     loadedUserIdRef.current = null;
     initAuthCompletedForRef.current = null;
+    initialWorkspaceSyncCompletedRef.current = false;
     setUser(null);
     setSession(null);
     setProfile(null);
