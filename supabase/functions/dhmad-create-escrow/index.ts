@@ -18,18 +18,23 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
+// Reflect the incoming Origin so every deployment (workedin-tn.vercel.app,
+// Vercel preview URLs, workedin.tn, localhost) works without a static allowlist.
 
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://workedin.tn';
+function getCorsHeaders(req: Request): Record<string, string> {
+    const origin = req.headers.get('Origin') ?? '*';
+    return {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+    };
+}
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-function jsonResponse(body: unknown, status = 200): Response {
+function jsonResponse(body: unknown, status = 200, req?: Request): Response {
     return new Response(JSON.stringify(body), {
         status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...(req ? getCorsHeaders(req) : {}), 'Content-Type': 'application/json' },
     });
 }
 
@@ -53,7 +58,7 @@ serve(async (req: Request): Promise<Response> => {
 
     if (req.method === 'OPTIONS') {
         console.log(`[${timestamp}][${requestId}][dhmad-create-escrow] CORS preflight handled`);
-        return new Response('ok', { headers: corsHeaders });
+        return new Response('ok', { headers: getCorsHeaders(req) });
     }
 
     try {
@@ -68,7 +73,7 @@ serve(async (req: Request): Promise<Response> => {
         const { data: { user }, error: authError } = await supabaseAnon.auth.getUser();
         if (authError || !user) {
             console.error(`[${timestamp}][${requestId}][dhmad-create-escrow] Auth failed:`, authError?.message);
-            return jsonResponse({ error: 'غير مصرح. يجب تسجيل الدخول أولاً.' }, 401);
+            return jsonResponse({ error: 'غير مصرح. يجب تسجيل الدخول أولاً.' }, 401, req);
         }
         console.log(`[${timestamp}][${requestId}][dhmad-create-escrow] User authenticated: ${user.id}`);
 
@@ -92,13 +97,13 @@ serve(async (req: Request): Promise<Response> => {
 
         if (!amount || !buyer_id || !seller_id || !contract_id || !description) {
             console.error(`[${timestamp}][${requestId}][dhmad-create-escrow] Missing required fields`);
-            return jsonResponse({ error: 'حقول مطلوبة مفقودة: amount, buyer_id, seller_id, contract_id, description' }, 400);
+            return jsonResponse({ error: 'حقول مطلوبة مفقودة: amount, buyer_id, seller_id, contract_id, description' }, 400, req);
         }
 
         // Enforce: only the buyer (client) can create an escrow for their own contract
         if (buyer_id !== user.id) {
             console.error(`[${timestamp}][${requestId}][dhmad-create-escrow] Authorization failed: buyer_id ${buyer_id} !== user.id ${user.id}`);
-            return jsonResponse({ error: 'يُسمح فقط للعميل بإنشاء الضمان.' }, 403);
+            return jsonResponse({ error: 'يُسمح فقط للعميل بإنشاء الضمان.' }, 403, req);
         }
 
         console.log(`[${timestamp}][${requestId}][dhmad-create-escrow] Creating escrow - user: ${user.id}, contract: ${contract_id}, amount: ${amount} TND`);
@@ -162,7 +167,7 @@ serve(async (req: Request): Promise<Response> => {
             if (!dhmadRes.ok) {
                 const errText = await dhmadRes.text();
                 console.error(`[${timestamp}][${requestId}][dhmad-create-escrow] Dhmad API error: ${dhmadRes.status} - ${errText}`);
-                return jsonResponse({ error: 'فشل إنشاء الضمان عبر بوابة دحماد.' }, 502);
+                return jsonResponse({ error: 'فشل إنشاء الضمان عبر بوابة دحماد.' }, 502, req);
             }
 
             const raw = await dhmadRes.json();
@@ -201,12 +206,12 @@ serve(async (req: Request): Promise<Response> => {
         }
 
         console.log(`[${timestamp}][${requestId}][dhmad-create-escrow] Request completed successfully`);
-        return jsonResponse(dhmadData);
+        return jsonResponse(dhmadData, 200, req);
     } catch (err) {
         const message = err instanceof Error ? err.message : 'Internal server error';
         const stack = err instanceof Error ? err.stack : undefined;
         console.error(`[${timestamp}][${requestId}][dhmad-create-escrow] Unhandled error:`, message);
         if (stack) console.error(`[${timestamp}][${requestId}][dhmad-create-escrow] Stack trace:`, stack);
-        return jsonResponse({ error: message }, 500);
+        return jsonResponse({ error: message }, 500, req);
     }
 });

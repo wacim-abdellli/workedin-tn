@@ -61,7 +61,9 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             onSuccess?.();
         } catch (error) {
             logger.error('[FundEscrow] Error:', error);
-            const message = error instanceof Error ? error.message : tx('payment.startFailed', undefined, 'Failed to start payment');
+            const message = error instanceof Error
+                ? error.message
+                : tx('payment.startFailed', undefined, 'Failed to start payment. Please try again.');
             showToast(message, 'error');
             onError?.(message);
         } finally {
