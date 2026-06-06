@@ -1,4 +1,4 @@
-﻿interface FullScreenLoaderProps {
+interface FullScreenLoaderProps {
   label?: string;
   hint?: string;
   mode?: 'freelancer' | 'client' | 'admin';
@@ -63,7 +63,7 @@ export default function FullScreenLoader({
   const dotColor = isClient ? 'bg-amber-400' : 'bg-purple-400';
 
   return (
-    <div className={`fixed inset-0 flex items-center justify-center bg-[var(--color-bg-base)] ${workspaceClass}`}>
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-bg-base)] ${workspaceClass}`}>
       {/* Subtle radial glow */}
       <div className="pointer-events-none absolute w-[600px] h-[600px] rounded-full"
         style={{
