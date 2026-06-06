@@ -36,9 +36,23 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 throw new Error(tx('auth.loginRequired', undefined, 'You must be signed in'));
             }
 
-            // Initiate Dhmad escrow creation
+            // ── Sandbox mode: skip Dhmad entirely, call RPC directly ──────────
+            // Enabled by setting VITE_SANDBOX_MODE=true in your deployment env vars.
+            // The RPC enforces auth + contract ownership server-side, so this is safe.
+            if (import.meta.env.VITE_SANDBOX_MODE === 'true') {
+                logger.info('[FundEscrow][SANDBOX] Funding escrow via sandbox_fund_escrow RPC');
+                const { error: rpcError } = await supabase.rpc('sandbox_fund_escrow', {
+                    p_contract_id: contract.id,
+                });
+                if (rpcError) throw rpcError;
+                showToast(tx('payment.escrowFunded', undefined, 'Escrow funded successfully'), 'success');
+                onSuccess?.();
+                return;
+            }
+
+            // ── Production: Dhmad payment gateway ────────────────────────────
             const escrowResponse = await createEscrow({
-                amount: totalAmount, // Dhmad uses TND directly
+                amount: totalAmount,
                 buyer_id: user.id,
                 seller_id: contract.freelancer_id,
                 contract_id: contract.id,
@@ -46,19 +60,16 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             });
 
             logger.log('[FundEscrow] Dhmad escrow created:', escrowResponse.escrow_id);
-
             showToast(tx('payment.redirectingToPayment', undefined, 'Redirecting to secure payment...'), 'success');
 
             if (escrowResponse.payment_url) {
-                // Redirect to Dhmad payment page
                 window.location.href = escrowResponse.payment_url;
             } else {
-                // DEV fallback if payment_url is missing
-                const baseUrl = window.location.origin;
-                window.location.href = `${baseUrl}/payment/success?contract_id=${contract.id}`;
+                window.location.href = `${window.location.origin}/payment/success?contract_id=${contract.id}`;
             }
 
             onSuccess?.();
+
         } catch (error) {
             logger.error('[FundEscrow] Error:', error);
             const message = error instanceof Error
