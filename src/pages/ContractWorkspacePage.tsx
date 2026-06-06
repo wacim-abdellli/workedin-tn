@@ -565,7 +565,8 @@ export default function ContractWorkspacePage() {
             await loadWorkspace();
             showToast(tx('contractWorkspace.paymentReleased', {}, 'Payment released! Final files are now unlocked.'), 'success');
         } catch (err) {
-            showToast((err as Error).message || tx('contractWorkspace.releaseFailed', {}, 'Failed to release payment.'), 'error');
+            const errMessage = err instanceof Error ? err.message : '';
+            showToast(tx(errMessage, {}, errMessage) || tx('contractWorkspace.releaseFailed', {}, 'Failed to release payment.'), 'error');
         }
     };
 

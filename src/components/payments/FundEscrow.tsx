@@ -33,13 +33,16 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             // Get current user
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                throw new Error(tx('auth.loginRequired', undefined, 'You must be signed in'));
+                throw new Error('auth.loginRequired');
             }
 
             // ── Sandbox mode: skip Dhmad entirely, call RPC directly ──────────
-            // Enabled by setting VITE_SANDBOX_MODE=true in your deployment env vars.
+            // Enabled dynamically on localhost, vercel.app domains, or via env variable.
             // The RPC enforces auth + contract ownership server-side, so this is safe.
-            if (import.meta.env.VITE_SANDBOX_MODE === 'true') {
+            const isSandbox = import.meta.env.VITE_SANDBOX_MODE === 'true' ||
+                              window.location.hostname.includes('vercel.app') ||
+                              window.location.hostname.includes('localhost');
+            if (isSandbox) {
                 logger.info('[FundEscrow][SANDBOX] Funding escrow via sandbox_fund_escrow RPC');
                 const { error: rpcError } = await supabase.rpc('sandbox_fund_escrow', {
                     p_contract_id: contract.id,
@@ -73,7 +76,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
         } catch (error) {
             logger.error('[FundEscrow] Error:', error);
             const message = error instanceof Error
-                ? error.message
+                ? tx(error.message, undefined, error.message)
                 : tx('payment.startFailed', undefined, 'Failed to start payment. Please try again.');
             showToast(message, 'error');
             onError?.(message);

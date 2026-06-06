@@ -241,7 +241,7 @@ export function useContractState({
                         await releaseEscrow(contract.dhmad_escrow_id, contractId);
                     } catch (err) {
                         logger.error('Failed to release Dhmad escrow:', err);
-                        throw new Error('فشل تحرير الدفعة. يرجى المحاولة مرة أخرى.');
+                        throw new Error('payment.releaseFailed');
                     }
                 }
 

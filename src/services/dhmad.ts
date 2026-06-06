@@ -84,11 +84,11 @@ export async function createEscrow(
             { body: request },
         );
         if (error) throw error;
-        if (!data) throw new Error('لم يتم استلام أي رد من خادم الضمان');
+        if (!data) throw new Error('payment.noResponse');
         return data;
     } catch (err) {
         logger.error('[Dhmad] createEscrow failed', err);
-        throw new Error('فشل إنشاء الضمان. يرجى المحاولة مرة أخرى.');
+        throw new Error('payment.startFailed');
     }
 }
 
@@ -118,11 +118,11 @@ export async function releaseEscrow(
             { body: { escrow_id, contract_id } },
         );
         if (error) throw error;
-        if (!data) throw new Error('لم يتم استلام أي رد من خادم الضمان');
+        if (!data) throw new Error('payment.noResponse');
         return data;
     } catch (err) {
         logger.error('[Dhmad] releaseEscrow failed', err);
-        throw new Error('فشل تحرير الضمان. يرجى المحاولة مرة أخرى.');
+        throw new Error('payment.releaseFailed');
     }
 }
 
@@ -153,11 +153,11 @@ export async function refundEscrow(
             { body: { escrow_id, contract_id, reason } },
         );
         if (error) throw error;
-        if (!data) throw new Error('لم يتم استلام أي رد من خادم الضمان');
+        if (!data) throw new Error('payment.noResponse');
         return data;
     } catch (err) {
         logger.error('[Dhmad] refundEscrow failed', err);
-        throw new Error('فشل استرجاع مبلغ الضمان. يرجى المحاولة مرة أخرى.');
+        throw new Error('payment.refundFailed');
     }
 }
 
@@ -185,11 +185,11 @@ export async function getEscrowStatus(
             { body: { escrow_id } },
         );
         if (error) throw error;
-        if (!data) throw new Error('لم يتم استلام أي رد من خادم الضمان');
+        if (!data) throw new Error('payment.noResponse');
         return data;
     } catch (err) {
         logger.error('[Dhmad] getEscrowStatus failed', err);
-        throw new Error('فشل الحصول على حالة الضمان. يرجى المحاولة مرة أخرى.');
+        throw new Error('payment.statusFailed');
     }
 }
 
@@ -227,10 +227,10 @@ export async function createCheckoutSession(
             { body: { escrow_id, action, user_email, redirect_url } },
         );
         if (error) throw error;
-        if (!data) throw new Error('لم يتم استلام رابط الدفع');
+        if (!data) throw new Error('payment.noPaymentLink');
         return data;
     } catch (err) {
         logger.error('[Dhmad] createCheckoutSession failed', err);
-        throw new Error('فشل إنشاء جلسة الدفع. يرجى المحاولة مرة أخرى.');
+        throw new Error('payment.sessionFailed');
     }
 }

@@ -33,7 +33,7 @@ const PaymentSuccess = () => {
         if (!contract_id && !payment_id) {
             logger.error('[PaymentSuccess] No contract_id or payment_id in URL');
             setStatus('failed');
-            setError(tx('payment.success.missingInfo', undefined, 'Missing payment identifier'));
+            setError(tx('payment.successDetails.missingInfo', undefined, 'Missing payment identifier'));
             return;
         }
 
@@ -136,7 +136,7 @@ const PaymentSuccess = () => {
                             } else if (pollCount >= maxPolls) {
                                 clearInterval(interval);
                                 setStatus('failed');
-                                setError(tx('payment.success.timeout', undefined, 'Timeout waiting for deposit verification. Please check your wallet dashboard.'));
+                                setError(tx('payment.successDetails.timeout', undefined, 'Timeout waiting for deposit verification. Please check your wallet dashboard.'));
                             }
                         }, 2000);
                         return () => clearInterval(interval);
@@ -208,7 +208,7 @@ const PaymentSuccess = () => {
                         setError(
                             err instanceof Error
                                 ? err.message
-                                : tx('payment.success.verificationError', undefined, 'Payment verification failed. Please contact support.')
+                                : tx('payment.successDetails.verificationError', undefined, 'Payment verification failed. Please contact support.')
                         );
                     }
                 };
@@ -261,7 +261,7 @@ const PaymentSuccess = () => {
                             } else if (pollCount >= maxPolls) {
                                 clearInterval(interval);
                                 setStatus('failed');
-                                setError(tx('payment.success.timeout', undefined, 'Timeout waiting for payment verification. Please check your dashboard.'));
+                                setError(tx('payment.successDetails.timeout', undefined, 'Timeout waiting for payment verification. Please check your dashboard.'));
                             }
                         }, 2000);
 
@@ -304,7 +304,7 @@ const PaymentSuccess = () => {
                         <p className="text-muted-foreground text-sm mb-4">
                             {contractId
                                 ? tx('dynamic_key_831489996')
-                                : tx('payment.success.walletFunded', undefined, 'Wallet balance updated successfully.')}
+                                : tx('payment.successDetails.walletFunded', undefined, 'Wallet balance updated successfully.')}
                         </p>
 
                         {amount > 0 && (
@@ -329,7 +329,7 @@ const PaymentSuccess = () => {
                                 to="/wallet"
                                 className="btn-primary btn-lg justify-center w-full"
                             >
-                                <span>{tx('payment.success.goToWallet', undefined, 'Go to Wallet')}</span>
+                                <span>{tx('payment.successDetails.goToWallet', undefined, 'Go to Wallet')}</span>
                                 <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                             </Link>
                         )}
@@ -348,7 +348,7 @@ const PaymentSuccess = () => {
                         <h2 className="text-2xl font-bold text-foreground dark:text-white mb-2">
                             {tx('dynamic_key_1762109572')}</h2>
                         <p className="text-muted-foreground text-sm mb-6">
-                            {error || tx('payment.success.verificationError', undefined, 'An error occurred during payment verification.')}
+                            {error || tx('payment.successDetails.verificationError', undefined, 'An error occurred during payment verification.')}
                         </p>
 
                         <div className="space-y-2">
@@ -362,8 +362,8 @@ const PaymentSuccess = () => {
                                 className="btn-secondary btn-lg justify-center w-full"
                             >
                                 {contractId 
-                                    ? tx('payment.success.backToContract', undefined, 'Back to Contract') 
-                                    : tx('payment.success.backToWallet', undefined, 'Back to Wallet')}</Link>
+                                    ? tx('payment.successDetails.backToContract', undefined, 'Back to Contract') 
+                                    : tx('payment.successDetails.backToWallet', undefined, 'Back to Wallet')}</Link>
                         </div>
                     </div>
                 )}

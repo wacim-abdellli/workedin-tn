@@ -415,42 +415,8 @@ export const fr: Translations = {
             "freelancer": "Commencez à gagner",
             "client": "Publier un projet gratuitement"
         },
-        "freelancerSteps": [
-            {
-                "title": "Créez votre profil une seule fois",
-                "description": "Ajoutez vos compétences, votre portfolio et votre tarif. Les clients vous trouvent — sans enchères."
-            },
-            {
-                "title": "Recevez de vrais projets",
-                "description": "Notre système vous met en avant auprès des clients qui recherchent précisément vos compétences."
-            },
-            {
-                "title": "Validez les termes, puis commencez",
-                "description": "Discutez, négociez et verrouillez le périmètre avant que l'argent ne bouge."
-            },
-            {
-                "title": "Soyez payé à validation",
-                "description": "Les fonds sont en escrow dès le premier jour. Validez l'étape — recevez vos TND."
-            }
-        ],
-        "clientSteps": [
-            {
-                "title": "Publiez en 2 minutes",
-                "description": "Décrivez le travail, fixez votre budget, choisissez un tarif fixe ou horaire."
-            },
-            {
-                "title": "Analyze des propositions vérifiées",
-                "description": "Chaque freelance est vérifié. Filtrez par note, compétence et prix."
-            },
-            {
-                "title": "Suivez des étapes, pas des promesses",
-                "description": "Livrables clairs, délais précis et progression visible — dans un seul espace."
-            },
-            {
-                "title": "Libérez le paiement, laissez un avis",
-                "description": "Validez le travail, libérez les fonds de l'escrow et notez l'expérience."
-            }
-        ],
+        "freelancerSteps": "[\r\n            {\r\n                \"title\": \"Créez votre profil une seule fois\",\r\n                \"description\": \"Ajoutez vos compétences, votre portfolio et votre tarif. Les clients vous trouvent — sans enchères.\"\r\n            },\r\n            {\r\n                \"title\": \"Recevez de vrais projets\",\r\n                \"description\": \"Notre système vous met en avant auprès des clients qui recherchent précisément vos compétences.\"\r\n            },\r\n            {\r\n                \"title\": \"Validez les termes, puis commencez\",\r\n                \"description\": \"Discutez, négociez et verrouillez le périmètre avant que l'argent ne bouge.\"\r\n            },\r\n            {\r\n                \"title\": \"Soyez payé à validation\",\r\n                \"description\": \"Les fonds sont en escrow dès le premier jour. Validez l'étape — recevez vos TND.\"\r\n            }\r\n        ]",
+        "clientSteps": "[\r\n            {\r\n                \"title\": \"Publiez en 2 minutes\",\r\n                \"description\": \"Décrivez le travail, fixez votre budget, choisissez un tarif fixe ou horaire.\"\r\n            },\r\n            {\r\n                \"title\": \"Analyze des propositions vérifiées\",\r\n                \"description\": \"Chaque freelance est vérifié. Filtrez par note, compétence et prix.\"\r\n            },\r\n            {\r\n                \"title\": \"Suivez des étapes, pas des promesses\",\r\n                \"description\": \"Livrables clairs, délais précis et progression visible — dans un seul espace.\"\r\n            },\r\n            {\r\n                \"title\": \"Libérez le paiement, laissez un avis\",\r\n                \"description\": \"Validez le travail, libérez les fonds de l'escrow et notez l'expérience.\"\r\n            }\r\n        ]",
         "trust": {
             "money": {
                 "title": "Remboursement total si non satisfait",
@@ -467,24 +433,7 @@ export const fr: Translations = {
         },
         "faq": {
             "title": "Questions fréquentes",
-            "items": [
-                {
-                    "q": "L'inscription est-elle gratuite ?",
-                    "a": "Oui, l'inscription est gratuite pour les freelances comme pour les clients. Une petite commission s'applique seulement aux projets réalisés."
-                },
-                {
-                    "q": "Comment mon argent est-il protégé ?",
-                    "a": "WorkedIn agit comme tiers de confiance. Les fonds restent sécurisés jusqu'à la validation du travail."
-                },
-                {
-                    "q": "Quels moyens de paiement sont disponibles ?",
-                    "a": "Nous prenons en charge les cartes, D17, le virement bancaire et d'autres méthodes adaptées au marché tunisien."
-                },
-                {
-                    "q": "Puis-je m'inscrire en tant qu'entreprise ?",
-                    "a": "Oui, vous pouvez créer un compte entreprise pour recruter ou proposer vos services en équipe."
-                }
-            ]
+            "items": "[\r\n                {\r\n                    \"q\": \"L'inscription est-elle gratuite ?\",\r\n                    \"a\": \"Oui, l'inscription est gratuite pour les freelances comme pour les clients. Une petite commission s'applique seulement aux projets réalisés.\"\r\n                },\r\n                {\r\n                    \"q\": \"Comment mon argent est-il protégé ?\",\r\n                    \"a\": \"WorkedIn agit comme tiers de confiance. Les fonds restent sécurisés jusqu'à la validation du travail.\"\r\n                },\r\n                {\r\n                    \"q\": \"Quels moyens de paiement sont disponibles ?\",\r\n                    \"a\": \"Nous prenons en charge les cartes, D17, le virement bancaire et d'autres méthodes adaptées au marché tunisien.\"\r\n                },\r\n                {\r\n                    \"q\": \"Puis-je m'inscrire en tant qu'entreprise ?\",\r\n                    \"a\": \"Oui, vous pouvez créer un compte entreprise pour recruter ou proposer vos services en équipe.\"\r\n                }\r\n            ]"
         }
     },
     "forClients": {
@@ -512,16 +461,7 @@ export const fr: Translations = {
         },
         "categories": {
             "title": "Toutes les compétences. Une plateforme.",
-            "items": [
-                "Développement",
-                "Design et Création",
-                "Rédaction et Traduction",
-                "Vente et Marketing",
-                "Vidéo et Animation",
-                "Ingénierie",
-                "Support",
-                "Éducation"
-            ]
+            "items": "[\r\n                \"Développement\",\r\n                \"Design et Création\",\r\n                \"Rédaction et Traduction\",\r\n                \"Vente et Marketing\",\r\n                \"Vidéo et Animation\",\r\n                \"Ingénierie\",\r\n                \"Support\",\r\n                \"Éducation\"\r\n            ]"
         },
         "talent": {
             "title": "Avec qui vous allez travailler"
@@ -551,29 +491,7 @@ export const fr: Translations = {
     },
     "testimonials": {
         "title": "Histoires de réussite",
-        "items": [
-            {
-                "name": "Mohamed Ali",
-                "role": "Graphiste",
-                "quote": "Grâce à WorkedIn.tn, j'ai gagné plus de 5000 TND en seulement 2 mois. La plateforme est facile à utiliser et le paiement est rapide.",
-                "earned": "5,200",
-                "image": "https://i.pravatar.cc/150?img=11"
-            },
-            {
-                "name": "Fatima Ben Said",
-                "role": "Traductrice",
-                "quote": "La meilleure plateforme de talents en Tunisie. Pas d'enchères, les clients me trouvent automatiquement.",
-                "earned": "3,800",
-                "image": "https://i.pravatar.cc/150?img=32"
-            },
-            {
-                "name": "Ahmed El Hadi",
-                "role": "Développeur Web",
-                "quote": "Le paiement local a tout facilité. D17 ou virement bancaire, toutes les méthodes sont disponibles.",
-                "earned": "8,500",
-                "image": "https://i.pravatar.cc/150?img=53"
-            }
-        ]
+        "items": "[\r\n            {\r\n                \"name\": \"Mohamed Ali\",\r\n                \"role\": \"Graphiste\",\r\n                \"quote\": \"Grâce à WorkedIn.tn, j'ai gagné plus de 5000 TND en seulement 2 mois. La plateforme est facile à utiliser et le paiement est rapide.\",\r\n                \"earned\": \"5,200\",\r\n                \"image\": \"https://i.pravatar.cc/150?img=11\"\r\n            },\r\n            {\r\n                \"name\": \"Fatima Ben Said\",\r\n                \"role\": \"Traductrice\",\r\n                \"quote\": \"La meilleure plateforme de talents en Tunisie. Pas d'enchères, les clients me trouvent automatiquement.\",\r\n                \"earned\": \"3,800\",\r\n                \"image\": \"https://i.pravatar.cc/150?img=32\"\r\n            },\r\n            {\r\n                \"name\": \"Ahmed El Hadi\",\r\n                \"role\": \"Développeur Web\",\r\n                \"quote\": \"Le paiement local a tout facilité. D17 ou virement bancaire, toutes les méthodes sont disponibles.\",\r\n                \"earned\": \"8,500\",\r\n                \"image\": \"https://i.pravatar.cc/150?img=53\"\r\n            }\r\n        ]"
     },
     "auth": {
         "phone": "Numéro de téléphone",
@@ -1375,7 +1293,10 @@ export const fr: Translations = {
             "unsupportedType": "{{name}} a un type de fichier non pris en charge",
             "maxFilesExceeded": "Maximum {{count}} fichiers autorises",
             "removeFileAria": "Supprimer {{name}}"
-        }
+        },
+        "goBack": "Revenir",
+        "success": "Succès",
+        "tndPerHour": "TND/h"
     },
     "accountStatus": {
         "suspended": {
@@ -1420,6 +1341,32 @@ export const fr: Translations = {
         "transactionId": "ID Transaction",
         "totalToPay": "Total à payer",
         "payNow": "Payer maintenant",
+        "escrowFunded": "Garantie financée avec succès",
+        "redirectingToPayment": "Redirection vers le paiement sécurisé...",
+        "startFailed": "Échec du lancement du paiement. Veuillez réessayer.",
+        "fundEscrowTitle": "Financer la garantie",
+        "fundEscrowSubtitle": "Les fonds sont protégés jusqu'à la fin des travaux",
+        "fundEscrowHint": "Vous devez financer la garantie avant que le freelance ne commence. Les fonds restent protégés jusqu'à ce que vous approuviez la livraison.",
+        "projectBudget": "Budget du projet",
+        "platformFee": "Frais de plateforme",
+        "total": "Total",
+        "fundEscrowAction": "Financer la garantie maintenant",
+        "dhmadDescription": "Les paiements sont conservés en toute sécurité dans la garantie par Dhmad.tn",
+        "noResponse": "Aucune réponse reçue du serveur de garantie",
+        "releaseFailed": "Échec de la libération de la garantie. Veuillez réessayer.",
+        "refundFailed": "Échec du remboursement de la garantie. Veuillez réessayer.",
+        "statusFailed": "Échec de l'obtention du statut de la garantie. Veuillez réessayer.",
+        "noPaymentLink": "Le lien de paiement n'a pas été généré",
+        "sessionFailed": "Échec de la création de la session de paiement. Veuillez réessayer.",
+        "successDetails": {
+            "missingInfo": "Identifiant de paiement manquant",
+            "timeout": "Délai d'attente dépassé pour la vérification du paiement. Veuillez vérifier votre tableau de bord.",
+            "verificationError": "La vérification du paiement a échoué. Veuillez contacter le support.",
+            "walletFunded": "Le solde du portefeuille a été mis à jour avec succès.",
+            "goToWallet": "Aller au portefeuille",
+            "backToContract": "Retour au contrat",
+            "backToWallet": "Retour au portefeuille"
+        },
         "flouciDescription": "Ã˜Â§Ã™â€žÃ˜Â¯Ã™ÂÃ˜Â¹ Ã˜Â¹Ã˜Â¨Ã˜Â± Flouci - Ã˜Â¨Ã˜Â·Ã˜Â§Ã™â€šÃ˜Â§Ã˜Âª Ã˜Â¨Ã™â€ Ã™Æ’Ã™Å Ã˜Â© Ã™Ë†Ã™â€¦Ã˜Â­Ã˜Â§Ã™ÂÃ˜Â¸ Ã˜Â¥Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â±Ã™Ë†Ã™â€ Ã™Å Ã˜Â©"
     },
     "notifications": {
@@ -1581,12 +1528,18 @@ export const fr: Translations = {
             "subtitle": "Gardez une trace des missions auxquelles vous souhaitez postuler.",
             "subtitleTalent": "Gardez une trace des meilleurs freelances pour vos projets.",
             "empty": {
-                "title": "Rien de sauvegardé pour le moment"
+                "title": "Rien n'est encore sauvegardé"
             },
             "browseJobs": "Parcourir les missions",
             "browseFreelancers": "Parcourir les freelances",
             "labels": {
                 "budget": "Budget :"
+            },
+            "actions": {
+                "applyNow": "Postuler",
+                "removeSavedJob": "Retirer la mission sauvegardée",
+                "inviteToJob": "Inviter au projet",
+                "removeSavedFreelancer": "Retirer le freelance sauvegardé"
             }
         },
         "jobBoard": {
@@ -1595,6 +1548,25 @@ export const fr: Translations = {
                 "removedFromSaved": "Retiré des missions sauvegardées",
                 "savedJob": "Mission sauvegardée",
                 "savedJobsUpdateError": "Impossible de mettre à jour les missions sauvegardées"
+            },
+            "header": {
+                "title": "Trouver du travail",
+                "subtitle": "Parcourez et postulez à des opportunités freelance en Tunisie."
+            },
+            "filters": {
+                "clearAll": "Tout effacer",
+                "jobType": "Type de mission",
+                "searchPlaceholder": "Rechercher des missions...",
+                "showing": "Affichage"
+            },
+            "actions": {
+                "applyNow": "Postuler"
+            },
+            "empty": {
+                "filtered": "Aucune mission trouvée avec les filtres sélectionnés."
+            },
+            "errors": {
+                "loadFailed": "Impossible de charger les missions. Veuillez réessayer."
             }
         },
         "settings": {
@@ -1605,7 +1577,12 @@ export const fr: Translations = {
                 "identityVerified": "Identité vérifiée",
                 "verificationUnderReview": "Vérification en cours",
                 "notVerified": "Non vérifié",
-                "quickActions": "Actions rapides"
+                "quickActions": "Actions rapides",
+                "overviewTitle": "Vue du compte",
+                "overviewDescription": "Gérez votre espace de travail et les détails généraux du compte.",
+                "openPublicProfileEditor": "Ouvrir l'éditeur du profil public",
+                "goToDashboard": "Aller au tableau de bord",
+                "manageNotifications": "Gérer les notifications"
             },
             "notifications": {
                 "newJobMatches": "Nouvelles missions correspondantes",
@@ -1617,7 +1594,49 @@ export const fr: Translations = {
                 "reviews": "Avis",
                 "reviewsDesc": "Recevez une notification lorsque vous recevez un nouvel avis",
                 "offersAndUpdates": "Offres et mises à jour",
-                "offersAndUpdatesDesc": "Conseils et mises à jour de WorkedIn"
+                "offersAndUpdatesDesc": "Conseils et mises à jour de WorkedIn",
+                "toasts": {
+                    "loadError": "Échec du chargement des paramètres de notification",
+                    "saveError": "Impossible d'enregistrer les paramètres de notification"
+                }
+            },
+            "actions": {
+                "signOut": "Se déconnecter"
+            },
+            "payment": {
+                "title": "Méthodes de paiement",
+                "addMethod": "Ajouter une méthode",
+                "bankTransfer": "Virement bancaire",
+                "setDefault": "Définir par défaut",
+                "deleteMethod": "Supprimer la méthode de paiement",
+                "empty": {
+                    "title": "Aucune méthode de paiement ajoutée",
+                    "description": "Ajoutez maintenant une méthode de retrait afin que les contrats soient prêts quand vous en avez besoin."
+                },
+                "toasts": {
+                    "loadError": "Échec du chargement des méthodes de paiement",
+                    "added": "Méthode de paiement ajoutée",
+                    "addError": "Impossible d'ajouter la méthode de paiement",
+                    "defaultUpdated": "Méthode de paiement par défaut mise à jour",
+                    "defaultUpdateError": "Impossible de mettre à jour la méthode par défaut",
+                    "removed": "Méthode de paiement supprimée",
+                    "removeError": "Impossible de supprimer la méthode de paiement"
+                }
+            },
+            "privacy": {
+                "title": "Sécurité et confidentialité",
+                "changePassword": "Changer le mot de passe",
+                "activeSessions": "Sessions actives",
+                "currentSession": "Cet appareil est votre session actuelle.",
+                "signOutAllDevices": "Se déconnecter de tous les appareils",
+                "deleteAccount": "Supprimer le compte",
+                "deleteAccountWarning": "Votre compte et toutes vos données seront supprimés définitivement. Cette action est irréversible.",
+                "toasts": {
+                    "deleteRequestInProgress": "Une demande de suppression est déjà en cours",
+                    "deleteRequestSubmitted": "Demande de suppression de compte envoyée",
+                    "deleteRequestError": "Impossible d'envoyer la demande de suppression",
+                    "signOutAllError": "Impossible de déconnecter tous les appareils"
+                }
             }
         },
         "leaveReview": {
@@ -1972,100 +1991,6 @@ export const fr: Translations = {
         "login": {
             "finishingSignIn": "Finalisation de la connexion",
             "finishingSignInDescription": "Nous confirmons votre session sécurisée et vous redirigeons vers le bon espace."
-        },
-        "jobBoard": {
-            "header": {
-                "title": "Trouver du travail",
-                "subtitle": "Parcourez et postulez à des opportunités freelance en Tunisie."
-            },
-            "filters": {
-                "clearAll": "Tout effacer",
-                "jobType": "Type de mission",
-                "searchPlaceholder": "Rechercher des missions...",
-                "showing": "Affichage"
-            },
-            "actions": {
-                "applyNow": "Postuler"
-            },
-            "empty": {
-                "filtered": "Aucune mission trouvée avec les filtres sélectionnés."
-            },
-            "errors": {
-                "loadFailed": "Impossible de charger les missions. Veuillez réessayer."
-            },
-            "toasts": {
-                "savedJobsUpdateError": "Impossible de mettre à jour les missions sauvegardées"
-            }
-        },
-        "savedJobs": {
-            "empty": {
-                "title": "Rien n'est encore sauvegardé"
-            },
-            "labels": {
-                "budget": "Budget :"
-            },
-            "actions": {
-                "applyNow": "Postuler",
-                "removeSavedJob": "Retirer la mission sauvegardée",
-                "inviteToJob": "Inviter au projet",
-                "removeSavedFreelancer": "Retirer le freelance sauvegardé"
-            }
-        },
-        "settings": {
-            "account": {
-                "overviewTitle": "Vue du compte",
-                "overviewDescription": "Gérez votre espace de travail et les détails généraux du compte.",
-                "currentWorkspace": "Espace de travail actuel",
-                "accountType": "Type de compte",
-                "quickActions": "Actions rapides",
-                "openPublicProfileEditor": "Ouvrir l'éditeur du profil public",
-                "goToDashboard": "Aller au tableau de bord",
-                "manageNotifications": "Gérer les notifications"
-            },
-            "actions": {
-                "signOut": "Se déconnecter"
-            },
-            "notifications": {
-                "toasts": {
-                    "loadError": "Échec du chargement des paramètres de notification",
-                    "saveError": "Impossible d'enregistrer les paramètres de notification"
-                }
-            },
-            "payment": {
-                "title": "Méthodes de paiement",
-                "addMethod": "Ajouter une méthode",
-                "bankTransfer": "Virement bancaire",
-                "setDefault": "Définir par défaut",
-                "deleteMethod": "Supprimer la méthode de paiement",
-                "empty": {
-                    "title": "Aucune méthode de paiement ajoutée",
-                    "description": "Ajoutez maintenant une méthode de retrait afin que les contrats soient prêts quand vous en avez besoin."
-                },
-                "toasts": {
-                    "loadError": "Échec du chargement des méthodes de paiement",
-                    "added": "Méthode de paiement ajoutée",
-                    "addError": "Impossible d'ajouter la méthode de paiement",
-                    "defaultUpdated": "Méthode de paiement par défaut mise à jour",
-                    "defaultUpdateError": "Impossible de mettre à jour la méthode par défaut",
-                    "removed": "Méthode de paiement supprimée",
-                    "removeError": "Impossible de supprimer la méthode de paiement"
-                }
-            },
-            "privacy": {
-                "title": "Sécurité et confidentialité",
-                "changePassword": "Changer le mot de passe",
-                "activeSessions": "Sessions actives",
-                "currentSession": "Cet appareil est votre session actuelle.",
-                "signOutAllDevices": "Se déconnecter de tous les appareils",
-                "deleteAccount": "Supprimer le compte",
-                "deleteAccountWarning": "Votre compte et toutes vos données seront supprimés définitivement. Cette action est irréversible.",
-                "toasts": {
-                    "deleteRequestInProgress": "Une demande de suppression est déjà en cours",
-                    "deleteRequestSubmitted": "Demande de suppression de compte envoyée",
-                    "deleteRequestError": "Impossible d'envoyer la demande de suppression",
-                    "signOutAllError": "Impossible de déconnecter tous les appareils"
-                }
-            }
         }
     },
     "search": {
@@ -2773,7 +2698,8 @@ export const fr: Translations = {
             "processing": "En Traitement",
             "completed": "Terminé",
             "rejected": "Rejeté"
-        }
+        },
+        "mockDepositFailed": "Échec du dépôt fictif sur le portefeuille"
     },
     "verifyEmail": {
         "title": "Vérifiez votre email",
@@ -3435,104 +3361,23 @@ export const fr: Translations = {
         "categories": {
             "general": {
                 "title": "Général",
-                "items": [
-                    {
-                        "q": "Qu'est-ce que WorkedIn.tn?",
-                        "a": "WorkedIn.tn est une plateforme tunisienne de travail indépendant reliant les entreprises aux professionnels talentueux. Nous croyons en un paiement équitable, des profils vérifiés et des transactions sécurisées protégées par séquestre."
-                    },
-                    {
-                        "q": "L'inscription est-elle gratuite?",
-                        "a": "Oui, l'inscription est complètement gratuite pour les indépendants et les clients. Nous ne prélevons qu'une petite commission sur les projets réussis."
-                    },
-                    {
-                        "q": "Combien de temps prend la vérification?",
-                        "a": "La vérification d'identité prend généralement 24-48 heures. Vous pouvez commencer la configuration de votre profil immédiatement, et la vérification se fait en arrière-plan."
-                    }
-                ]
+                "items": "[\r\n                    {\r\n                        \"q\": \"Qu'est-ce que WorkedIn.tn?\",\r\n                        \"a\": \"WorkedIn.tn est une plateforme tunisienne de travail indépendant reliant les entreprises aux professionnels talentueux. Nous croyons en un paiement équitable, des profils vérifiés et des transactions sécurisées protégées par séquestre.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"L'inscription est-elle gratuite?\",\r\n                        \"a\": \"Oui, l'inscription est complètement gratuite pour les indépendants et les clients. Nous ne prélevons qu'une petite commission sur les projets réussis.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Combien de temps prend la vérification?\",\r\n                        \"a\": \"La vérification d'identité prend généralement 24-48 heures. Vous pouvez commencer la configuration de votre profil immédiatement, et la vérification se fait en arrière-plan.\"\r\n                    }\r\n                ]"
             },
             "freelancer": {
                 "title": "Pour les indépendants",
-                "items": [
-                    {
-                        "q": "Comment commencer en tant qu'indépendant?",
-                        "a": "Inscrivez-vous, complétez votre profil avec vos compétences et votre portefeuille, puis commencez à parcourir les projets disponibles qui correspondent à votre expertise."
-                    },
-                    {
-                        "q": "Combien puis-je gagner?",
-                        "a": "Vos gains dépendent des projets que vous acceptez et des tarifs que vous fixez. De nombreux indépendants tunisiens gagnent entre 500-5000 dinars tunisiens par mois."
-                    },
-                    {
-                        "q": "Comment me fait-on payer?",
-                        "a": "Les paiements s'effectuent via D17, virement bancaire ou autres méthodes de paiement locales. Vous définissez votre méthode de paiement préférée dans les paramètres du portefeuille."
-                    }
-                ]
+                "items": "[\r\n                    {\r\n                        \"q\": \"Comment commencer en tant qu'indépendant?\",\r\n                        \"a\": \"Inscrivez-vous, complétez votre profil avec vos compétences et votre portefeuille, puis commencez à parcourir les projets disponibles qui correspondent à votre expertise.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Combien puis-je gagner?\",\r\n                        \"a\": \"Vos gains dépendent des projets que vous acceptez et des tarifs que vous fixez. De nombreux indépendants tunisiens gagnent entre 500-5000 dinars tunisiens par mois.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Comment me fait-on payer?\",\r\n                        \"a\": \"Les paiements s'effectuent via D17, virement bancaire ou autres méthodes de paiement locales. Vous définissez votre méthode de paiement préférée dans les paramètres du portefeuille.\"\r\n                    }\r\n                ]"
             },
             "client": {
                 "title": "Pour les clients",
-                "items": [
-                    {
-                        "q": "Comment publier un projet?",
-                        "a": "Cliquez sur \"Publier un projet\", décrivez votre travail, définissez votre budget et votre calendrier, puis publiez. Vous recevrez des propositions d'indépendants vérifiés."
-                    },
-                    {
-                        "q": "Que faire si je ne suis pas satisfait du travail?",
-                        "a": "Si le travail ne répond pas aux conditions convenues, vous recevez un remboursement complet. Les fonds sont mis sous séquestre jusqu'à ce que vous approuviez la livraison."
-                    },
-                    {
-                        "q": "Comment mon argent est-il protégé?",
-                        "a": "Les fonds sont conservés de manière sécurisée en séquestre. L'indépendant ne reçoit le paiement que lorsque vous approuvez le travail effectué."
-                    }
-                ]
+                "items": "[\r\n                    {\r\n                        \"q\": \"Comment publier un projet?\",\r\n                        \"a\": \"Cliquez sur \\\"Publier un projet\\\", décrivez votre travail, définissez votre budget et votre calendrier, puis publiez. Vous recevrez des propositions d'indépendants vérifiés.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Que faire si je ne suis pas satisfait du travail?\",\r\n                        \"a\": \"Si le travail ne répond pas aux conditions convenues, vous recevez un remboursement complet. Les fonds sont mis sous séquestre jusqu'à ce que vous approuviez la livraison.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Comment mon argent est-il protégé?\",\r\n                        \"a\": \"Les fonds sont conservés de manière sécurisée en séquestre. L'indépendant ne reçoit le paiement que lorsque vous approuvez le travail effectué.\"\r\n                    }\r\n                ]"
             },
             "payment": {
                 "title": "Paiement et revenus",
-                "items": [
-                    {
-                        "q": "Quels modes de paiement acceptez-vous?",
-                        "a": "Nous supportons toutes les méthodes locales tunisiennes: cartes, D17, virement bancaire et espèces pour petits montants."
-                    },
-                    {
-                        "q": "Quand me fait-on payer?",
-                        "a": "Les indépendants sont payés dans les 48 heures suivant l'approbation du client et la libération du séquestre."
-                    },
-                    {
-                        "q": "Y a-t-il des frais cachés?",
-                        "a": "Non. Nos frais sont transparents et clairement affichés. Nous prélevons uniquement une petite commission sur les projets réalisés."
-                    },
-                    {
-                        "q": "Quels modes de paiement sont disponibles?",
-                        "a": "Nous supportons actuellement Dhmad escrow pour les transactions scurises. Flouci wallet et D17 (La Poste) arrivent bientt. Dhmad conserve vos fonds en scurit jusqu' l'approbation du travail  le mme systme utilis par Tunisie Freelance."
-                    },
-                    {
-                        "q": "Dhmad est-il fiable?",
-                        "a": "Oui. Dhmad est une plateforme d'escrow tunisienne autorise  dtenir des fonds en tant que tiers de confiance. Votre argent est protg jusqu' ce que vous approuviez le travail."
-                    },
-                    {
-                        "q": "Quand Flouci et D17 seront-ils disponibles?",
-                        "a": "Nous travaillons activement  l'ajout de Flouci et D17. Ils seront disponibles prochainement. Nous informerons tous les utilisateurs lors de leur lancement."
-                    },
-                    {
-                        "q": "Que se passe-t-il en cas de litige?",
-                        "a": "En cas de dsaccord, Dhmad conserve les fonds pendant la rsolution du litige. Aucune partie ne peut accder  l'argent avant que le problme soit rgl."
-                    }
-                ]
+                "items": "[\r\n                    {\r\n                        \"q\": \"Quels modes de paiement acceptez-vous?\",\r\n                        \"a\": \"Nous supportons toutes les méthodes locales tunisiennes: cartes, D17, virement bancaire et espèces pour petits montants.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Quand me fait-on payer?\",\r\n                        \"a\": \"Les indépendants sont payés dans les 48 heures suivant l'approbation du client et la libération du séquestre.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Y a-t-il des frais cachés?\",\r\n                        \"a\": \"Non. Nos frais sont transparents et clairement affichés. Nous prélevons uniquement une petite commission sur les projets réalisés.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Quels modes de paiement sont disponibles?\",\r\n                        \"a\": \"Nous supportons actuellement Dhmad escrow pour les transactions scurises. Flouci wallet et D17 (La Poste) arrivent bientt. Dhmad conserve vos fonds en scurit jusqu' l'approbation du travail  le mme systme utilis par Tunisie Freelance.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Dhmad est-il fiable?\",\r\n                        \"a\": \"Oui. Dhmad est une plateforme d'escrow tunisienne autorise  dtenir des fonds en tant que tiers de confiance. Votre argent est protg jusqu' ce que vous approuviez le travail.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Quand Flouci et D17 seront-ils disponibles?\",\r\n                        \"a\": \"Nous travaillons activement  l'ajout de Flouci et D17. Ils seront disponibles prochainement. Nous informerons tous les utilisateurs lors de leur lancement.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Que se passe-t-il en cas de litige?\",\r\n                        \"a\": \"En cas de dsaccord, Dhmad conserve les fonds pendant la rsolution du litige. Aucune partie ne peut accder  l'argent avant que le problme soit rgl.\"\r\n                    }\r\n                ]"
             },
             "security": {
                 "title": "Sécurité et confidentialité",
-                "items": [
-                    {
-                        "q": "Mes informations personnelles sont-elles sûres?",
-                        "a": "Oui. Nous utilisons le chiffrement et les mesures de sécurité standard. Vos données ne sont jamais partagées sans votre permission."
-                    },
-                    {
-                        "q": "Pourquoi avez-vous besoin d'une vérification d'identité?",
-                        "a": "La vérification d'identité garantit la confiance et la sécurité pour les indépendants et les clients. Chaque professionnel sur WorkedIn est vérifié par identité."
-                    },
-                    {
-                        "q": "Puis-je rester anonyme?",
-                        "a": "Non. Les indépendants et les clients doivent être vérifiés. Cela protège tout le monde et assure la responsabilité."
-                    }
-                ]
+                "items": "[\r\n                    {\r\n                        \"q\": \"Mes informations personnelles sont-elles sûres?\",\r\n                        \"a\": \"Oui. Nous utilisons le chiffrement et les mesures de sécurité standard. Vos données ne sont jamais partagées sans votre permission.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Pourquoi avez-vous besoin d'une vérification d'identité?\",\r\n                        \"a\": \"La vérification d'identité garantit la confiance et la sécurité pour les indépendants et les clients. Chaque professionnel sur WorkedIn est vérifié par identité.\"\r\n                    },\r\n                    {\r\n                        \"q\": \"Puis-je rester anonyme?\",\r\n                        \"a\": \"Non. Les indépendants et les clients doivent être vérifiés. Cela protège tout le monde et assure la responsabilité.\"\r\n                    }\r\n                ]"
             }
         }
     },
@@ -4018,16 +3863,6 @@ export const fr: Translations = {
         "error": "Erreur",
         "warning": "Avertissement",
         "info": "Info"
-    },
-    "common": {
-        "back": "Retour",
-        "goBack": "Revenir",
-        "retry": "Réessayer",
-        "loading": "Chargement...",
-        "error": "Erreur",
-        "success": "Succès",
-        "tnd": "TND",
-        "tndPerHour": "TND/h"
     },
     "contractWorkspace": {
         "clientView": "Vue client",
