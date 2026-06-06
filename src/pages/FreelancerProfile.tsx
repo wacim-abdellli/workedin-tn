@@ -741,16 +741,23 @@ function ProfileView({
 
               {/* Camera overlay for avatar upload (owner only) */}
               {isOwner && typeof onSaveAvatar === 'function' && (
-                <label className="absolute inset-0 rounded-full flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer z-10">
+                <label className={`absolute inset-0 flex flex-col items-center justify-center bg-black/60 rounded-full transition-opacity duration-200 cursor-pointer ${
+                  savingAvatar ? 'opacity-100' : 'opacity-0 hover:opacity-100'
+                }`}>
                   {savingAvatar ? (
-                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <Camera className="w-6 h-6 text-white" />
+                    <>
+                      <Camera className="w-6 h-6 text-white mb-1" />
+                      <span className="text-[10px] text-white font-medium uppercase tracking-wider">
+                        {tx('ui.change', undefined, 'Change')}
+                      </span>
+                    </>
                   )}
                   <input
                     type="file"
-                    aria-label="Upload profile picture"
                     className="hidden"
+                    accept="image/*"
                     onChange={handleAvatarUploadSelection}
                     disabled={savingAvatar}
                   />

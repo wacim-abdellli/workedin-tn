@@ -768,7 +768,9 @@ export default function ClientProfile() {
 
                   {/* Camera overlay for avatar upload (owner only) */}
                   {isOwnProfile && (
-                    <label className="absolute inset-0 rounded-full flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer z-10">
+                    <label className={`absolute inset-0 rounded-full flex items-center justify-center bg-black/60 transition-opacity duration-200 cursor-pointer z-10 ${
+                      savingAvatar ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    }`}>
                       {savingAvatar ? (
                         <Loader2 className="w-6 h-6 text-white animate-spin" />
                       ) : (
