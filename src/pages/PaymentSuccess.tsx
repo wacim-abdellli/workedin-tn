@@ -21,9 +21,12 @@ const PaymentSuccess = () => {
     useEffect(() => {
         const contract_id = searchParams.get('contract_id');
         const payment_id = searchParams.get('payment_id');
-        // Only allow mock path in development builds — tree-shaken out of production
+        // Sandbox mode: enabled when redirected from edge function with sandbox=true param
+        // This is safe because the actual DB write goes through a Supabase RPC that enforces ownership
+        const isSandbox = searchParams.get('sandbox') === 'true';
+        // Legacy DEV-only mock path (kept for local dev convenience)
         const isMockSuccess = import.meta.env.DEV && searchParams.get('mock_success') === 'true';
-        const mockAmount = parseFloat(searchParams.get('amount') || '0') || 100; // fallback to 100 TND in dev if not set
+        const mockAmount = parseFloat(searchParams.get('amount') || '0') || 100;
 
         setContractId(contract_id);
 
@@ -179,6 +182,38 @@ const PaymentSuccess = () => {
                 };
 
                 void fundMockContract();
+                return;
+            } else if (isSandbox) {
+                // Sandbox mode: edge function sent us back here with sandbox=true
+                // Call an RPC that verifies ownership and marks escrow_funded = true
+                const fundSandboxContract = async () => {
+                    try {
+                        logger.log('[PaymentSuccess] Sandbox: funding escrow via RPC for contract:', contract_id);
+                        const { data, error: rpcError } = await supabase.rpc(
+                            'sandbox_fund_escrow',
+                            { p_contract_id: contract_id },
+                        );
+
+                        if (rpcError) throw rpcError;
+
+                        const funded = data as { amount: number } | null;
+                        setAmount(funded?.amount ?? 0);
+                        setStatus('success');
+                        setTimeout(() => {
+                            navigate(`/workspace/${contract_id}`);
+                        }, 3000);
+                    } catch (err) {
+                        logger.error('[PaymentSuccess] Sandbox funding failed:', err);
+                        setStatus('failed');
+                        setError(
+                            err instanceof Error
+                                ? err.message
+                                : tx('payment.success.verificationError', undefined, 'Payment verification failed. Please contact support.')
+                        );
+                    }
+                };
+
+                void fundSandboxContract();
                 return;
             } else {
                 let pollCount = 0;

@@ -294,7 +294,7 @@ export const ConversationListPanel = ({
                                                     {(() => {
                                                         const sessionMeta = conversation.contract_id ? contractSessionMetaById?.[conversation.contract_id] : null;
                                                         const isEscrowFunded = sessionMeta ? Boolean(sessionMeta.funded_at) : true;
-                                                        const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && contractStatus === 'pending_payment';
+                                                        const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && (contractStatus === 'pending_payment' || contractStatus === 'active');
                                                         if (needsEscrowFunding) {
                                                             return (
                                                                 <span className="shrink-0 inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-[2px] text-[10px] font-medium leading-none text-amber-200 gap-0.5" title="Escrow not funded yet">

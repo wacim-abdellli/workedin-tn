@@ -179,10 +179,14 @@ export default function ContractWorkspacePage() {
         return 'freelancer';
     }, [activeMode, profile?.active_mode, contract?.client_id, user?.id]);
 
-    const currentStatus = useMemo(
-        () => normalizeContractStatus(contract?.status) ?? 'unknown',
-        [contract?.status],
-    );
+    const currentStatus = useMemo(() => {
+        const rawStatus = normalizeContractStatus(contract?.status) ?? 'unknown';
+        const isEscrowFunded = contract?.escrow_funded === true || Boolean(contract?.funded_at);
+        if (rawStatus === 'active' && !isEscrowFunded) {
+            return 'pending_payment';
+        }
+        return rawStatus;
+    }, [contract?.status, contract?.escrow_funded, contract?.funded_at]);
     const resolvedContractId = contract?.id ?? contractId ?? '';
 
     const deliverySubmitted = Boolean(

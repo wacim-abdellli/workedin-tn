@@ -722,9 +722,15 @@ function MessagesComponent() {
         return 'freelancer';
     }, [activeWorkspace, selectedContractMeta?.client_id, user?.id]);
 
-    const selectedContractStatus = selectedContractId
-        ? (contractStatusById[selectedContractId] ?? normalizeContractStatus(selectedContractMeta?.status))
-        : null;
+    const selectedContractStatus = useMemo(() => {
+        if (!selectedContractId) return null;
+        const rawStatus = contractStatusById[selectedContractId] ?? normalizeContractStatus(selectedContractMeta?.status);
+        const isEscrowFunded = selectedContractMeta ? (selectedContractMeta.funded_at !== null) : true;
+        if (rawStatus === 'active' && !isEscrowFunded) {
+            return 'pending_payment';
+        }
+        return rawStatus;
+    }, [selectedContractId, contractStatusById, selectedContractMeta]);
 
     const selectedContractMilestones = selectedContractId
         ? (milestonesByContractId[selectedContractId] ?? [])
@@ -866,15 +872,22 @@ function MessagesComponent() {
 
     const getConversationLifecyclePolicy = useCallback((conversation: Conversation) => {
         const isContractConversation = Boolean(conversation.contract_id);
-        const contractStatus = conversation.contract_id
+        let contractStatus = conversation.contract_id
             ? contractStatusById[conversation.contract_id]
             : null;
+
+        const sessionMeta = conversation.contract_id ? contractSessionMetaById[conversation.contract_id] : null;
+        const isEscrowFunded = sessionMeta ? (sessionMeta.funded_at !== null) : true;
+
+        if (isContractConversation && contractStatus === 'active' && !isEscrowFunded) {
+            contractStatus = 'pending_payment';
+        }
 
         return resolveMessagingLifecyclePolicy({
             kind: isContractConversation ? 'contract' : 'direct',
             contractStatus,
         });
-    }, [contractStatusById]);
+    }, [contractStatusById, contractSessionMetaById]);
 
     const selectedConversationPolicy = useMemo(() => {
         if (!selectedConversation) return null;
@@ -2679,6 +2692,12 @@ function MessagesComponent() {
                     title: resolvedTitle,
                     amount: row.amount ?? null,
                     total_amount: row.total_amount ?? null,
+                    revision_requests_count: row.revision_requests_count ?? 0,
+                    max_revision_rounds: row.max_revision_rounds ?? 2,
+                    funded_at: row.funded_at === undefined ? undefined : row.funded_at,
+                    delivery_submitted_at: row.delivery_submitted_at === undefined ? undefined : row.delivery_submitted_at,
+                    review_due_at: row.review_due_at === undefined ? undefined : row.review_due_at,
+                    revision_requested_at: row.revision_requested_at === undefined ? undefined : row.revision_requested_at,
                     job_deadline: resolvedJobDeadline,
                     client_id: row.client_id ?? null,
                     freelancer_id: row.freelancer_id ?? null,
@@ -4785,7 +4804,7 @@ function MessagesComponent() {
                                                                     {(() => {
                                                                         const sessionMeta = conversation.contract_id ? contractSessionMetaById[conversation.contract_id] : null;
                                                                         const isEscrowFunded = sessionMeta ? Boolean(sessionMeta.funded_at) : true;
-                                                                        const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && contractStatus === 'pending_payment';
+                                                                        const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && (contractStatus === 'pending_payment' || contractStatus === 'active');
                                                                         if (needsEscrowFunding) {
                                                                             return (
                                                                                 <span className="shrink-0 inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-[2px] text-[10px] font-medium leading-none text-amber-200 gap-0.5" title="Escrow not funded yet">

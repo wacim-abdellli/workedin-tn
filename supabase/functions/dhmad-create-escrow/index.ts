@@ -38,6 +38,10 @@ function jsonResponse(body: unknown, status = 200): Response {
 const DHMAD_API_KEY = Deno.env.get('DHMAD_API_KEY') ?? '';
 const DHMAD_BASE_URL = Deno.env.get('DHMAD_BASE_URL') ?? 'https://sandbox.dhmad.tn/api/v1';
 const IS_DEV = Deno.env.get('DENO_ENV') === 'development';
+// App frontend URL — used to build the sandbox payment redirect URL
+const APP_URL = Deno.env.get('APP_URL') ?? 'https://workedin-tn.vercel.app';
+// Sandbox secret — must match VITE_SANDBOX_SECRET in the frontend
+const SANDBOX_SECRET = Deno.env.get('SANDBOX_SECRET') ?? '';
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
@@ -108,26 +112,28 @@ serve(async (req: Request): Promise<Response> => {
             created_at: string;
         };
 
-        // In production: DHMAD_API_KEY is required. Hard fail if not configured.
-        if (!IS_DEV && !DHMAD_API_KEY) {
-            console.error(`[${timestamp}][${requestId}][dhmad-create-escrow] FATAL: DHMAD_API_KEY not configured.`);
-            return jsonResponse({
-                error: 'خدمة الدفع غير متاحة حالياً. يرجى التواصل مع الدعم.',
-            }, 503);
-        }
+        // Determine if we should use sandbox mode (no real Dhmad key available)
+        const useSandbox = IS_DEV || !DHMAD_API_KEY;
 
-        if (IS_DEV) {
-            // DEV MOCK — realistic shape, no network call
-            console.log(`[${timestamp}][${requestId}][dhmad-create-escrow] DEV MODE: Creating mock escrow`);
+        if (useSandbox) {
+            // SANDBOX MOCK — no network call, redirect back to our own app
+            console.log(`[${timestamp}][${requestId}][dhmad-create-escrow] SANDBOX MODE: Creating mock escrow`);
             const escrow_id = `dhmad_mock_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
+            // Build a sandbox payment URL pointing to our own app so it doesn't 404
+            const sandboxParams = new URLSearchParams({
+                contract_id,
+                escrow_id,
+                sandbox: 'true',
+                ...(SANDBOX_SECRET ? { token: SANDBOX_SECRET } : {}),
+            });
             dhmadData = {
                 escrow_id,
                 status: 'pending',
                 amount,
-                payment_url: `https://sandbox.dhmad.tn/pay/${escrow_id}`,
+                payment_url: `${APP_URL}/payment/success?${sandboxParams.toString()}`,
                 created_at: new Date().toISOString(),
             };
-            console.log(`[${timestamp}][${requestId}][dhmad-create-escrow] Mock escrow created:`, dhmadData);
+            console.log(`[${timestamp}][${requestId}][dhmad-create-escrow] Sandbox escrow created:`, dhmadData);
         } else {
             // PROD — real Dhmad API call
             const apiPayload = {

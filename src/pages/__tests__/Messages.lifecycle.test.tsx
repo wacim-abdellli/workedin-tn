@@ -547,8 +547,12 @@ describe('Messages lifecycle', () => {
         audioRecorderMocks.state.error = null;
 
         audioRecorderMocks.startRecording.mockResolvedValue(undefined);
-        audioRecorderMocks.stopRecording.mockImplementation(() => undefined);
-        audioRecorderMocks.cancelRecording.mockImplementation(() => undefined);
+        audioRecorderMocks.stopRecording.mockImplementation(() => {
+            audioRecorderMocks.state.audioBlob = null;
+        });
+        audioRecorderMocks.cancelRecording.mockImplementation(() => {
+            audioRecorderMocks.state.audioBlob = null;
+        });
 
         typingMocks.startTyping.mockImplementation(() => undefined);
         typingMocks.stopTyping.mockImplementation(() => undefined);
