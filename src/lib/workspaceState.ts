@@ -118,13 +118,16 @@ export function saveWorkspaceForUser(userId: string, workspace: Workspace) {
 export function loadWorkspaceForUser(userId: string): Workspace | null {
   try {
     const raw = localStorage.getItem(WS_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (parsed?.userId !== userId) return null;
-    return parsed.workspace === 'freelancer' ? 'freelancer' : 'client';
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.userId === userId) {
+        return parsed.workspace === 'freelancer' ? 'freelancer' : 'client';
+      }
+    }
   } catch {
-    return null;
+    /* ignore */
   }
+  return readWorkspaceHintFromProfileCache(userId);
 }
 
 function getInitialActiveWorkspace(): Workspace {
@@ -132,18 +135,26 @@ function getInitialActiveWorkspace(): Workspace {
   if (!userId) {
     return 'client';
   }
-  return loadWorkspaceForUser(userId) ?? readWorkspaceHintFromProfileCache(userId) ?? 'client';
+  return loadWorkspaceForUser(userId) ?? 'client';
 }
 
 // NOTE: Zustand state is not fully persisted (see wi_workspace). We only seed
 // synchronously from localStorage/sessionStorage so the first paint matches
 // the signed-in user's workspace and App.tsx does not flash workspace-client.
-export const useWorkspaceStore = create<WorkspaceState>()((set) => ({
+export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
   activeWorkspace: getInitialActiveWorkspace(),
   isSwitching: false,
   setWorkspace: (workspace) => {
+    const prev = get().activeWorkspace;
     logger.warn('[WorkspaceState] Active workspace mode switching to:', workspace);
     set({ activeWorkspace: workspace });
+
+    if (prev !== workspace) {
+      const userId = getPersistedSupabaseUserId();
+      if (userId) {
+        saveWorkspaceForUser(userId, workspace);
+      }
+    }
   },
   setSwitching: (value) => set({ isSwitching: value }),
 }));

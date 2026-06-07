@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -29,7 +29,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SEO from '@/components/common/SEO';
 import { sendDisputeOpenedEmail } from '@/lib/email';
 import { Skeleton } from '@/components/common/SkeletonCard';
-import ErrorBoundary from '@/components/ErrorBoundary';
+
 import { resolveMessagingLifecyclePolicy } from '@/lib/messagingLifecycle';
 
 // Components
@@ -755,10 +755,6 @@ function ContractWorkspaceComponent() {
 }
 
 export default function ContractWorkspace() {
-    return (
-        <ErrorBoundary>
-            <ContractWorkspaceComponent />
-        </ErrorBoundary>
-    );
+    return <ContractWorkspaceComponent />;
 }
 

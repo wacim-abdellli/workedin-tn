@@ -53,8 +53,18 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
   avatars: {
     bucket: 'avatars',
     maxSizeBytes: 5 * MB,
-    allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
-    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+    allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif', 'avif', 'bmp'],
+    allowedMimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'image/heic',
+      'image/heif',
+      'image/avif',
+      'image/bmp',
+      'image/x-ms-bmp',
+    ],
     publicUrl: true,
     upsert: true,
     requireUserPrefix: true,
@@ -63,7 +73,7 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
   attachments: {
     bucket: 'attachments',
     maxSizeBytes: 10 * MB,
-    allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp'],
+    allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'heic', 'heif', 'avif', 'bmp'],
     allowedMimeTypes: [
       'application/pdf',
       'application/msword',
@@ -72,6 +82,11 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
       'image/jpeg',
       'image/png',
       'image/webp',
+      'image/heic',
+      'image/heif',
+      'image/avif',
+      'image/bmp',
+      'image/x-ms-bmp',
     ],
     publicUrl: true,
     upsert: false,
@@ -81,7 +96,7 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
   'contract-files': {
     bucket: 'contract-files',
     maxSizeBytes: 10 * MB,
-    allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp'],
+    allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'heic', 'heif', 'avif', 'bmp'],
     allowedMimeTypes: [
       'application/pdf',
       'application/msword',
@@ -90,6 +105,11 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
       'image/jpeg',
       'image/png',
       'image/webp',
+      'image/heic',
+      'image/heif',
+      'image/avif',
+      'image/bmp',
+      'image/x-ms-bmp',
     ],
     publicUrl: false,
     upsert: false,
@@ -109,6 +129,10 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
       'jpeg',
       'webp',
       'gif',
+      'heic',
+      'heif',
+      'avif',
+      'bmp',
       'webm',
       'mp3',
       'wav',
@@ -125,6 +149,11 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
       'image/png',
       'image/webp',
       'image/gif',
+      'image/heic',
+      'image/heif',
+      'image/avif',
+      'image/bmp',
+      'image/x-ms-bmp',
       'audio/webm',
       'audio/mpeg',
       'audio/wav',
@@ -142,8 +171,17 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
   'identity-documents': {
     bucket: 'identity-documents',
     maxSizeBytes: 8 * MB,
-    allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
-    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+    allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif', 'bmp'],
+    allowedMimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/heic',
+      'image/heif',
+      'image/avif',
+      'image/bmp',
+      'image/x-ms-bmp',
+    ],
     publicUrl: false,
     upsert: true,
     requireUserPrefix: true,
@@ -230,6 +268,12 @@ function matchesContentSignature(extension: string, bytes: Uint8Array) {
     case 'm4a':
     case 'mp4':
       return isLikelyMp4Family(bytes);
+    case 'heic':
+    case 'heif':
+    case 'avif':
+      return isLikelyMp4Family(bytes);
+    case 'bmp':
+      return hasSignature(bytes, [0x42, 0x4d]);
     default:
       return false;
   }

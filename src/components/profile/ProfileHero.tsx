@@ -117,7 +117,7 @@ export function ProfileHero({
                                 }
                                 <input
                                     type="file"
-                                    accept=".jpg,.jpeg,.png,.webp,.gif"
+                                    accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.avif,.bmp"
                                     className="hidden"
                                     onChange={onAvatarUpload}
                                     disabled={isUploadingAvatar}

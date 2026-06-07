@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import {
     MessageSquare, Star, Bookmark, MapPin, Clock, Briefcase,
     Archive, CheckCircle, Loader2, User,
@@ -124,6 +125,7 @@ export default function ProposalDetailPane({
     isShortlisted = false,
 }: ProposalDetailPaneProps) {
     const { tx } = useTranslation();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<Tab>('proposal');
     const [hireConfirm, setHireConfirm] = useState(false);
     const [rejectConfirm, setRejectConfirm] = useState(false);
@@ -305,10 +307,17 @@ export default function ProposalDetailPane({
             {/* ── COMPACT TOP HEADER ── */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 shrink-0 z-20 bg-[var(--color-bg-base)]">
                 <div className="flex items-center gap-3">
-                    <Avatar name={freelancer.full_name} url={freelancer.avatar_url} online={freelancer.is_online} size="sm" />
+                    <div className="cursor-pointer transition-opacity hover:opacity-80" onClick={() => navigate(`/freelancer/${proposal.freelancer_id}`)}>
+                        <Avatar name={freelancer.full_name} url={freelancer.avatar_url} online={freelancer.is_online} size="sm" />
+                    </div>
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-sm font-bold truncate text-[var(--color-text-primary)]">{freelancer.full_name}</h2>
+                            <h2 
+                                onClick={() => navigate(`/freelancer/${proposal.freelancer_id}`)}
+                                className="text-sm font-bold truncate text-[var(--color-text-primary)] cursor-pointer hover:text-amber-400 transition-colors"
+                            >
+                                {freelancer.full_name}
+                            </h2>
                             <StatusPill status={proposal.status} />
                         </div>
                     </div>
@@ -632,6 +641,12 @@ export default function ProposalDetailPane({
                 ) : (
                     <div className="flex flex-1 items-center justify-between gap-3 overflow-x-auto scrollbar-hide py-1">
                         <div className="flex items-center gap-3">
+                            <button type="button" onClick={() => navigate(`/freelancer/${proposal.freelancer_id}`)}
+                                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)]/70 hover:bg-white/5 transition-colors shrink-0">
+                                <User className="w-4 h-4 text-amber-400" />
+                                Visit Profile
+                            </button>
+
                             <button type="button" onClick={onMessage}
                                 className="flex items-center gap-1.5 rounded-lg border border-white/10 px-4 py-2.5 text-sm font-semibold text-[var(--color-text-primary)]/70 hover:bg-white/5 transition-colors shrink-0">
                                 <MessageSquare className="w-4 h-4" />

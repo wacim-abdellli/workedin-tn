@@ -1,10 +1,10 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
-import { ROUTES } from '@/lib/routes';
+import { ROUTES, getContractWorkspaceRoute } from '@/lib/routes';
 import { X, Briefcase, Plus, ChevronRight, Loader2 } from 'lucide-react';
 import type { Job } from '@/types';
 import { useToast } from '@/components/ui/Toast';
@@ -30,7 +30,7 @@ export default function InviteToJobModal({ isOpen, onClose, freelancerId, freela
             
             const { data, error } = await supabase
                 .from('jobs')
-                .select('id, title, budget_max, budget_min, job_type, created_at')
+                .select('id, title, description, budget_max, budget_min, job_type, created_at')
                 .eq('client_id', user.id)
                 .eq('status', 'open')
                 .order('created_at', { ascending: false });
@@ -77,22 +77,56 @@ export default function InviteToJobModal({ isOpen, onClose, freelancerId, freela
             // For now, let's create a direct contract in pending_payment state
             const amount = job.budget_min || job.budget_max || 0;
             
-            const { error } = await supabase.from('contracts').insert({
-                job_id: job.id,
-                freelancer_id: freelancerId,
-                client_id: user.id,
-                amount: amount,
-                status: 'pending_payment',
-                payment_status: 'pending',
-                started_at: new Date().toISOString()
-            });
+            const { data: contractData, error } = await supabase
+                .from('contracts')
+                .insert({
+                    job_id: job.id,
+                    freelancer_id: freelancerId,
+                    client_id: user.id,
+                    title: job.title,
+                    description: job.description,
+                    contract_type: job.job_type,
+                    amount: amount,
+                    status: 'pending_payment',
+                    payment_status: 'pending',
+                    started_at: new Date().toISOString()
+                })
+                .select('id')
+                .single();
 
             if (error) throw error;
+            const contractId = contractData?.id;
+
+            // Pre-create the contract conversation so Messages page opens it immediately.
+            if (contractId) {
+                try {
+                    let convoResult = await supabase.rpc('get_or_create_conversation', {
+                        user1: user.id,
+                        user2: freelancerId,
+                        p_contract_id: contractId,
+                        p_scope: 'contract',
+                    });
+                    if (convoResult.error) {
+                        convoResult = await supabase.rpc('get_or_create_conversation', {
+                            user1: user.id,
+                            user2: freelancerId,
+                            p_contract_id: contractId,
+                        });
+                    }
+                } catch (convoErr) {
+                    console.warn('Pre-creating contract conversation failed', convoErr);
+                }
+            }
 
             showToast(tx('inviteModal.success', undefined, `Successfully sent an offer to ${freelancerName}!`), 'success');
             onClose();
-            // Redirect to the contract or workspace
-            navigate(ROUTES.myContracts);
+
+            // Redirect to the contract workspace
+            if (contractId) {
+                navigate(getContractWorkspaceRoute(contractId));
+            } else {
+                navigate(ROUTES.myContracts);
+            }
 
         } catch (error) {
             console.error('Error inviting freelancer:', error);

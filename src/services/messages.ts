@@ -82,73 +82,108 @@ async function getOrCreateConversationId(
         return { data: cachedConversationId, error: null };
     }
 
-    if (contractId) {
-        const contractConversationResult = await supabaseWithRetry(
-            () => supabase.rpc('get_or_create_contract_conversation', {
-                p_contract_id: contractId,
-            }),
-            { throwOnError: false, timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
+    try {
+        const [participant1, participant2] = [user1, user2].sort();
+        const resolvedScope = scope ?? 'shared';
+
+        // 1. Check if the conversation already exists
+        let existingQuery = supabase
+            .from('conversations')
+            .select('id')
+            .eq('participant_1', participant1)
+            .eq('participant_2', participant2);
+
+        if (contractId) {
+            existingQuery = existingQuery.eq('contract_id', contractId);
+        } else {
+            existingQuery = existingQuery.eq('conversation_scope', resolvedScope).is('contract_id', null);
+        }
+
+        const { data: existing, error: fetchError } = await supabaseWithRetry(
+            () => existingQuery.maybeSingle(),
+            { timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
         );
 
-        const contractConversationId = extractConversationIdFromRpcPayload(contractConversationResult.data);
-        if (!contractConversationResult.error && contractConversationId) {
-            conversationIdCache.set(cacheKey, contractConversationId);
-            return { data: contractConversationId, error: null };
+        if (fetchError) throw fetchError;
+        if (existing?.id) {
+            conversationIdCache.set(cacheKey, existing.id);
+            return { data: existing.id, error: null };
         }
 
-        const contractErrorMessage =
-            typeof contractConversationResult.error === 'object'
-            && contractConversationResult.error
-            && 'message' in contractConversationResult.error
-            && typeof contractConversationResult.error.message === 'string'
-                ? contractConversationResult.error.message.toLowerCase()
-                : '';
-        const shouldFallbackToGeneric = contractErrorMessage.includes('get_or_create_contract_conversation')
-            && contractErrorMessage.includes('does not exist');
+        // 2. Resolve client_id and freelancer_id
+        let clientId = '';
+        let freelancerId = '';
 
-        if (!shouldFallbackToGeneric) {
-            return { data: null, error: contractConversationResult.error ?? new Error('Failed to resolve contract conversation') };
-        }
-    }
-
-    let { data, error } = await supabaseWithRetry(
-        () => supabase.rpc('get_or_create_conversation', {
-            user1,
-            user2,
-            p_contract_id: contractId ?? null,
-            p_scope: scope ?? null,
-        }),
-        { throwOnError: false, timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
-    );
-
-    if (error) {
-        const errorMessage = typeof error === 'object' && error && 'message' in error && typeof error.message === 'string'
-            ? error.message.toLowerCase()
-            : '';
-        const shouldRetryLegacy = errorMessage.includes('p_scope')
-            || errorMessage.includes('get_or_create_conversation') && errorMessage.includes('does not exist');
-
-        if (shouldRetryLegacy) {
-            const legacyResult = await supabaseWithRetry(
-                () => supabase.rpc('get_or_create_conversation', {
-                    user1,
-                    user2,
-                    p_contract_id: contractId ?? null,
-                }),
-                { throwOnError: false, timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
+        if (contractId) {
+            const { data: contract, error: contractError } = await supabaseWithRetry(
+                () => supabase
+                    .from('contracts')
+                    .select('client_id, freelancer_id')
+                    .eq('id', contractId)
+                    .single(),
+                { timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
             );
-            data = legacyResult.data;
-            error = legacyResult.error;
+            if (contractError) throw contractError;
+            if (contract) {
+                clientId = contract.client_id;
+                freelancerId = contract.freelancer_id;
+            }
         }
+
+        if (!clientId || !freelancerId) {
+            const { data: profiles, error: profilesError } = await supabaseWithRetry(
+                () => supabase
+                    .from('profiles')
+                    .select('id, user_type')
+                    .in('id', [user1, user2]),
+                { timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
+            );
+
+            if (profilesError) throw profilesError;
+
+            const p1 = profiles?.find((p) => p.id === user1);
+            const p2 = profiles?.find((p) => p.id === user2);
+
+            if (p1?.user_type === 'client' || p2?.user_type === 'freelancer') {
+                clientId = user1;
+                freelancerId = user2;
+            } else if (p2?.user_type === 'client' || p1?.user_type === 'freelancer') {
+                clientId = user2;
+                freelancerId = user1;
+            } else {
+                clientId = user1;
+                freelancerId = user2;
+            }
+        }
+
+        // 3. Insert explicit conversation row
+        const { data: newConv, error: insertError } = await supabaseWithRetry(
+            () => supabase
+                .from('conversations')
+                .insert({
+                    participant_1: participant1,
+                    participant_2: participant2,
+                    client_id: clientId,
+                    freelancer_id: freelancerId,
+                    contract_id: contractId ?? null,
+                    conversation_scope: resolvedScope,
+                    inbox_participant_1: participant1 === clientId ? 'client' : 'freelancer',
+                    inbox_participant_2: participant2 === clientId ? 'client' : 'freelancer',
+                    status: 'active',
+                })
+                .select('id')
+                .single(),
+            { timeoutMs: MESSAGE_WRITE_TIMEOUT_MS }
+        );
+
+        if (insertError) throw insertError;
+        if (!newConv?.id) throw new Error('Failed to create conversation');
+
+        conversationIdCache.set(cacheKey, newConv.id);
+        return { data: newConv.id, error: null };
+    } catch (error) {
+        return { data: null, error: normalizeMessageError(error) };
     }
-
-    const conversationId = extractConversationIdFromRpcPayload(data);
-
-    if (!error && conversationId) {
-        conversationIdCache.set(cacheKey, conversationId);
-    }
-
-    return { data: conversationId, error };
 }
 
 function normalizeMessageError(error: unknown) {
@@ -273,78 +308,26 @@ export async function getConversations(
         const scopes = options?.scopes;
 
         // Determine which inbox values to filter on.
-        // scopes like ['freelancer','contract','shared'] map 1-to-1 to inbox column values.
-        // We always include 'shared' because shared conversations appear in all inboxes.
         const inboxValues = scopes && scopes.length > 0 ? scopes : null;
 
-        const buildQuery = (
-            participantColumn: 'participant_1' | 'participant_2',
-            inboxColumn: 'inbox_participant_1' | 'inbox_participant_2',
-            includeScopeColumns: boolean
-        ) => {
-            let query = (supabase
-                .from('conversations') as any)
-                .select(
-                    includeScopeColumns
-                        ? 'id, participant_1, participant_2, client_id, freelancer_id, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at, conversation_scope, inbox_participant_1, inbox_participant_2, status'
-                        : 'id, participant_1, participant_2, contract_id, last_message_text, last_message_at, unread_count_1, unread_count_2, created_at, updated_at',
-                    { count: 'estimated' }
-                )
-                .eq(participantColumn, userId)
-                .order('last_message_at', { ascending: false });
+        const { data: conversationsData, error } = await supabaseWithRetry(() => supabase
+            .from('conversations')
+            .select(`
+                id, participant_1, participant_2, client_id, freelancer_id, contract_id, 
+                last_message_text, last_message_at, unread_count_1, unread_count_2, 
+                created_at, updated_at, conversation_scope, inbox_participant_1, 
+                inbox_participant_2, status
+            `, { count: 'estimated' })
+            .or(`client_id.eq.${userId},freelancer_id.eq.${userId}`)
+            .order('last_message_at', { ascending: false })
+        , { timeoutMs: CONVERSATIONS_TIMEOUT_MS });
 
-            // Use per-participant inbox column for filtering when available.
-            // Include null inbox values so legacy rows remain visible after schema upgrades.
-            if (includeScopeColumns && inboxValues && inboxValues.length > 0) {
-                const safeInboxValues = inboxValues.filter((value) => /^[a-z_]+$/i.test(value));
-                if (safeInboxValues.length > 0) {
-                    query = query.or(`${inboxColumn}.in.(${safeInboxValues.join(',')}),${inboxColumn}.is.null`);
-                }
-            }
+        if (error) throw error;
 
-            return query;
-        };
+        const allConversations = (conversationsData ?? []) as ConversationRow[];
 
-        const runQueries = async (includeInboxCols: boolean) => Promise.all([
-            supabaseWithRetry(() => buildQuery('participant_1', 'inbox_participant_1', includeInboxCols),
-                { timeoutMs: CONVERSATIONS_TIMEOUT_MS }),
-            supabaseWithRetry(() => buildQuery('participant_2', 'inbox_participant_2', includeInboxCols),
-                { timeoutMs: CONVERSATIONS_TIMEOUT_MS }),
-        ]);
-
-        // Try with inbox columns first; fall back to no-scope query if column missing
-        let [result1, result2] = await runQueries(true);
-
-        const hasSchemaError = (err: unknown) =>
-            isMissingSchemaColumn(err, 'conversations', 'inbox_participant_1') ||
-            isMissingSchemaColumn(err, 'conversations', 'inbox_participant_2') ||
-            isMissingSchemaColumn(err, 'conversations', 'conversation_scope');
-
-        if (hasSchemaError(result1.error) || hasSchemaError(result2.error)) {
-            // DB schema not yet migrated — fall back to unfiltered query
-            [result1, result2] = await runQueries(false);
-        }
-
-        if (result1.error) throw result1.error;
-        if (result2.error) throw result2.error;
-
-        // Merge and deduplicate results, sort by activity
-        const allConversations = [
-            ...(result1.data ?? []),
-            ...(result2.data ?? [])
-        ] as ConversationRow[];
-
-        const uniqueConversations = Array.from(
-            new Map(allConversations.map(conv => [conv.id, conv])).values()
-        ).sort((a, b) => {
-            const aTime = new Date(a.last_message_at || 0).getTime();
-            const bTime = new Date(b.last_message_at || 0).getTime();
-            return bTime - aTime;
-        });
-
-        const repairedConversations = uniqueConversations;
         const scopedConversations = inboxValues && inboxValues.length > 0
-            ? repairedConversations.filter((conversation) => {
+            ? allConversations.filter((conversation) => {
                 if (conversation.status === 'archived') return false;
 
                 // Explicit first-class role mapping:
@@ -380,7 +363,7 @@ export async function getConversations(
 
                 return true;
             })
-            : repairedConversations.filter(c => c.status !== 'archived');
+            : allConversations.filter(c => c.status !== 'archived');
 
         const paginatedConversations = scopedConversations.slice(start, end + 1);
         const count = scopedConversations.length;
@@ -448,79 +431,41 @@ export async function getConversations(
 
 export async function getTotalUnreadCount(userId: string, scopes?: ConversationScope[]) {
     try {
-        // When scopes are provided (mode-specific badge count), use per-participant
-        // inbox columns so the count reflects only conversations in the correct inbox.
-        // inbox_participant_1/2 is set at creation time per the role context of each party.
         if (scopes && scopes.length > 0) {
-            let [participant1Result, participant2Result] = await Promise.all([
-                supabaseWithRetry(() => supabase
-                    .from('conversations')
-                    .select('unread_count_1')
-                    .eq('participant_1', userId)
-                    .in('inbox_participant_1', scopes),
-                    { timeoutMs: 12000 }
-                ),
-                supabaseWithRetry(() => supabase
-                    .from('conversations')
-                    .select('unread_count_2')
-                    .eq('participant_2', userId)
-                    .in('inbox_participant_2', scopes),
-                    { timeoutMs: 12000 }
-                ),
-            ]);
+            const { data, error } = await supabaseWithRetry(() => supabase
+                .from('conversations')
+                .select('participant_1, participant_2, client_id, freelancer_id, inbox_participant_1, inbox_participant_2, unread_count_1, unread_count_2, status')
+                .or(`client_id.eq.${userId},freelancer_id.eq.${userId}`)
+            , { timeoutMs: 12000 });
 
-            // Fallback: if inbox columns don't exist yet (pre-migration), try conversation_scope
-            const hasInboxError =
-                isMissingSchemaColumn(participant1Result.error, 'conversations', 'inbox_participant_1')
-                || isMissingSchemaColumn(participant2Result.error, 'conversations', 'inbox_participant_2');
+            if (error) throw error;
 
-            if (hasInboxError) {
-                [participant1Result, participant2Result] = await Promise.all([
-                    supabaseWithRetry(() => supabase
-                        .from('conversations')
-                        .select('unread_count_1')
-                        .eq('participant_1', userId)
-                        .in('conversation_scope', scopes),
-                        { timeoutMs: 12000 }
-                    ),
-                    supabaseWithRetry(() => supabase
-                        .from('conversations')
-                        .select('unread_count_2')
-                        .eq('participant_2', userId)
-                        .in('conversation_scope', scopes),
-                        { timeoutMs: 12000 }
-                    ),
-                ]);
+            const totalUnread = (data ?? []).reduce((sum, row) => {
+                if (row.status === 'archived') return sum;
 
-                // Final fallback: no scope filtering at all
-                if (
-                    isMissingSchemaColumn(participant1Result.error, 'conversations', 'conversation_scope')
-                    || isMissingSchemaColumn(participant2Result.error, 'conversations', 'conversation_scope')
-                ) {
-                    participant1Result = await supabaseWithRetry(() => supabase
-                        .from('conversations').select('unread_count_1').eq('participant_1', userId),
-                        { timeoutMs: 12000 }
-                    );
-                    participant2Result = await supabaseWithRetry(() => supabase
-                        .from('conversations').select('unread_count_2').eq('participant_2', userId),
-                        { timeoutMs: 12000 }
-                    );
+                let myRole: ConversationScope | undefined = undefined;
+                if (row.client_id === userId) {
+                    myRole = 'client';
+                } else if (row.freelancer_id === userId) {
+                    myRole = 'freelancer';
                 }
-            }
 
-            if (participant1Result.error) throw participant1Result.error;
-            if (participant2Result.error) throw participant2Result.error;
+                if (!myRole) {
+                    const myInbox = row.participant_1 === userId ? row.inbox_participant_1 : row.inbox_participant_2;
+                    if (myInbox) {
+                        myRole = myInbox as ConversationScope;
+                    }
+                }
 
-            const participant1Unread = (participant1Result.data ?? []).reduce(
-                (sum, row) => sum + (typeof row.unread_count_1 === 'number' ? row.unread_count_1 : 0),
-                0
-            );
-            const participant2Unread = (participant2Result.data ?? []).reduce(
-                (sum, row) => sum + (typeof row.unread_count_2 === 'number' ? row.unread_count_2 : 0),
-                0
-            );
+                if (myRole && scopes.includes(myRole)) {
+                    const count = row.participant_1 === userId ? row.unread_count_1 : row.unread_count_2;
+                    return sum + (typeof count === 'number' ? count : 0);
+                }
 
-            return { count: participant1Unread + participant2Unread, error: null };
+                return sum;
+            }, 0);
+
+            return { count: totalUnread, error: null };
         }
 
         // No scope filter: use the server-side RPC for the global total
@@ -594,8 +539,17 @@ export async function sendMessage(params: {
     attachments?: MessageAttachment[];
 }) {
     try {
-        const tempConversation = { participant_1: params.senderId, participant_2: params.receiverId };
-        if (!canSendMessage(params.senderId, tempConversation)) {
+        const { data: conversation, error: convError } = await supabase
+            .from('conversations')
+            .select('participant_1, participant_2')
+            .eq('id', params.conversationId)
+            .maybeSingle();
+
+        if (convError || !conversation) {
+            return { data: null, error: convError || new Error('Conversation not found.') };
+        }
+
+        if (!canSendMessage(params.senderId, conversation)) {
             return { data: null, error: new Error('Permission Denied: You are not a participant in this conversation.') };
         }
 
@@ -823,6 +777,20 @@ export async function sendContractMessage(data: {
 
         if (convError) throw convError;
         if (!conversationId) throw new Error('Failed to resolve conversation');
+
+        const { data: conversation, error: fetchConvError } = await supabase
+            .from('conversations')
+            .select('participant_1, participant_2')
+            .eq('id', conversationId)
+            .maybeSingle();
+
+        if (fetchConvError || !conversation) {
+            throw fetchConvError || new Error('Conversation not found.');
+        }
+
+        if (!canSendMessage(data.sender_id, conversation)) {
+            throw new Error('Permission Denied: You are not a participant in this conversation.');
+        }
 
         const { data: message, error } = await supabaseWithRetry(
             () => supabase

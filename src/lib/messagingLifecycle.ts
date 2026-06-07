@@ -94,7 +94,7 @@ const buildContractPolicy = (status: ContractMessagingStatus): MessagingLifecycl
                 canSendVoiceNotes: true,
                 canReply: true,
                 bannerTone: 'info',
-                bannerFallback: 'Payment is still being confirmed for this contract. Messaging remains open.',
+                bannerFallback: 'Payment pending.',
                 blockedReasonFallback: null,
             };
         case 'delivery_submitted':
@@ -108,8 +108,8 @@ const buildContractPolicy = (status: ContractMessagingStatus): MessagingLifecycl
                 canAttachFiles: true,
                 canSendVoiceNotes: true,
                 canReply: true,
-                bannerTone: 'info',
-                bannerFallback: 'Delivery submitted. The client is now reviewing the work before approval, changes, or dispute.',
+                bannerTone: 'none',
+                bannerFallback: 'Delivery submitted.',
                 blockedReasonFallback: null,
             };
         case 'revision_requested':
@@ -124,7 +124,7 @@ const buildContractPolicy = (status: ContractMessagingStatus): MessagingLifecycl
                 canSendVoiceNotes: true,
                 canReply: true,
                 bannerTone: 'info',
-                bannerFallback: 'A revision has been requested. Share only the updates needed to close the loop.',
+                bannerFallback: 'Revision requested.',
                 blockedReasonFallback: null,
             };
         case 'disputed':
@@ -132,21 +132,21 @@ const buildContractPolicy = (status: ContractMessagingStatus): MessagingLifecycl
                 status,
                 'Disputed',
                 'warning',
-                'This contract is under dispute. Messaging is locked while the case is reviewed.',
+                'Contract under dispute. Chat locked.',
             );
         case 'completed':
             return buildReadOnlyContractPolicy(
                 status,
                 'Completed',
                 'success',
-                'This contract is completed. The thread is now read-only.',
+                'Contract completed. Thread is read-only.',
             );
         case 'cancelled':
             return buildReadOnlyContractPolicy(
                 status,
                 'Cancelled',
                 'danger',
-                'This contract was cancelled. The thread is now read-only.',
+                'Contract cancelled. Thread is read-only.',
             );
         case 'unknown':
         default:
@@ -161,7 +161,7 @@ const buildContractPolicy = (status: ContractMessagingStatus): MessagingLifecycl
                 canSendVoiceNotes: true,
                 canReply: true,
                 bannerTone: 'info',
-                bannerFallback: 'Contract status is currently unavailable. Messaging remains open.',
+                bannerFallback: 'Contract status unavailable.',
                 blockedReasonFallback: null,
             };
     }

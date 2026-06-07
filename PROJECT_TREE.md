@@ -136,7 +136,6 @@
             📄 ProfileSection.tsx [UI Component] -> Exports: [ProfileSection, ProfileTag, ProfileEmptySlot]
             📄 ProfileStatBar.tsx [UI Component] -> Exports: [ProfileStat, ProfileStatBar]
         📁 proposals/
-            📄 AIRecommendationsCard.tsx [UI Component] -> Exports: [AIRecommendationsCard]
             📄 HireCelebrationPane.tsx [UI Component] -> Exports: [HireCelebrationPane]
             📄 JobSummaryCard.tsx [UI Component] -> Exports: [JobEmptyPane]
             📄 ProposalCard.tsx [UI Component]
@@ -412,7 +411,6 @@
             📄 routeGraph.test.ts [Test Script]
             📁 __snapshots__/
     📁 services/
-        📄 aiRecommendations.ts -> Exports: [RecommendationInsight, BudgetBenchmark, AIRecommendations]
         📄 contracts.ts
         📄 dhmad.ts -> Exports: [DhmadEscrowRequest, DhmadEscrowResponse, DhmadReleaseResponse, DhmadRefundResponse, DhmadCheckoutAction, DhmadCheckoutSession]
         📄 index.ts

@@ -84,7 +84,7 @@ export default function OnboardingStep1({
                         <input
                             ref={fileInputRef}
                             type="file"
-                            accept=".jpg,.jpeg,.png,.webp,.gif"
+                            accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.avif,.bmp"
                             className="hidden"
                             onChange={onAvatarChange}
                         />

@@ -1,0 +1,336 @@
+﻿diff --git a/src/pages/ContractWorkspacePage.tsx b/src/pages/ContractWorkspacePage.tsx
+index 2315631..82541a9 100644
+--- a/src/pages/ContractWorkspacePage.tsx
++++ b/src/pages/ContractWorkspacePage.tsx
+@@ -1,8 +1,9 @@
+ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+ import { useNavigate, useParams } from 'react-router-dom';
+-import { ArrowLeft, AlertCircle, MessageSquare, Users, PackageCheck, GitPullRequest, ShieldAlert, X, Upload, Paperclip, Trash2, XCircle, Loader2 } from 'lucide-react';
++import { ArrowLeft, AlertCircle, PackageCheck, X } from 'lucide-react';
+ import { Header } from '../components/layout';
+ import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
++import SubmitDeliveryForm from '@/components/contracts/SubmitDeliveryForm';
+ import { RequestChangesModal, OpenDisputeModal, CancelContractModal } from '../components/contracts/ContractModals';
+ import FundEscrow from '../components/payments/FundEscrow';
+ import { supabase } from '../lib/supabase';
+@@ -163,7 +164,6 @@ export default function ContractWorkspacePage() {
+     const [confirmReleaseOpen, setConfirmReleaseOpen] = useState(false);
+     const [cancelOpen, setCancelOpen] = useState(false);
+     const [reviewFiles, setReviewFiles] = useState<File[]>([]);
+-    const [finalFiles, setFinalFiles] = useState<File[]>([]);
+     const [isUploading, setIsUploading] = useState(false);
+     const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0, currentBytes: 0, totalBytes: 0 });
+     const deliverTextareaRef = useRef<HTMLTextAreaElement>(null);
+@@ -380,16 +380,22 @@ export default function ContractWorkspacePage() {
+         if (!contract) return null;
+         const resolvedTitle = (typeof contract.title === 'string' && contract.title.trim() ? contract.title.trim() : null) ?? jobTitle ?? 'Contract';
+         const latestAssets = latestDelivery?.assets ?? [];
+-        const reviewFiles = latestAssets.filter(a => a.asset_kind === 'review_asset').map(a => ({
++        const deliveryAssetMap = new Map<string, DeliveryAsset>();
++        latestAssets.forEach((asset) => {
++            const key = `${asset.storage_path || asset.id}|${asset.name}`;
++            if (!deliveryAssetMap.has(key)) {
++                deliveryAssetMap.set(key, asset);
++            }
++        });
++        const deliveryFiles = Array.from(deliveryAssetMap.values()).map(a => ({
+             id: a.id, name: a.name, storagePath: a.storage_path,
+             storageBucket: a.storage_bucket ?? 'contract-files',
+             mimeType: a.mime_type ?? null, sizeBytes: a.size_bytes ?? null,
+             assetKind: a.asset_kind as 'review_asset' | 'final_asset',
+             accessState: a.access_state as 'preview_available' | 'locked' | 'released',
+         }));
+-        const allFinalAssets = latestAssets.filter(a => a.asset_kind === 'final_asset');
+-        const visibleFinalFiles = userRole === 'client' ? allFinalAssets.filter(a => a.access_state === 'released') : allFinalAssets;
+-        const lockedFinalFilesCount = Number(latestDelivery?.locked_final_asset_count ?? allFinalAssets.filter(a => a.access_state !== 'released').length);
++        const reviewFilesOnly = deliveryFiles.filter(f => f.assetKind === 'review_asset');
++        const finalFilesOnly = deliveryFiles.filter(f => f.assetKind === 'final_asset');
+         const selfProfile = { full_name: profile?.full_name || 'You', avatar_url: profile?.avatar_url ?? null };
+         return {
+             amount: contract.total_amount ?? contract.amount ?? 0,
+@@ -399,15 +405,9 @@ export default function ContractWorkspacePage() {
+             escrowFunded: Boolean(contract.funded_at),
+             deliverySubmittedAt: contract.delivery_submitted_at ?? null,
+             reviewDueAt: contract.review_due_at ?? latestDelivery?.review_due_at ?? null,
+-            reviewFiles,
+-            finalFiles: visibleFinalFiles.map(a => ({
+-                id: a.id, name: a.name, storagePath: a.storage_path,
+-                storageBucket: a.storage_bucket ?? 'contract-files',
+-                mimeType: a.mime_type ?? null, sizeBytes: a.size_bytes ?? null,
+-                assetKind: a.asset_kind as 'review_asset' | 'final_asset',
+-                accessState: a.access_state as 'preview_available' | 'locked' | 'released',
+-            })),
+-            lockedFinalFilesCount,
++            reviewFiles: reviewFilesOnly,
++            finalFiles: finalFilesOnly,
++            lockedFinalFilesCount: finalFilesOnly.filter(f => f.accessState === 'locked').length,
+             job: { title: resolvedTitle, deadline: jobDeadline },
+             lastRevisionNote,
+             milestones: [],
+@@ -417,6 +417,7 @@ export default function ContractWorkspacePage() {
+         };
+     }, [contract, jobTitle, jobDeadline, latestDelivery, sharedFiles, lastRevisionNote, userRole, profile, counterpartyProfile]);
+ 
++
+     // ΓöÇΓöÇΓöÇ Activity events synthesized from contract timestamps ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+     const activityEvents = useMemo<ContractActivityEvent[]>(() => {
+         if (!contract) return [];
+@@ -456,6 +457,7 @@ export default function ContractWorkspacePage() {
+         contractId: resolvedContractId,
+         userId: user?.id ?? '',
+         userRole,
++        contract: contract as any,
+     });
+ 
+     const isActionLoading = isDelivering || isAccepting || isDisputing || isCancelling;
+@@ -471,15 +473,12 @@ export default function ContractWorkspacePage() {
+     const handleDeliver = () => {
+         setDeliverNote('');
+         setReviewFiles([]);
+-        setFinalFiles([]);
+         setUploadProgress({ current: 0, total: 0, currentBytes: 0, totalBytes: 0 });
+         setDeliverOpen(true);
+         setTimeout(() => deliverTextareaRef.current?.focus(), 60);
+     };
+ 
+-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, isFinal: boolean) => {
+-        if (!e.target.files) return;
+-        const newFiles = Array.from(e.target.files);
++    const addDeliveryFiles = (newFiles: File[]) => {
+         const validFiles = newFiles.filter(file => {
+             if (file.size > 100 * 1024 * 1024) {
+                 showToast(`File "${file.name}" exceeds 100MB limit.`, 'error');
+@@ -487,18 +486,11 @@ export default function ContractWorkspacePage() {
+             }
+             return true;
+         });
+-        if (isFinal) {
+-            setFinalFiles(prev => [...prev, ...validFiles]);
+-        } else {
+-            setReviewFiles(prev => [...prev, ...validFiles]);
+-        }
+-        e.target.value = '';
++        setReviewFiles(prev => [...prev, ...validFiles]);
+     };
+ 
+     const handleSubmitDelivery = async () => {
+-        if (!deliverNote.trim()) return;
+-        if (reviewFiles.length === 0) { showToast('At least one review file (preview) is required.', 'error'); return; }
+-        if (finalFiles.length === 0) { showToast('At least one final file is required.', 'error'); return; }
++        if (reviewFiles.length === 0) { showToast('Add at least one delivery file before submitting.', 'error'); return; }
+ 
+         setIsUploading(true);
+         try {
+@@ -506,43 +498,58 @@ export default function ContractWorkspacePage() {
+             const cid = resolvedContractId;
+             if (!uid || !cid) throw new Error('Missing user or contract ID');
+ 
+-            const uploadFile = async (file: File, kind: 'review' | 'final') => {
++            const uploadFilePair = async (file: File) => {
+                 const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+-                const path = `${uid}/${cid}/submissions/${kind}/${Date.now()}_${safeName}`;
+-                const { error: uploadErr } = await supabase.storage.from('contract-files').upload(path, file, { upsert: false });
+-                if (uploadErr) throw new Error(`Upload failed for ${file.name}: ${uploadErr.message}`);
++                const reviewPath = `${uid}/${cid}/submissions/review/${Date.now()}_${safeName}`;
++                const finalPath = `${uid}/${cid}/submissions/final/${Date.now()}_${safeName}`;
++                
++                const { error: reviewErr } = await supabase.storage.from('contract-files').upload(reviewPath, file, { upsert: false });
++                if (reviewErr) throw new Error(`Review upload failed for ${file.name}: ${reviewErr.message}`);
++
++                const { error: finalErr } = await supabase.storage.from('contract-files').upload(finalPath, file, { upsert: false });
++                if (finalErr) throw new Error(`Final upload failed for ${file.name}: ${finalErr.message}`);
++
+                 setUploadProgress(prev => ({ 
+                     ...prev, 
+                     current: prev.current + 1,
+                     currentBytes: prev.currentBytes + file.size 
+                 }));
++                
+                 return {
+-                    name: file.name,
+-                    storage_path: path,
+-                    storage_bucket: 'contract-files',
+-                    mime_type: file.type || '',
+-                    size_bytes: String(file.size),
++                    review: {
++                        name: file.name,
++                        storage_path: reviewPath,
++                        storage_bucket: 'contract-files',
++                        mime_type: file.type || '',
++                        size_bytes: String(file.size),
++                    },
++                    final: {
++                        name: file.name,
++                        storage_path: finalPath,
++                        storage_bucket: 'contract-files',
++                        mime_type: file.type || '',
++                        size_bytes: String(file.size),
++                    }
+                 };
+             };
+ 
+-            const totalFiles = reviewFiles.length + finalFiles.length;
+-            const totalBytes = [...reviewFiles, ...finalFiles].reduce((sum, f) => sum + f.size, 0);
++            const totalFiles = reviewFiles.length;
++            const totalBytes = reviewFiles.reduce((sum, f) => sum + f.size, 0);
+             setUploadProgress({ current: 0, total: totalFiles, currentBytes: 0, totalBytes });
+ 
+-            // Upload sequentially or in small batches if total files are many.
+-            // Using a simple loop to update progress reliably
+             const reviewAssets = [];
+-            for (const f of reviewFiles) reviewAssets.push(await uploadFile(f, 'review'));
+-            
+             const finalAssets = [];
+-            for (const f of finalFiles) finalAssets.push(await uploadFile(f, 'final'));
++            for (const f of reviewFiles) {
++                const { review, final } = await uploadFilePair(f);
++                reviewAssets.push(review);
++                finalAssets.push(final);
++            }
+ 
+             setIsUploading(false);
+-            await deliverWork(deliverNote.trim(), reviewAssets, finalAssets);
++            await deliverWork(deliverNote.trim() || 'submitted', reviewAssets, finalAssets);
+             setDeliverOpen(false);
+             setDeliverNote('');
+             setReviewFiles([]);
+-            setFinalFiles([]);
+             await loadWorkspace();
+             showToast(tx('contractWorkspace.deliverySubmitted', {}, 'Delivery submitted! The client will review your work.'), 'success');
+         } catch (err) {
+@@ -560,7 +567,7 @@ export default function ContractWorkspacePage() {
+         try {
+             await acceptWork();
+             await loadWorkspace();
+-            showToast(tx('contractWorkspace.paymentReleased', {}, 'Payment released! Final files are now unlocked.'), 'success');
++            showToast(tx('contractWorkspace.paymentReleased', {}, 'Payment released and contract completed.'), 'success');
+         } catch (err) {
+             const errMessage = err instanceof Error ? err.message : '';
+             showToast(tx(errMessage, {}, errMessage) || tx('contractWorkspace.releaseFailed', {}, 'Failed to release payment.'), 'error');
+@@ -750,99 +757,25 @@ export default function ContractWorkspacePage() {
+                         className="w-full max-w-lg rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)] max-h-[90vh] overflow-y-auto"
+                         onClick={e => e.stopPropagation()}
+                     >
+-                        <div className="mb-4 flex items-center gap-3">
+-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#9B8FF0]/15">
+-                                <PackageCheck className="h-5 w-5 text-[#9B8FF0]" />
+-                            </div>
+-                            <div>
+-                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Submit delivery</p>
+-                                <h2 id="modal-deliver-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">Package your delivery</h2>
+-                            </div>
+-                        </div>
+-                        <textarea
+-                            ref={deliverTextareaRef}
+-                            value={deliverNote}
+-                            onChange={e => setDeliverNote(e.target.value)}
+-                            placeholder="Describe what you've completed, any important notes for the clientΓÇª"
+-                            rows={3}
+-                            className="w-full resize-none rounded-[10px] border border-white/[0.08] bg-[var(--color-bg-base)] px-4 py-3 text-[14px] text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:border-[#9B8FF0]/60 focus:outline-none focus:ring-1 focus:ring-[#9B8FF0]/40"
++                        <SubmitDeliveryForm
++                            deliveryNote={deliverNote}
++                            files={reviewFiles}
++                            isSubmitting={isDelivering || isUploading}
++                            submitLabel={currentStatus === 'revision_requested' ? 'Resubmit delivery' : 'Submit delivery'}
++                            submittingLabel="Submitting delivery..."
++                            uploadProgressLabel={isUploading
++                                ? `Uploading ${(uploadProgress.currentBytes / 1024 / 1024).toFixed(1)}MB / ${(uploadProgress.totalBytes / 1024 / 1024).toFixed(1)}MB...`
++                                : null}
++                            textareaRef={deliverTextareaRef}
++                            onNoteChange={setDeliverNote}
++                            onAddFiles={addDeliveryFiles}
++                            onRemoveFile={(index) => setReviewFiles(prev => prev.filter((_, fileIndex) => fileIndex !== index))}
++                            onSubmit={() => void handleSubmitDelivery()}
++                            onCancel={() => {
++                                setDeliverOpen(false);
++                                setReviewFiles([]);
++                            }}
+                         />
+-
+-                        {/* Review Files Upload */}
+-                        <div className="mt-4">
+-                            <div className="mb-2 flex items-center justify-between">
+-                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#9B8FF0]">Review files <span className="text-[var(--color-text-tertiary)] font-normal normal-case">ΓÇö client sees immediately</span></p>
+-                                <span className="text-[11px] text-[var(--color-text-tertiary)]">{reviewFiles.length} file{reviewFiles.length !== 1 ? 's' : ''}</span>
+-                            </div>
+-                            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-[#9B8FF0]/30 bg-[#9B8FF0]/5 px-4 py-4 transition-colors hover:border-[#9B8FF0]/50 hover:bg-[#9B8FF0]/10">
+-                                <Upload className="h-5 w-5 text-[#9B8FF0]/60" />
+-                                <span className="text-[13px] text-[var(--color-text-secondary)]">Drop previews, screenshots, watermarked versions</span>
+-                                <span className="text-[11px] text-[var(--color-text-tertiary)]">Max 100 MB per file ┬╖ any type</span>
+-                                <input type="file" multiple className="hidden" onChange={e => handleFileSelect(e, false)} />
+-                            </label>
+-                            {reviewFiles.length > 0 ? (
+-                                <ul className="mt-2 space-y-1">
+-                                    {reviewFiles.map((f, i) => (
+-                                        <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-[8px] bg-[var(--color-bg-base)] px-3 py-2">
+-                                            <Paperclip className="h-3.5 w-3.5 shrink-0 text-[#9B8FF0]" />
+-                                            <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--color-text-primary)]">{f.name}</span>
+-                                            <span className="shrink-0 text-[11px] text-[var(--color-text-tertiary)]">{(f.size / 1048576).toFixed(1)} MB</span>
+-                                            <button type="button" onClick={() => setReviewFiles(prev => prev.filter((_, j) => j !== i))} className="shrink-0 text-[var(--color-text-tertiary)] hover:text-red-400">
+-                                                <Trash2 className="h-3.5 w-3.5" />
+-                                            </button>
+-                                        </li>
+-                                    ))}
+-                                </ul>
+-                            ) : null}
+-                        </div>
+-
+-                        {/* Final Files Upload */}
+-                        <div className="mt-4">
+-                            <div className="mb-2 flex items-center justify-between">
+-                                <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#1D9E75]">Final files <span className="text-[var(--color-text-tertiary)] font-normal normal-case">ΓÇö locked until payment</span></p>
+-                                <span className="text-[11px] text-[var(--color-text-tertiary)]">{finalFiles.length} file{finalFiles.length !== 1 ? 's' : ''}</span>
+-                            </div>
+-                            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] border border-dashed border-[#1D9E75]/30 bg-[#1D9E75]/5 px-4 py-4 transition-colors hover:border-[#1D9E75]/50 hover:bg-[#1D9E75]/10">
+-                                <Upload className="h-5 w-5 text-[#1D9E75]/60" />
+-                                <span className="text-[13px] text-[var(--color-text-secondary)]">Source files, full-res assets, unwatermarked work</span>
+-                                <span className="text-[11px] text-[var(--color-text-tertiary)]">Max 100 MB per file ┬╖ stays locked until approval</span>
+-                                <input type="file" multiple className="hidden" onChange={e => handleFileSelect(e, true)} />
+-                            </label>
+-                            {finalFiles.length > 0 ? (
+-                                <ul className="mt-2 space-y-1">
+-                                    {finalFiles.map((f, i) => (
+-                                        <li key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-[8px] bg-[var(--color-bg-base)] px-3 py-2">
+-                                            <Paperclip className="h-3.5 w-3.5 shrink-0 text-[#1D9E75]" />
+-                                            <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--color-text-primary)]">{f.name}</span>
+-                                            <span className="shrink-0 text-[11px] text-[var(--color-text-tertiary)]">{(f.size / 1048576).toFixed(1)} MB</span>
+-                                            <button type="button" onClick={() => setFinalFiles(prev => prev.filter((_, j) => j !== i))} className="shrink-0 text-[var(--color-text-tertiary)] hover:text-red-400">
+-                                                <Trash2 className="h-3.5 w-3.5" />
+-                                            </button>
+-                                        </li>
+-                                    ))}
+-                                </ul>
+-                            ) : null}
+-                        </div>
+-
+-                        <div className="mt-3 rounded-[8px] border border-white/[0.05] bg-[var(--color-bg-base)] px-3 py-2">
+-                            <p className="text-[12px] text-[var(--color-text-tertiary)] leading-relaxed">
+-                                ≡ƒ¢í∩╕Å Review files are visible immediately. Final files stay <strong className="text-[var(--color-text-primary)]">locked</strong> until the client approves and releases payment. The client has 3 days to review.
+-                            </p>
+-                        </div>
+-
+-                        <div className="mt-4 flex justify-end gap-2">
+-                            <button type="button" onClick={() => setDeliverOpen(false)} disabled={isDelivering || isUploading}
+-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40">
+-                                Cancel
+-                            </button>
+-                            <button type="button" onClick={() => void handleSubmitDelivery()} disabled={isDelivering || isUploading || !deliverNote.trim() || reviewFiles.length === 0 || finalFiles.length === 0}
+-                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#9B8FF0] px-4 py-2 text-[14px] font-semibold text-[var(--color-bg-base)] transition-colors hover:bg-[#a99cf5] disabled:opacity-50">
+-                                {isUploading || isDelivering ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+-                                {isUploading 
+-                                    ? `Uploading ${(uploadProgress.currentBytes / 1024 / 1024).toFixed(1)}MB / ${(uploadProgress.totalBytes / 1024 / 1024).toFixed(1)}MBΓÇª` 
+-                                    : isDelivering ? 'SubmittingΓÇª' : `Submit delivery (${reviewFiles.length + finalFiles.length} files)`}
+-                            </button>
+-                        </div>
+                     </div>
+                 </div>
+             ) : null}
+@@ -862,7 +795,7 @@ export default function ContractWorkspacePage() {
+                         </div>
+                         <div className="mb-4 rounded-[10px] border border-[#1D9E75]/20 bg-[#0F6E56]/10 px-4 py-3">
+                             <p className="text-[13px] leading-relaxed text-[var(--color-text-secondary)]">
+-                                This will release the escrowed funds to the freelancer and unlock all final delivery files. <strong className="text-[var(--color-text-primary)]">This action cannot be undone.</strong>
++                                This will release the escrowed funds to the freelancer and mark the contract as completed. <strong className="text-[var(--color-text-primary)]">This action cannot be undone.</strong>
+                             </p>
+                         </div>
+                         <div className="mt-4 flex justify-end gap-2">

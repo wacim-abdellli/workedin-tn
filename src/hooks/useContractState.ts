@@ -35,6 +35,7 @@ interface UseContractStateOptions {
     userId: string;
     userRole: 'client' | 'freelancer';
     queryClient?: QueryClient;
+    contract?: ContractData | null;
 }
 
 interface UseContractStateReturn {
@@ -67,8 +68,15 @@ export function useContractState({
     userId,
     userRole,
     queryClient,
+    contract: initialContract,
 }: UseContractStateOptions): UseContractStateReturn {
-    const [contract, setContract] = useState<ContractData | null>(null);
+    const [contract, setContract] = useState<ContractData | null>(initialContract || null);
+
+    useEffect(() => {
+        if (initialContract) {
+            setContract(initialContract);
+        }
+    }, [initialContract]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [isDelivering, setIsDelivering] = useState(false);

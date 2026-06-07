@@ -62,6 +62,27 @@ describe('upload policy', () => {
     expect(mp3Like).toEqual({ ok: true });
   });
 
+  it('accepts newly supported image formats (heic, heif, avif, bmp)', () => {
+    const heicResult = validateUploadPayload({
+      bucket: 'avatars',
+      fileName: 'photo.heic',
+      mimeType: 'image/heic',
+      size: 32,
+      bytes: new Uint8Array([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63]),
+    });
+
+    const bmpResult = validateUploadPayload({
+      bucket: 'avatars',
+      fileName: 'photo.bmp',
+      mimeType: 'image/bmp',
+      size: 32,
+      bytes: new Uint8Array([0x42, 0x4d, 0x36, 0x00, 0x00, 0x00]),
+    });
+
+    expect(heicResult).toEqual({ ok: true });
+    expect(bmpResult).toEqual({ ok: true });
+  });
+
   it('accepts aliased and codec-suffixed MIME values for message attachments', () => {
     expect(
       validateUploadSelection({

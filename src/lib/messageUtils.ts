@@ -298,10 +298,10 @@ export const getThreadPreview = (
 
 export const getLifecycleBannerClassName = (tone: import('../lib/messagingLifecycle').MessagingPolicyTone): string => {
     switch (tone) {
-        case 'success': return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200';
-        case 'warning': return 'border-amber-500/40 bg-amber-500/10 text-amber-100';
-        case 'danger': return 'border-red-500/40 bg-red-500/10 text-red-100';
-        case 'info': return 'border-blue-500/40 bg-blue-500/10 text-blue-100';
+        case 'success': return 'border-emerald-500/15 bg-emerald-500/[0.04] text-emerald-300';
+        case 'warning': return 'border-amber-500/15 bg-amber-500/[0.04] text-amber-200';
+        case 'danger': return 'border-red-500/15 bg-red-500/[0.04] text-red-300';
+        case 'info': return 'border-blue-500/15 bg-blue-500/[0.04] text-blue-300';
         case 'none':
         default: return 'border-surface surface-sunken text-on-surface-muted';
     }

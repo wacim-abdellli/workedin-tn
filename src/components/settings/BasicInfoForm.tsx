@@ -113,7 +113,7 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
                         style={{ background: 'var(--workspace-primary)' }}
                     >
                         {isUploadingAvatar ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
-                        <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif" className="hidden" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
+                        <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.avif,.bmp" className="hidden" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
                     </label>
                 </div>
 

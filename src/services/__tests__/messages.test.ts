@@ -131,19 +131,15 @@ describe('messages service coverage', () => {
         ]));
         expect(state.eqCalls).toEqual(expect.arrayContaining([
             {
-                table: 'conversations',
-                column: 'participant_1',
-                value: 'user-1',
-            },
-            {
-                table: 'conversations',
-                column: 'participant_2',
-                value: 'user-1',
-            },
-            {
                 table: 'messages',
                 column: 'conversation_id',
                 value: 'conversation-1',
+            },
+        ]));
+        expect(state.orCalls).toEqual(expect.arrayContaining([
+            {
+                table: 'conversations',
+                value: 'client_id.eq.user-1,freelancer_id.eq.user-1',
             },
         ]));
         expect(state.orderCalls).toEqual(expect.arrayContaining([
@@ -257,6 +253,10 @@ describe('messages service coverage', () => {
     });
 
     it('sends messages successfully and supports read updates and subscriptions', async () => {
+        state.tableResults.conversations = {
+            data: { id: 'conversation-1', participant_1: 'sender-1', participant_2: 'receiver-1' },
+            error: null,
+        };
         state.tableResults.messages = {
             data: { id: 'message-1' },
             error: null,
@@ -313,6 +313,10 @@ describe('messages service coverage', () => {
     });
 
     it('normalizes rate-limit and generic send failures', async () => {
+        state.tableResults.conversations = {
+            data: { id: 'conversation-1', participant_1: 'sender-1', participant_2: 'receiver-1' },
+            error: null,
+        };
         state.tableResults.messages = { data: null, error: new Error('rate_limit_exceeded') };
         const rateLimited = await sendMessage({
             conversationId: 'conversation-1',

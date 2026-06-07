@@ -6,7 +6,6 @@ import Button from '../components/ui/Button';
 import ProposalListItem from '../components/proposals/ProposalCard';
 import ProposalFilterBar from '../components/proposals/ProposalFiltersSidebar';
 import JobEmptyPane from '../components/proposals/JobSummaryCard';
-import AIRecommendationsCard from '../components/proposals/AIRecommendationsCard';
 import type { Proposal, ProposalStatus, ProposalFilters } from '../types/proposal';
 import ProposalDetailPane from '../components/proposals/ProposalDetailModal';
 import { HireCelebrationPane } from '../components/proposals/HireCelebrationPane';
@@ -17,7 +16,6 @@ import { logger } from '../lib/logger';
 import { useTranslation } from '../i18n';
 import { useMutation } from '@tanstack/react-query';
 import { ROUTES, getJobEditRoute } from '../lib/routes';
-import { generateAIRecommendations, type AIRecommendations } from '../services/aiRecommendations';
 import { insertNotification } from '../services/notifications';
 
 interface JobData {
@@ -85,8 +83,6 @@ export default function JobProposals() {
     const proposalsLoadErrorShownRef = useRef(false);
     const [hasActiveContract, setHasActiveContract] = useState(false);
     const [hiredContract, setHiredContract] = useState<{ id: string; freelancerId: string; freelancerName: string; freelancerAvatar: string | null; jobTitle: string | null; amount: number } | null>(null);
-    const [recommendations, setRecommendations] = useState<AIRecommendations | null>(null);
-    const [recommendationsLoading, setRecommendationsLoading] = useState(false);
 
     useEffect(() => {
         if (!jobId) return;
@@ -271,23 +267,6 @@ export default function JobProposals() {
                 setShortlistedIds(transformedProposals.filter(p => p.status === 'shortlisted').map(p => p.id));
                 writeCache(jobRes.data, transformedProposals);
                 proposalsLoadErrorShownRef.current = false;
-
-                // Generate AI recommendations
-                if (jobRes.data && transformedProposals.length > 0) {
-                    setRecommendationsLoading(true);
-                    try {
-                        const recs = await generateAIRecommendations(
-                            jobId,
-                            transformedProposals,
-                            jobRes.data
-                        );
-                        setRecommendations(recs);
-                    } catch (error) {
-                        logger.warn('Failed to generate AI recommendations', error);
-                    } finally {
-                        setRecommendationsLoading(false);
-                    }
-                }
             } catch (error) {
                 logger.error('Failed to fetch proposals', error);
                 showLoadErrorToastOnce();
@@ -887,10 +866,6 @@ export default function JobProposals() {
                         />
                     ) : (
                         <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-[var(--color-bg-base)]">
-                            <AIRecommendationsCard 
-                                recommendations={recommendations}
-                                isLoading={recommendationsLoading || !recommendations}
-                            />
                             <JobEmptyPane job={job ? { ...job, stats } : null} hasActiveContract={hasActiveContract} />
                         </div>
                     )}

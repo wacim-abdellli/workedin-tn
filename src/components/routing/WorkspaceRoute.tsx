@@ -2,7 +2,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useWorkspaceStore, loadWorkspaceForUser } from '../../lib/workspaceState';
 import { useAuth } from '../../contexts/AuthContext';
-import { getWorkspaceDashboardPath, getWorkspaceJobsPath, resolveActiveWorkspace } from '@/lib/workspaceRoutes';
+import { getWorkspaceDashboardPath, getWorkspaceJobsPath } from '@/lib/workspaceRoutes';
+import { resolveWorkspace } from '@/lib/permissionEngine';
 import { FullScreenLoader } from '@/components/ui';
 import { useTranslation } from "../../i18n";
 
@@ -44,7 +45,7 @@ export function WorkspaceRoute({ workspace, children }: WorkspaceRouteProps) {
     return <Navigate to={getMismatchRedirectPath(savedWorkspace)} replace />;
   }
 
-  const resolvedWorkspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
+  const resolvedWorkspace = resolveWorkspace(profile, freelancerProfile, activeWorkspace);
 
   if (resolvedWorkspace !== workspace) {
     return (
