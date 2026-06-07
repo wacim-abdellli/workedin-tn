@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Bell, CheckCheck, Loader2, MessageSquare, ShieldAlert, Sparkles, Wallet, ArrowRight } from 'lucide-react';
+import { Bell, CheckCheck, Loader2, MessageSquare, Briefcase, FileText, Wallet, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from '@/i18n';
@@ -22,14 +22,71 @@ const PALETTE = {
 
 function iconForType(type: AppNotification['type']) {
     switch (type) {
-        case 'message':      return <MessageSquare className="h-[18px] w-[18px]" />;
+        case 'message':      return <MessageSquare className="h-[17px] w-[17px]" strokeWidth={1.75} />;
         case 'proposal':
-        case 'new_proposal': return <Sparkles className="h-[18px] w-[18px]" />;
-        case 'payment':      return <Wallet className="h-[18px] w-[18px]" />;
+        case 'new_proposal': return <FileText className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'payment':      return <Wallet className="h-[17px] w-[17px]" strokeWidth={1.75} />;
         case 'contract':
-        case 'contract_update': return <ShieldAlert className="h-[18px] w-[18px]" />;
-        default:             return <Bell className="h-[18px] w-[18px]" />;
+        case 'contract_update': return <Briefcase className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        default:             return <Bell className="h-[17px] w-[17px]" strokeWidth={1.75} />;
     }
+}
+
+function badgeStyleForType(type: AppNotification['type'], isUnread: boolean) {
+    let styles;
+    switch (type) {
+        case 'contract':
+        case 'contract_update':
+            styles = {
+                bg: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
+                shadow: '0 4px 10px rgba(245, 158, 11, 0.35)',
+            };
+            break;
+        case 'proposal':
+        case 'new_proposal':
+            styles = {
+                bg: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                shadow: '0 4px 10px rgba(139, 92, 246, 0.35)',
+            };
+            break;
+        case 'payment':
+            styles = {
+                bg: 'linear-gradient(135deg, #10b981 0%, #0d9488 100%)',
+                shadow: '0 4px 10px rgba(16, 185, 129, 0.35)',
+            };
+            break;
+        case 'message':
+            styles = {
+                bg: 'linear-gradient(135deg, #38bdf8 0%, #2563eb 100%)',
+                shadow: '0 4px 10px rgba(56, 189, 248, 0.35)',
+            };
+            break;
+        case 'system':
+        case 'review':
+            styles = {
+                bg: 'linear-gradient(135deg, #f43f5e 0%, #dc2626 100%)',
+                shadow: '0 4px 10px rgba(244, 63, 94, 0.35)',
+            };
+            break;
+        default:
+            styles = {
+                bg: 'linear-gradient(135deg, #71717a 0%, #52525b 100%)',
+                shadow: '0 4px 10px rgba(113, 113, 122, 0.2)',
+            };
+    }
+
+    if (!isUnread) {
+        return {
+            background: styles.bg,
+            boxShadow: 'none',
+            opacity: 0.65,
+        };
+    }
+    return {
+        background: styles.bg,
+        boxShadow: styles.shadow,
+        opacity: 1,
+    };
 }
 
 export function NotificationBell({
@@ -47,9 +104,21 @@ export function NotificationBell({
     const navigate = useNavigate();
     const { notifications, unreadCount, isLoading, markAsRead, markAllRead } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
+    const [unreadIdsAtOpen, setUnreadIdsAtOpen] = useState<Set<string>>(new Set());
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const pal = PALETTE;
+
+    useEffect(() => {
+        if (isOpen) {
+            const unreads = new Set(notifications.filter(n => !n.is_read).map(n => n.id));
+            setUnreadIdsAtOpen(unreads);
+            if (unreads.size > 0) {
+                markAllRead();
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -123,14 +192,14 @@ export function NotificationBell({
                 <Bell className="w-[17px] h-[17px] transition-transform duration-200 group-hover:scale-110" strokeWidth={2} />
                 {unreadCount > 0 && (
                     <span
-                      className={`absolute flex items-center justify-center min-w-[16px] h-4 rounded-full text-[9px] font-black leading-none ${
+                      className={`absolute flex items-center justify-center min-w-[16px] h-4 rounded-full text-[9px] font-black leading-none animate-pulse ${
                         variant === 'icon' ? 'top-1.5 right-1.5' : 'top-0.5 right-0.5'
                       }`}
                       style={{
                         background: 'var(--workspace-primary)',
                         color: '#fff',
                         padding: unreadCount > 9 ? '0 4px' : '0',
-                        boxShadow: `0 0 0 2px ${isDark ? 'rgba(9,9,11,0.92)' : 'rgba(255,255,255,0.9)'}`,
+                        boxShadow: `0 0 0 2px ${isDark ? '#09090b' : '#ffffff'}, 0 0 10px var(--workspace-primary)`,
                       }}
                     >
                       {unreadCount > 99 ? '99+' : unreadCount}
@@ -150,32 +219,23 @@ export function NotificationBell({
                     style={{
                         transformOrigin: 'top right',
                         background: isDark 
-                          ? 'linear-gradient(145deg, #161616, #111111)'
-                          : 'linear-gradient(145deg, var(--color-background-elevated), var(--color-bg-subtle))',
+                          ? '#141416'
+                          : 'var(--color-background-elevated)',
                         border: isDark 
-                          ? '1px solid rgba(255,255,255,0.09)'
+                          ? '1px solid rgba(255,255,255,0.07)'
                           : '1px solid var(--color-border-default)',
                         boxShadow: isDark 
-                          ? '0 24px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)'
-                          : '0 24px 48px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
+                          ? '0 24px 48px rgba(0,0,0,0.5)'
+                          : '0 24px 48px rgba(0,0,0,0.08)',
                     }}
                 >
-                    {/* Colored top accent stripe */}
-                    <div
-                        className="h-[3px] w-full"
-                        style={{
-                            background: `linear-gradient(90deg, transparent 0%, ${pal.stripe} 40%, ${pal.primary} 60%, transparent 100%)`,
-                        }}
-                    />
-
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 pt-4 pb-3">
                         <div className="flex items-center gap-2">
                             <div
-                                className="flex h-7 w-7 items-center justify-center rounded-lg"
-                                style={{ background: pal.dimStrong }}
+                                className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-800/40 dark:bg-white/[0.04]"
                             >
-                                <Bell className="h-3.5 w-3.5" style={{ color: pal.primary }} />
+                                <Bell className="h-3.5 w-3.5 text-zinc-400" />
                             </div>
                             <h3 className="text-[15px] font-bold" style={{ color: 'var(--color-text-primary)' }}>
                                 {t.notifications?.title || 'Notifications'}
@@ -192,12 +252,7 @@ export function NotificationBell({
                         {unreadCount > 0 && (
                             <button
                                 onClick={markAllRead}
-                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all"
-                                style={{
-                                    color: pal.primary,
-                                    background: pal.dim,
-                                    border: `1px solid ${pal.alpha33}`,
-                                }}
+                                className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-bold uppercase tracking-wide transition-all text-[var(--workspace-primary)] hover:bg-zinc-800/40 dark:hover:bg-white/[0.03]"
                             >
                                 <CheckCheck className="h-3 w-3" />
                                 {t.notifications?.readAll || 'Mark all read'}
@@ -225,10 +280,9 @@ export function NotificationBell({
                         ) : notifications.length === 0 ? (
                             <div className="p-12 text-center">
                                 <div
-                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
-                                    style={{ background: pal.dimStrong }}
+                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-800/20 dark:bg-white/[0.02]"
                                 >
-                                    <Bell className="h-7 w-7" style={{ color: pal.primary }} />
+                                    <Bell className="h-7 w-7 text-zinc-500" />
                                 </div>
                                 <p className="font-bold text-[15px]" style={{ color: 'var(--color-text-primary)' }}>
                                     {t.notifications?.empty || 'No notifications'}
@@ -240,36 +294,23 @@ export function NotificationBell({
                         ) : (
                             notifications.slice(0, 10).map(n => {
                                 const displayNotif = getDisplayNotification(n, tx);
-                                const isUnread = !n.is_read;
+                                const isUnread = unreadIdsAtOpen.has(n.id);
 
                                 return (
                                     <div
                                         key={n.id}
                                         onClick={() => handleNotificationClick(n)}
-                                        className="group relative cursor-pointer rounded-xl p-3 transition-all duration-150"
-                                        style={{
-                                            background: isUnread ? pal.dim : 'transparent',
-                                        }}
+                                        className={`group relative cursor-pointer rounded-xl p-3 transition-all duration-200 ${
+                                            isUnread 
+                                                ? 'border-l-[3.5px] rounded-l-none border-l-[var(--workspace-primary)] shadow-[inset_4px_0_12px_-6px_var(--workspace-primary)] bg-gradient-to-r from-[var(--workspace-primary)]/[0.03] to-transparent' 
+                                                : 'hover:bg-zinc-800/20 dark:hover:bg-white/[0.015]'
+                                        }`}
                                     >
-                                        {/* Hover overlay */}
-                                        <div
-                                            className="absolute inset-0 rounded-xl opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-                                            style={{
-                                                background: isUnread ? pal.dimStrong : 'var(--color-background-subtle)',
-                                                border: `1px solid ${pal.alpha22}`,
-                                            }}
-                                        />
-
                                         <div className="relative flex items-start gap-3">
                                             {/* Icon badge */}
                                             <div
-                                                className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                                                style={{
-                                                    background: isUnread ? pal.dimStrong : 'var(--color-bg-subtle)',
-                                                    color: isUnread ? pal.primary : 'var(--color-text-tertiary)',
-                                                    border: `1px solid ${isUnread ? pal.alpha44 : 'var(--color-border-default)'}`,
-                                                    boxShadow: isUnread ? `0 4px 12px ${pal.glow}` : 'none',
-                                                }}
+                                                className="mt-0.5 flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-md"
+                                                style={badgeStyleForType(n.type, isUnread)}
                                             >
                                                 {iconForType(n.type)}
                                             </div>
@@ -277,17 +318,16 @@ export function NotificationBell({
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-start justify-between gap-2">
                                                     <p
-                                                        className="text-[13px] font-bold leading-snug"
-                                                        style={{ color: 'var(--color-text-primary)' }}
+                                                        className={`text-[13px] font-bold leading-snug transition-colors ${isUnread ? 'text-[var(--workspace-primary)]' : 'text-[var(--color-text-primary)]'}`}
                                                     >
                                                         {displayNotif.title}
                                                     </p>
                                                     {isUnread && (
                                                         <span
-                                                            className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                                                            className="mt-1.5 h-2 w-2 shrink-0 rounded-full animate-pulse"
                                                             style={{
-                                                                background: pal.primary,
-                                                                boxShadow: `0 0 8px ${pal.glow}`,
+                                                                background: 'var(--workspace-primary)',
+                                                                boxShadow: '0 0 8px var(--workspace-primary)',
                                                             }}
                                                         />
                                                     )}
@@ -299,8 +339,7 @@ export function NotificationBell({
                                                     {displayNotif.body}
                                                 </p>
                                                 <p
-                                                    className="mt-1.5 text-[10px] font-semibold uppercase tracking-wider"
-                                                    style={{ color: isUnread ? pal.primary : 'var(--color-text-tertiary)' }}
+                                                    className="mt-1.5 text-[10.5px] font-medium text-zinc-500 dark:text-zinc-400"
                                                 >
                                                     {formatTimeAgo(n.created_at)}
                                                 </p>
@@ -324,7 +363,7 @@ export function NotificationBell({
                             <div className="p-2">
                                 <button
                                     onClick={() => { navigate('/notifications'); setIsOpen(false); }}
-                                    className="group flex w-full items-center justify-center gap-2 rounded-xl py-3 text-[12px] font-bold uppercase tracking-wide transition-all text-[var(--workspace-primary)] hover:bg-[color-mix(in_srgb,var(--workspace-primary)_10%,transparent)]"
+                                    className="group flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[12.5px] font-bold transition-all text-[var(--workspace-primary)] hover:bg-zinc-800/40 dark:hover:bg-white/[0.03]"
                                 >
                                     {t.notifications?.viewAll || tx('notifications.viewAll', undefined, 'View all notifications')}
                                     <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />

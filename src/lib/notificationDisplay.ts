@@ -15,6 +15,12 @@ function extractMatch(value: string, patterns: RegExp[]): string {
     return '';
 }
 
+function cleanBody(body: string): string {
+    return body
+        .replace(/\s*[—-]\s*(?:contract updated|contract update|contract started|contract completed|contract cancelled|contract in dispute|تحديث على العقد|تم قبول العقد|تم إكمال العقد|تم إلغاء العقد|نزاع على العقد)\s*$/i, '')
+        .trim();
+}
+
 export function getDisplayNotification(notification: AppNotification, tx: Tx): AppNotification {
     const title = notification.title || '';
     const body = notification.body || '';
@@ -93,41 +99,42 @@ export function getDisplayNotification(notification: AppNotification, tx: Tx): A
     }
 
     // 5. Contract Updates
-    if (notification.type === 'contract') {
-        if (includesAny(title, ['تم قبول العقد'])) {
+    if (notification.type === 'contract' || notification.type === 'contract_update') {
+        const cleanText = cleanBody(body);
+        if (includesAny(title, ['تم قبول العقد', 'contract started', 'contract accepted'])) {
             return {
                 ...notification,
                 title: tx('notifications.contract.active.title', undefined, 'Contract Started'),
-                body: tx('notifications.contract.active.body', { body }, body),
+                body: tx('notifications.contract.active.body', { body: cleanText }, cleanText),
             };
         }
-        if (includesAny(title, ['تم إكمال العقد'])) {
+        if (includesAny(title, ['تم إكمال العقد', 'contract completed'])) {
             return {
                 ...notification,
                 title: tx('notifications.contract.completed.title', undefined, 'Contract Completed'),
-                body: tx('notifications.contract.completed.body', { body }, body),
+                body: tx('notifications.contract.completed.body', { body: cleanText }, cleanText),
             };
         }
-        if (includesAny(title, ['تم إلغاء العقد'])) {
+        if (includesAny(title, ['تم إلغاء العقد', 'contract cancelled'])) {
             return {
                 ...notification,
                 title: tx('notifications.contract.cancelled.title', undefined, 'Contract Cancelled'),
-                body: tx('notifications.contract.cancelled.body', { body }, body),
+                body: tx('notifications.contract.cancelled.body', { body: cleanText }, cleanText),
             };
         }
-        if (includesAny(title, ['نزاع على العقد'])) {
+        if (includesAny(title, ['نزاع على العقد', 'contract in dispute', 'contract dispute'])) {
             return {
                 ...notification,
                 title: tx('notifications.contract.disputed.title', undefined, 'Contract in Dispute'),
-                body: tx('notifications.contract.disputed.body', { body }, body),
+                body: tx('notifications.contract.disputed.body', { body: cleanText }, cleanText),
             };
         }
         // Generic contract update
-        if (includesAny(title, ['تحديث على العقد'])) {
+        if (includesAny(title, ['تحديث على العقد', 'contract updated', 'contract update'])) {
             return {
                 ...notification,
                 title: tx('notifications.contract.update.title', undefined, 'Contract Update'),
-                body: tx('notifications.contract.update.body', { body }, body),
+                body: tx('notifications.contract.update.body', { body: cleanText }, cleanText),
             };
         }
     }

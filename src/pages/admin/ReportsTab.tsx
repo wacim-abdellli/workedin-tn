@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, Flag, RefreshCw, X } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
@@ -11,6 +11,7 @@ import { getReports, updateReportStatus } from '@/services/reports';
 import type { Report, ReportStatus } from '@/services/reports';
 import { adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass } from './adminTheme';
 import AdminSelect from './AdminSelect';
+import { supabase } from '@/lib/supabase';
 
 export const ADMIN_REPORTS_QUERY_KEY = ['admin-reports'] as const;
 
@@ -22,6 +23,7 @@ export default function ReportsTab() {
     const tr = (ar: string, en: string, fr?: string) => language === 'ar' ? ar : language === 'fr' ? (fr || en) : en;
 
     const [statusFilter, setStatusFilter] = useState<ReportStatus | 'all'>('pending');
+    const [resolvedTargets, setResolvedTargets] = useState<Record<string, { title: string; subtitle?: string }>>({});
 
     const { data: reports = [], isLoading, isError, refetch } = useQuery({
         queryKey: [...ADMIN_REPORTS_QUERY_KEY, statusFilter],
@@ -29,6 +31,61 @@ export default function ReportsTab() {
         staleTime: 30000,
         refetchOnWindowFocus: false,
     });
+
+    useEffect(() => {
+        if (!reports.length) return;
+
+        const fetchTargets = async () => {
+            const userIds = reports.filter(r => r.reported_type === 'user').map(r => r.reported_id);
+            const jobIds = reports.filter(r => r.reported_type === 'job').map(r => r.reported_id);
+            const proposalIds = reports.filter(r => r.reported_type === 'proposal').map(r => r.reported_id);
+
+            const newResolved: Record<string, { title: string; subtitle?: string }> = {};
+
+            try {
+                if (userIds.length) {
+                    const { data } = await supabase
+                        .from('profiles')
+                        .select('id, full_name, email')
+                        .in('id', userIds);
+                    data?.forEach(u => {
+                        newResolved[u.id] = { title: u.full_name || '—', subtitle: u.email };
+                    });
+                }
+
+                if (jobIds.length) {
+                    const { data } = await supabase
+                        .from('jobs')
+                        .select('id, title')
+                        .in('id', jobIds);
+                    data?.forEach(j => {
+                        newResolved[j.id] = { title: j.title };
+                    });
+                }
+
+                if (proposalIds.length) {
+                    const { data } = await supabase
+                        .from('proposals')
+                        .select('id, cover_letter, job:jobs(title), freelancer:profiles(full_name)')
+                        .in('id', proposalIds);
+                    data?.forEach(p => {
+                        const freelancerName = p.freelancer?.full_name || '—';
+                        const jobTitle = p.job?.title || '—';
+                        newResolved[p.id] = { 
+                            title: tr(`طلب من ${freelancerName}`, `Proposal by ${freelancerName}`, `Proposition par ${freelancerName}`), 
+                            subtitle: tr(`لعمل: ${jobTitle}`, `For job: ${jobTitle}`, `Pour: ${jobTitle}`)
+                        };
+                    });
+                }
+
+                setResolvedTargets(prev => ({ ...prev, ...newResolved }));
+            } catch (err) {
+                console.error('Failed to resolve report targets:', err);
+            }
+        };
+
+        void fetchTargets();
+    }, [reports]);
 
     const updateMutation = useMutation({
         mutationFn: ({ id, status }: { id: string; status: ReportStatus }) => {
@@ -126,6 +183,7 @@ export default function ReportsTab() {
                                     <thead className={adminTableHeadClass}>
                                         <tr>
                                             <th className="px-5 py-4 text-left text-xs font-semibold text-muted whitespace-nowrap">{tr('المُبلِّغ', 'Reporter', 'Signaleur')}</th>
+                                            <th className="px-5 py-4 text-left text-xs font-semibold text-muted whitespace-nowrap">{tr('الهدف', 'Target', 'Cible')}</th>
                                             <th className="px-5 py-4 text-left text-xs font-semibold text-muted whitespace-nowrap">{tr('النوع', 'Type', 'Type')}</th>
                                             <th className="px-5 py-4 text-left text-xs font-semibold text-muted whitespace-nowrap">{tr('السبب', 'Reason', 'Raison')}</th>
                                             <th className="px-5 py-4 text-left text-xs font-semibold text-muted whitespace-nowrap">{tr('الحالة', 'Status', 'Statut')}</th>
@@ -139,6 +197,18 @@ export default function ReportsTab() {
                                                 <td className="px-5 py-4">
                                                     <p className="font-medium text-foreground text-sm">{report.reporter?.full_name || '—'}</p>
                                                     <p className="text-xs text-muted">{report.reporter?.email || ''}</p>
+                                                </td>
+                                                <td className="px-5 py-4">
+                                                    {resolvedTargets[report.reported_id] ? (
+                                                        <>
+                                                            <p className="font-medium text-foreground text-sm">{resolvedTargets[report.reported_id].title}</p>
+                                                            {resolvedTargets[report.reported_id].subtitle && (
+                                                                <p className="text-xs text-muted mt-0.5">{resolvedTargets[report.reported_id].subtitle}</p>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <p className="text-xs text-white/40 italic">{tr('جاري التحميل...', 'Loading details...', 'Chargement...')}</p>
+                                                    )}
                                                 </td>
                                                 <td className="px-5 py-4">{typeBadge(report.reported_type)}</td>
                                                 <td className="px-5 py-4">
@@ -201,7 +271,20 @@ export default function ReportsTab() {
                                         <div className="flex-1">
                                             <p className="font-semibold text-foreground">{report.reporter?.full_name || '—'}</p>
                                             <p className="text-xs text-muted">{report.reporter?.email || ''}</p>
-                                            <div className="flex items-center gap-2 mt-2">
+                                            <div className="mt-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                                                <p className="text-xs text-muted mb-1">{tr('المحتوى المبلغ عنه', 'Reported Target', 'Cible signalée')}</p>
+                                                {resolvedTargets[report.reported_id] ? (
+                                                    <>
+                                                        <p className="text-sm font-semibold text-foreground">{resolvedTargets[report.reported_id].title}</p>
+                                                        {resolvedTargets[report.reported_id].subtitle && (
+                                                            <p className="text-xs text-muted mt-0.5">{resolvedTargets[report.reported_id].subtitle}</p>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <p className="text-xs text-white/40 italic">{tr('جاري التحميل...', 'Loading details...', 'Chargement...')}</p>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-3">
                                                 {typeBadge(report.reported_type)}
                                                 {statusBadge(report.status)}
                                             </div>

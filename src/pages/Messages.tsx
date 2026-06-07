@@ -58,6 +58,7 @@ import {
 } from '../services/messages';
 import { getJobById } from '../services/jobs';
 import { submitReview as submitReviewRequest } from '../services/reviews';
+import { submitReport } from '../services/reports';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
@@ -749,6 +750,11 @@ function MessagesComponent() {
     const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
     const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [reportReason, setReportReason] = useState('');
+    const [customReportReason, setCustomReportReason] = useState('');
+    const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+    const [reportTouched, setReportTouched] = useState(false);
     const [showUnknownContractBanner, setShowUnknownContractBanner] = useState(false);
     const [isFundEscrowOpen, setIsFundEscrowOpen] = useState(false);
     const [walletBalance, setWalletBalance] = useState<number | null>(null);
@@ -3735,6 +3741,29 @@ function MessagesComponent() {
         }
     }, [disputeReason, selectedContractStatus, selectedConversation, showToast, syncContractStatusLocally, tx, user?.id]);
 
+    const handleReportUser = useCallback(async () => {
+        if (!selectedConversation || !user?.id) return;
+        if (!reportReason) return;
+        const finalReason = reportReason === 'other' ? customReportReason.trim() : reportReason;
+        if (reportReason === 'other' && !finalReason) return;
+
+        setIsSubmittingReport(true);
+        try {
+            await submitReport(user.id, 'user', selectedConversation.otherUser.id, finalReason);
+            showToast(tx('pages.messages.reportSubmittedSuccess', undefined, 'Report submitted successfully. Our team will review it.'), 'success');
+            setIsReportModalOpen(false);
+            setReportReason('');
+            setCustomReportReason('');
+            setReportTouched(false);
+        } catch (error) {
+            console.error('[Messages] Failed to submit user report:', error);
+            const errMsg = error instanceof Error ? error.message : String(error);
+            showToast(errMsg || tx('common.reportFailed', undefined, 'Failed to submit report'), 'error');
+        } finally {
+            setIsSubmittingReport(false);
+        }
+    }, [selectedConversation, user?.id, reportReason, customReportReason, showToast, tx]);
+
     const handleSubmitContractReview = useCallback(async (rating: number, comment: string) => {
         if (!selectedContractId || !user?.id || !selectedConversation) {
             throw new Error('Missing contract context for review submission.');
@@ -5043,7 +5072,7 @@ function MessagesComponent() {
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            showToast(tx('pages.messages.reportSubmitted', undefined, 'User report queued for review'), 'success');
+                                            setIsReportModalOpen(true);
                                             setIsMenuOpen(false);
                                         }}
                                         className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-red-500 transition-colors hover:bg-red-500/10"
@@ -5891,6 +5920,100 @@ function MessagesComponent() {
                     </div>
                 </Modal>
             )}
+
+            {/* ─── Report User Modal ─────────────────────────────────────── */}
+            <Modal
+                isOpen={isReportModalOpen}
+                onClose={() => {
+                    setIsReportModalOpen(false);
+                    setReportReason('');
+                    setCustomReportReason('');
+                    setReportTouched(false);
+                }}
+                title={tx('pages.messages.reportUserTitle', undefined, 'Report User')}
+                size="sm"
+            >
+                <div className="space-y-4 pt-2">
+                    <p className="text-xs text-white/50 leading-relaxed">
+                        {tx('pages.messages.reportUserDescription', undefined, 'Tell us why you are reporting this user. Our team will review their profile and recent activity.')}
+                    </p>
+                    <div className="space-y-2">
+                        {[
+                            { value: 'spam', label: 'Spam or misleading' },
+                            { value: 'inappropriate', label: 'Inappropriate behavior or content' },
+                            { value: 'fraud', label: 'Fraud or scam attempt' },
+                            { value: 'harassment', label: 'Harassment or abuse' },
+                            { value: 'other', label: 'Other' }
+                        ].map((r) => (
+                            <label
+                                key={r.value}
+                                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                                    reportReason === r.value ? 'border-violet-500 bg-violet-500/10' : 'border-white/5 bg-white/[0.02]'
+                                }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="user-report-reason"
+                                    value={r.value}
+                                    checked={reportReason === r.value}
+                                    onChange={() => setReportReason(r.value)}
+                                    className="accent-violet-500"
+                                />
+                                <span className="text-sm font-bold text-white">
+                                    {tx(`pages.messages.reportReason.${r.value}`, undefined, r.label)}
+                                </span>
+                            </label>
+                        ))}
+                    </div>
+
+                    {reportReason === 'other' && (
+                        <div>
+                            <textarea
+                                value={customReportReason}
+                                onChange={(e) => setCustomReportReason(e.target.value)}
+                                placeholder={tx('common.reportDescribePlaceholder', undefined, 'Please describe the issue...')}
+                                rows={3}
+                                className={`w-full resize-none rounded-xl border bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-violet-500 ${
+                                    reportTouched && !customReportReason.trim() ? 'border-red-500' : 'border-white/5'
+                                }`}
+                            />
+                            {reportTouched && !customReportReason.trim() && (
+                                <p className="text-red-500 text-xs mt-1" role="alert">
+                                    {tx('common.reportDescribePlaceholder', undefined, 'Please describe the issue')}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="flex gap-3 justify-end pt-3 border-t border-white/5">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                setIsReportModalOpen(false);
+                                setReportReason('');
+                                setCustomReportReason('');
+                                setReportTouched(false);
+                            }}
+                            disabled={isSubmittingReport}
+                        >
+                            {tx('common.cancel', undefined, 'Cancel')}
+                        </Button>
+                        <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => {
+                                setReportTouched(true);
+                                void handleReportUser();
+                            }}
+                            isLoading={isSubmittingReport}
+                            disabled={!reportReason || (reportReason === 'other' && !customReportReason.trim())}
+                        >
+                            {tx('common.reportSubmitButton', undefined, 'Submit report')}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
 
             {/* ─── Image Lightbox Modal ─────────────────────────────────── */}
             {lightboxImageUrl && (
