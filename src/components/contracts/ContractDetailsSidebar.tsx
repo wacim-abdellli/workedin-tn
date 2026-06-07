@@ -129,6 +129,7 @@ interface ContractDetailsSidebarProps {
     onGoBack?: () => void;
     onGoToMessages?: () => void;
     isSidebar?: boolean;
+    onOpenWorkspace?: () => void;
 }
 
 type WorkspaceTab = 'overview' | 'files' | 'milestones' | 'activity';
@@ -258,6 +259,7 @@ export default function ContractDetailsSidebar({
     onGoBack,
     onGoToMessages,
     isSidebar = false,
+    onOpenWorkspace,
 }: ContractDetailsSidebarProps) {
     const [fileFilter, setFileFilter] = useState<FileFilter>('all');
     const [previewFile, setPreviewFile] = useState<ContractSharedFile | null>(null);
@@ -271,7 +273,7 @@ export default function ContractDetailsSidebar({
         const reviewFiles = contract.reviewFiles ?? [];
         const finalFiles = contract.finalFiles ?? [];
         const sharedFiles = contract.sharedFiles ?? [];
-        const lockedFinalFilesCount = 0;
+        const lockedFinalFilesCount = contract.lockedFinalFilesCount ?? 0;
         const completedMilestones = milestones.filter(m => ['completed', 'approved', 'paid'].includes(ns(m.status))).length;
         const progressPct = milestones.length > 0 ? Math.round((completedMilestones / milestones.length) * 100) : (st === 'completed' ? 100 : 0);
         const revUsed = Number(contract.revisionRequestsCount ?? 0);
@@ -427,7 +429,7 @@ export default function ContractDetailsSidebar({
             canDispute,
             nextMove,
             otherParty,
-            allFileCount: sharedFiles.length + reviewFiles.length,
+            allFileCount: sharedFiles.length + reviewFiles.length + finalFiles.length,
             lastRevisionNote,
             reviewDueAt,
             amount,
@@ -513,8 +515,23 @@ export default function ContractDetailsSidebar({
                         </div>
                         
                         {/* Navigation Actions */}
-                        {(onGoBack || onGoToMessages) && (
+                        {(onGoBack || onGoToMessages || onOpenWorkspace) && (
                             <div className="flex items-center gap-1.5 shrink-0">
+                                {onOpenWorkspace && (
+                                    <button
+                                        type="button"
+                                        onClick={onOpenWorkspace}
+                                        aria-label="Open contract page"
+                                        style={{
+                                            backgroundColor: `color-mix(in srgb, ${rt.accent} 10%, transparent)`,
+                                            borderColor: `color-mix(in srgb, ${rt.accent} 25%, transparent)`,
+                                            color: rt.accent
+                                        }}
+                                        className="flex h-7 items-center gap-1 rounded-md px-2.5 text-[11px] font-bold transition-all border hover:brightness-110 active:scale-95 cursor-pointer"
+                                    >
+                                        Workspace ↗
+                                    </button>
+                                )}
                                 {onGoBack && (
                                     <button type="button" onClick={onGoBack} className="flex h-7 w-7 items-center justify-center rounded-md bg-white/[0.03] text-zinc-400 hover:bg-white/[0.06] hover:text-white transition-colors border border-white/[0.02]">
                                         <ArrowLeft className="h-3.5 w-3.5" />
@@ -555,7 +572,9 @@ export default function ContractDetailsSidebar({
                             />
 
                             {/* 2. Counterparty Profile & Messaging */}
-                            <ContractPulse model={model} rt={rt} userRole={userRole} onGoToMessages={onGoToMessages} isSidebar={isSidebar} />
+                            {!isSidebar && (
+                                <ContractPulse model={model} rt={rt} userRole={userRole} onGoToMessages={onGoToMessages} isSidebar={isSidebar} />
+                            )}
 
                             {/* 3. Escrow Progress Lifecycle (Timeline) */}
                             <MilestonesTab model={model} userRole={userRole} rt={rt} />
@@ -625,9 +644,11 @@ export default function ContractDetailsSidebar({
                             )}
 
                             {/* 7. Contract Event History */}
-                            <div id="workspace-activity-log">
-                                <ActivityTab events={activityEvents} model={model} contract={contract} rt={rt} />
-                            </div>
+                            {!isSidebar && (
+                                <div id="workspace-activity-log">
+                                    <ActivityTab events={activityEvents} model={model} contract={contract} rt={rt} />
+                                </div>
+                            )}
 
                         </div>
                     ) : (
@@ -735,6 +756,40 @@ export default function ContractDetailsSidebar({
                     )}
                 </div>
             </main>
+
+            {/* File Preview Overlay Modal */}
+            {previewFile ? (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="File preview">
+                    <div className="w-full max-w-lg rounded-[14px] bg-[#111214] border border-white/[0.08] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                                <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-zinc-500">File Preview</p>
+                                <h2 className="mt-1 truncate text-[18px] font-medium tracking-[-0.01em] text-white">{previewFile.name}</h2>
+                                <p className="font-mono text-[13px] text-zinc-400">
+                                    {[previewFile.senderName || 'Client', previewFile.uploadedAt ? new Date(previewFile.uploadedAt).toLocaleDateString() : 'Unknown', fmtSize(previewFile.size)].filter(Boolean).join(' · ')}
+                                </p>
+                            </div>
+                            <button type="button" ref={previewCloseRef} onClick={() => setPreviewFile(null)} className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] font-medium text-zinc-400 transition-colors hover:border-white/[0.12] hover:text-white">Close</button>
+                        </div>
+                        <div className="mt-4 rounded-[10px] border border-white/[0.07] bg-[#0c0c0e] px-4 py-[14px]">
+                            <p className="text-[14px] leading-[1.6] text-zinc-400">
+                                This focused overlay prevents accidental opens. Press ESC to close, or continue to open according to contract access rules.
+                            </p>
+                        </div>
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button type="button" onClick={() => setPreviewFile(null)} className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] font-medium text-zinc-400 transition-colors hover:border-white/[0.12] hover:text-white">Cancel</button>
+                            <button type="button" onClick={() => {
+                                if (onOpenSharedFile) {
+                                    onOpenSharedFile(previewFile);
+                                } else {
+                                    if (previewFile.url) window.open(previewFile.url, '_blank', 'noopener');
+                                }
+                                setPreviewFile(null);
+                            }} className="rounded-lg bg-emerald-500 hover:bg-emerald-400 px-3 py-2 text-[14px] font-medium text-[#0A0A0B] transition-colors">Open file</button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 }
@@ -974,7 +1029,9 @@ function DeliveryFileCard({ file, onPreviewFile }: { file: ContractDeliveryAsset
         <div className="group relative border border-white/[0.06] bg-white/[0.01] rounded-xl p-4 flex flex-col justify-between h-[150px] transition-all duration-200 hover:border-[#E8A020]/30 hover:shadow-[0_0_15px_rgba(232,160,32,0.03)]">
             <div className="flex items-start justify-between gap-3">
                 <FileIcon name={file.name} mimeType={file.mimeType} />
-                <span className="rounded-full border border-violet-500/20 bg-violet-500/5 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-violet-300">Delivery</span>
+                <span className="rounded-full border border-violet-500/20 bg-violet-500/5 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-violet-300">
+                    {file.assetKind === 'final_asset' ? 'Final Source' : 'Delivery'}
+                </span>
             </div>
             
             <div className="mt-3 min-w-0">
@@ -1044,7 +1101,7 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
     const showShared = fileFilter === 'all' || fileFilter === 'shared';
     const showDelivery = fileFilter === 'all' || fileFilter === 'delivery';
 
-    const visibleDeliveries = showDelivery ? model.reviewFiles : [];
+    const visibleDeliveries = showDelivery ? [...model.reviewFiles, ...model.finalFiles] : [];
     const visibleShared = showShared ? model.sharedFiles : [];
     const totalVisible = visibleDeliveries.length + visibleShared.length;
 
@@ -1099,6 +1156,9 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
                         {showDelivery && model.reviewFiles.map(file => (
                             <DeliveryFileCard key={file.id} file={file} onPreviewFile={onPreviewFile} />
                         ))}
+                        {showDelivery && model.finalFiles.map(file => (
+                            <DeliveryFileCard key={file.id} file={file} onPreviewFile={onPreviewFile} />
+                        ))}
                         {showShared && model.sharedFiles.map(file => (
                             <SharedFileCard key={file.id} file={file} onPreviewFile={onPreviewFile} />
                         ))}
@@ -1106,6 +1166,9 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
                 ) : (
                     <div className="space-y-2">
                         {showDelivery && model.reviewFiles.map(file => (
+                            <DeliveryFileCardRow key={file.id} file={file} onPreviewFile={onPreviewFile} />
+                        ))}
+                        {showDelivery && model.finalFiles.map(file => (
                             <DeliveryFileCardRow key={file.id} file={file} onPreviewFile={onPreviewFile} />
                         ))}
                         {showShared && model.sharedFiles.map(file => (
@@ -1325,9 +1388,11 @@ function DeliveryFileCardRow({ file, onPreviewFile }: { file: ContractDeliveryAs
             <FileIcon name={file.name} mimeType={file.mimeType} />
             <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-semibold text-zinc-100 transition-colors group-hover:text-white">{file.name}</p>
-                <p className={`${monoClass} mt-0.5`}>Delivery file - {fmtSize(file.sizeBytes) || 'Size unknown'}</p>
+                <p className={`${monoClass} mt-0.5`}>{file.assetKind === 'final_asset' ? 'Final source file' : 'Delivery file'} - {fmtSize(file.sizeBytes) || 'Size unknown'}</p>
             </div>
-            <span className="shrink-0 rounded-full border border-violet-500/20 bg-violet-500/5 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-violet-300">Delivery</span>
+            <span className="shrink-0 rounded-full border border-violet-500/20 bg-violet-500/5 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-violet-300">
+                {file.assetKind === 'final_asset' ? 'Final Source' : 'Delivery'}
+            </span>
             <ChevronRight className="h-4 w-4 shrink-0 text-zinc-500 transition-colors group-hover:text-zinc-200" />
         </button>
     );

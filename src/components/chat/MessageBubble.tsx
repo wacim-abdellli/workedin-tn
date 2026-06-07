@@ -33,15 +33,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
     // Determine colors based on design tokens
     const bubbleBg = isOwnMessage 
-        ? 'var(--color-brand-primary)' 
+        ? 'var(--color-bg-elevated)' 
         : 'var(--color-bg-muted)';
         
     const textColor = isOwnMessage 
-        ? 'var(--color-text-inverse)' 
+        ? 'var(--color-text-primary)' 
         : 'var(--color-text-primary)';
         
     const timeColor = isOwnMessage 
-        ? 'rgba(255, 255, 255, 0.7)' 
+        ? 'var(--color-text-tertiary)' 
         : 'var(--color-text-tertiary)';
 
     return (
@@ -68,7 +68,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                 <div className="flex flex-col gap-1">
                     {/* The Bubble */}
                     <div
-                        className={`relative rounded-2xl px-4 py-3 shadow-sm ${
+                        className={`relative rounded-xl pt-2.5 pr-4 pb-1.5 pl-4 shadow-sm ${
                             isOwnMessage ? 'rounded-br-sm' : 'rounded-bl-sm'
                         }`}
                         style={{ backgroundColor: bubbleBg, color: textColor }}
@@ -79,6 +79,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                             <>
                                 <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">
                                     {text}
+                                    {!isDeleted && <span className="inline-block w-14 h-1 select-none pointer-events-none" />}
                                 </p>
                                 
                                 {/* Attachments */}
@@ -101,19 +102,18 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                                 )}
                             </>
                         )}
-                    </div>
 
-                    {/* Metadata (Time & Status) */}
-                    <div className={`flex items-center gap-1.5 text-[11px] ${isOwnMessage ? 'justify-end' : 'justify-start'}`} style={{ color: timeColor }}>
-                        <span>{new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        
-                        {isOwnMessage && (
-                            <span className="flex items-center">
-                                {status === 'sending' && <Clock className="h-3 w-3 opacity-60" />}
-                                {status === 'sent' && <Check className="h-3 w-3 opacity-80" />}
-                                {status === 'read' && <CheckCheck className="h-3.5 w-3.5 text-blue-400" />}
-                            </span>
-                        )}
+                        {/* Metadata (Time & Status) */}
+                        <div className="absolute bottom-1 right-2.5 flex items-center gap-1 text-[9px] select-none opacity-60">
+                            <span>{new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            {isOwnMessage && (
+                                <span className="flex items-center">
+                                    {status === 'sending' && <Clock className="h-2.5 w-2.5 opacity-60" />}
+                                    {status === 'sent' && <Check className="h-2.5 w-2.5 opacity-80" />}
+                                    {status === 'read' && <CheckCheck className="h-3 w-3 text-blue-400" />}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

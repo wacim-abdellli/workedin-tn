@@ -12,11 +12,13 @@ type ContractStatusById = Record<string, string>;
 interface ConversationRoleMeta {
     label: string;
     className: string;
+    textColor?: string;
 }
 
 interface ConversationStatusMeta {
     label: string;
     className: string;
+    textColor?: string;
 }
 
 interface ConversationListPanelProps {
@@ -259,10 +261,10 @@ export const ConversationListPanel = ({
 
                                             {/* Content */}
                                             <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden gap-[4px]">
-                                                {/* Row 1 — Project name + time + unread badge */}
+                                                {/* Row 1 — Person name + time + unread badge */}
                                                 <div className="flex items-start justify-between gap-2">
-                                                    <p className={`truncate text-[13px] font-semibold leading-tight ${conversation.unread_count > 0 ? 'text-on-surface' : 'text-on-surface-muted'}`}>
-                                                        {workDesc || conversation.otherUser.full_name}
+                                                    <p className={`truncate text-[13.5px] font-semibold leading-tight ${conversation.unread_count > 0 ? 'text-on-surface' : 'text-on-surface-muted'}`}>
+                                                        {conversation.otherUser.full_name}
                                                     </p>
                                                     <div className="flex shrink-0 items-center gap-1.5">
                                                         <span className="text-[11px] tabular-nums text-on-surface-subtle">
@@ -276,33 +278,49 @@ export const ConversationListPanel = ({
                                                     </div>
                                                 </div>
 
-                                                {/* Row 2 — Person name + role/status pills */}
-                                                <div className="flex items-center gap-1.5 min-w-0">
-                                                    <p className="truncate text-[11.5px] leading-tight text-on-surface-muted">
-                                                        {conversation.otherUser.full_name}
-                                                    </p>
-                                                    {roleMeta ? (
-                                                        <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${roleMeta.className}`}>
-                                                            {roleMeta.label}
-                                                        </span>
-                                                    ) : null}
-                                                    {statusMeta ? (
-                                                        <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${statusMeta.className}`}>
-                                                            {statusMeta.label}
-                                                        </span>
-                                                    ) : null}
+                                                {/* Row 2 — Role + status + project name text */}
+                                                <div className="flex items-center gap-1.5 min-w-0 text-[11px] font-medium leading-none text-zinc-500">
                                                     {(() => {
+                                                        const items = [];
+                                                        if (roleMeta) {
+                                                            items.push(
+                                                                <span key="role" className="shrink-0 text-zinc-400 font-semibold">
+                                                                    {roleMeta.label}
+                                                                </span>
+                                                            );
+                                                        }
+                                                        if (statusMeta) {
+                                                            items.push(
+                                                                <span key="status" className={`shrink-0 ${statusMeta.textColor || 'text-zinc-500'}`}>
+                                                                    {statusMeta.label}
+                                                                </span>
+                                                            );
+                                                        }
                                                         const sessionMeta = conversation.contract_id ? contractSessionMetaById?.[conversation.contract_id] : null;
                                                         const isEscrowFunded = sessionMeta ? Boolean(sessionMeta.funded_at) : true;
                                                         const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && (contractStatus === 'pending_payment' || contractStatus === 'active');
                                                         if (needsEscrowFunding) {
-                                                            return (
-                                                                <span className="shrink-0 inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-[2px] text-[10px] font-medium leading-none text-amber-200 gap-0.5" title="Escrow not funded yet">
-                                                                    <span>🔒</span> Unfunded
+                                                            items.push(
+                                                                <span key="unfunded" className="shrink-0 text-amber-500 font-semibold" title="Escrow not funded yet">
+                                                                    Unfunded
                                                                 </span>
                                                             );
                                                         }
-                                                        return null;
+                                                        if (workDesc) {
+                                                            items.push(
+                                                                <span key="work" className="truncate text-zinc-500" title={workDesc}>
+                                                                    {workDesc}
+                                                                </span>
+                                                            );
+                                                        }
+
+                                                        return items.reduce((acc: React.ReactNode[], item, index) => {
+                                                            if (index > 0) {
+                                                                acc.push(<span key={`bullet-${index}`} className="shrink-0 text-zinc-600 select-none">•</span>);
+                                                            }
+                                                            acc.push(item);
+                                                            return acc;
+                                                        }, []);
                                                     })()}
                                                 </div>
 

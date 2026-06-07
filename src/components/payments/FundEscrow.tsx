@@ -101,7 +101,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
         }
     };
 
-    if (Boolean(contract.funded_at)) {
+    if (contract.funded_at) {
         return (
             <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
                 <div className="flex items-center gap-3">

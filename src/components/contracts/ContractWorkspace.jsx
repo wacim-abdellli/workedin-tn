@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 const tabs = [
     { id: 'overview', label: 'Overview', icon: IconPulse },
@@ -36,6 +37,26 @@ export default function ContractWorkspace({ contract = {}, currentUser = { role:
     const [previewFile, setPreviewFile] = useState(null);
     const closePreviewRef = useRef(null);
     const tabRefs = useRef({});
+
+    const handleOpenFile = async (file) => {
+        const bucket = file.storageBucket || file.storage_bucket || 'contract-files';
+        const path = file.storagePath || file.storage_path || '';
+        if (file.url && !path) {
+            window.open(file.url, '_blank', 'noopener');
+            return;
+        }
+        if (!path) {
+            console.error('File path not available.');
+            return;
+        }
+        try {
+            const { data, error: urlErr } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
+            if (urlErr) throw urlErr;
+            if (data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener');
+        } catch (err) {
+            console.error('[ContractWorkspace] File open failed:', err);
+        }
+    };
 
     const vm = useMemo(() => buildViewModel(contract, currentUser), [contract, currentUser]);
 
@@ -145,7 +166,7 @@ export default function ContractWorkspace({ contract = {}, currentUser = { role:
                 {activeTab === 'activity' ? <ActivityTab vm={vm} /> : null}
             </main>
 
-            {previewFile ? <FilePreviewOverlay file={previewFile} closeRef={closePreviewRef} onClose={() => setPreviewFile(null)} /> : null}
+            {previewFile ? <FilePreviewOverlay file={previewFile} closeRef={closePreviewRef} onClose={() => setPreviewFile(null)} onOpen={() => { handleOpenFile(previewFile); setPreviewFile(null); }} /> : null}
         </section>
     );
 }
@@ -438,7 +459,7 @@ function ActivityRow({ event }) {
     );
 }
 
-function FilePreviewOverlay({ file, closeRef, onClose }) {
+function FilePreviewOverlay({ file, closeRef, onClose, onOpen }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="File preview">
             <div className="w-full max-w-lg rounded-[14px] bg-[var(--cw-bg-modal)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
@@ -459,7 +480,7 @@ function FilePreviewOverlay({ file, closeRef, onClose }) {
                 </div>
                 <div className="mt-4 flex justify-end gap-2">
                     <button type="button" onClick={onClose} className={secondaryButton()}>Cancel</button>
-                    <button type="button" className={primaryButton()}>Open file</button>
+                    <button type="button" onClick={onOpen} className={primaryButton()}>Open file</button>
                 </div>
             </div>
         </div>
@@ -560,6 +581,7 @@ function normalizeFiles(files, kind) {
         const statusLabel = kind === 'review' ? 'Review Asset' : kind === 'final' ? released ? 'Released' : 'Pending' : 'Shared';
 
         return {
+            ...file,
             id: file.id || `${kind}-${index}`,
             name: file.name || file.file_name || 'Untitled file',
             uploader: file.uploader || file.senderName || file.uploaded_by || (kind === 'shared' ? 'Client upload' : 'Freelancer'),

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Mic, Paperclip, Send, Square, X, FileText } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 
@@ -56,13 +56,12 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
             onTypingStop?.();
         }
 
-        // Auto-resize
-        e.currentTarget.style.height = '44px';
-        e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 128)}px`;
+        e.currentTarget.style.height = '36px';
+        e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 112)}px`;
     };
 
     return (
-        <div className="flex flex-col gap-2 p-4 bg-transparent border-t border-white/[0.04] backdrop-blur-sm">
+        <div className="flex flex-col gap-2 bg-transparent">
             {/* Selected Files Preview */}
             <AnimatePresence>
                 {selectedFiles.length > 0 && (
@@ -70,12 +69,12 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                         initial={{ opacity: 0, height: 0 }} 
                         animate={{ opacity: 1, height: 'auto' }} 
                         exit={{ opacity: 0, height: 0 }}
-                        className="flex flex-wrap gap-2 mb-2"
+                        className="flex flex-wrap gap-2"
                     >
                         {selectedFiles.map((file, i) => (
-                            <div key={i} className="flex items-center gap-2 rounded-xl px-3 py-1.5 border border-white/[0.06] bg-white/[0.03] backdrop-blur-md transition-all hover:bg-white/[0.05]">
-                                <FileText className="h-4 w-4 text-zinc-400" />
-                                <span className="text-xs max-w-[120px] truncate text-zinc-300">{file.name}</span>
+                            <div key={i} className="flex items-center gap-2 rounded-[10px] border border-white/[0.06] bg-white/[0.025] px-2.5 py-1.5 transition-all hover:bg-white/[0.04]">
+                                <FileText className="h-3.5 w-3.5 text-zinc-400" />
+                                <span className="max-w-[140px] truncate text-[11px] text-zinc-300">{file.name}</span>
                                 <button 
                                     onClick={() => onRemoveFile(i)} 
                                     className="p-1 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
@@ -88,7 +87,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                 )}
             </AnimatePresence>
 
-            <div className="flex items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#0c0c0f]/80 p-1.5 focus-within:border-[var(--workspace-primary)]/50 focus-within:ring-2 focus-within:ring-[var(--workspace-primary)]/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] backdrop-blur-sm transition-all duration-300">
+            <div className="flex items-end gap-1.5 rounded-[16px] border border-white/[0.08] bg-[#0b0b0d]/90 p-1.5 transition-all duration-200 focus-within:border-[var(--workspace-primary)]/45 focus-within:ring-1 focus-within:ring-[var(--workspace-primary)]/20">
                 {/* File Attachment */}
                 <input 
                     type="file" 
@@ -102,9 +101,9 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                     onClick={() => fileInputRef.current?.click()}
                     disabled={disabled || isSending || isRecording || !canAttachFiles}
                     aria-label="Attach file"
-                    className="p-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all disabled:opacity-50"
+                    className="rounded-[12px] p-2 text-zinc-400 transition-all hover:bg-white/[0.04] hover:text-white disabled:opacity-50"
                 >
-                    <Paperclip className="h-5 w-5 transition-colors" />
+                    <Paperclip className="h-4 w-4 transition-colors" />
                 </button>
 
                 {/* Audio Recording */}
@@ -112,9 +111,9 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                     onClick={onToggleRecord}
                     disabled={disabled || isSending || !canRecordAudio}
                     aria-label={isRecording ? 'Stop recording' : 'Start recording'}
-                    className={`p-2.5 rounded-xl transition-all disabled:opacity-50 ${isRecording ? 'bg-red-500/20 text-red-400' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                    className={`rounded-[12px] p-2 transition-all disabled:opacity-50 ${isRecording ? 'bg-red-500/20 text-red-400' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-white'}`}
                 >
-                    {isRecording ? <Square className="h-5 w-5 fill-current animate-pulse" /> : <Mic className="h-5 w-5 transition-colors" />}
+                    {isRecording ? <Square className="h-4 w-4 fill-current animate-pulse" /> : <Mic className="h-4 w-4 transition-colors" />}
                 </button>
 
                 {/* Text Input */}
@@ -128,7 +127,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                     placeholder={isRecording ? 'Recording audio...' : placeholder}
                     disabled={disabled || isSending || isRecording}
                     rows={1}
-                    className="flex-1 bg-transparent border-0 ring-0 focus:ring-0 focus:outline-none text-[14px] px-2 py-2.5 text-white placeholder-zinc-500 resize-none max-h-32 min-h-[44px] disabled:opacity-50"
+                    className="min-h-[36px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-[13.5px] text-white placeholder-zinc-500 outline-none ring-0 focus:outline-none focus:ring-0 disabled:opacity-50"
                 />
 
                 {/* Send Button */}
@@ -139,15 +138,15 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                     }}
                     aria-label="Send message"
                     disabled={disabled || isSending || (!value.trim() && selectedFiles.length === 0)}
-                    className="p-2.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 disabled:hover:scale-100 disabled:opacity-40 disabled:cursor-not-allowed text-white"
+                    className="rounded-[12px] p-2 text-white transition-all duration-200 hover:scale-[1.03] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                     style={{ 
                         backgroundColor: (value.trim() || selectedFiles.length > 0) ? 'var(--workspace-primary)' : 'rgba(255,255,255,0.03)', 
                     }}
                 >
                     {isSending ? (
-                        <div className="h-5 w-5 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     ) : (
-                        <Send className="h-5 w-5" />
+                        <Send className="h-4 w-4" />
                     )}
                 </button>
             </div>

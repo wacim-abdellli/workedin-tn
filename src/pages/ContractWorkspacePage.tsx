@@ -394,6 +394,11 @@ export default function ContractWorkspacePage() {
             assetKind: a.asset_kind as 'review_asset' | 'final_asset',
             accessState: a.access_state as 'preview_available' | 'locked' | 'released',
         }));
+        const reviewFilesOnly = deliveryFiles.filter(f => f.assetKind === 'review_asset');
+        const finalFilesOnly = deliveryFiles.filter(f => f.assetKind === 'final_asset');
+        const visibleFinalFiles = userRole === 'client'
+            ? finalFilesOnly.filter(f => f.accessState === 'released')
+            : finalFilesOnly;
         const selfProfile = { full_name: profile?.full_name || 'You', avatar_url: profile?.avatar_url ?? null };
         return {
             amount: contract.total_amount ?? contract.amount ?? 0,
@@ -403,9 +408,9 @@ export default function ContractWorkspacePage() {
             escrowFunded: Boolean(contract.funded_at),
             deliverySubmittedAt: contract.delivery_submitted_at ?? null,
             reviewDueAt: contract.review_due_at ?? latestDelivery?.review_due_at ?? null,
-            reviewFiles: deliveryFiles,
-            finalFiles: [],
-            lockedFinalFilesCount: 0,
+            reviewFiles: reviewFilesOnly,
+            finalFiles: visibleFinalFiles,
+            lockedFinalFilesCount: finalFilesOnly.filter(f => f.accessState === 'locked').length,
             job: { title: resolvedTitle, deadline: jobDeadline },
             lastRevisionNote,
             milestones: [],

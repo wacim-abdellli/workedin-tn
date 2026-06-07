@@ -30,6 +30,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Menu,
+    RefreshCw,
+    Star,
 } from 'lucide-react';
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
@@ -65,6 +67,7 @@ import { useTranslation } from '../i18n';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { validateUploadSelection } from '../lib/uploadPolicy';
 import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
+import SubmitDeliveryForm from '@/components/contracts/SubmitDeliveryForm';
 import { ChatInputArea } from '../components/chat/ChatInputArea';
 import {
     normalizeContractStatus,
@@ -129,16 +132,6 @@ import {
 } from '../lib/messageUtils';
 import { CollapsibleMessageText } from '../components/chat/CollapsibleMessageText';
 import { ImageLightbox } from '../components/chat/ImageLightbox';
-import { MessageBubbleItem } from '../components/chat/MessageBubbleItem';
-import { ConversationListPanel } from '../components/chat/ConversationListPanel';
-import {
-    DeliverWorkModal,
-    AcceptAndPayModal,
-    DisputeModal,
-    ReviewModal,
-    ContractWorkspaceModal,
-    DeleteMessageModal,
-} from '../components/contracts/ContractModalsBundle';
 import { ContractContextBar } from '../components/chat/ContractContextBar';
 import { EscrowFundingBanner } from '../components/chat/EscrowFundingBanner';
 import { ContractCompletionBanner } from '../components/chat/ContractCompletionBanner';
@@ -806,8 +799,7 @@ function MessagesComponent() {
         };
     }, [user?.id, selectedContractStatus, selectedContractUserRole]);
     const [deliveryNote, setDeliveryNote] = useState('');
-    const [deliveryReviewFiles, setDeliveryReviewFiles] = useState<File[]>([]);
-    const [deliveryFinalFiles, setDeliveryFinalFiles] = useState<File[]>([]);
+    const [deliveryFiles, setDeliveryFiles] = useState<File[]>([]);
     const [deliveryActionError, setDeliveryActionError] = useState<string | null>(null);
     const [disputeReason, setDisputeReason] = useState('');
     const [isDeliveringContractWork, setIsDeliveringContractWork] = useState(false);
@@ -819,8 +811,6 @@ function MessagesComponent() {
     const [isContractWorkspaceOpen, setIsContractWorkspaceOpen] = useState(false);
     const [isBannerExpanded, setIsBannerExpanded] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const deliveryReviewFileInputRef = useRef<HTMLInputElement>(null);
-    const deliveryFinalFileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const replyHighlightTimeoutRef = useRef<number | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -949,13 +939,13 @@ function MessagesComponent() {
     }, [selectedContractId, selectedConversationPolicy?.contractStatus]);
 
     const accentClasses = useMemo(() => ({
-        selectedConversationBorder: isFreelancerWorkspace ? 'border-violet-500/40' : 'border-amber-500/40',
+        selectedConversationBorder: isFreelancerWorkspace ? 'border-violet-500/25' : 'border-amber-500/25',
         selectedConversationSurface: isFreelancerWorkspace
-            ? 'border-violet-500/30 bg-violet-500/[0.04] shadow-[0_8px_20px_-6px_rgba(124,58,237,0.25)] backdrop-blur-md'
-            : 'border-amber-500/30 bg-amber-500/[0.04] shadow-[0_8px_20px_-6px_rgba(245,158,11,0.20)] backdrop-blur-md',
+            ? 'border-white/[0.10] bg-white/[0.035] shadow-none ring-1 ring-violet-500/[0.15]'
+            : 'border-white/[0.10] bg-white/[0.035] shadow-none ring-1 ring-amber-500/[0.15]',
         conversationHoverSurface: isFreelancerWorkspace
-            ? 'hover:border-violet-500/15 hover:bg-white/[0.02]'
-            : 'hover:border-amber-500/15 hover:bg-white/[0.02]',
+            ? 'hover:border-white/[0.08] hover:bg-white/[0.025]'
+            : 'hover:border-white/[0.08] hover:bg-white/[0.025]',
         avatarHoverRing: isFreelancerWorkspace ? 'hover:ring-violet-500/60' : 'hover:ring-amber-500/60',
         headerAvatarHoverRing: isFreelancerWorkspace ? 'hover:ring-violet-500' : 'hover:ring-amber-500',
         contextLabelText: isFreelancerWorkspace ? 'text-violet-300/90' : 'text-amber-300/90',
@@ -963,41 +953,33 @@ function MessagesComponent() {
         inputFocusBorder: isFreelancerWorkspace ? 'focus:border-violet-500/60' : 'focus:border-amber-500/60',
         headerMetaText: isFreelancerWorkspace ? 'text-violet-300' : 'text-amber-300',
         searchSurface: isFreelancerWorkspace
-            ? 'border-violet-500/20 bg-white/[0.02] focus-within:border-violet-500/50 focus-within:ring-1 focus-within:ring-violet-500/10'
-            : 'border-amber-500/20 bg-white/[0.02] focus-within:border-amber-500/50 focus-within:ring-1 focus-within:ring-amber-500/10',
+            ? 'border-white/[0.08] bg-white/[0.025] focus-within:border-violet-500/35 focus-within:ring-1 focus-within:ring-violet-500/10'
+            : 'border-white/[0.08] bg-white/[0.025] focus-within:border-amber-500/35 focus-within:ring-1 focus-within:ring-amber-500/10',
         contractToggleActive: isFreelancerWorkspace
-            ? 'border-violet-500/30 bg-violet-500/10 text-violet-200 hover:bg-violet-500/20'
-            : 'border-amber-500/30 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20',
+            ? 'border-violet-500/20 bg-violet-500/[0.08] text-violet-200 hover:bg-violet-500/[0.12]'
+            : 'border-amber-500/20 bg-amber-500/[0.08] text-amber-200 hover:bg-amber-500/[0.12]',
         contractToggleIdle: isFreelancerWorkspace
             ? 'border-violet-500/20 text-violet-300 hover:border-violet-400/50 hover:bg-violet-500/10'
             : 'border-amber-500/20 text-amber-300 hover:border-amber-400/50 hover:bg-amber-500/10',
-        threadAmbientGlow: isFreelancerWorkspace
-            ? 'from-violet-500/8 via-transparent to-transparent'
-            : 'from-amber-500/8 via-transparent to-transparent',
+        threadAmbientGlow: 'hidden',
         ownBubbleBg: isFreelancerWorkspace
-            ? 'bg-gradient-to-tr from-violet-600/90 to-fuchsia-600/80 border border-violet-400/20 shadow-[0_4px_16px_rgba(124,58,237,0.15)]'
-            : 'bg-gradient-to-tr from-amber-600/90 to-orange-500/80 border border-amber-400/20 shadow-[0_4px_16px_rgba(245,158,11,0.15)]',
+            ? 'border border-violet-500/30 bg-zinc-800/80 text-zinc-100 shadow-sm'
+            : 'border border-amber-500/30 bg-zinc-800/80 text-zinc-100 shadow-sm',
         ownReplyCard: isFreelancerWorkspace
-            ? 'border-violet-300/40 bg-violet-700/30 text-violet-100'
-            : 'border-amber-300/40 bg-amber-700/30 text-amber-100',
-        ownTextMuted: isFreelancerWorkspace ? 'text-violet-100' : 'text-amber-100',
-        ownAttachmentCard: isFreelancerWorkspace
-            ? 'bg-violet-700/50 hover:bg-violet-700/80'
-            : 'bg-amber-700/50 hover:bg-amber-700/80',
-        ownAttachmentIcon: isFreelancerWorkspace
-            ? 'bg-violet-500/40 text-violet-100'
-            : 'bg-amber-500/40 text-amber-100',
-        neutralAttachmentIcon: isFreelancerWorkspace ? 'text-violet-300' : 'text-amber-300',
-        readReceipt: isFreelancerWorkspace ? 'text-violet-300' : 'text-amber-300',
-        replyActionHover: isFreelancerWorkspace ? 'hover:text-violet-300' : 'hover:text-amber-300',
-        highlightRing: isFreelancerWorkspace ? 'ring-violet-400/70' : 'ring-amber-400/70',
-        typingDot: isFreelancerWorkspace ? 'bg-violet-500' : 'bg-amber-500',
-        replyStripe: isFreelancerWorkspace ? 'bg-violet-500' : 'bg-amber-500',
-        iconAccent: isFreelancerWorkspace ? 'text-violet-400' : 'text-amber-400',
-        sendButton: isFreelancerWorkspace ? 'bg-violet-600 hover:bg-violet-500' : 'bg-amber-600 hover:bg-amber-500',
-        composerShell: isFreelancerWorkspace
-            ? 'border-violet-500/20 bg-[var(--color-bg-elevated)] focus-within:border-violet-400/50 focus-within:shadow-[0_0_0_1px_rgba(139,92,246,0.20)]'
-            : 'border-amber-500/20 bg-[var(--color-bg-elevated)] focus-within:border-amber-400/50 focus-within:shadow-[0_0_0_1px_rgba(251,191,36,0.20)]',
+            ? 'bg-black/25 border-l-violet-500/60 border-t-transparent border-r-transparent border-b-transparent text-violet-300'
+            : 'bg-black/25 border-l-amber-500/60 border-t-transparent border-r-transparent border-b-transparent text-amber-300',
+        ownTextMuted: 'text-on-surface-muted',
+        ownAttachmentCard: 'bg-surface-sunken hover:bg-surface-card',
+        ownAttachmentIcon: 'bg-surface-card text-on-surface-subtle',
+        neutralAttachmentIcon: 'text-on-surface-subtle',
+        readReceipt: 'text-on-surface-subtle',
+        replyActionHover: 'hover:text-on-surface',
+        highlightRing: 'ring-on-surface-subtle',
+        typingDot: 'bg-on-surface-subtle',
+        replyStripe: 'bg-on-surface-subtle',
+        iconAccent: 'text-on-surface-subtle',
+        sendButton: 'bg-[var(--color-bg-subtle)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-muted)]',
+        composerShell: 'border-[#1a1b1e] bg-[var(--color-bg-elevated)] focus-within:border-white/20 focus-within:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]',
     }), [isFreelancerWorkspace]);
 
     useEffect(() => {
@@ -1546,21 +1528,24 @@ function MessagesComponent() {
         if (counterpartyRole === 'client') {
             return {
                 label: tx('mobileNav.client', undefined, 'Client'),
-                className: 'border-sky-500/25 bg-sky-500/10 text-sky-100',
+                className: 'border-sky-500/10 bg-sky-500/[0.06] text-sky-300',
+                textColor: 'text-sky-400',
             };
         }
 
         if (counterpartyRole === 'freelancer') {
             return {
                 label: tx('mobileNav.freelancer', undefined, 'Freelancer'),
-                className: 'border-violet-500/25 bg-violet-500/10 text-violet-100',
+                className: 'border-violet-500/10 bg-violet-500/[0.06] text-violet-300',
+                textColor: 'text-violet-400',
             };
         }
 
         if (!conversation.contract_id) {
             return {
                 label: tx('pages.messages.directChat', undefined, 'Direct chat'),
-                className: 'border-surface surface-sunken text-on-surface-muted',
+                className: 'border-zinc-500/10 bg-zinc-500/[0.06] text-zinc-400',
+                textColor: 'text-zinc-500',
             };
         }
 
@@ -1576,27 +1561,32 @@ function MessagesComponent() {
             case 'active':
                 return {
                     label: tx('contract.inProgress', undefined, 'In progress'),
-                    className: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-100',
+                    className: 'border-emerald-500/10 bg-emerald-500/[0.06] text-emerald-300',
+                    textColor: 'text-emerald-400',
                 };
             case 'pending_payment':
                 return {
                     label: tx('contract.pendingPayment', undefined, 'Pending payment'),
-                    className: 'border-sky-500/25 bg-sky-500/10 text-sky-100',
+                    className: 'border-sky-500/10 bg-sky-500/[0.06] text-sky-300',
+                    textColor: 'text-sky-400',
                 };
             case 'completed':
                 return {
                     label: tx('contract.completed', undefined, 'Completed'),
-                    className: 'border-cyan-500/25 bg-cyan-500/10 text-cyan-100',
+                    className: 'border-cyan-500/10 bg-cyan-500/[0.06] text-cyan-300',
+                    textColor: 'text-cyan-400',
                 };
             case 'cancelled':
                 return {
                     label: tx('contract.cancelled', undefined, 'Cancelled'),
-                    className: 'border-red-500/25 bg-red-500/10 text-red-100',
+                    className: 'border-red-500/10 bg-red-500/[0.06] text-red-300',
+                    textColor: 'text-red-400',
                 };
             case 'disputed':
                 return {
                     label: tx('contract.disputeOpened', undefined, 'Disputed'),
-                    className: 'border-amber-500/30 bg-amber-500/10 text-amber-100',
+                    className: 'border-amber-500/10 bg-amber-500/[0.06] text-amber-300',
+                    textColor: 'text-amber-400',
                 };
             // 'unknown' or any unrecognized status: show no badge.
             // This prevents "Status unavailable" from flashing while statuses are loading.
@@ -3459,16 +3449,13 @@ function MessagesComponent() {
 
             const contractId = selectedConversation.contract_id;
             const trimmedNote = deliveryNote.trim();
-            if (deliveryReviewFiles.length === 0) {
-                setDeliveryActionError('Add at least one review file the client can inspect before accepting.');
-                return;
-            }
-            if (deliveryFinalFiles.length === 0) {
-                setDeliveryActionError('Add at least one final locked file that will unlock after payment release.');
+            const selectedDeliveryFiles = deliveryFiles;
+            if (selectedDeliveryFiles.length === 0) {
+                setDeliveryActionError('Add at least one delivery file before submitting.');
                 return;
             }
 
-            for (const file of [...deliveryReviewFiles, ...deliveryFinalFiles]) {
+            for (const file of selectedDeliveryFiles) {
                 const validation = validateUploadSelection({
                     bucket: 'contract-files',
                     fileName: file.name,
@@ -3485,7 +3472,7 @@ function MessagesComponent() {
                 ? `[[delivery]] ${trimmedNote}`
                 : '[[delivery]] Work delivered and ready for review';
 
-            const uploadDeliveryAssets = async (files: File[], assetKind: 'review' | 'final') => {
+            const uploadDeliveryAssets = async (files: File[], assetKind: 'delivery') => {
                 const uploadedAssets: Array<{ name: string; storage_bucket: string; storage_path: string; mime_type: string; size_bytes: number }> = [];
 
                 for (const file of files) {
@@ -3512,14 +3499,13 @@ function MessagesComponent() {
                 return uploadedAssets;
             };
 
-            const reviewAssets = await uploadDeliveryAssets(deliveryReviewFiles, 'review');
-            const finalAssets = await uploadDeliveryAssets(deliveryFinalFiles, 'final');
+            const deliveryAssets = await uploadDeliveryAssets(selectedDeliveryFiles, 'delivery');
 
             const { data: deliveryResult, error: deliveryError } = await supabase.rpc('submit_contract_delivery_atomic', {
                 p_contract_id: contractId,
                 p_delivery_note: trimmedNote || 'submitted',
-                p_review_assets: reviewAssets,
-                p_final_assets: finalAssets,
+                p_review_assets: deliveryAssets,
+                p_final_assets: deliveryAssets,
             });
 
             if (deliveryError) {
@@ -3552,8 +3538,7 @@ function MessagesComponent() {
 
             setIsDeliverModalOpen(false);
             setDeliveryNote('');
-            setDeliveryReviewFiles([]);
-            setDeliveryFinalFiles([]);
+            setDeliveryFiles([]);
             showToast(tx('contract.workDelivered', undefined, 'Work delivered successfully'), 'success');
         } catch (error) {
             const message = getErrorMessage(error, tx('contract.deliverError', undefined, 'Failed to deliver work'));
@@ -3562,7 +3547,7 @@ function MessagesComponent() {
         } finally {
             setIsDeliveringContractWork(false);
         }
-    }, [deliveryFinalFiles, deliveryNote, deliveryReviewFiles, isDeliveringContractWork, refreshLatestContractDelivery, selectedConversation, selectedContractStatus, selectedContractUserRole, showToast, syncContractStatusLocally, tx, user?.id]);
+    }, [deliveryFiles, deliveryNote, isDeliveringContractWork, refreshLatestContractDelivery, selectedConversation, selectedContractStatus, selectedContractUserRole, showToast, syncContractStatusLocally, tx, user?.id]);
 
     const handleRequestContractChanges = useCallback(async () => {
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
@@ -4305,13 +4290,13 @@ function MessagesComponent() {
 
     const conversationSummaryLabel = useMemo(() => {
         if (showArchived) {
-            return `${conversationWorkspaceLabel} / ${tx('pages.messages.archivedLabel', undefined, 'ARCHIVED')}`;
+            return `${conversationWorkspaceLabel} • ${tx('pages.messages.archivedLabel', undefined, 'Archived')}`;
         }
         const countLabel = searchQuery
             ? tx('pages.messages.searchResultsSummary', { count: displayConversations.length }, `${displayConversations.length} results`)
             : tx('pages.messages.threadCountSummary', { count: displayConversations.length }, `${displayConversations.length} threads`);
 
-        return `${conversationWorkspaceLabel} / ${countLabel}`;
+        return `${conversationWorkspaceLabel} • ${countLabel}`;
     }, [conversationWorkspaceLabel, displayConversations.length, searchQuery, showArchived, tx]);
 
     // conversationsVirtualizer removed — the list now uses a plain scrollable div
@@ -4571,25 +4556,26 @@ function MessagesComponent() {
                     setShowConversationsList(true);
                 }
             }}
-            className={`transition-all duration-300 ease-in-out border-r border-white/[0.04] bg-[#09090b]/75 backdrop-blur-xl flex flex-col shrink-0 overflow-hidden ${
+            className={`transition-all duration-300 ease-in-out border-r border-white/[0.04] bg-[#060607]/92 backdrop-blur-xl flex flex-col shrink-0 overflow-hidden ${
                 showConversationsList
-                    ? 'w-full md:w-80 lg:w-[340px] xl:w-[380px] opacity-100'
-                    : 'w-0 md:w-20 opacity-100 border-r pointer-events-auto cursor-pointer hover:bg-white/[0.01]'
+                    ? 'w-full md:w-[320px] lg:w-[340px] xl:w-[360px] opacity-100'
+                    : 'w-0 md:w-[76px] opacity-100 border-r pointer-events-auto cursor-pointer hover:bg-white/[0.012]'
             } ${showMobileThread ? 'hidden md:flex' : 'flex'}`}>
             {/* Header */}
             {showConversationsList ? (
-                <div className="border-b border-white/[0.04] bg-white/[0.01] p-4 space-y-3.5" onClick={(e) => e.stopPropagation()}>
+                <div className="border-b border-white/[0.04] bg-white/[0.008] p-3.5 space-y-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="text-xl font-bold tracking-tight text-white">{tx('pages.messages.title', undefined, 'Messages')}</h2>
-                            <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-zinc-500 font-semibold">
-                                {conversationSummaryLabel}
-                            </p>
+                            <h2 className="text-[18px] font-semibold tracking-tight text-zinc-100">{tx('pages.messages.title', undefined, 'Messages')}</h2>
+                            <div className="mt-1 flex items-center gap-1.5 text-xs text-zinc-400 font-normal">
+                                <span className={`h-1.5 w-1.5 rounded-full ${isFreelancerWorkspace ? 'bg-violet-500 animate-pulse' : 'bg-amber-500 animate-pulse'}`} />
+                                <span>{conversationSummaryLabel}</span>
+                            </div>
                         </div>
                     </div>
 
                     {/* Search */}
-                    <div className={`flex h-9 w-full items-center gap-2 rounded-xl border px-3 text-sm transition-all ${accentClasses.searchSurface}`}>
+                    <div className={`flex h-9 w-full items-center gap-2 rounded-[12px] border px-3 text-sm transition-all ${accentClasses.searchSurface}`}>
                         <Search className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
                         <input
                             id="messages-conversation-search"
@@ -4614,7 +4600,7 @@ function MessagesComponent() {
                                     key={f}
                                     type="button"
                                     onClick={() => setFilter(f)}
-                                    className={`rounded-full px-3.5 py-1 text-[10px] uppercase tracking-wider font-semibold transition-all ${
+                                    className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.08em] font-semibold transition-all ${
                                         filter === f
                                             ? `${accentClasses.contractToggleActive} border`
                                             : 'text-zinc-400 hover:text-white hover:bg-white/[0.03] border border-transparent'
@@ -4627,7 +4613,7 @@ function MessagesComponent() {
                     )}
                 </div>
             ) : (
-                <div className="h-[73px] border-b border-white/[0.04] flex items-center justify-center shrink-0">
+                <div className="h-[68px] border-b border-white/[0.04] flex items-center justify-center shrink-0">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">Inbox</span>
                 </div>
             )}
@@ -4660,7 +4646,7 @@ function MessagesComponent() {
                         )}
                     </div>
                 ) : (
-                    <div className="py-1">
+                    <div className="py-1.5">
                         {displayConversations.map((conversation) => {
                             const isActive = selectedConversation?.id === conversation.id;
                             const contractStatus = conversation.contract_id ? contractStatusById[conversation.contract_id] ?? '' : '';
@@ -4675,7 +4661,7 @@ function MessagesComponent() {
                             return (
                                 <div
                                     key={conversation.id}
-                                    className={`group/item relative ${showConversationsList ? 'px-2 py-1' : 'px-1.5 py-1'}`}
+                                    className={`group/item relative ${showConversationsList ? 'px-2 py-0.5' : 'px-1.5 py-1'}`}
                                 >
                                     {/* Archive button — appears on hover */}
                                     {showConversationsList && (
@@ -4711,15 +4697,15 @@ function MessagesComponent() {
                                         }}
                                         className="cursor-pointer"
                                     >
-                                        <div className={`flex rounded-2xl border transition-all ${
-                                            showConversationsList ? 'gap-3 px-3 py-3' : 'justify-center p-2'
+                                        <div className={`flex rounded-[14px] border transition-all ${
+                                            showConversationsList ? 'gap-2.5 px-2.5 py-2.5' : 'justify-center p-2'
                                         } ${
                                             isActive
                                                 ? accentClasses.selectedConversationSurface
                                                 : `border-transparent bg-transparent ${accentClasses.conversationHoverSurface}`
                                         }`}>
                                             {/* Avatar */}
-                                            <div className="relative shrink-0 h-11 w-11">
+                                            <div className="relative h-10 w-10 shrink-0">
                                                 <button
                                                     type="button"
                                                     onClick={(event) => {
@@ -4727,7 +4713,7 @@ function MessagesComponent() {
                                                         navigate(getConversationProfilePath(conversation));
                                                     }}
                                                     aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
-                                                    className={`relative block h-11 w-11 overflow-hidden rounded-full border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-sm font-semibold text-zinc-300 transition-all hover:ring-2 ${accentClasses.avatarHoverRing}`}
+                                                    className={`relative block h-10 w-10 overflow-hidden rounded-full border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-sm font-semibold text-zinc-300 transition-all hover:ring-2 ${accentClasses.avatarHoverRing}`}
                                                 >
                                                     <span aria-hidden="true">{conversation.otherUser.full_name.charAt(0)}</span>
                                                     {conversation.otherUser.avatar_url ? (
@@ -4742,7 +4728,7 @@ function MessagesComponent() {
                                                 {/* Online Indicator */}
                                                 {isUserOnline(conversation.otherUser.id) && (
                                                     <div 
-                                                        className="absolute -bottom-[2px] -right-[2px] z-10 h-3.5 w-3.5 rounded-full border-[2.5px] border-[#09090b] bg-[#14a800] shadow-sm" 
+                                                        className="absolute -bottom-[2px] -right-[2px] z-10 h-3 w-3 rounded-full border-2 border-[#060607] bg-[#14a800] shadow-sm" 
                                                         aria-hidden="true" 
                                                     />
                                                 )}
@@ -4756,19 +4742,14 @@ function MessagesComponent() {
 
                                             {/* Content */}
                                             {showConversationsList && (
-                                                <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden gap-[4px]">
-                                                    {/* Row 1 — Job/Project name + time + unread */}
+                                                <div className="flex min-w-0 flex-1 flex-col justify-center overflow-hidden gap-[3px]">
+                                                    {/* Row 1 — Person name + time */}
                                                     <div className="flex items-start justify-between gap-2">
-                                                        {(() => {
-                                                            const workDesc = getConversationWorkDescriptor(conversation);
-                                                            return (
-                                                                <p className={`truncate text-[13px] font-semibold leading-tight ${
-                                                                    conversation.unread_count > 0 ? 'text-white' : 'text-zinc-300'
-                                                                }`}>
-                                                                    {workDesc || conversation.otherUser.full_name}
-                                                                </p>
-                                                            );
-                                                        })()}
+                                                        <p className={`truncate text-[13px] font-semibold leading-tight ${
+                                                            conversation.unread_count > 0 ? 'text-white' : 'text-zinc-300'
+                                                        }`}>
+                                                            {conversation.otherUser.full_name}
+                                                        </p>
                                                         <div className="flex shrink-0 items-center gap-1.5">
                                                             <span className="text-[10px] font-medium tabular-nums text-zinc-500">
                                                                 {formatTime(conversation.last_message_at)}
@@ -4781,46 +4762,57 @@ function MessagesComponent() {
                                                         </div>
                                                     </div>
 
-                                                    {/* Row 2 — Person name + Role + Status */}
-                                                    <div className="flex items-center gap-1.5 min-w-0">
-                                                        <p className="truncate text-[11px] leading-tight text-zinc-400">
-                                                            {conversation.otherUser.full_name}
-                                                        </p>
+                                                    {/* Row 2 — Role + Status + project name text */}
+                                                    <div className="flex items-center gap-1.5 min-w-0 text-[10.5px] font-medium leading-none text-zinc-500">
                                                         {(() => {
                                                             const roleMeta = getConversationRoleMeta(conversation);
                                                             const statusMeta = getConversationStatusMeta(conversation);
-                                                            return (
-                                                                <>
-                                                                    {roleMeta ? (
-                                                                        <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${roleMeta.className}`}>
-                                                                            {roleMeta.label}
-                                                                        </span>
-                                                                    ) : null}
-                                                                    {statusMeta ? (
-                                                                        <span className={`shrink-0 inline-flex items-center rounded-md border px-1.5 py-[2px] text-[10px] font-medium leading-none ${statusMeta.className}`}>
-                                                                            {statusMeta.label}
-                                                                        </span>
-                                                                    ) : null}
-                                                                    {(() => {
-                                                                        const sessionMeta = conversation.contract_id ? contractSessionMetaById[conversation.contract_id] : null;
-                                                                        const isEscrowFunded = sessionMeta ? Boolean(sessionMeta.funded_at) : true;
-                                                                        const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && (contractStatus === 'pending_payment' || contractStatus === 'active');
-                                                                        if (needsEscrowFunding) {
-                                                                            return (
-                                                                                <span className="shrink-0 inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-1.5 py-[2px] text-[10px] font-medium leading-none text-amber-200 gap-0.5" title="Escrow not funded yet">
-                                                                                    <span>🔒</span> Unfunded
-                                                                                </span>
-                                                                            );
-                                                                        }
-                                                                        return null;
-                                                                    })()}
-                                                                </>
-                                                            );
+                                                            const workDesc = getConversationWorkDescriptor(conversation);
+                                                            const items = [];
+                                                            if (roleMeta) {
+                                                                items.push(
+                                                                    <span key="role" className="shrink-0 text-zinc-400 font-semibold">
+                                                                        {roleMeta.label}
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            if (statusMeta) {
+                                                                items.push(
+                                                                    <span key="status" className={`shrink-0 ${statusMeta.textColor || 'text-zinc-500'}`}>
+                                                                        {statusMeta.label}
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            const sessionMeta = conversation.contract_id ? contractSessionMetaById[conversation.contract_id] : null;
+                                                            const isEscrowFunded = sessionMeta ? Boolean(sessionMeta.funded_at) : true;
+                                                            const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && (contractStatus === 'pending_payment' || contractStatus === 'active');
+                                                            if (needsEscrowFunding) {
+                                                                items.push(
+                                                                    <span key="unfunded" className="shrink-0 text-amber-500 font-semibold" title="Escrow not funded yet">
+                                                                        Unfunded
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            if (workDesc) {
+                                                                items.push(
+                                                                    <span key="work" className="truncate text-zinc-500" title={workDesc}>
+                                                                        {workDesc}
+                                                                    </span>
+                                                                );
+                                                            }
+
+                                                            return items.reduce((acc: React.ReactNode[], item, index) => {
+                                                                if (index > 0) {
+                                                                    acc.push(<span key={`bullet-${index}`} className="shrink-0 text-zinc-600 select-none">•</span>);
+                                                                }
+                                                                acc.push(item);
+                                                                return acc;
+                                                            }, []);
                                                         })()}
                                                     </div>
 
                                                     {/* Row 3 — Last message preview */}
-                                                    <p className={`truncate text-[11.5px] leading-tight ${
+                                                    <p className={`truncate text-[11px] leading-tight ${
                                                         conversation.unread_count > 0 ? 'text-zinc-300 font-medium' : 'text-zinc-500'
                                                     } ${previewText === deletedMessageLabel ? 'italic' : ''}`}>
                                                         {previewText}
@@ -4850,20 +4842,23 @@ function MessagesComponent() {
             </div>
 
             {/* Archived toggle at the bottom */}
-            <div className="border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-2.5">
+            <div className={`border-t border-white/[0.04] bg-[#060607] ${showConversationsList ? 'px-4 py-2.5' : 'px-2 py-2.5'}`}>
                 <button
                     type="button"
                     onClick={() => { setShowArchived((v) => !v); setSearchQuery(''); setFilter('all'); }}
-                    className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-medium transition-all ${
+                    title={showArchived ? tx('pages.messages.backToInbox', undefined, 'Back to inbox') : tx('pages.messages.viewArchived', undefined, 'Archived conversations')}
+                    className={`flex w-full items-center ${showConversationsList ? 'gap-2 px-3' : 'justify-center px-0'} rounded-lg py-2 text-[12px] font-medium transition-all ${
                         showArchived
                             ? `${accentClasses.contractToggleActive} border`
                             : 'text-on-surface-subtle hover:text-on-surface hover:bg-[var(--color-bg-muted)] border border-transparent'
                     }`}
                 >
                     <Archive className="h-3.5 w-3.5" />
-                    {showArchived
-                        ? tx('pages.messages.backToInbox', undefined, 'Back to inbox')
-                        : tx('pages.messages.viewArchived', undefined, 'Archived conversations')}
+                    {showConversationsList ? (
+                        showArchived
+                            ? tx('pages.messages.backToInbox', undefined, 'Back to inbox')
+                            : tx('pages.messages.viewArchived', undefined, 'Archived conversations')
+                    ) : null}
                 </button>
             </div>
         </div>
@@ -4876,9 +4871,9 @@ function MessagesComponent() {
                 <div className={`flex h-full min-h-0 flex-1 ${isContractSession ? 'bg-[#070709]' : ''}`}>
                     <div className={`relative flex min-w-0 flex-1 flex-col overflow-hidden ${isContractSession ? 'border-l border-white/[0.04] bg-[#070709]' : ''}`}>
                         <div className={`pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,var(--tw-gradient-stops))] ${accentClasses.threadAmbientGlow}`} />
-                        <div className="relative z-20 border-b border-white/[0.04] bg-[#070709]/60 px-4 py-3 backdrop-blur-md md:px-6">
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="flex min-w-0 items-start gap-3">
+                        <div className="relative z-20 border-b border-white/[0.04] bg-[#070709]/70 px-4 py-2.5 backdrop-blur-md md:px-5">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex min-w-0 items-center gap-2.5">
                                     <button
                                         type="button"
                                         onClick={() => setShowMobileThread(false)}
@@ -4902,22 +4897,22 @@ function MessagesComponent() {
                                                 return nextVal;
                                             });
                                         }}
-                                        className={`hidden md:flex p-2.5 rounded-xl border transition-all ${
+                                        className={`hidden md:flex rounded-[10px] border p-2 transition-all ${
                                             showConversationsList
                                                 ? 'border-white/[0.08] bg-white/[0.02] text-zinc-400 hover:text-white hover:bg-white/[0.05]'
-                                                : 'border-amber-500/30 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20'
+                                                : 'border-white/[0.10] bg-white/[0.04] text-zinc-200 hover:bg-white/[0.07]'
                                         }`}
                                         title={showConversationsList ? "Hide conversations" : "Show conversations"}
                                     >
                                         {showConversationsList ? <ChevronLeft className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
                                     </button>
 
-                                    <div className="relative shrink-0 h-12 w-12">
+                                    <div className="relative h-10 w-10 shrink-0">
                                         <button
                                             type="button"
                                             onClick={() => navigate(getConversationProfilePath(selectedConversation))}
                                             aria-label={tx('pages.messages.profileAction', undefined, 'View profile')}
-                                            className={`relative block h-12 w-12 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-sm font-semibold text-zinc-300 shadow-md transition-all hover:ring-2 ${accentClasses.headerAvatarHoverRing}`}
+                                            className={`relative block h-10 w-10 overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-sm font-semibold text-zinc-300 transition-all hover:ring-2 ${accentClasses.headerAvatarHoverRing}`}
                                         >
                                             <span aria-hidden="true" className="text-[13px] font-semibold">{selectedConversation.otherUser.full_name.charAt(0)}</span>
                                             {selectedConversation.otherUser.avatar_url ? (
@@ -4932,7 +4927,7 @@ function MessagesComponent() {
                                         {/* Online Indicator */}
                                         {isUserOnline(selectedConversation.otherUser.id) && (
                                             <div 
-                                                className="absolute -bottom-1 -right-1 z-10 h-4 w-4 rounded-full border-[3px] border-[#070709] bg-[#14a800] shadow-sm" 
+                                                className="absolute -bottom-[3px] -right-[3px] z-10 h-3.5 w-3.5 rounded-full border-[2.5px] border-[#070709] bg-[#14a800] shadow-sm" 
                                                 aria-hidden="true" 
                                             />
                                         )}
@@ -4940,7 +4935,7 @@ function MessagesComponent() {
 
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                                            <p className="truncate text-[14px] font-bold text-white shrink-0">
+                                            <p className="truncate text-[13.5px] font-semibold text-white shrink-0">
                                                 {selectedConversation.otherUser.full_name}
                                             </p>
                                             {(() => {
@@ -4989,7 +4984,7 @@ function MessagesComponent() {
                                             }}
                                             className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
                                                 showContractPanel
-                                                    ? 'border-[#BA7517] bg-[#633806]/20 text-[#E8A020]'
+                                                    ? 'border-white/[0.12] bg-white/[0.06] text-zinc-100'
                                                     : 'border-white/[0.08] bg-white/[0.02] text-zinc-300 hover:bg-white/[0.05]'
                                             }`}
                                         >
@@ -5062,39 +5057,38 @@ function MessagesComponent() {
                             ) : null}
                         </div>
 
-                        {/* Restyled premium glassmorphic dismissible banner */}
+                        {/* Compact premium dismissible alert banner */}
                         {(selectedContractReviewBanner || selectedConversationPolicy?.bannerFallback)
                             && selectedConversationPolicy
                             && selectedConversationPolicy.bannerTone !== 'none'
                             && (selectedConversationPolicy.contractStatus !== 'unknown' || showUnknownContractBanner)
                             && !isBannerDismissed ? (
-                            <div className={`mx-4 md:mx-6 mt-4 rounded-2xl border px-4 py-3 text-xs flex items-center justify-between gap-3 backdrop-blur-xl ${getLifecycleBannerClassName(selectedConversationPolicy.bannerTone)} shadow-[0_8px_32px_rgba(0,0,0,0.15)]`}>
-                                <div className="flex items-start gap-2.5">
-                                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-current opacity-80" />
-                                    <div>
-                                        <p className="font-semibold text-white/90">
-                                            {selectedContractStatus === 'revision_requested' ? 'Revision Requested' : 'Action Required'}
-                                        </p>
-                                        <p className="mt-0.5 text-zinc-300/90 leading-relaxed">
-                                            {tx(
-                                                'pages.messages.lifecycleBanner',
-                                                { message: String(selectedContractReviewBanner || selectedConversationPolicy.bannerFallback || '') },
-                                                selectedContractReviewBanner || selectedConversationPolicy.bannerFallback || '',
-                                            )}
-                                        </p>
-                                    </div>
+                            <div className={`mx-4 md:mx-5 mt-3 rounded-xl border px-3 py-2 text-[11px] flex items-center justify-between gap-2.5 backdrop-blur-md ${getLifecycleBannerClassName(selectedConversationPolicy.bannerTone)} shadow-sm`}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <AlertCircle className="h-3.5 w-3.5 shrink-0 text-current opacity-95" />
+                                    <p className="text-zinc-300 leading-normal truncate">
+                                        <span className="font-semibold text-white mr-1">
+                                            {selectedContractStatus === 'revision_requested' ? 'Revision Requested:' : 'Action Required:'}
+                                        </span>
+                                        {tx(
+                                            'pages.messages.lifecycleBanner',
+                                            { message: String(selectedContractReviewBanner || selectedConversationPolicy.bannerFallback || '') },
+                                            selectedContractReviewBanner || selectedConversationPolicy.bannerFallback || '',
+                                        )}
+                                    </p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setIsBannerDismissed(true)}
-                                    className="p-1 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-all shrink-0"
+                                    className="p-0.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/5 transition-all shrink-0"
+                                    aria-label="Dismiss banner"
                                 >
-                                    <X className="h-4 w-4" />
+                                    <X className="h-3.5 w-3.5" />
                                 </button>
                             </div>
                         ) : null}
 
-                    <div ref={messagesParentRef} className="relative z-0 flex flex-1 flex-col overflow-y-auto p-4 md:p-6">
+                    <div ref={messagesParentRef} className="relative z-0 flex flex-1 flex-col overflow-y-auto px-4 py-3 md:px-5 md:py-4">
                         {isLoadingMessages ? (
                             <div className="flex-1 flex items-center justify-center">
                                 <Loader2 className="h-7 w-7 animate-spin text-on-surface-subtle" />
@@ -5108,20 +5102,36 @@ function MessagesComponent() {
                             </div>
                         ) : (
                             <>
-                                <div className="flex-1" />
-                                <div className="mb-4 flex items-center gap-3">
+                                <div className="mb-3 flex items-center gap-3">
                                     <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[var(--color-border-subtle)] to-transparent" />
-                                    <span className="rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-on-surface-subtle">
+                                    <span className="rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
                                         {tx('pages.messages.today', undefined, 'Today')}
                                     </span>
                                     <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[var(--color-border-subtle)] to-transparent" />
                                 </div>
 
-                                <div className="flex w-full flex-col gap-4 relative">
-                                    {displayMessages.map((message) => {
+                                <div className="relative flex w-full flex-col">
+                                    {displayMessages.map((message, idx) => {
                                         const isOwnMessage = message.sender_id === user?.id;
                                         const contractSystemMessageKind = getMessageContractSystemKind(message);
                                         const isContractSystemMessage = Boolean(contractSystemMessageKind);
+                                        
+                                        // Calculate consecutive grouping
+                                        const prevMessage = idx > 0 ? displayMessages[idx - 1] : null;
+                                        const nextMessage = idx < displayMessages.length - 1 ? displayMessages[idx + 1] : null;
+                                        
+                                        const isConsecutivePrev = prevMessage
+                                            && prevMessage.sender_id === message.sender_id
+                                            && (new Date(message.created_at).getTime() - new Date(prevMessage.created_at).getTime() < 5 * 60 * 1000)
+                                            && !isContractSystemMessage
+                                            && !getMessageContractSystemKind(prevMessage);
+                                            
+                                        const isConsecutiveNext = nextMessage
+                                            && nextMessage.sender_id === message.sender_id
+                                            && (new Date(nextMessage.created_at).getTime() - new Date(message.created_at).getTime() < 5 * 60 * 1000)
+                                            && !isContractSystemMessage
+                                            && !getMessageContractSystemKind(nextMessage);
+
                                         const messageText = getMessageDisplayText(message, deletedMessageLabel);
                                         const replyMetadata = getMessageReplyMetadata(message);
                                         const shouldRenderMessageText = Boolean(messageText) && !shouldHideAttachmentUrlText(message);
@@ -5138,53 +5148,78 @@ function MessagesComponent() {
                                             && imageAttachmentCount === attachments.length;
 
                                         return (
-                                            <div key={message.id}>
+                                            <div key={message.id} className={isConsecutivePrev ? 'mt-[3px]' : 'mt-[14px]'}>
                                                 <div id={`message-${message.id}`} className={`group/message flex w-full ${isContractSystemMessage ? 'justify-center' : isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                                                    <div className={`relative max-w-[85%] md:max-w-[75%] flex flex-col ${isContractSystemMessage ? 'items-center' : isOwnMessage ? 'items-end' : 'items-start'}`}>
-                                                        {isOwnMessage && !message.status && !message.is_deleted && !isProtectedContractEvidenceMessage(message) ? (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => void handleDeleteMessage(message)}
-                                                                disabled={deletingMessageId === message.id}
-                                                                aria-label={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
-                                                                className="absolute -left-9 top-2 z-10 h-7 w-7 rounded-full border border-surface surface-sunken text-on-surface-subtle hidden md:flex items-center justify-center hover:text-on-surface hover-surface transition-colors transition-opacity opacity-0 group-hover/message:opacity-100 focus-visible:opacity-100 disabled:opacity-50"
+                                                    <div className={`relative max-w-[82%] md:max-w-[70%] xl:max-w-[62%] flex flex-col ${isContractSystemMessage ? 'items-center' : isOwnMessage ? 'items-end' : 'items-start'}`}>
+                                                        {/* Hover action toolbar (Reply & Delete) */}
+                                                        {!isContractSystemMessage && (
+                                                            <div
+                                                                className={`absolute top-1 z-10 flex items-center gap-1.5 opacity-0 group-hover/message:opacity-100 focus-within:opacity-100 transition-opacity pointer-events-none group-hover/message:pointer-events-auto hidden md:flex ${
+                                                                    isOwnMessage ? 'right-full mr-2.5' : 'left-full ml-2.5'
+                                                                }`}
                                                             >
-                                                                {deletingMessageId === message.id ? (
-                                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                                ) : (
-                                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                                )}
-                                                            </button>
-                                                        ) : null}
+                                                                {!isDeletedMessage(message) && canReplyInSelectedConversation ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleReplyToMessage(message)}
+                                                                        aria-label={tx('pages.messages.replyAction', undefined, 'Reply to message')}
+                                                                        className="h-6 w-6 rounded-full border border-white/[0.08] bg-[#1f1f23] text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all flex items-center justify-center cursor-pointer shadow-sm"
+                                                                    >
+                                                                        <CornerUpLeft className="h-3.5 w-3.5" />
+                                                                    </button>
+                                                                ) : null}
+
+                                                                {isOwnMessage && !message.status && !message.is_deleted && !isProtectedContractEvidenceMessage(message) ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => void handleDeleteMessage(message)}
+                                                                        disabled={deletingMessageId === message.id}
+                                                                        aria-label={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
+                                                                        className="h-6 w-6 rounded-full border border-white/[0.08] bg-[#1f1f23] text-zinc-400 hover:text-red-400 hover:border-red-500/20 hover:bg-zinc-800 transition-all flex items-center justify-center cursor-pointer shadow-sm disabled:opacity-50"
+                                                                    >
+                                                                        {deletingMessageId === message.id ? (
+                                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                                        ) : (
+                                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                                        )}
+                                                                    </button>
+                                                                ) : null}
+                                                            </div>
+                                                        )}
+
 
                                                         <div className={`flex items-end gap-2 ${isContractSystemMessage ? 'justify-center' : isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                                                             {!isOwnMessage && !isContractSystemMessage ? (
-                                                                <div className="w-6 h-6 rounded-full surface-sunken overflow-hidden shrink-0 flex items-center justify-center text-[10px] text-on-surface-subtle">
-                                                                    <span aria-hidden="true">{selectedConversation.otherUser.full_name.charAt(0)}</span>
-                                                                    {selectedConversation.otherUser.avatar_url ? (
-                                                                        <img
-                                                                            src={selectedConversation.otherUser.avatar_url}
-                                                                            alt={selectedConversation.otherUser.full_name}
-                                                                            className="absolute h-6 w-6 rounded-full object-cover"
-                                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                        />
-                                                                    ) : null}
-                                                                </div>
+                                                                !isConsecutiveNext ? (
+                                                                    <div className="relative w-6 h-6 rounded-full bg-white/[0.04] border border-white/[0.08] overflow-hidden shrink-0 flex items-center justify-center text-[10px] text-zinc-300">
+                                                                        <span aria-hidden="true">{selectedConversation.otherUser.full_name.charAt(0)}</span>
+                                                                        {selectedConversation.otherUser.avatar_url ? (
+                                                                            <img
+                                                                                src={selectedConversation.otherUser.avatar_url}
+                                                                                alt={selectedConversation.otherUser.full_name}
+                                                                                className="absolute h-6 w-6 rounded-full object-cover"
+                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                            />
+                                                                        ) : null}
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="w-6 shrink-0" />
+                                                                )
                                                             ) : null}
 
                                                             <div
                                                                 className={`min-w-0 break-words ${
                                                                     isDeletedMessage(message)
-                                                                        ? 'rounded-full border border-white/[0.06] bg-white/[0.02] text-zinc-500 px-3 py-1.5 text-xs'
+                                                                        ? 'rounded-full border border-white/[0.06] bg-white/[0.018] text-zinc-500 px-3 py-1.5 text-xs'
                                                                         : isContractSystemMessage
-                                                                        ? 'flex items-center gap-2 rounded-full border border-white/[0.04] bg-white/[0.02] px-4 py-1.5 text-[11px] font-semibold text-zinc-400 tracking-wide backdrop-blur-sm shadow-sm'
+                                                                        ? 'bg-zinc-950/40 border border-white/[0.05] rounded-2xl p-4 min-w-[280px] max-w-[480px] flex flex-col gap-2 shadow-sm'
                                                                         : (hasImageAttachment && (isImageOnlyMessage || shouldRenderImageCaption))
                                                                         ? (isOwnMessage
-                                                                            ? `${accentClasses.ownBubbleBg} p-1 overflow-hidden rounded-2xl rounded-br-sm text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-85' : ''}`
-                                                                            : 'border border-white/[0.06] bg-white/[0.03] backdrop-blur-md p-1 overflow-hidden rounded-2xl rounded-bl-sm text-zinc-100 shadow-[0_4px_16px_rgba(0,0,0,0.15)]')
+                                                                            ? `relative ${accentClasses.ownBubbleBg} p-1 overflow-hidden rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-br-sm'} text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-85' : ''}`
+                                                                            : `relative border border-white/[0.05] bg-white/[0.025] backdrop-blur-md p-1 overflow-hidden rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-bl-sm'} text-zinc-100`)
                                                                         : isOwnMessage
-                                                                        ? `${accentClasses.ownBubbleBg} text-white px-4 py-2.5 rounded-2xl rounded-br-sm text-sm ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-85' : ''}`
-                                                                        : 'border border-white/[0.06] bg-white/[0.03] backdrop-blur-md text-zinc-100 px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm shadow-[0_4px_16px_rgba(0,0,0,0.15)]'
+                                                                        ? `relative ${accentClasses.ownBubbleBg} text-white pt-2.5 pr-4 pb-1.5 pl-4 rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-br-sm'} text-[13px] font-normal leading-relaxed ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-85' : ''}`
+                                                                        : `relative border border-white/[0.05] bg-white/[0.025] backdrop-blur-md text-zinc-100 pt-2.5 pr-4 pb-1.5 pl-4 rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-bl-sm'} text-[13px] font-normal leading-relaxed`
                                                                 } ${highlightedMessageId === message.id ? `ring-1 ${accentClasses.highlightRing}` : ''}`}
                                                             >
                                                                 {replyMetadata ? (
@@ -5193,21 +5228,80 @@ function MessagesComponent() {
                                                                         onClick={() => {
                                                                             scrollToMessageById(replyMetadata.messageId);
                                                                         }}
-                                                                        className={`mb-2 w-full rounded-lg border px-2 py-1.5 text-left ${isOwnMessage ? accentClasses.ownReplyCard : 'border-surface surface-sunken text-on-surface-muted'}`}
+                                                                        className={`mb-1.5 w-full text-left px-2.5 py-1.5 rounded-r-md border-l-[3px] border-t-transparent border-r-transparent border-b-transparent transition-all duration-205 ease-in-out ${
+                                                                            isOwnMessage
+                                                                                ? 'bg-black/20 hover:bg-black/35 text-zinc-300'
+                                                                                : 'bg-white/[0.03] hover:bg-white/[0.06] text-zinc-400'
+                                                                        }`}
+                                                                        style={{
+                                                                            borderLeftColor: 'var(--workspace-primary)'
+                                                                        }}
                                                                         aria-label={tx('pages.messages.jumpToRepliedMessage', undefined, 'Jump to replied message')}
                                                                     >
-                                                                        <p className="text-[10px] font-semibold uppercase tracking-wide opacity-90">{replyMetadata.senderName}</p>
-                                                                        <p className="text-xs truncate opacity-90">{replyMetadata.previewText}</p>
+                                                                        <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--workspace-primary)' }}>
+                                                                            {replyMetadata.senderName}
+                                                                        </p>
+                                                                        <p className="text-[11.5px] truncate text-zinc-300/95 mt-0.5">{replyMetadata.previewText}</p>
                                                                     </button>
                                                                 ) : null}
 
                                                                 {isContractSystemMessage ? (
-                                                                    <>
-                                                                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px]">⚡</span>
-                                                                        <span>{messageText}</span>
-                                                                    </>
+                                                                    (() => {
+                                                                        const kind = contractSystemMessageKind || 'delivery';
+                                                                        let IconComponent = FileText;
+                                                                        let iconColorClass = 'text-violet-400 bg-violet-500/10 border-violet-500/20';
+                                                                        
+                                                                        if (kind === 'delivery') {
+                                                                            IconComponent = FileText;
+                                                                            iconColorClass = isFreelancerWorkspace ? 'text-violet-400 bg-violet-500/10 border-violet-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                                                                        } else if (kind === 'revision_requested') {
+                                                                            IconComponent = RefreshCw;
+                                                                            iconColorClass = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                                                                        } else if (kind === 'contract_completed') {
+                                                                            IconComponent = CheckCircle;
+                                                                            iconColorClass = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                                                                        } else if (kind === 'dispute_opened') {
+                                                                            IconComponent = AlertTriangle;
+                                                                            iconColorClass = 'text-red-400 bg-red-500/10 border-red-500/20';
+                                                                        } else if (kind === 'review_left') {
+                                                                            IconComponent = Star;
+                                                                            iconColorClass = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
+                                                                        }
+
+                                                                        let eventTitle = 'System Update';
+                                                                        const eventDescription = messageText;
+                                                                        if (kind === 'delivery') {
+                                                                            eventTitle = tx('pages.messages.system.deliveryTitle', undefined, 'Work Delivered');
+                                                                        } else if (kind === 'revision_requested') {
+                                                                            eventTitle = tx('pages.messages.system.revisionTitle', undefined, 'Revision Requested');
+                                                                        } else if (kind === 'contract_completed') {
+                                                                            eventTitle = tx('pages.messages.system.completedTitle', undefined, 'Contract Completed');
+                                                                        } else if (kind === 'dispute_opened') {
+                                                                            eventTitle = tx('pages.messages.system.disputeTitle', undefined, 'Dispute Opened');
+                                                                        } else if (kind === 'review_left') {
+                                                                            eventTitle = tx('pages.messages.system.reviewTitle', undefined, 'Review Submitted');
+                                                                        }
+
+                                                                        return (
+                                                                            <div className="flex flex-col gap-2 w-full text-zinc-300">
+                                                                                <div className="flex items-center gap-2 select-none">
+                                                                                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border ${iconColorClass}`}>
+                                                                                        <IconComponent className="h-3.5 w-3.5" />
+                                                                                    </div>
+                                                                                    <span className="font-bold text-[12px] tracking-wide text-zinc-100">{eventTitle}</span>
+                                                                                </div>
+                                                                                {eventDescription && (
+                                                                                    <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-3 text-[11px] leading-relaxed text-zinc-400 font-mono break-words max-w-full">
+                                                                                        {eventDescription}
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        );
+                                                                    })()
                                                                 ) : shouldRenderStandaloneText ? (
-                                                                    <CollapsibleMessageText text={messageText ?? ''} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
+                                                                    <div className="relative">
+                                                                        <CollapsibleMessageText text={messageText ?? ''} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
+                                                                    </div>
                                                                 ) : null}
 
                                                                 {!isDeletedMessage(message) && hasAttachments ? (
@@ -5245,7 +5339,7 @@ function MessagesComponent() {
                                                                                             </div>
                                                                                         </div>
                                                                                         {shouldRenderImageCaption && index === firstImageAttachmentIndex ? (
-                                                                                            <div className={`px-3 py-2 text-sm text-left ${isOwnMessage ? accentClasses.ownTextMuted : 'text-zinc-200'}`}>
+                                                                                            <div className={`px-3 py-2 text-sm text-left relative ${isOwnMessage ? accentClasses.ownTextMuted : 'text-zinc-200'}`}>
                                                                                                 <CollapsibleMessageText text={messageText ?? ''} isDeleted={isDeletedMessage(message)} isOwnMessage={isOwnMessage} />
                                                                                             </div>
                                                                                         ) : null}
@@ -5255,73 +5349,63 @@ function MessagesComponent() {
 
                                                                             if (isAudio) {
                                                                                 return (
-                                                                                    <MessageAudioPlayer
-                                                                                        key={index}
-                                                                                        src={attachmentUrl}
-                                                                                        rawSource={att.url}
-                                                                                        name={att.name}
-                                                                                        mimeType={att.type}
-                                                                                        isOwn={isOwnMessage}
-                                                                                        accentVariant={isFreelancerWorkspace ? 'violet' : 'amber'}
-                                                                                    />
+                                                                                    <div key={index} className="flex flex-col gap-1 w-full max-w-sm">
+                                                                                        <MessageAudioPlayer
+                                                                                            src={attachmentUrl}
+                                                                                            rawSource={att.url}
+                                                                                            name={att.name}
+                                                                                            mimeType={att.type}
+                                                                                            isOwn={isOwnMessage}
+                                                                                            accentVariant={isFreelancerWorkspace ? 'violet' : 'amber'}
+                                                                                        />
+                                                                                    </div>
                                                                                 );
                                                                             }
 
                                                                             return (
-                                                                                <button
-                                                                                    key={index}
-                                                                                    type="button"
-                                                                                    onClick={() => { void handleOpenAttachment(att); }}
-                                                                                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors w-full max-w-sm ${
-                                                                                        isOwnMessage
-                                                                                            ? accentClasses.ownAttachmentCard
-                                                                                            : 'surface-card hover-surface border border-surface'
-                                                                                    }`}
-                                                                                    aria-label={tx('pages.messages.a11y.openAttachment', undefined, 'Open attachment')}
-                                                                                >
-                                                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? accentClasses.ownAttachmentIcon : `bg-[var(--color-bg-muted)] ${accentClasses.neutralAttachmentIcon}`}`}>
-                                                                                        <FileText className="w-5 h-5" />
-                                                                                    </div>
+                                                                                <div key={index} className="flex flex-col gap-1 w-full max-w-sm">
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => { void handleOpenAttachment(att); }}
+                                                                                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors w-full ${
+                                                                                            isOwnMessage
+                                                                                                ? accentClasses.ownAttachmentCard
+                                                                                                : 'surface-card hover-surface border border-surface'
+                                                                                        }`}
+                                                                                        aria-label={tx('pages.messages.a11y.openAttachment', undefined, 'Open attachment')}
+                                                                                    >
+                                                                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? accentClasses.ownAttachmentIcon : `bg-[var(--color-bg-muted)] ${accentClasses.neutralAttachmentIcon}`}`}>
+                                                                                            <FileText className="w-5 h-5" />
+                                                                                        </div>
 
-                                                                                    <div className="min-w-0 flex-1 text-start">
-                                                                                        <p className="font-semibold text-sm truncate text-on-surface">{att.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment')}</p>
-                                                                                        <p className="text-xs opacity-70 text-on-surface-muted">{fileMetaLabel}</p>
-                                                                                    </div>
+                                                                                        <div className="min-w-0 flex-1 text-start">
+                                                                                            <p className="font-semibold text-sm truncate text-on-surface">{att.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment')}</p>
+                                                                                            <p className="text-xs opacity-70 text-on-surface-muted">{fileMetaLabel}</p>
+                                                                                        </div>
 
-                                                                                    <Download className="w-4 h-4 opacity-50 hover:opacity-100 transition-opacity ml-auto shrink-0 text-on-surface-muted" />
-                                                                                </button>
+                                                                                        <Download className="w-4 h-4 opacity-50 hover:opacity-100 transition-opacity ml-auto shrink-0 text-on-surface-muted" />
+                                                                                    </button>
+                                                                                </div>
                                                                             );
                                                                         })}
                                                                     </div>
                                                                 ) : null}
+                                                                {!isContractSystemMessage && !isDeletedMessage(message) && (
+                                                                    <div className={`absolute bottom-1 right-2.5 flex items-center gap-1 text-[9px] select-none text-zinc-500`}>
+                                                                        <span>{formatMessageTime(message.created_at)}</span>
+                                                                        {isOwnMessage && (
+                                                                            message.status === 'sending' ? (
+                                                                                <Clock className="h-2.5 w-2.5" />
+                                                                            ) : message.status === 'failed' ? (
+                                                                                <span className="text-red-400 font-bold">!</span>
+                                                                            ) : (
+                                                                                <CheckCheck className={`h-3 w-3 ${message.is_read ? (isFreelancerWorkspace ? 'text-violet-400' : 'text-amber-400') : 'text-zinc-500/80'}`} />
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
-
-                                                            {isOwnMessage && !isDeletedMessage(message) && !message.status ? (
-                                                                <CheckCheck className={`h-3 w-3 mb-1 ${message.is_read ? accentClasses.readReceipt : 'text-zinc-600'}`} />
-                                                            ) : null}
                                                         </div>
-
-                                                        <p className={`mt-1 text-[11px] text-zinc-600 flex items-center gap-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                                                            <span>{formatMessageTime(message.created_at)}</span>
-                                                            {isOwnMessage && message.status === 'sending' ? <Clock className="h-3 w-3" /> : null}
-                                                            {isOwnMessage && message.status === 'failed' ? (
-                                                                <span className="text-red-400">{tx('pages.messages.sendFailed', undefined, 'Failed')}</span>
-                                                            ) : null}
-                                                        </p>
-
-                                                        {!isDeletedMessage(message) && canReplyInSelectedConversation ? (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    handleReplyToMessage(message);
-                                                                }}
-                                                                className={`mt-1 inline-flex items-center gap-1 text-[11px] text-zinc-600 transition-colors opacity-0 group-hover/message:opacity-100 ${accentClasses.replyActionHover} ${isOwnMessage ? 'ms-auto' : ''}`}
-                                                                aria-label={tx('pages.messages.replyAction', undefined, 'Reply to message')}
-                                                            >
-                                                                <CornerUpLeft className="h-3 w-3" />
-                                                                <span>{tx('pages.messages.reply', undefined, 'Reply')}</span>
-                                                            </button>
-                                                        ) : null}
                                                     </div>
                                                 </div>
                                             </div>
@@ -5332,7 +5416,7 @@ function MessagesComponent() {
                                 {pendingQueue.map((pendingMsg, idx) => (
                                     <div key={`pending-${idx}`} className="flex justify-end w-full opacity-70">
                                         <div className="max-w-[80%]">
-                                            <div className={`${accentClasses.ownBubbleBg} text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-md`}>
+                                            <div className={`${accentClasses.ownBubbleBg} text-white px-3 py-2 rounded-xl rounded-br-sm text-[13px]`}>
                                                 <p className="text-sm break-words">{parseReplyMetadataFromContent(pendingMsg.content).bodyText || tx('pages.messages.attachmentLabel', undefined, 'Attachment')}</p>
                                                 {(pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFile || pendingMsg.offlineAudio) ? (
                                                     <div className="mt-2 text-xs italic opacity-90 flex items-center gap-1">
@@ -5370,20 +5454,11 @@ function MessagesComponent() {
                         </div>
                     ) : null}
 
-                    <div className="shrink-0 border-t border-white/[0.04] bg-[#070709]/65 px-4 py-3.5 backdrop-blur-md">
+                    <div className="shrink-0 border-t border-white/[0.04] bg-[#070709]/80 px-4 py-2.5 backdrop-blur-md">
                         {contractActionBar ? (
-                            <div className="mb-2 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-[#111214] px-3 py-2.5">
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.07em] text-[#55534F]">Contract action required</p>
-                                    <p className="mt-0.5 truncate text-[12px] font-medium text-[#8A8880]">{contractActionBar.text}</p>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => selectedWorkspaceContractId && navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
-                                    className="inline-flex shrink-0 items-center gap-1.5 rounded-[8px] bg-[#1D9E75] px-3 py-1.5 text-[12px] font-bold text-white transition-colors hover:bg-[#24b889]"
-                                >
-                                    Open Workspace ↗
-                                </button>
+                            <div className="mb-2 flex items-center gap-2 px-1 text-[11px] select-none">
+                                <span className="font-semibold uppercase tracking-[0.08em] text-zinc-500 shrink-0">Contract update:</span>
+                                <span className="truncate text-zinc-400 font-normal">{contractActionBar.text}</span>
                             </div>
                         ) : null}
                         {replyTarget ? (
@@ -5485,9 +5560,9 @@ function MessagesComponent() {
         </div>
     );
 
-    const hasDeliveryReviewFiles = deliveryReviewFiles.length > 0;
-    const hasDeliveryFinalFiles = deliveryFinalFiles.length > 0;
-    const canConfirmDelivery = hasDeliveryReviewFiles && hasDeliveryFinalFiles && !isDeliveringContractWork;
+    const deliverModalTitle = selectedContractStatus === 'revision_requested'
+        ? tx('contract.resubmitDelivery', undefined, 'Resubmit Delivery')
+        : tx('contract.deliverWork', undefined, 'Deliver Work');
 
     return (
         <>
@@ -5528,6 +5603,7 @@ function MessagesComponent() {
                                     hasLeftReview={selectedContractHasReview}
                                     onFundEscrow={() => setIsFundEscrowOpen(true)}
                                     isSidebar={true}
+                                    onOpenWorkspace={() => selectedWorkspaceContractId && navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
                                 />
                             )}
                         </div>
@@ -5542,147 +5618,36 @@ function MessagesComponent() {
                     setIsDeliverModalOpen(false);
                     setDeliveryActionError(null);
                 }}
-                title={tx('contract.deliverWork', undefined, 'Deliver Work')}
+                title={deliverModalTitle}
                 size="md"
             >
-                <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                        {tx('contract.deliverNoteLabel', undefined, 'Add a note for the client')}
-                    </p>
-                    {deliveryActionError ? (
-                        <div className="rounded-xl border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs text-red-100">
-                            {deliveryActionError}
-                        </div>
-                    ) : null}
-                    <textarea
-                        value={deliveryNote}
-                        onChange={(event) => {
-                            if (deliveryActionError) {
-                                setDeliveryActionError(null);
-                            }
-                            setDeliveryNote(event.target.value);
-                        }}
-                        rows={4}
-                        className="w-full resize-none rounded-xl border border-[#333] bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-amber-500"
-                        placeholder={tx('contract.deliverNotePlaceholder', undefined, 'Delivery notes (optional)...')}
-                        aria-label={tx('contract.deliverNoteAria', undefined, 'Delivery notes')}
-                    />
-                    <div className="space-y-3 rounded-xl border border-[#2f2f2f] bg-[var(--color-bg-subtle)] p-3">
-                        <div>
-                            <p className="text-sm font-medium text-white">{tx('pages.messages.delivery.reviewFiles', {}, 'Review Files')}</p>
-                            <p className="mt-1 text-xs text-zinc-400">{tx('pages.messages.delivery.reviewFilesDescription', {}, 'Files the client can review immediately before accepting.')}</p>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                                <Button variant="outline" onClick={() => deliveryReviewFileInputRef.current?.click()} disabled={isDeliveringContractWork}>
-                                    Add Review Files
-                                </Button>
-                                <input
-                                    ref={deliveryReviewFileInputRef}
-                                    type="file"
-                                    multiple
-                                    className="hidden"
-                                    onChange={(event) => {
-                                        const files = Array.from(event.target.files ?? []);
-                                        if (files.length > 0) {
-                                            setDeliveryActionError(null);
-                                            setDeliveryReviewFiles((prev) => [...prev, ...files]);
-                                        }
-                                        event.currentTarget.value = '';
-                                    }}
-                                />
-                            </div>
-                            {deliveryReviewFiles.length > 0 ? (
-                                <div className="mt-2 space-y-1 text-xs text-zinc-300">
-                                    {deliveryReviewFiles.map((file, index) => (
-                                        <div key={`${file.name}-${index}`} className="flex items-center justify-between rounded-lg bg-[#0d0d0d] px-2 py-1.5">
-                                            <span className="truncate pr-3">{file.name}</span>
-                                            <button
-                                                type="button"
-                                                className="text-zinc-500 hover:text-white"
-                                                onClick={() => setDeliveryReviewFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index))}
-                                            >
-                                                Remove
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="mt-2 text-xs text-amber-300">Required before delivery can be submitted.</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <p className="text-sm font-medium text-white">{tx('pages.messages.delivery.finalLockedFiles', {}, 'Final Locked Files')}</p>
-                            <p className="mt-1 text-xs text-zinc-400">{tx('pages.messages.delivery.finalLockedFilesDescription', {}, 'Files that stay locked until the client accepts and payment is released.')}</p>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                                <Button variant="outline" onClick={() => deliveryFinalFileInputRef.current?.click()} disabled={isDeliveringContractWork}>
-                                    Add Final Files
-                                </Button>
-                                <input
-                                    ref={deliveryFinalFileInputRef}
-                                    type="file"
-                                    multiple
-                                    className="hidden"
-                                    onChange={(event) => {
-                                        const files = Array.from(event.target.files ?? []);
-                                        if (files.length > 0) {
-                                            setDeliveryActionError(null);
-                                            setDeliveryFinalFiles((prev) => [...prev, ...files]);
-                                        }
-                                        event.currentTarget.value = '';
-                                    }}
-                                />
-                            </div>
-                            {deliveryFinalFiles.length > 0 ? (
-                                <div className="mt-2 space-y-1 text-xs text-zinc-300">
-                                    {deliveryFinalFiles.map((file, index) => (
-                                        <div key={`${file.name}-${index}`} className="flex items-center justify-between rounded-lg bg-[#0d0d0d] px-2 py-1.5">
-                                            <span className="truncate pr-3">{file.name}</span>
-                                            <button
-                                                type="button"
-                                                className="text-zinc-500 hover:text-white"
-                                                onClick={() => setDeliveryFinalFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index))}
-                                            >
-                                                Remove
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="mt-2 text-xs text-amber-300">Required. These files stay hidden from the client until payment is released.</p>
-                            )}
-                        </div>
-                    </div>
-                    {!canConfirmDelivery ? (
-                        <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
-                            Add both a review file and a final locked file to confirm delivery.
-                        </div>
-                    ) : null}
-                    <div className="flex items-center justify-end gap-3">
-                        <Button
-                            variant="ghost"
-                            onClick={() => {
-                                setIsDeliverModalOpen(false);
-                                setDeliveryActionError(null);
-                                setDeliveryReviewFiles([]);
-                                setDeliveryFinalFiles([]);
-                            }}
-                            disabled={isDeliveringContractWork}
-                        >
-                            {tx('common.cancel', undefined, 'Cancel')}
-                        </Button>
-                        <Button
-                            variant="primary"
-                            onClick={() => {
-                                void handleDeliverContractWork();
-                            }}
-                            disabled={!canConfirmDelivery}
-                            isLoading={isDeliveringContractWork}
-                            leftIcon={<CheckCircle className="h-4 w-4" />}
-                        >
-                            {tx('contract.confirmDelivery', undefined, 'Confirm Delivery')}
-                        </Button>
-                    </div>
-                </div>
+                <SubmitDeliveryForm
+                    deliveryNote={deliveryNote}
+                    files={deliveryFiles}
+                    isSubmitting={isDeliveringContractWork}
+                    actionError={deliveryActionError}
+                    submitLabel={selectedContractStatus === 'revision_requested' ? 'Resubmit delivery' : 'Submit delivery'}
+                    submittingLabel="Submitting delivery..."
+                    onNoteChange={(value) => {
+                        if (deliveryActionError) {
+                            setDeliveryActionError(null);
+                        }
+                        setDeliveryNote(value);
+                    }}
+                    onAddFiles={(files) => {
+                        setDeliveryActionError(null);
+                        setDeliveryFiles((prev) => [...prev, ...files]);
+                    }}
+                    onRemoveFile={(index) => setDeliveryFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index))}
+                    onSubmit={() => {
+                        void handleDeliverContractWork();
+                    }}
+                    onCancel={() => {
+                        setIsDeliverModalOpen(false);
+                        setDeliveryActionError(null);
+                        setDeliveryFiles([]);
+                    }}
+                />
             </Modal>
 
             <Modal
@@ -5820,6 +5785,7 @@ function MessagesComponent() {
                                 setIsContractWorkspaceOpen(false);
                                 setIsFundEscrowOpen(true);
                             }}
+                            onOpenWorkspace={() => selectedWorkspaceContractId && navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
                         />
                     ) : (
                         <div className="flex min-h-[420px] items-center justify-center px-6 text-center">
@@ -5841,48 +5807,47 @@ function MessagesComponent() {
                 title={tx('pages.messages.deleteMessage', undefined, 'Delete message')}
                 size="sm"
             >
-                <div className="space-y-5" style={deleteModalWorkspaceVars}>
-                    <p className="text-sm text-muted-foreground">
+                <div className="space-y-4" style={deleteModalWorkspaceVars}>
+                    <p className="text-xs text-zinc-400 mt-1">
                         {tx('pages.messages.deleteMessagePrompt', undefined, 'Choose how you want to delete this message:')}
                     </p>
 
                     {messagePendingDelete?.content ? (
-                        <div className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-foreground">
+                        <div className="rounded-xl border border-white/[0.04] bg-white/[0.012] pl-3 py-2 pr-4 text-xs text-zinc-300 border-l-2 border-l-zinc-500 italic max-h-24 overflow-y-auto">
                             {messagePendingDelete.content}
                         </div>
                     ) : null}
 
-                    <div className="flex flex-col gap-3">
-                        <Button
+                    <div className="flex flex-col gap-2.5">
+                        <button
                             type="button"
-                            variant="outline"
                             onClick={() => void confirmDeleteMessage('me')}
                             disabled={!!deletingMessageId}
-                            className="w-full border-2"
+                            className="w-full text-center bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.08] text-zinc-200 hover:text-white font-semibold px-4 py-2.5 rounded-xl transition-all text-sm cursor-pointer disabled:opacity-50"
                         >
                             {tx('pages.messages.deleteForMe', undefined, 'Delete for me')}
-                        </Button>
+                        </button>
                         
-                        <Button
+                        <button
                             type="button"
-                            variant="danger"
                             onClick={() => void confirmDeleteMessage('everyone')}
-                            isLoading={!!deletingMessageId}
                             disabled={!!deletingMessageId}
-                            className="w-full"
+                            className="w-full text-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-200 hover:text-red-100 font-semibold px-4 py-2.5 rounded-xl transition-all text-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            {tx('pages.messages.deleteForEveryone', undefined, 'Delete for everyone')}
-                        </Button>
+                            {deletingMessageId ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-red-200" />
+                            ) : null}
+                            <span>{tx('pages.messages.deleteForEveryone', undefined, 'Delete for everyone')}</span>
+                        </button>
 
-                        <Button
+                        <button
                             type="button"
-                            variant="ghost"
                             onClick={() => setMessagePendingDelete(null)}
                             disabled={!!deletingMessageId}
-                            className="w-full"
+                            className="w-full text-center text-zinc-500 hover:text-zinc-300 text-xs py-1.5 transition-colors font-medium cursor-pointer"
                         >
                             {tx('common.cancel', undefined, 'Cancel')}
-                        </Button>
+                        </button>
                     </div>
                 </div>
             </Modal>

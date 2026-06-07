@@ -29,6 +29,7 @@ export const CollapsibleMessageText = ({
                 style={{ wordBreak: 'break-word', overflowWrap: 'break-word', wordWrap: 'break-word' }}
             >
                 {text}
+                {!isDeleted && <span className="inline-block w-14 h-1 select-none pointer-events-none" />}
             </p>
         );
     }
@@ -42,6 +43,7 @@ export const CollapsibleMessageText = ({
                 style={{ wordBreak: 'break-word', overflowWrap: 'break-word', wordWrap: 'break-word' }}
             >
                 {displayText}
+                {!isDeleted && <span className="inline-block w-14 h-1 select-none pointer-events-none" />}
             </p>
             <button
                 type="button"

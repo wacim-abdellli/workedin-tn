@@ -4,7 +4,7 @@
  * contract system messages, reply metadata, and all bubble styling.
  * Extracted from the Messages.tsx God Component.
  */
-import { Loader2, Trash2, CheckCheck, Clock, CornerUpLeft, FileText, Download, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Trash2, CheckCheck, Clock, CornerUpLeft, FileText, Download, Image as ImageIcon, RefreshCw, CheckCircle, AlertTriangle, Star } from 'lucide-react';
 import { MessageAudioPlayer } from './MessageAudioPlayer';
 import { CollapsibleMessageText } from './CollapsibleMessageText';
 import type { Message } from '../../services/messages';
@@ -97,14 +97,14 @@ export const MessageBubbleItem = ({
     const bubbleCn = isDeletedMessage(message)
         ? 'rounded-full border border-surface surface-sunken text-on-surface-subtle px-3 py-1.5 text-xs'
         : isContractSystemMessage
-        ? 'flex items-center gap-2 rounded-full border border-white/[0.07] bg-[var(--color-bg-elevated)] px-4 py-2 text-[12px] font-medium text-[#8A8880] tracking-wide'
+        ? 'bg-zinc-950/40 border border-white/[0.05] rounded-2xl p-4 min-w-[280px] max-w-[480px] flex flex-col gap-2 shadow-sm'
         : (hasImageAttachment && (isImageOnlyMessage || shouldRenderImageCaption))
         ? (isOwnMessage
-            ? `${accentClasses.ownBubbleBg} p-1 overflow-hidden rounded-2xl rounded-br-sm text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
-            : 'surface-card border border-surface p-1 overflow-hidden rounded-2xl rounded-bl-sm text-on-surface')
+            ? `relative ${accentClasses.ownBubbleBg} p-1 overflow-hidden rounded-xl min-w-[95px] rounded-br-sm text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-85' : ''}`
+            : `relative border border-white/[0.05] bg-white/[0.025] backdrop-blur-md p-1 overflow-hidden rounded-xl min-w-[95px] rounded-bl-sm text-zinc-100`)
         : isOwnMessage
-        ? `${accentClasses.ownBubbleBg} text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm shadow-md ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-80' : ''}`
-        : 'surface-card border border-surface text-on-surface px-4 py-2 rounded-2xl rounded-bl-sm text-sm';
+        ? `relative ${accentClasses.ownBubbleBg} text-white pt-2.5 pr-4 pb-1.5 pl-4 rounded-xl min-w-[95px] rounded-br-sm text-[13px] font-normal leading-relaxed ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-85' : ''}`
+        : `relative border border-white/[0.05] bg-white/[0.025] backdrop-blur-md text-zinc-100 pt-2.5 pr-4 pb-1.5 pl-4 rounded-xl min-w-[95px] rounded-bl-sm text-[13px] font-normal leading-relaxed`;
 
     return (
         <div key={message.id}>
@@ -159,20 +159,77 @@ export const MessageBubbleItem = ({
                                 <button
                                     type="button"
                                     onClick={() => onScrollToMessage(replyMetadata.messageId)}
-                                    className={`mb-2 w-full rounded-lg border px-2 py-1.5 text-left ${isOwnMessage ? accentClasses.ownReplyCard : 'border-surface surface-sunken text-on-surface-muted'}`}
+                                    className={`mb-1.5 w-full text-left px-2.5 py-1.5 rounded-r-md border-l-[3px] border-t-transparent border-r-transparent border-b-transparent transition-all duration-205 ease-in-out ${
+                                        isOwnMessage
+                                            ? 'bg-black/20 hover:bg-black/35 text-zinc-300'
+                                            : 'bg-white/[0.03] hover:bg-white/[0.06] text-zinc-400'
+                                    }`}
+                                    style={{
+                                        borderLeftColor: 'var(--workspace-primary)'
+                                    }}
                                     aria-label={tx('pages.messages.jumpToRepliedMessage', undefined, 'Jump to replied message')}
                                 >
-                                    <p className="text-[10px] font-semibold uppercase tracking-wide opacity-90">{replyMetadata.senderName}</p>
-                                    <p className="text-xs truncate opacity-90">{replyMetadata.previewText}</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--workspace-primary)' }}>
+                                        {replyMetadata.senderName}
+                                    </p>
+                                    <p className="text-[11.5px] truncate text-zinc-300/95 mt-0.5">{replyMetadata.previewText}</p>
                                 </button>
                             ) : null}
 
                             {/* System message content */}
                             {isContractSystemMessage ? (
-                                <>
-                                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px]">⚡</span>
-                                    <span>{messageText}</span>
-                                </>
+                                (() => {
+                                    const kind = getMessageContractSystemKind(message) || 'delivery';
+                                    let IconComponent = FileText;
+                                    let iconColorClass = 'text-violet-400 bg-violet-500/10 border-violet-500/20';
+                                    
+                                    if (kind === 'delivery') {
+                                        IconComponent = FileText;
+                                        iconColorClass = isOwnMessage ? 'text-violet-400 bg-violet-500/10 border-violet-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                                    } else if (kind === 'revision_requested') {
+                                        IconComponent = RefreshCw;
+                                        iconColorClass = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                                    } else if (kind === 'contract_completed') {
+                                        IconComponent = CheckCircle;
+                                        iconColorClass = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                                    } else if (kind === 'dispute_opened') {
+                                        IconComponent = AlertTriangle;
+                                        iconColorClass = 'text-red-400 bg-red-500/10 border-red-500/20';
+                                    } else if (kind === 'review_left') {
+                                        IconComponent = Star;
+                                        iconColorClass = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
+                                    }
+
+                                    let eventTitle = 'System Update';
+                                    let eventDescription = messageText;
+                                    if (kind === 'delivery') {
+                                        eventTitle = tx('pages.messages.system.deliveryTitle', undefined, 'Work Delivered');
+                                    } else if (kind === 'revision_requested') {
+                                        eventTitle = tx('pages.messages.system.revisionTitle', undefined, 'Revision Requested');
+                                    } else if (kind === 'contract_completed') {
+                                        eventTitle = tx('pages.messages.system.completedTitle', undefined, 'Contract Completed');
+                                    } else if (kind === 'dispute_opened') {
+                                        eventTitle = tx('pages.messages.system.disputeTitle', undefined, 'Dispute Opened');
+                                    } else if (kind === 'review_left') {
+                                        eventTitle = tx('pages.messages.system.reviewTitle', undefined, 'Review Submitted');
+                                    }
+
+                                    return (
+                                        <div className="flex flex-col gap-2 w-full text-zinc-300">
+                                            <div className="flex items-center gap-2 select-none">
+                                                <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border ${iconColorClass}`}>
+                                                    <IconComponent className="h-3.5 w-3.5" />
+                                                </div>
+                                                <span className="font-bold text-[12px] tracking-wide text-zinc-100">{eventTitle}</span>
+                                            </div>
+                                            {eventDescription && (
+                                                <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-3 text-[11px] leading-relaxed text-zinc-400 font-mono break-words max-w-full">
+                                                    {eventDescription}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()
                             ) : shouldRenderStandaloneText ? (
                                 <CollapsibleMessageText
                                     text={messageText ?? ''}
@@ -268,37 +325,24 @@ export const MessageBubbleItem = ({
                                     })}
                                 </div>
                             ) : null}
+                            {!isContractSystemMessage && !isDeletedMessage(message) && (
+                                <div className="absolute bottom-1 right-2.5 flex items-center gap-1 text-[9px] select-none text-zinc-500">
+                                    <span>
+                                        {new Date(message.created_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                    {isOwnMessage && (
+                                        message.status === 'sending' ? (
+                                            <Clock className="h-2.5 w-2.5" />
+                                        ) : message.status === 'failed' ? (
+                                            <span className="text-red-400 font-bold">!</span>
+                                        ) : (
+                                            <CheckCheck className={`h-3 w-3 ${message.is_read ? accentClasses.readReceipt : 'text-zinc-600'}`} />
+                                        )
+                                    )}
+                                </div>
+                            )}
                         </div>
-
-                        {/* Read receipt */}
-                        {isOwnMessage && !isDeletedMessage(message) && !message.status ? (
-                            <CheckCheck className={`h-3 w-3 mb-1 ${message.is_read ? accentClasses.readReceipt : 'text-zinc-600'}`} />
-                        ) : null}
                     </div>
-
-                    {/* Timestamp row */}
-                    <p className={`mt-1 text-[11px] text-zinc-600 flex items-center gap-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                        <span>
-                            {new Date(message.created_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        {isOwnMessage && message.status === 'sending' ? <Clock className="h-3 w-3" /> : null}
-                        {isOwnMessage && message.status === 'failed' ? (
-                            <span className="text-red-400">{tx('pages.messages.sendFailed', undefined, 'Failed')}</span>
-                        ) : null}
-                    </p>
-
-                    {/* Reply action */}
-                    {!isDeletedMessage(message) && canReplyInSelectedConversation ? (
-                        <button
-                            type="button"
-                            onClick={() => onReply(message)}
-                            className={`mt-1 inline-flex items-center gap-1 text-[11px] text-zinc-600 transition-colors opacity-0 group-hover/message:opacity-100 ${accentClasses.replyActionHover} ${isOwnMessage ? 'ms-auto' : ''}`}
-                            aria-label={tx('pages.messages.replyAction', undefined, 'Reply to message')}
-                        >
-                            <CornerUpLeft className="h-3 w-3" />
-                            <span>{tx('pages.messages.reply', undefined, 'Reply')}</span>
-                        </button>
-                    ) : null}
                 </div>
             </div>
         </div>
