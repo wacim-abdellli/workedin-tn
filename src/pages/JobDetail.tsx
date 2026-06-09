@@ -593,12 +593,12 @@ function JobDetail() {
         optimisticProposal,
       );
 
-      // Close modal immediately for instant feedback
-      setShowProposalModal(false);
-
       return { previousProposal };
     },
     onSuccess: () => {
+      // Close modal on successful submission
+      setShowProposalModal(false);
+
       // Invalidate to get real data from server
       queryClient.invalidateQueries({
         queryKey: ["myProposal", jobId, user?.id],
