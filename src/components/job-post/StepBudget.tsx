@@ -157,7 +157,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                         return (
                             <label
                                 key={option.value}
-                                className={`relative cursor-pointer rounded-2xl border p-5 transition-all duration-300 flex flex-col justify-between h-full group backdrop-blur-md hover:-translate-y-0.5 ${
+                                className={`relative cursor-pointer rounded-2xl border p-6 transition-all duration-300 flex flex-col justify-between h-full group backdrop-blur-md hover:-translate-y-0.5 ${
                                     isSelected
                                         ? 'border-workspace-primary/35 bg-workspace-primary/[0.02] shadow-[0_4px_24px_rgba(0,0,0,0.3)]'
                                         : 'border-white/[0.04] bg-white/[0.01] hover:border-white/15 hover:bg-white/[0.02]'
@@ -173,18 +173,18 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                                 />
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
+                                        <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
                                             isSelected
                                                 ? 'bg-workspace-primary/10 text-workspace-primary'
                                                 : 'bg-white/5 text-gray-400 group-hover:text-white group-hover:bg-white/10'
                                         }`}>
-                                            <IconComponent className="h-4.5 w-4.5" />
+                                            <IconComponent className="h-5 w-5" />
                                         </span>
                                         <div>
-                                            <p className="text-sm font-semibold text-white/90">
+                                            <p className="text-base font-semibold text-white/95">
                                                 {option.title}
                                             </p>
-                                            <p className="text-[9px] text-gray-400/60 font-medium tracking-wider uppercase mt-0.5">
+                                            <p className="text-[10px] text-gray-400/60 font-medium tracking-wider uppercase mt-0.5">
                                                 {option.subtitle}
                                             </p>
                                         </div>
@@ -356,28 +356,28 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                         return (
                             <label
                                 key={option.value}
-                                className={`relative cursor-pointer rounded-2xl border p-4.5 transition-all duration-300 flex flex-col items-center justify-between text-center group backdrop-blur-md hover:-translate-y-0.5 ${
+                                className={`relative cursor-pointer rounded-2xl border p-6 transition-all duration-300 flex flex-col items-center justify-between text-center group backdrop-blur-md hover:-translate-y-0.5 ${
                                     isSelected
                                         ? 'border-workspace-primary/35 bg-workspace-primary/[0.02] shadow-[0_4px_24px_rgba(0,0,0,0.3)]'
                                         : 'border-white/[0.04] bg-white/[0.01] text-gray-400 hover:border-white/15 hover:bg-white/[0.02] hover:text-white'
                                 }`}
                             >
                                 <input type="radio" value={option.value} {...register('experience_level')} className="sr-only" />
-                                <span className={`inline-flex h-9 w-9 items-center justify-center rounded-xl mb-3 transition-colors ${
+                                <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl mb-3 transition-colors ${
                                     isSelected ? 'bg-workspace-primary/10 text-workspace-primary' : 'bg-white/5 text-gray-400 group-hover:text-white group-hover:bg-white/10'
                                 }`}>
-                                    <IconComponent className="h-4.5 w-4.5" />
+                                    <IconComponent className="h-5 w-5" />
                                 </span>
                                 <div className="space-y-1">
-                                    <p className="text-xs font-semibold text-white/90">
+                                    <p className="text-sm font-semibold text-white/95">
                                         {option.title}
                                     </p>
-                                    <p className="text-[10px] text-gray-400/60 leading-normal font-normal px-2">
+                                    <p className="text-xs text-gray-400/70 leading-normal font-normal px-2 mt-1">
                                         {option.subtitle}
                                     </p>
                                 </div>
                                 {isSelected && (
-                                    <div className="absolute top-3 right-3 h-4.5 w-4.5 rounded-full bg-workspace-primary flex items-center justify-center shadow-md shadow-workspace-primary/15">
+                                    <div className="absolute top-3 right-3 h-5 w-5 rounded-full bg-workspace-primary flex items-center justify-center shadow-md shadow-workspace-primary/15">
                                         <Check className="h-3 w-3 text-white stroke-[3px]" />
                                     </div>
                                 )}
@@ -391,7 +391,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
             {/* Duration and Deadline Grid */}
             <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
                 {/* Duration Selector */}
-                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-5.5 transition-all duration-300 hover:border-white/10 backdrop-blur-md flex flex-col gap-4 shadow-inner">
+                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-6 transition-all duration-300 hover:border-white/10 backdrop-blur-md flex flex-col gap-4 shadow-inner">
                     <div className="space-y-4 w-full">
                         <label className="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-gray-400/80">
                             <Clock className="h-4 w-4 text-workspace-primary" />
@@ -403,7 +403,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                                 return (
                                     <label
                                         key={option.value}
-                                        className={`relative cursor-pointer rounded-xl border px-4 py-3 text-xs font-medium transition-all duration-300 text-center flex items-center justify-center min-h-[44px] group ${
+                                        className={`relative cursor-pointer rounded-xl border px-4 py-3.5 text-sm font-medium transition-all duration-300 text-center flex items-center justify-center min-h-[44px] group ${
                                             isSelected
                                                 ? 'border-workspace-primary/35 bg-workspace-primary/[0.02] text-white/90 shadow-[0_4px_12px_rgba(0,0,0,0.2)]'
                                                 : 'border-white/[0.04] bg-white/[0.01] text-gray-400 hover:border-white/15 hover:bg-white/[0.02] hover:text-white'
@@ -420,7 +420,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                 </div>
 
                 {/* Deadline Selector */}
-                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-5.5 transition-all duration-300 hover:border-white/10 backdrop-blur-md flex flex-col gap-4 shadow-inner">
+                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-6 transition-all duration-300 hover:border-white/10 backdrop-blur-md flex flex-col gap-4 shadow-inner">
                     <div className="space-y-4 w-full">
                         <label className="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-gray-400/80">
                             <Calendar className="h-4 w-4 text-workspace-primary" />
@@ -441,4 +441,5 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
         </div>
     );
 }
+
 
