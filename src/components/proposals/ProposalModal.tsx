@@ -132,7 +132,7 @@ export default function ProposalModal({
     };
 
     const budgetLabel = job.job_type === 'fixed_price'
-        ? `${job.budget_min ?? 0} - ${job.budget_max ?? 0} ${currency}`
+        ? (job.budget_min === job.budget_max ? `${job.budget_min ?? 0} ${currency}` : `${job.budget_min ?? 0} - ${job.budget_max ?? 0} ${currency}`)
         : `${job.hourly_rate ?? 0} ${currency} ${tx('jobDetail.perHour', undefined, '/hour')}`;
 
     if (!isOpen) {

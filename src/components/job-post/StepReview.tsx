@@ -111,7 +111,9 @@ export default function StepReview() {
                     </p>
                     <p className="text-sm font-bold text-white">
                         {values.job_type === 'fixed_price'
-                            ? tx('jobs.new.stepReview.budgetRange', { min: values.budget_min ?? 0, max: values.budget_max ?? 0 }, `${values.budget_min ?? 0} - ${values.budget_max ?? 0} TND`)
+                            ? (values.budget_min === values.budget_max
+                                ? `${values.budget_min ?? 0} TND`
+                                : tx('jobs.new.stepReview.budgetRange', { min: values.budget_min ?? 0, max: values.budget_max ?? 0 }, `${values.budget_min ?? 0} - ${values.budget_max ?? 0} TND`))
                             : tx('jobs.new.stepReview.hourlyBudget', { rate: values.hourly_rate ?? 0 }, `${values.hourly_rate ?? 0} TND / hr`)}
                     </p>
                 </div>

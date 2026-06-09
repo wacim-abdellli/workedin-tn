@@ -163,7 +163,9 @@ function JobCard({ job, isSaved, onToggleSave, onClick }: JobCardProps) {
         >
           <span className="text-2xl font-bold" style={{ color: categoryColor.border }}>
             {job.job_type === 'fixed_price'
-              ? `${job.budget_min ?? '?'}-${job.budget_max ?? '?'}`
+              ? (job.budget_min === job.budget_max
+                  ? (job.budget_min ?? '?')
+                  : `${job.budget_min ?? '?'}-${job.budget_max ?? '?'}`)
               : (job.hourly_rate ?? '?')
             }
           </span>

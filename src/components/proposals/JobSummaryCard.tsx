@@ -1,4 +1,4 @@
-﻿import { Calendar, DollarSign, Clock, Share2, Users, BarChart2, Trophy, Inbox, Edit } from 'lucide-react';
+import { Calendar, DollarSign, Clock, Share2, Users, BarChart2, Trophy, Inbox, Edit } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from '../../i18n';
 import { ROUTES, getJobEditRoute } from '../../lib/routes';
@@ -101,7 +101,7 @@ export default function JobEmptyPane({ job, hasActiveContract = false }: JobSumm
 
                 <div className="divide-y divide-white/5">
                     {[
-                        { icon: DollarSign, iconBg: 'bg-emerald-500/10', iconColor: 'text-emerald-400', label: 'Budget', value: `${job.budget_min} – ${job.budget_max} ${currency}`, sub: jobTypeLabel },
+                        { icon: DollarSign, iconBg: 'bg-emerald-500/10', iconColor: 'text-emerald-400', label: 'Budget', value: job.budget_min === job.budget_max ? `${job.budget_min} ${currency}` : `${job.budget_min} – ${job.budget_max} ${currency}`, sub: jobTypeLabel },
                         { icon: Clock, iconBg: 'bg-amber-500/10', iconColor: 'text-amber-400', label: 'Duration', value: durationLabel, sub: null },
                         { icon: Calendar, iconBg: 'bg-indigo-500/10', iconColor: 'text-indigo-400', label: 'Posted', value: formattedDate, sub: null },
                     ].map(({ icon: Icon, iconBg, iconColor, label, value, sub }) => (

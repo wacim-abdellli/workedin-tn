@@ -32,7 +32,9 @@ export default function SimilarJobCard({ job, onClick }: SimilarJobCardProps) {
     const skills = job.skills || job.required_skills || [];
 
     const budgetLabel = job.job_type === 'fixed_price'
-        ? `${job.budget_min ?? '?'} – ${job.budget_max ?? '?'} ${tx('common.currency', undefined, 'TND')}`
+        ? (job.budget_min === job.budget_max
+            ? `${job.budget_min ?? '?'} ${tx('common.currency', undefined, 'TND')}`
+            : `${job.budget_min ?? '?'} – ${job.budget_max ?? '?'} ${tx('common.currency', undefined, 'TND')}`)
         : `${job.hourly_rate ?? '?'} ${tx('common.currencyPerHour', undefined, 'TND/h')}`;
 
     const isFixed = job.job_type === 'fixed_price';
