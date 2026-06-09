@@ -19,7 +19,7 @@ export interface UploadValidationResult {
 
 const MB = 1024 * 1024;
 const BLOCKED_EXTENSIONS = new Set([
-  'html', 'htm', 'svg', 'js', 'mjs', 'cjs', 'jsx', 'ts', 'tsx', 'php', 'exe', 'dll', 'sh', 'bat', 'cmd', 'ps1', 'jar', 'msi', 'apk', 'com', 'scr',
+  'html', 'htm', 'js', 'mjs', 'cjs', 'jsx', 'ts', 'tsx', 'php', 'exe', 'dll', 'sh', 'bat', 'cmd', 'ps1', 'jar', 'msi', 'apk', 'com', 'scr',
 ]);
 
 const RELAXED_MIME_TYPES = new Set(['', 'application/octet-stream']);
@@ -95,8 +95,14 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
   },
   'contract-files': {
     bucket: 'contract-files',
-    maxSizeBytes: 10 * MB,
-    allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'heic', 'heif', 'avif', 'bmp'],
+    maxSizeBytes: 100 * MB,
+    allowedExtensions: [
+      'pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'heic', 'heif', 'avif', 'bmp',
+      'zip', 'tar.gz', 'tgz', 'rar', '7z', 'gz',
+      'xlsx', 'xls', 'csv', 'pptx', 'ppt', 'key', 'numbers', 'ipynb',
+      'svg', 'ai', 'psd', 'fig', 'sketch', 'xd', 'indd',
+      'mp4', 'mov', 'avi', 'mkv', 'mp3', 'wav', 'webm'
+    ],
     allowedMimeTypes: [
       'application/pdf',
       'application/msword',
@@ -110,6 +116,36 @@ export const UPLOAD_POLICIES: Record<string, UploadPolicy> = {
       'image/avif',
       'image/bmp',
       'image/x-ms-bmp',
+      'application/zip',
+      'application/x-zip-compressed',
+      'application/x-tar',
+      'application/gzip',
+      'application/x-gzip',
+      'application/x-rar-compressed',
+      'application/vnd.rar',
+      'application/x-7z-compressed',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/vnd.ms-powerpoint',
+      'application/x-iwork-keynote-sffkey',
+      'application/x-iwork-numbers-sffnumbers',
+      'application/x-ipynb+json',
+      'application/json',
+      'image/svg+xml',
+      'application/postscript',
+      'image/vnd.adobe.photoshop',
+      'application/octet-stream',
+      'application/x-indesign',
+      'video/mp4',
+      'video/quicktime',
+      'video/x-msvideo',
+      'video/x-matroska',
+      'audio/mpeg',
+      'audio/wav',
+      'video/webm',
+      'audio/webm'
     ],
     publicUrl: false,
     upsert: false,
@@ -274,6 +310,43 @@ function matchesContentSignature(extension: string, bytes: Uint8Array) {
       return isLikelyMp4Family(bytes);
     case 'bmp':
       return hasSignature(bytes, [0x42, 0x4d]);
+    case 'zip':
+    case 'xlsx':
+    case 'pptx':
+    case 'sketch':
+    case 'fig':
+    case 'xd':
+    case 'key':
+    case 'numbers':
+      return hasSignature(bytes, [0x50, 0x4b, 0x03, 0x04]) || hasSignature(bytes, [0x50, 0x4b, 0x05, 0x06]);
+    case 'tar.gz':
+    case 'tgz':
+    case 'gz':
+      return hasSignature(bytes, [0x1f, 0x8b]);
+    case 'rar':
+      return hasSignature(bytes, [0x52, 0x61, 0x72, 0x21]);
+    case '7z':
+      return hasSignature(bytes, [0x37, 0x7a, 0xbc, 0xaf]);
+    case 'xls':
+    case 'ppt':
+      return hasSignature(bytes, [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
+    case 'csv':
+    case 'ipynb':
+      return isLikelyPlainText(bytes);
+    case 'svg':
+      return isLikelyPlainText(bytes) || hasSignature(bytes, [0x3c, 0x3f, 0x78, 0x6d, 0x6c]);
+    case 'ai':
+      return hasSignature(bytes, [0x25, 0x50, 0x44, 0x46]) || hasSignature(bytes, [0x25, 0x21]);
+    case 'psd':
+      return hasSignature(bytes, [0x38, 0x42, 0x50, 0x53]);
+    case 'indd':
+      return hasSignature(bytes, [0x06, 0x06, 0xed, 0xf5, 0xd8, 0x1d, 0x46, 0xe5]);
+    case 'mov':
+      return isLikelyMp4Family(bytes) || hasSignature(bytes, [0x6d, 0x6f, 0x6f, 0x76], 4) || hasSignature(bytes, [0x66, 0x74, 0x79, 0x70, 0x71, 0x74], 4);
+    case 'avi':
+      return hasSignature(bytes, [0x52, 0x49, 0x46, 0x46]) && hasSignature(bytes, [0x41, 0x56, 0x49, 0x20], 8);
+    case 'mkv':
+      return hasSignature(bytes, [0x1a, 0x45, 0xdf, 0xa3]);
     default:
       return false;
   }

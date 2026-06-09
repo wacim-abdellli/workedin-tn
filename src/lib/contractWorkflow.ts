@@ -3,7 +3,7 @@ import type { ContractStatus } from '@/types';
 export const CONTRACT_TRANSITIONS: Record<ContractStatus, ContractStatus[]> = {
     pending_payment: ['active', 'cancelled', 'disputed'],
     active: ['delivery_submitted', 'cancelled', 'disputed'],
-    delivery_submitted: ['revision_requested', 'completed', 'cancelled', 'disputed'],
+    delivery_submitted: ['active', 'revision_requested', 'completed', 'cancelled', 'disputed'],
     revision_requested: ['delivery_submitted', 'cancelled', 'disputed'],
     completed: [],
     cancelled: [],

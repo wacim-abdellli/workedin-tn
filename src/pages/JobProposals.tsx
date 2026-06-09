@@ -444,7 +444,7 @@ export default function JobProposals() {
     };
 
     const hireMutation = useMutation({
-        mutationFn: async (proposalId: string) => {
+        mutationFn: async ({ proposalId, milestones }: { proposalId: string; milestones?: Array<{ description: string; amount: number; due_date?: string }> }) => {
             const proposal = proposals.find(p => p.id === proposalId);
             if (!proposal || !job || !user) throw new Error('Missing required data');
             if (!HIREABLE_STATUSES.includes(proposal.status)) {
@@ -472,6 +472,28 @@ export default function JobProposals() {
             }
 
             if (!contractId) throw new Error('Atomic hire did not return a contract id');
+
+            // Insert milestones if provided
+            if (milestones && milestones.length > 0) {
+                logger.info(`[hiring] Inserting ${milestones.length} milestones for contract ${contractId}`);
+                const milestoneRows = milestones.map((m, idx) => ({
+                    contract_id: contractId,
+                    description: m.description.trim() || `Milestone ${idx + 1}`,
+                    amount: m.amount,
+                    status: 'pending',
+                    due_date: m.due_date ? new Date(m.due_date).toISOString() : null
+                }));
+
+                const { error: insertError } = await supabase
+                    .from('milestones')
+                    .insert(milestoneRows);
+
+                if (insertError) {
+                    logger.error('[hiring] Failed to insert milestones:', insertError);
+                    throw new Error(`Contract created, but milestones failed to initialize: ${insertError.message}`);
+                }
+            }
+
 
             void (async () => {
                 try {
@@ -563,7 +585,7 @@ export default function JobProposals() {
         },
     });
 
-    const handleHire = useCallback((proposalId: string) => {
+    const handleHire = useCallback((proposalId: string, milestones?: Array<{ description: string; amount: number; due_date?: string }>) => {
         const proposal = proposals.find(p => p.id === proposalId);
         const hireStatusBlockedLabel = 'This proposal can no longer be hired.';
         if (!proposal) {
@@ -576,8 +598,9 @@ export default function JobProposals() {
             return;
         }
 
-        hireMutation.mutate(proposalId);
+        hireMutation.mutate({ proposalId, milestones });
     }, [proposals, hireMutation, showToast, t.jobProposals.hireError]);
+
 
     const handleArchive = useCallback(async (proposalId: string) => {
         try {
@@ -857,7 +880,7 @@ export default function JobProposals() {
                             isHiring={hireMutation.isPending}
                             isShortlisted={isSelectedShortlisted}
                             onClose={() => setSelectedProposal(null)}
-                            onHire={() => handleHire(liveSelectedProposal.id)}
+                            onHire={(milestones) => handleHire(liveSelectedProposal.id, milestones)}
                             onMessage={() => handleMessage(liveSelectedProposal.id)}
                             onShortlist={() => handleShortlist(liveSelectedProposal.id)}
                             onReject={() => handleReject(liveSelectedProposal.id)}

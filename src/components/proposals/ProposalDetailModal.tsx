@@ -63,7 +63,7 @@ interface ProposalDetailPaneProps {
     onMessage: () => void;
     onShortlist: () => void;
     onReject: () => void;
-    onHire: () => void;
+    onHire: (milestones?: Array<{ description: string; amount: number; due_date?: string }>) => void;
     onArchive: () => void;
     onUnarchive: () => void;
     isShortlisted?: boolean;
@@ -139,13 +139,28 @@ export default function ProposalDetailPane({
     const [portfolioItems, setPortfolioItems] = useState<PortfolioPreviewItem[]>([]);
     const [reviewItems, setReviewItems] = useState<ReviewPreviewItem[]>([]);
     const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+    const [useMilestones, setUseMilestones] = useState(false);
+    const [milestones, setMilestones] = useState<Array<{ description: string; amount: number; due_date?: string }>>([]);
 
     useEffect(() => {
         setActiveTab('proposal');
         setHireConfirm(false);
         setRejectConfirm(false);
         setArchiveOpen(false);
+        setUseMilestones(false);
+        setMilestones([]);
     }, [proposal?.id, proposal?.status]);
+
+    useEffect(() => {
+        if (useMilestones && proposal) {
+            setMilestones([
+                { description: 'Milestone 1: Project Kickoff', amount: proposal.bid_amount, due_date: '' }
+            ]);
+        } else {
+            setMilestones([]);
+        }
+    }, [useMilestones, proposal?.id, proposal?.bid_amount]);
+
 
     useEffect(() => {
         if (!proposal) return;
@@ -281,7 +296,34 @@ export default function ProposalDetailPane({
         };
     }, [proposal]);
 
+    const handleAddMilestoneInput = () => {
+        setMilestones(prev => [
+            ...prev,
+            { description: `Milestone ${prev.length + 1}: `, amount: 0, due_date: '' }
+        ]);
+    };
+
+    const handleRemoveMilestoneInput = (index: number) => {
+        setMilestones(prev => prev.filter((_, idx) => idx !== index));
+    };
+
+    const handleUpdateMilestoneInput = (index: number, key: 'description' | 'amount' | 'due_date', value: any) => {
+        setMilestones(prev => prev.map((m, idx) => {
+            if (idx !== index) return m;
+            return {
+                ...m,
+                [key]: key === 'amount' ? Number(value) : value
+            };
+        }));
+    };
+
+    const totalMilestoneAmount = milestones.reduce((sum, m) => sum + m.amount, 0);
+    const isMilestoneSumValid = Math.abs(totalMilestoneAmount - (proposal?.bid_amount ?? 0)) < 0.01;
+    const isAllMilestonesFilled = milestones.every(m => m.description.trim() !== '' && m.amount > 0);
+    const canConfirmHire = !useMilestones || (isMilestoneSumValid && isAllMilestonesFilled);
+
     if (!proposal) return null;
+
 
     const { freelancer } = proposal;
     const isArchived = proposal.status === 'archived';
@@ -698,7 +740,7 @@ export default function ProposalDetailPane({
                         }
                     }}
                 >
-                    <div className="w-full max-w-md rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black p-6 shadow-2xl space-y-6 relative overflow-hidden">
+                    <div className={`w-full ${useMilestones ? 'max-w-xl' : 'max-w-md'} rounded-3xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black p-6 shadow-2xl space-y-6 relative overflow-hidden transition-all duration-300`}>
                         <button
                             type="button"
                             onClick={() => setHireConfirm(false)}
@@ -753,6 +795,102 @@ export default function ProposalDetailPane({
                             </div>
                         </div>
 
+                        {/* Milestone Toggle Option */}
+                        <div className="flex items-center justify-between p-3.5 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-colors">
+                            <div className="flex items-start gap-2.5">
+                                <input 
+                                    type="checkbox" 
+                                    id="use-milestones"
+                                    checked={useMilestones}
+                                    onChange={(e) => setUseMilestones(e.target.checked)}
+                                    className="mt-1 h-4 w-4 rounded border-white/10 bg-zinc-950 text-amber-500 focus:ring-amber-500/30 accent-amber-500 cursor-pointer"
+                                />
+                                <label htmlFor="use-milestones" className="cursor-pointer select-none">
+                                    <p className="text-xs font-bold text-zinc-200">Structure contract with milestones</p>
+                                    <p className="text-[10px] text-zinc-500 mt-0.5 leading-normal">Split payments into multiple deliverables & dates instead of a single release.</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Milestone Editor */}
+                        {useMilestones && (
+                            <div className="space-y-3 border-t border-white/5 pt-4 animate-in fade-in duration-200">
+                                <div className="flex justify-between items-center select-none">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Define Milestones</span>
+                                    <button 
+                                        type="button" 
+                                        onClick={handleAddMilestoneInput}
+                                        className="text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-colors"
+                                    >
+                                        + Add Milestone
+                                    </button>
+                                </div>
+                                <div className="space-y-3 max-h-[200px] overflow-y-auto pr-1">
+                                    {milestones.map((m, idx) => (
+                                        <div key={idx} className="flex flex-col gap-2 p-3 rounded-xl border border-white/5 bg-black/40">
+                                            <div className="flex items-center gap-2">
+                                                <input 
+                                                    type="text" 
+                                                    value={m.description}
+                                                    onChange={(e) => handleUpdateMilestoneInput(idx, 'description', e.target.value)}
+                                                    placeholder={`Milestone ${idx + 1} Description`}
+                                                    className="w-full rounded-md border border-white/[0.06] bg-zinc-950 px-2.5 py-1.5 text-xs text-zinc-200 outline-none focus:border-amber-500/50"
+                                                />
+                                                {milestones.length > 1 && (
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => handleRemoveMilestoneInput(idx)}
+                                                        className="text-rose-400 hover:text-rose-300 text-xs font-bold px-1.5"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <span className="text-[9px] text-zinc-550 font-semibold uppercase tracking-wider">Amount (TND)</span>
+                                                    <input 
+                                                        type="number" 
+                                                        value={m.amount || ''}
+                                                        onChange={(e) => handleUpdateMilestoneInput(idx, 'amount', e.target.value)}
+                                                        placeholder="0"
+                                                        className="w-full mt-0.5 rounded-md border border-white/[0.06] bg-zinc-950 px-2.5 py-1 text-xs text-zinc-250 outline-none focus:border-amber-500/50"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <span className="text-[9px] text-zinc-550 font-semibold uppercase tracking-wider">Due Date</span>
+                                                    <input 
+                                                        type="date" 
+                                                        value={m.due_date || ''}
+                                                        onChange={(e) => handleUpdateMilestoneInput(idx, 'due_date', e.target.value)}
+                                                        className="w-full mt-0.5 rounded-md border border-white/[0.06] bg-zinc-950 px-2.5 py-1 text-xs text-zinc-250 outline-none focus:border-amber-500/50"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                <div className="flex justify-between items-center p-2 rounded bg-black/60 border border-white/[0.03] text-[11px] select-none font-medium">
+                                    <span className="text-zinc-400">Total milestones amount:</span>
+                                    <span className={`font-mono font-bold ${isMilestoneSumValid ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                        {totalMilestoneAmount} / {proposal.bid_amount} TND
+                                    </span>
+                                </div>
+                                {!isMilestoneSumValid && (
+                                    <p className="text-[10px] text-rose-300 text-right leading-tight">
+                                        ⚠ Milestone amounts must sum up to exactly the bid amount ({proposal.bid_amount} TND).
+                                    </p>
+                                )}
+                                {isMilestoneSumValid && !isAllMilestonesFilled && (
+                                    <p className="text-[10px] text-amber-300 text-right leading-tight">
+                                        ⚠ Make sure descriptions are filled and milestone amounts are greater than 0.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+
                         <div className="flex items-start gap-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-3.5">
                             <span className="text-lg mt-0.5">🔒</span>
                             <div className="space-y-0.5">
@@ -775,10 +913,10 @@ export default function ProposalDetailPane({
                                 type="button"
                                 onClick={() => {
                                     setHireConfirm(false);
-                                    onHire();
+                                    onHire(useMilestones ? milestones : undefined);
                                 }}
-                                disabled={isHiring}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-emerald-500 text-black text-sm font-bold hover:bg-emerald-400 active:scale-95 transition-all disabled:opacity-50"
+                                disabled={isHiring || !canConfirmHire}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-emerald-500 text-black text-sm font-bold hover:bg-emerald-400 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isHiring ? (
                                     <Loader2 className="w-4.5 h-4.5 animate-spin" />
@@ -789,6 +927,7 @@ export default function ProposalDetailPane({
                                     </>
                                 )}
                             </button>
+
                         </div>
                     </div>
                 </div>,

@@ -18,6 +18,7 @@ import {
   Building2,
   Info,
   UserCircle,
+  CheckCircle,
 } from 'lucide-react';
 
 import { Header } from '../components/layout';
@@ -434,32 +435,12 @@ function PaymentSettingsTab({
             id="dhmad"
             name="Dhmad Escrow"
             description={isFreelancer
-              ? 'Secure escrow - your client funds are held safely until you deliver.'
-              : 'Secure escrow - your funds are held safely until the work is approved.'}
+              ? 'Active escrow clearinghouse. Contract funds are secured safely by Dhmad until delivery is approved, then credited to your wallet balance.'
+              : 'Active billing gateway. Supports Visa, Mastercard, Flouci, and e-Dinar checkouts natively during contract funding.'}
             status="live"
             active
-            onWallet={() => navigate('/wallet')}
+            onWallet={isFreelancer ? () => navigate('/wallet') : undefined}
           />
-          <div className="grid grid-cols-2 gap-3">
-            <PaymentMethodCard
-              id="flouci"
-              name="Flouci"
-              description={isFreelancer
-                ? 'Get paid via Flouci mobile wallet. Coming soon.'
-                : 'Fund contracts via Flouci. Coming soon.'}
-              status="soon"
-              disabled
-            />
-            <PaymentMethodCard
-              id="d17"
-              name="D17"
-              description={isFreelancer
-                ? 'Receive earnings via La Poste e-Dinar. Coming soon.'
-                : 'Fund contracts via La Poste D17. Coming soon.'}
-              status="soon"
-              disabled
-            />
-          </div>
         </div>
       </div>
 
@@ -651,46 +632,46 @@ function PaymentSettingsTab({
         </div>
       )}
 
-      {/* Section 2c: CLIENT - Billing and Top-Up (Coming Soon) */}
+      {/* Section 2c: CLIENT - Direct Funding Options via Escrow */}
       {!isFreelancer && (
         <div className="surface-card border rounded-2xl overflow-hidden">
           <div className="px-6 pt-5 pb-4 border-b border-surface flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-on-surface tracking-tight">Billing Options</h2>
-              <p className="text-xs text-on-surface-muted mt-0.5">Pre-fund your escrow balance for faster checkout.</p>
+              <h2 className="text-base font-bold text-on-surface tracking-tight">Direct Funding Options</h2>
+              <p className="text-xs text-on-surface-muted mt-0.5">Fund contracts securely through Dhmad Escrow checkout.</p>
             </div>
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 ring-1 ring-amber-400/20">
-              <Clock className="w-2.5 h-2.5" />SOON
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-400/20">
+              <CheckCircle className="w-2.5 h-2.5" />ACTIVE
             </span>
           </div>
           <div className="p-4 space-y-3">
             <div className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl border border-blue-500/15 bg-blue-500/5">
               <Info className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
               <p className="text-[11px] text-blue-300/80 leading-relaxed">
-                Today, contracts are funded directly during checkout via Dhmad Escrow. No pre-loading needed - just post a job and pay when you hire.
+                Contracts are funded directly during checkout when you hire a freelancer. No pre-funding or complex deposits are needed!
               </p>
             </div>
             <div className="space-y-2">
               <PaymentMethodCard
                 id="bank"
                 name="Credit / Debit Card"
-                description="Visa, Mastercard, CIB"
-                status="soon"
-                disabled
+                description="Pay securely with local Visa, Mastercard, or CIB cards"
+                status="live"
+                active
               />
               <PaymentMethodCard
                 id="flouci"
-                name="Flouci Top-Up"
-                description="Fund via Flouci mobile wallet"
-                status="soon"
-                disabled
+                name="Flouci Wallet"
+                description="Fund using your Flouci mobile wallet account"
+                status="live"
+                active
               />
               <PaymentMethodCard
                 id="d17"
-                name="D17 (La Poste)"
-                description="Fund via e-Dinar account"
-                status="soon"
-                disabled
+                name="e-Dinar Card (D17)"
+                description="Pay with La Poste e-Dinar card"
+                status="live"
+                active
               />
             </div>
           </div>

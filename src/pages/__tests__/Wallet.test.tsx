@@ -17,6 +17,14 @@ vi.mock('@tanstack/react-query', () => ({
     useQuery: mocks.useQuery,
 }));
 
+vi.mock('recharts', async (importOriginal) => {
+    const original = await importOriginal() as any;
+    return {
+        ...original,
+        ResponsiveContainer: ({ children }: any) => <div data-testid="responsive-container">{children}</div>,
+    };
+});
+
 vi.mock('@/contexts/AuthContext', () => ({
     useAuth: () => authState,
 }));

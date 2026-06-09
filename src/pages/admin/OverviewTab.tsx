@@ -1,8 +1,9 @@
-﻿import { useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Users, Briefcase, DollarSign, FileText, Activity, UserPlus, Shield, Flag, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
+import { adminPanelClass } from './adminTheme';
 
 async function countWithRetry(queryFn: () => PromiseLike<{ count: number | null; error: unknown }>) {
     const { count } = await Promise.race([
@@ -52,14 +53,14 @@ interface OverviewStats {
 function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number | string; color?: string }) {
     const bgColor = color || 'bg-violet-500';
     return (
-        <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6 hover:shadow-lg transition-shadow">
+        <div className={`${adminPanelClass} hover:translate-y-[-2px] hover:shadow-2xl transition-all duration-300`}>
             <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 rounded-lg ${bgColor} flex items-center justify-center`}>
+                <div className={`w-12 h-12 rounded-xl ${bgColor} flex items-center justify-center shadow-lg shadow-violet-500/10`}>
                     <Icon className="w-6 h-6 text-white" />
                 </div>
             </div>
-            <p className="text-3xl font-bold text-[var(--color-text-primary)] mb-1">{value}</p>
-            <p className="text-sm text-[var(--color-text-tertiary)]">{label}</p>
+            <p className="text-3xl font-black text-[var(--color-text-primary)] mb-1">{value}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">{label}</p>
         </div>
     );
 }
@@ -212,31 +213,31 @@ export default function OverviewTab() {
             {/* Today Activity & Verifications */}
             <div className="grid lg:grid-cols-2 gap-6">
                 {/* Today Activity */}
-                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                <div className={adminPanelClass}>
                     <h3 className="font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-blue-500" />
                         Today's Activity
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                        <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <UserPlus className="w-5 h-5 text-green-600 dark:text-green-400" />
-                                <span className="text-sm font-medium text-green-600 dark:text-green-400">New signups</span>
+                                <span className="text-sm font-semibold text-green-600 dark:text-green-400">New signups</span>
                             </div>
-                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{s.todaySignups}</p>
+                            <p className="text-2xl font-black text-green-600 dark:text-green-400">{s.todaySignups}</p>
                         </div>
-                        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">New contracts</span>
+                                <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">New contracts</span>
                             </div>
-                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{s.todayContracts}</p>
+                            <p className="text-2xl font-black text-blue-600 dark:text-blue-400">{s.todayContracts}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Pending Verifications */}
-                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                <div className={adminPanelClass}>
                     <h3 className="font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
                         <Shield className="w-5 h-5 text-amber-500" />
                         Pending Verifications
@@ -264,7 +265,7 @@ export default function OverviewTab() {
             </div>
 
             {/* Reports */}
-            <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+            <div className={adminPanelClass}>
                 <h3 className="font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
                     <Flag className="w-5 h-5 text-red-500" />
                     Reports
@@ -273,14 +274,14 @@ export default function OverviewTab() {
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">
-                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                <div className={adminPanelClass}>
                     <h3 className="font-bold text-[var(--color-text-primary)] mb-4">Risky Contracts</h3>
                     {s.riskyContracts.length === 0 ? (
                         <p className="text-sm text-[var(--color-text-tertiary)]">No medium/high-risk contracts right now.</p>
                     ) : (
                         <div className="space-y-3">
                             {s.riskyContracts.map((contract) => (
-                                <div key={contract.id} className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                                <div key={contract.id} className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
                                     <div className="flex items-center justify-between gap-2">
                                         <p className="font-medium text-[var(--color-text-primary)] truncate">{contract.title || 'Contract'}</p>
                                         <span className={`rounded-full px-2 py-0.5 text-xs ${contract.risk_level === 'high' ? 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'}`}>
@@ -297,14 +298,14 @@ export default function OverviewTab() {
                     )}
                 </div>
 
-                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                <div className={adminPanelClass}>
                     <h3 className="font-bold text-[var(--color-text-primary)] mb-4">Overdue Reviews</h3>
                     {s.overdueReviews.length === 0 ? (
                         <p className="text-sm text-[var(--color-text-tertiary)]">No overdue contract review windows.</p>
                     ) : (
                         <div className="space-y-3">
                             {s.overdueReviews.map((contract) => (
-                                <div key={contract.id} className="rounded-lg border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/10 px-4 py-3">
+                                <div key={contract.id} className="rounded-xl border border-orange-200/50 dark:border-orange-800/50 bg-orange-50/50 dark:bg-orange-900/10 px-4 py-3">
                                     <p className="font-medium text-[var(--color-text-primary)] truncate">{contract.title || 'Contract'}</p>
                                     <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">#{contract.id.slice(0, 8)}</p>
                                     <p className="mt-2 text-xs text-orange-700 dark:text-orange-300">
@@ -316,7 +317,7 @@ export default function OverviewTab() {
                     )}
                 </div>
 
-                <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)] rounded-xl p-6">
+                <div className={adminPanelClass}>
                     <h3 className="font-bold text-[var(--color-text-primary)] mb-4">Disputes Missing Evidence</h3>
                     {s.disputesMissingEvidence.length === 0 ? (
                         <p className="text-sm text-[var(--color-text-tertiary)]">All open disputes have captured evidence.</p>

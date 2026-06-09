@@ -215,3 +215,22 @@ export async function reconcilePayment(transactionId: string): Promise<Reconcile
     const result = (data ?? {}) as { message?: string };
     return { success: true, message: result.message || 'Reconciliation succeeded' };
 }
+
+export async function getAllWithdrawalsAdmin(page = 1, pageSize = 20) {
+    const from = (page - 1) * pageSize;
+    return supabase
+        .from('withdrawals')
+        .select('*, profile:profiles!user_id(id, full_name, email, avatar_url)', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, from + pageSize - 1);
+}
+
+export async function processWithdrawalRequest(withdrawalId: string, action: 'approve' | 'reject', notes?: string) {
+    const { data, error } = await supabase.functions.invoke('dhmad-process-payout', {
+        body: { withdrawal_id: withdrawalId, action, admin_notes: notes },
+    });
+    if (error) {
+        throw error;
+    }
+    return data;
+}

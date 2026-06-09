@@ -1,17 +1,17 @@
-export const adminPanelClass = 'rounded-[1.75rem] border border-[#2a2a2a] bg-white dark:border-[#2a2a2a] dark:bg-[#0c0c0c] shadow-lg';
+export const adminPanelClass = 'rounded-[1.75rem] border border-gray-200/80 bg-white/70 p-6 dark:border-white/10 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl transition-all duration-300';
 
-export const adminToolbarClass = `${adminPanelClass} p-4 sm:p-5`;
-export const adminTableShellClass = `${adminPanelClass} overflow-hidden p-0`;
-export const adminTableHeadClass = 'sticky top-0 z-10 border-b border-[#2a2a2a] bg-gray-50 dark:border-[#2a2a2a] dark:bg-[#111] text-gray-400';
-export const adminTableRowClass = 'group border-b border-[#2a2a2a] transition-colors last:border-0 hover:bg-gray-50 dark:border-[#2a2a2a] dark:bg-[#0c0c0c] dark:hover:bg-[#161616]';
-export const adminInsetClass = 'rounded-[1.25rem] border border-[#2a2a2a] bg-gray-50 dark:border-[#2a2a2a] dark:bg-[#111]';
+export const adminToolbarClass = 'rounded-[1.75rem] border border-gray-200/80 bg-white/70 p-4 sm:p-5 dark:border-white/10 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl transition-all duration-300';
+export const adminTableShellClass = 'rounded-[1.75rem] border border-gray-200/80 bg-white/70 dark:border-white/10 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl overflow-hidden p-0 transition-all duration-300';
+export const adminTableHeadClass = 'sticky top-0 z-10 border-b border-gray-200/80 dark:border-white/10 bg-gray-50/50 dark:bg-[#151322]/50 backdrop-blur text-gray-500 dark:text-gray-400 font-bold text-xs tracking-wider uppercase';
+export const adminTableRowClass = 'group border-b border-gray-200/60 dark:border-white/5 transition-all duration-200 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] dark:bg-transparent';
+export const adminInsetClass = 'rounded-[1.25rem] border border-gray-200/60 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] backdrop-blur';
 
-export const adminInputClass = 'w-full h-12 rounded-[1.15rem] border border-[#2a2a2a] bg-white px-4 text-gray-900 placeholder:text-gray-500 transition-all focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-[#2a2a2a] dark:bg-[#111] dark:text-white dark:placeholder:text-gray-500 dark:focus:border-purple-500 dark:hover:border-[#3a3a3a]';
-export const adminSelectClass = 'h-12 rounded-[1.15rem] border border-[#2a2a2a] bg-white px-4 text-sm text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:border-[#2a2a2a] dark:bg-[#111] dark:text-white dark:focus:border-purple-500 dark:hover:border-[#3a3a3a]';
+export const adminInputClass = 'w-full h-12 rounded-[1.15rem] border border-gray-200 dark:border-white/10 bg-white/50 px-4 text-gray-900 placeholder:text-gray-400 transition-all focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-purple-500 dark:hover:border-white/20';
+export const adminSelectClass = 'h-12 rounded-[1.15rem] border border-gray-200 dark:border-white/10 bg-white/50 px-4 text-sm text-gray-900 transition-all focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 dark:bg-white/5 dark:text-white dark:focus:border-purple-500 dark:hover:border-white/20';
 
-export const adminIconButtonClass = 'inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#2a2a2a] bg-white text-gray-600 transition-all hover:-translate-y-0.5 hover:border-[#3a3a3a] hover:shadow-sm dark:border-[#2a2a2a] dark:bg-[#111] dark:text-gray-300 dark:hover:border-[#3a3a3a] dark:hover:bg-[#1a1a1a] dark:hover:text-white';
+export const adminIconButtonClass = 'inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 dark:border-white/10 bg-white text-gray-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm dark:bg-white/5 dark:text-gray-300 dark:hover:border-white/20 dark:hover:bg-white/10 dark:hover:text-white';
 
-export const adminActionButtonClass = 'inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#2a2a2a] bg-white px-3.5 text-sm font-semibold text-gray-700 transition-all hover:-translate-y-0.5 hover:bg-gray-50 hover:border-[#3a3a3a] dark:border-[#2a2a2a] dark:bg-[#111] dark:text-gray-200 dark:hover:bg-[#1a1a1a] dark:hover:border-[#3a3a3a]';
+export const adminActionButtonClass = 'inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white px-3.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-50 hover:border-gray-300 dark:bg-white/5 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:border-white/20';
 
 export function adminPillClass(tone: 'neutral' | 'primary' | 'blue' | 'violet' | 'amber' | 'emerald' | 'red' | 'cyan' | 'indigo') {
   switch (tone) {

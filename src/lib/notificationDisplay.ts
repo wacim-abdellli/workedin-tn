@@ -1,4 +1,4 @@
-import type { AppNotification } from '@/hooks/useRealtimeNotifications';
+import type { AppNotification, NotificationCategory } from '@/hooks/useRealtimeNotifications';
 
 type Tx = (key: string, params?: Record<string, string | number>, fallback?: string) => string;
 
@@ -21,7 +21,75 @@ function cleanBody(body: string): string {
         .trim();
 }
 
+function determineCategory(type: AppNotification['type'], title: string, body: string): NotificationCategory {
+    const haystack = `${title} ${body}`.toLowerCase();
+
+    if (type === 'message') {
+        return 'message';
+    }
+
+    if (type === 'proposal' || type === 'new_proposal') {
+        if (includesAny(haystack, ['accepted', 'تم قبول العرض'])) {
+            return 'proposal_accepted';
+        }
+        return 'proposal_new';
+    }
+
+    if (type === 'payment') {
+        if (includesAny(haystack, ['released', 'إفراج', 'auto-released', 'approved'])) {
+            return 'payment_released';
+        }
+        return 'payment_funded';
+    }
+
+    if (type === 'system') {
+        if (includesAny(haystack, ['verified', 'قبول توثيق', 'توثيق هويتك', 'restored'])) {
+            return 'system_verified';
+        }
+        if (includesAny(haystack, ['rejected', 'refused', 'suspended', 'archived', 'تعليق', 'حظر'])) {
+            return 'system_rejected';
+        }
+        return 'system_info';
+    }
+
+    if (type === 'contract' || type === 'contract_update') {
+        if (includesAny(haystack, ['payment released', 'payment auto-released', 'milestone approved and payment released', 'escrow released'])) {
+            return 'payment_released';
+        }
+        if (includesAny(haystack, ['escrow funded', 'unpaid escrow', 'milestone funded'])) {
+            return 'payment_funded';
+        }
+        if (includesAny(haystack, ['review due soon', 'contract review overdue', 'window expired', 'expired'])) {
+            return 'contract_timeout';
+        }
+        if (includesAny(haystack, ['accepted', 'started', 'تم قبول العقد', 'نشط'])) {
+            return 'contract_accepted';
+        }
+        if (includesAny(haystack, ['completed', 'تم إكمال العقد', 'إكمال'])) {
+            return 'contract_completed';
+        }
+        if (includesAny(haystack, ['cancelled', 'تم إلغاء العقد', 'إلغاء'])) {
+            return 'contract_cancelled';
+        }
+        if (includesAny(haystack, ['dispute', 'نزاع', 'disputed'])) {
+            return 'contract_disputed';
+        }
+        return 'contract_update';
+    }
+
+    return 'system_info';
+}
+
 export function getDisplayNotification(notification: AppNotification, tx: Tx): AppNotification {
+    const rawResult = getDisplayNotificationRaw(notification, tx);
+    const category = determineCategory(rawResult.type, rawResult.title, rawResult.body);
+    return {
+        ...rawResult,
+        category,
+    };
+}
+
+function getDisplayNotificationRaw(notification: AppNotification, tx: Tx): AppNotification {
     const title = notification.title || '';
     const body = notification.body || '';
     const haystack = `${title} ${body}`;

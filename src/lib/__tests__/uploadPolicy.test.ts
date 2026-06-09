@@ -155,4 +155,42 @@ describe('upload policy', () => {
 
     expect(sanitized).toEqual({ ok: true, path: 'conversation-123/1712-brief_script_.pdf' });
   });
+
+  it('accepts new formats like zip, xlsx, ai, and mp4 in contract-files', () => {
+    const zipResult = validateUploadPayload({
+      bucket: 'contract-files',
+      fileName: 'archive.zip',
+      mimeType: 'application/zip',
+      size: 1024,
+      bytes: new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]),
+    });
+    expect(zipResult).toEqual({ ok: true });
+
+    const xlsxResult = validateUploadPayload({
+      bucket: 'contract-files',
+      fileName: 'report.xlsx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      size: 2048,
+      bytes: new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]),
+    });
+    expect(xlsxResult).toEqual({ ok: true });
+
+    const psdResult = validateUploadPayload({
+      bucket: 'contract-files',
+      fileName: 'mockup.psd',
+      mimeType: 'image/vnd.adobe.photoshop',
+      size: 4096,
+      bytes: new Uint8Array([0x38, 0x42, 0x50, 0x53, 0x00, 0x01]),
+    });
+    expect(psdResult).toEqual({ ok: true });
+
+    const mp4Result = validateUploadPayload({
+      bucket: 'contract-files',
+      fileName: 'demo.mp4',
+      mimeType: 'video/mp4',
+      size: 10240,
+      bytes: new Uint8Array([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32]),
+    });
+    expect(mp4Result).toEqual({ ok: true });
+  });
 });

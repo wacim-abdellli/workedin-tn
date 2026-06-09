@@ -13,6 +13,8 @@ import { normalizeContractStatus } from '../lib/messagingLifecycle';
 import { ROUTES } from '@/lib/routes';
 import { useTranslation } from '@/i18n';
 import { useContractState } from '../hooks/useContractState';
+import { useTusUpload } from '@/hooks/useTusUpload';
+import { logger } from '@/lib/logger';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -31,6 +33,10 @@ type ContractRow = {
     client_id: string | null;
     freelancer_id: string | null;
     job_id: string | null;
+    escrow_pending_clearance_until?: string | null;
+    escrow_hold_disputed?: boolean;
+    payment_status?: string | null;
+    milestones?: any[];
 };
 
 type DeliveryAsset = {
@@ -63,12 +69,12 @@ type SharedFile = {
 };
 
 const CONTRACT_SELECT_COLUMNS = [
-    'id, proposal_id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
-    'id, proposal_id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
-    'id, proposal_id, status, title, amount, client_id, freelancer_id, job_id',
-    'id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
-    'id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id',
-    'id, status, title, amount, client_id, freelancer_id, job_id',
+    'id, proposal_id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id, escrow_pending_clearance_until, escrow_hold_disputed, payment_status, delivery_note, dhmad_escrow_id, dhmad_payment_url',
+    'id, proposal_id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id, escrow_pending_clearance_until, escrow_hold_disputed, payment_status, delivery_note, dhmad_escrow_id, dhmad_payment_url',
+    'id, proposal_id, status, title, amount, client_id, freelancer_id, job_id, escrow_pending_clearance_until, escrow_hold_disputed, payment_status, delivery_note, dhmad_escrow_id, dhmad_payment_url',
+    'id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id, escrow_pending_clearance_until, escrow_hold_disputed, payment_status, delivery_note, dhmad_escrow_id, dhmad_payment_url',
+    'id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, client_id, freelancer_id, job_id, escrow_pending_clearance_until, escrow_hold_disputed, payment_status, delivery_note, dhmad_escrow_id, dhmad_payment_url',
+    'id, status, title, amount, client_id, freelancer_id, job_id, escrow_pending_clearance_until, escrow_hold_disputed, payment_status, delivery_note, dhmad_escrow_id, dhmad_payment_url',
 ];
 
 async function fetchContractByColumn(
@@ -147,6 +153,7 @@ export default function ContractWorkspacePage() {
     const [contract, setContract] = useState<ContractRow | null>(null);
     const [jobTitle, setJobTitle] = useState<string | null>(null);
     const [jobDeadline, setJobDeadline] = useState<string | null>(null);
+    const [jobCategory, setJobCategory] = useState<string | null>(null);
     const [latestDelivery, setLatestDelivery] = useState<LatestDelivery | null>(null);
     const [lastRevisionNote, setLastRevisionNote] = useState<string | null>(null);
     const [sharedFiles, setSharedFiles] = useState<SharedFile[]>([]);
@@ -154,6 +161,39 @@ export default function ContractWorkspacePage() {
     const [counterpartyProfile, setCounterpartyProfile] = useState<{ full_name: string; avatar_url: string | null }>({ full_name: '', avatar_url: null });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    
+    // Milestones and upload states
+    const [selectedMilestoneId, setSelectedMilestoneId] = useState<string>('');
+    const [savedLinks, setSavedLinks] = useState<any[]>([]);
+    const [savedFileStages, setSavedFileStages] = useState<Record<number, 'review' | 'final'>>({});
+    const [isUploadPaused, setIsUploadPaused] = useState(false);
+    const [uploadingFileName, setUploadingFileName] = useState<string | null>(null);
+    // Use a ref for the mutable accumulator and state only for rendering
+    const uploadedAssetsRef = useRef<any[]>([]);
+    const [uploadedAssets, setUploadedAssets] = useState<any[]>([]);
+    const isUploadPausedRef = useRef(false);
+
+    const {
+        uploadFile: uploadTusFile,
+        progress: tusProgress,
+        isUploading: isTusUploading,
+        pause: pauseTus,
+        resume: resumeTus,
+    } = useTusUpload();
+
+    const handlePauseUpload = () => {
+        isUploadPausedRef.current = true;
+        setIsUploadPaused(true);
+        pauseTus();
+    };
+
+    const handleResumeUpload = async () => {
+        isUploadPausedRef.current = false;
+        setIsUploadPaused(false);
+        // Do NOT reset uploadedAssetsRef here — it holds the already-completed uploads
+        // handleSubmitDelivery reads uploadedAssetsRef.current to skip completed files
+        await handleSubmitDelivery(savedLinks, savedFileStages);
+    };
 
     // ─── Action modal state ───────────────────────────────────────────────────
     const [deliverOpen, setDeliverOpen] = useState(false);
@@ -163,6 +203,9 @@ export default function ContractWorkspacePage() {
     const [fundEscrowOpen, setFundEscrowOpen] = useState(false);
     const [confirmReleaseOpen, setConfirmReleaseOpen] = useState(false);
     const [cancelOpen, setCancelOpen] = useState(false);
+    const [holdClearanceOpen, setHoldClearanceOpen] = useState(false);
+    const [holdClearanceReason, setHoldClearanceReason] = useState('');
+    const [isHoldingClearance, setIsHoldingClearance] = useState(false);
     const [reviewFiles, setReviewFiles] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0, currentBytes: 0, totalBytes: 0 });
@@ -228,108 +271,137 @@ export default function ContractWorkspacePage() {
                 }
             }
             if (!contractData) { setError(tx('contractWorkspace.notFound', {}, 'Contract not found or you do not have access.')); return; }
-            if (contractData.client_id !== user.id && contractData.freelancer_id !== user.id) {
+            if (contractData.client_id !== user.id && contractData.client_id !== user.id && contractData.freelancer_id !== user.id) {
                 setError(tx('contractWorkspace.notParticipant', {}, 'You are not a participant in this contract.')); return;
             }
+ 
+            let milestonesData: any[] = [];
+            let cpData: any = null;
+            let jobData: any = null;
+            let deliveryData: any = null;
+            let reviewData: any = null;
+            let convData: any = null;
 
-            setContract(contractData as ContractRow);
-
-            // ── Fetch counterparty profile ──
             const cpRole = contractData.client_id === user.id ? 'freelancer' : 'client';
             const counterpartyId = cpRole === 'freelancer' ? contractData.freelancer_id : contractData.client_id;
-            if (counterpartyId) {
-                try {
-                    const { data: cpData } = await supabase
-                        .from('public_profiles')
-                        .select('full_name, avatar_url')
-                        .eq('id', counterpartyId)
-                        .maybeSingle();
-                    if (cpData) {
-                        setCounterpartyProfile({
-                            full_name: cpData.full_name || (cpRole === 'freelancer' ? 'Freelancer' : 'Client'),
-                            avatar_url: cpData.avatar_url ?? null,
-                        });
-                    } else {
-                        setCounterpartyProfile({ full_name: cpRole === 'freelancer' ? 'Freelancer' : 'Client', avatar_url: null });
-                    }
-                } catch (e) {
-                    console.warn('[ContractWorkspacePage] Failed to load counterparty profile:', e);
-                    setCounterpartyProfile({ full_name: cpRole === 'freelancer' ? 'Freelancer' : 'Client', avatar_url: null });
-                }
+
+            // Fetch everything except message details in parallel
+            const [
+                milestonesRes,
+                counterpartyRes,
+                jobRes,
+                deliveryRes,
+                reviewRes,
+                conversationRes
+            ] = await Promise.all([
+                supabase
+                    .from('milestones')
+                    .select('*')
+                    .eq('contract_id', contractData.id)
+                    .order('created_at', { ascending: true }),
+                counterpartyId
+                    ? supabase.from('public_profiles').select('full_name, avatar_url').eq('id', counterpartyId).maybeSingle()
+                    : Promise.resolve({ data: null, error: null }),
+                contractData.job_id
+                    ? supabase.from('jobs').select('title, deadline, category').eq('id', contractData.job_id).maybeSingle()
+                    : Promise.resolve({ data: null, error: null }),
+                supabase.rpc('get_latest_contract_delivery', { p_contract_id: contractData.id }),
+                supabase.from('reviews').select('id').eq('contract_id', contractData.id).eq('reviewer_id', user.id).maybeSingle(),
+                supabase.from('conversations').select('id').eq('contract_id', contractData.id).limit(1).maybeSingle()
+            ]);
+
+            if (milestonesRes.error) {
+                console.warn('[ContractWorkspacePage] Failed to load milestones:', milestonesRes.error);
+            } else {
+                milestonesData = milestonesRes.data || [];
             }
 
-            // Use the real DB contract ID for all downstream queries —
-            // critical when the URL param was a legacy proposal/job reference
-            const realId = contractData.id;
-
-            // ── 2. Load job title + deadline ──
-            if (contractData.job_id) {
-                try {
-                    const { data: jobData } = await supabase
-                        .from('jobs').select('title, deadline').eq('id', contractData.job_id).maybeSingle();
-                    if (jobData) {
-                        setJobTitle(jobData.title ?? null);
-                        setJobDeadline((jobData as any).deadline ?? null);
-                    }
-                } catch (jobError) {
-                    console.warn('[ContractWorkspacePage] Failed to load job details:', jobError);
-                }
+            if (counterpartyRes.error) {
+                console.warn('[ContractWorkspacePage] Failed to load counterparty profile:', counterpartyRes.error);
+            } else {
+                cpData = counterpartyRes.data;
             }
 
-            // ── 3. Latest delivery ──
-            try {
-                const { data: deliveryData, error: deliveryError } = await supabase.rpc(
-                    'get_latest_contract_delivery', { p_contract_id: realId },
-                );
-                if (deliveryError) {
-                    console.warn('[ContractWorkspacePage] Failed to load latest delivery:', deliveryError);
-                } else if (deliveryData && typeof deliveryData === 'object' && 'id' in deliveryData) {
-                    setLatestDelivery(deliveryData as LatestDelivery);
-                }
-            } catch (deliveryError) {
-                console.warn('[ContractWorkspacePage] Failed to load latest delivery:', deliveryError);
+            if (jobRes.error) {
+                console.warn('[ContractWorkspacePage] Failed to load job details:', jobRes.error);
+            } else {
+                jobData = jobRes.data;
             }
 
-            // ── 4. Review status ──
-            try {
-                const { data: reviewData } = await supabase
-                    .from('reviews').select('id')
-                    .eq('contract_id', realId).eq('reviewer_id', user.id).maybeSingle();
-                setHasReviewed(Boolean(reviewData?.id));
-            } catch (reviewError) {
-                console.warn('[ContractWorkspacePage] Failed to load review status:', reviewError);
-                setHasReviewed(false);
+            if (deliveryRes.error) {
+                console.warn('[ContractWorkspacePage] Failed to load latest delivery:', deliveryRes.error);
+            } else {
+                deliveryData = deliveryRes.data;
             }
 
-            // ── 5. Shared files and revision notes from conversation ──
-            const { data: convData } = await supabase
-                .from('conversations').select('id').eq('contract_id', realId).limit(1).maybeSingle();
+            if (reviewRes.error) {
+                console.warn('[ContractWorkspacePage] Failed to load review status:', reviewRes.error);
+            } else {
+                reviewData = reviewRes.data;
+            }
+
+            if (conversationRes.error) {
+                console.warn('[ContractWorkspacePage] Failed to load conversation:', conversationRes.error);
+            } else {
+                convData = conversationRes.data;
+            }
+
+            setContract({
+                ...(contractData as ContractRow),
+                milestones: milestonesData
+            });
+
+            if (cpData) {
+                setCounterpartyProfile({
+                    full_name: cpData.full_name || (cpRole === 'freelancer' ? 'Freelancer' : 'Client'),
+                    avatar_url: cpData.avatar_url ?? null,
+                });
+            } else {
+                setCounterpartyProfile({ full_name: cpRole === 'freelancer' ? 'Freelancer' : 'Client', avatar_url: null });
+            }
+
+            if (jobData) {
+                setJobTitle(jobData.title ?? null);
+                setJobDeadline((jobData as any).deadline ?? null);
+                setJobCategory(jobData.category ?? null);
+            }
+
+            if (deliveryData && typeof deliveryData === 'object' && 'id' in deliveryData) {
+                setLatestDelivery(deliveryData as LatestDelivery);
+            } else {
+                setLatestDelivery(null);
+            }
+
+            setHasReviewed(Boolean(reviewData?.id));
 
             if (convData?.id) {
-                const { data: revMsgData } = await supabase
-                    .from('messages')
-                    .select('content')
-                    .eq('conversation_id', convData.id)
-                    .eq('message_type', 'feedback')
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
+                const [revMsgRes, messagesRes] = await Promise.all([
+                    supabase
+                        .from('messages')
+                        .select('content')
+                        .eq('conversation_id', convData.id)
+                        .eq('message_type', 'feedback')
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle(),
+                    supabase
+                        .from('messages')
+                        .select('id, sender_id, attachments, created_at')
+                        .eq('conversation_id', convData.id)
+                        .not('attachments', 'is', null)
+                        .order('created_at', { ascending: false })
+                        .limit(50)
+                ]);
 
-                if (revMsgData?.content) {
-                    setLastRevisionNote(revMsgData.content.replace(/^Changes requested:\s*/i, '').trim());
+                if (revMsgRes.data?.content) {
+                    setLastRevisionNote(revMsgRes.data.content.replace(/^Changes requested:\s*/i, '').trim());
+                } else {
+                    setLastRevisionNote('');
                 }
-
-                const { data: messagesData } = await supabase
-                    .from('messages')
-                    .select('id, sender_id, attachments, created_at')
-                    .eq('conversation_id', convData.id)
-                    .not('attachments', 'is', null)
-                    .order('created_at', { ascending: false })
-                    .limit(50);
 
                 const files: SharedFile[] = [];
                 const seen = new Set<string>();
-                for (const msg of messagesData ?? []) {
+                for (const msg of messagesRes.data ?? []) {
                     for (const [i, att] of (Array.isArray(msg.attachments) ? msg.attachments : []).entries()) {
                         if (!att?.url) continue;
                         const key = `${att.url}|${att.name ?? ''}`;
@@ -339,7 +411,8 @@ export default function ContractWorkspacePage() {
                             id: `${msg.id}-${i}`,
                             name: att.name ?? 'Attachment',
                             url: att.url as string,
-                            type: att.type ?? null, size: att.size ?? null,
+                            type: att.type ?? null,
+                            size: att.size ?? null,
                             uploadedAt: msg.created_at ?? null,
                             senderName: msg.sender_id === user.id ? (profile?.full_name || 'You') : 'Counterparty',
                         });
@@ -348,7 +421,11 @@ export default function ContractWorkspacePage() {
                     if (files.length >= 12) break;
                 }
                 setSharedFiles(files);
+            } else {
+                setLastRevisionNote('');
+                setSharedFiles([]);
             }
+
         } catch (err) {
             console.error('[ContractWorkspacePage] Failed to load:', err);
             setError(tx('contractWorkspace.loadError', {}, 'Failed to load contract details. Please try again.'));
@@ -394,11 +471,10 @@ export default function ContractWorkspacePage() {
             assetKind: a.asset_kind as 'review_asset' | 'final_asset',
             accessState: a.access_state as 'preview_available' | 'locked' | 'released',
         }));
+        const deliveryLinks = latestDelivery?.links ?? [];
         const reviewFilesOnly = deliveryFiles.filter(f => f.assetKind === 'review_asset');
         const finalFilesOnly = deliveryFiles.filter(f => f.assetKind === 'final_asset');
-        const visibleFinalFiles = userRole === 'client'
-            ? finalFilesOnly.filter(f => f.accessState === 'released')
-            : finalFilesOnly;
+        const visibleFinalFiles = finalFilesOnly;
         const selfProfile = { full_name: profile?.full_name || 'You', avatar_url: profile?.avatar_url ?? null };
         return {
             amount: contract.total_amount ?? contract.amount ?? 0,
@@ -410,13 +486,17 @@ export default function ContractWorkspacePage() {
             reviewDueAt: contract.review_due_at ?? latestDelivery?.review_due_at ?? null,
             reviewFiles: reviewFilesOnly,
             finalFiles: visibleFinalFiles,
+            deliveryLinks: deliveryLinks,
             lockedFinalFilesCount: finalFilesOnly.filter(f => f.accessState === 'locked').length,
             job: { title: resolvedTitle, deadline: jobDeadline },
             lastRevisionNote,
-            milestones: [],
+            milestones: contract.milestones || [],
             sharedFiles,
             client: userRole === 'client' ? selfProfile : counterpartyProfile,
             freelancer: userRole === 'freelancer' ? selfProfile : counterpartyProfile,
+            escrowPendingClearanceUntil: contract.escrow_pending_clearance_until ?? null,
+            escrowHoldDisputed: contract.escrow_hold_disputed ?? false,
+            paymentStatus: contract.payment_status ?? null,
         };
     }, [contract, jobTitle, jobDeadline, latestDelivery, sharedFiles, lastRevisionNote, userRole, profile, counterpartyProfile]);
 
@@ -447,10 +527,14 @@ export default function ContractWorkspacePage() {
     // ─── Contract action hook ────────────────────────────────────────────────
     const {
         deliverWork,
+        deliverMilestoneWork,
         acceptWork,
+        acceptMilestoneWork,
         requestChanges,
         openDispute,
         cancelContract,
+        holdClearancePayment,
+        holdMilestoneClearance,
         isDelivering,
         isAccepting,
         isDisputing,
@@ -461,6 +545,7 @@ export default function ContractWorkspacePage() {
         userId: user?.id ?? '',
         userRole,
         contract: contract as any,
+        setContract: setContract as any,
     });
 
     const isActionLoading = isDelivering || isAccepting || isDisputing || isCancelling;
@@ -473,18 +558,27 @@ export default function ContractWorkspacePage() {
     };
 
     // ─── Action handlers (real RPCs) ─────────────────────────────────────────
-    const handleDeliver = () => {
+    const handleDeliver = (milestoneId?: string) => {
         setDeliverNote('');
         setReviewFiles([]);
+        // Reset both ref and state when starting a fresh delivery
+        uploadedAssetsRef.current = [];
+        setUploadedAssets([]);
         setUploadProgress({ current: 0, total: 0, currentBytes: 0, totalBytes: 0 });
+        if (milestoneId && typeof milestoneId === 'string') {
+            setSelectedMilestoneId(milestoneId);
+        } else {
+            setSelectedMilestoneId('');
+        }
         setDeliverOpen(true);
         setTimeout(() => deliverTextareaRef.current?.focus(), 60);
     };
 
+
     const addDeliveryFiles = (newFiles: File[]) => {
         const validFiles = newFiles.filter(file => {
-            if (file.size > 100 * 1024 * 1024) {
-                showToast(`File "${file.name}" exceeds 100MB limit.`, 'error');
+            if (file.size > 1000 * 1024 * 1024) {
+                showToast(`File "${file.name}" exceeds 1GB limit.`, 'error');
                 return false;
             }
             return true;
@@ -492,25 +586,32 @@ export default function ContractWorkspacePage() {
         setReviewFiles(prev => [...prev, ...validFiles]);
     };
 
-    const handleSubmitDelivery = async () => {
-        if (reviewFiles.length === 0) { showToast('Add at least one delivery file before submitting.', 'error'); return; }
+    const handleSubmitDelivery = async (links: Array<any> = [], fileStages: Record<number, 'review' | 'final'> = {}) => {
+        const hasReview = reviewFiles.some((_, idx) => fileStages[idx] === 'review') || links.some(l => l.link_kind === 'review_link');
+        const hasFinal = reviewFiles.some((_, idx) => fileStages[idx] === 'final') || links.some(l => l.link_kind === 'final_link');
+        if (!hasReview || !hasFinal) {
+            showToast('Please provide deliverables for both review and final hand-off phases.', 'error');
+            return;
+        }
 
+        setSavedLinks(links);
+        setSavedFileStages(fileStages);
         setIsUploading(true);
         try {
             const uid = user?.id;
             const cid = resolvedContractId;
             if (!uid || !cid) throw new Error('Missing user or contract ID');
 
-            const uploadFilePair = async (file: File) => {
+            const uploadFile = async (file: File, stage: 'review' | 'final') => {
                 const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-                const reviewPath = `${uid}/${cid}/submissions/review/${Date.now()}_${safeName}`;
-                const finalPath = `${uid}/${cid}/submissions/final/${Date.now()}_${safeName}`;
+                const path = `${uid}/${cid}/submissions/${stage}/${Date.now()}_${safeName}`;
                 
-                const { error: reviewErr } = await supabase.storage.from('contract-files').upload(reviewPath, file, { upsert: false });
-                if (reviewErr) throw new Error(`Review upload failed for ${file.name}: ${reviewErr.message}`);
-
-                const { error: finalErr } = await supabase.storage.from('contract-files').upload(finalPath, file, { upsert: false });
-                if (finalErr) throw new Error(`Final upload failed for ${file.name}: ${finalErr.message}`);
+                if (file.size >= 100 * 1024 * 1024) {
+                    await uploadTusFile(file, 'contract-files', path);
+                } else {
+                    const { error } = await supabase.storage.from('contract-files').upload(path, file, { upsert: false });
+                    if (error) throw new Error(`${stage === 'review' ? 'Review' : 'Final'} upload failed for ${file.name}: ${error.message}`);
+                }
 
                 setUploadProgress(prev => ({ 
                     ...prev, 
@@ -519,37 +620,68 @@ export default function ContractWorkspacePage() {
                 }));
                 
                 return {
-                    review: {
-                        name: file.name,
-                        storage_path: reviewPath,
-                        storage_bucket: 'contract-files',
-                        mime_type: file.type || '',
-                        size_bytes: String(file.size),
-                    },
-                    final: {
-                        name: file.name,
-                        storage_path: finalPath,
-                        storage_bucket: 'contract-files',
-                        mime_type: file.type || '',
-                        size_bytes: String(file.size),
-                    }
+                    name: file.name,
+                    storage_path: path,
+                    storage_bucket: 'contract-files',
+                    mime_type: file.type || '',
+                    size_bytes: String(file.size),
                 };
             };
 
             const totalFiles = reviewFiles.length;
             const totalBytes = reviewFiles.reduce((sum, f) => sum + f.size, 0);
-            setUploadProgress({ current: 0, total: totalFiles, currentBytes: 0, totalBytes });
 
-            const reviewAssets = [];
-            const finalAssets = [];
-            for (const f of reviewFiles) {
-                const { review, final } = await uploadFilePair(f);
-                reviewAssets.push(review);
-                finalAssets.push(final);
+            // Use the ref as the source of truth for resume continuity
+            const completedCount = uploadedAssetsRef.current.length;
+            const completedBytes = uploadedAssetsRef.current.reduce((sum, a) => sum + Number(a.size_bytes), 0);
+
+            setUploadProgress({
+                current: completedCount,
+                total: totalFiles,
+                currentBytes: completedBytes,
+                totalBytes
+            });
+
+            const reviewAssets = [...uploadedAssetsRef.current.filter(a => a.stage === 'review')];
+            const finalAssets = [...uploadedAssetsRef.current.filter(a => a.stage === 'final')];
+
+            for (let idx = completedCount; idx < reviewFiles.length; idx++) {
+                const file = reviewFiles[idx];
+                const stage = fileStages[idx] || 'review';
+                setUploadingFileName(file.name);
+                
+                try {
+                    const asset = await uploadFile(file, stage);
+                    const assetWithStage = { ...asset, stage };
+
+                    // Mutate the ref (safe — not a render trigger), then sync state for display
+                    uploadedAssetsRef.current = [...uploadedAssetsRef.current, assetWithStage];
+                    setUploadedAssets([...uploadedAssetsRef.current]);
+
+                    if (stage === 'review') {
+                        reviewAssets.push(asset);
+                    } else {
+                        finalAssets.push(asset);
+                    }
+                } catch (err) {
+                    setUploadingFileName(null);
+                    if (isUploadPausedRef.current) {
+                        logger.info('Upload paused by user.');
+                        setIsUploading(false);
+                        return;
+                    }
+                    throw err;
+                }
             }
 
+            setUploadingFileName(null);
             setIsUploading(false);
-            await deliverWork(deliverNote.trim() || 'submitted', reviewAssets, finalAssets);
+            
+            if (selectedMilestoneId) {
+                await deliverMilestoneWork(selectedMilestoneId, deliverNote.trim() || 'submitted', reviewAssets, finalAssets, links);
+            } else {
+                await deliverWork(deliverNote.trim() || 'submitted', reviewAssets, finalAssets, links);
+            }
             setDeliverOpen(false);
             setDeliverNote('');
             setReviewFiles([]);
@@ -572,8 +704,21 @@ export default function ContractWorkspacePage() {
             await loadWorkspace();
             showToast(tx('contractWorkspace.paymentReleased', {}, 'Payment released and contract completed.'), 'success');
         } catch (err) {
-            const errMessage = err instanceof Error ? err.message : '';
-            showToast(tx(errMessage, {}, errMessage) || tx('contractWorkspace.releaseFailed', {}, 'Failed to release payment.'), 'error');
+            // Surface the real error reason, not just the generic fallback
+            const rawMsg = err instanceof Error ? err.message : String(err);
+            // Map internal error keys to user-friendly messages
+            const friendlyMessages: Record<string, string> = {
+                'payment.releaseFailed': 'Payment release failed. Please try again or contact support.',
+                'payment.noResponse': 'No response from payment gateway. Please try again.',
+                'payment.sessionFailed': 'Payment session error. Please refresh and try again.',
+                'Invalid status transition': 'This contract is not in a state that allows payment release.',
+                'Work must be delivered': 'Work must be submitted before payment can be released.',
+            };
+            const friendlyMsg = Object.entries(friendlyMessages).find(([key]) => rawMsg.includes(key))?.[1]
+                ?? rawMsg
+                ?? tx('contractWorkspace.releaseFailed', {}, 'Failed to release payment.');
+            showToast(friendlyMsg, 'error');
+            logger.error('[handleConfirmRelease] Payment release failed:', rawMsg);
         }
     };
 
@@ -607,6 +752,30 @@ export default function ContractWorkspacePage() {
         }
     };
 
+    const handleHoldClearance = () => {
+        setHoldClearanceOpen(true);
+        setHoldClearanceReason('');
+    };
+
+    const handleSubmitHoldClearance = async (reason: string) => {
+        setIsHoldingClearance(true);
+        try {
+            if (selectedMilestoneId) {
+                await holdMilestoneClearance(selectedMilestoneId, reason);
+            } else {
+                await holdClearancePayment(reason);
+            }
+            setHoldClearanceOpen(false);
+            setSelectedMilestoneId('');
+            await loadWorkspace();
+            showToast('Escrow clearance hold suspended successfully.', 'success');
+        } catch (err) {
+            showToast((err as Error).message || 'Failed to hold clearance payment.', 'error');
+        } finally {
+            setIsHoldingClearance(false);
+        }
+    };
+
     const handleCancel = () => {
         setCancelOpen(true);
     };
@@ -628,9 +797,9 @@ export default function ContractWorkspacePage() {
         <div className="flex h-[100dvh] flex-col bg-[var(--color-bg-base)] overflow-hidden">
             <Header />
 
-            {/* Role-colored gradient line */}
+            {/* Clean border line */}
             {!isLoading && !error ? (
-                <div className={`shrink-0 h-[2px] w-full bg-gradient-to-r ${roleAccent.stripe} to-transparent`} />
+                <div className="shrink-0 h-px w-full bg-zinc-800" />
             ) : null}
 
             <main className="flex-1 flex flex-col overflow-y-auto relative">
@@ -695,6 +864,20 @@ export default function ContractWorkspacePage() {
                         hasLeftReview={hasReviewed}
                         onGoBack={handleGoBack}
                         onGoToMessages={handleGoToMessages}
+                        onHoldClearance={handleHoldClearance}
+                        onAcceptMilestone={async (milestoneId) => {
+                            try {
+                                await acceptMilestoneWork(milestoneId);
+                                showToast('Milestone payment released.', 'success');
+                                await loadWorkspace();
+                            } catch (err) {
+                                showToast((err as Error).message || 'Failed to release milestone payment.', 'error');
+                            }
+                        }}
+                        onHoldMilestoneClearance={(milestoneId) => {
+                            setSelectedMilestoneId(milestoneId);
+                            setHoldClearanceOpen(true);
+                        }}
                     />
                 ) : null}
             </main>
@@ -763,21 +946,35 @@ export default function ContractWorkspacePage() {
                         <SubmitDeliveryForm
                             deliveryNote={deliverNote}
                             files={reviewFiles}
-                            isSubmitting={isDelivering || isUploading}
+                            isSubmitting={isDelivering || isUploading || isTusUploading}
                             submitLabel={currentStatus === 'revision_requested' ? 'Resubmit delivery' : 'Submit delivery'}
                             submittingLabel="Submitting delivery..."
                             uploadProgressLabel={isUploading
-                                ? `Uploading ${(uploadProgress.currentBytes / 1024 / 1024).toFixed(1)}MB / ${(uploadProgress.totalBytes / 1024 / 1024).toFixed(1)}MB...`
+                                ? isTusUploading
+                                    ? `Uploading ${uploadingFileName} (${tusProgress}%)...`
+                                    : `Uploading ${(uploadProgress.currentBytes / 1024 / 1024).toFixed(1)}MB / ${(uploadProgress.totalBytes / 1024 / 1024).toFixed(1)}MB...`
                                 : null}
                             textareaRef={deliverTextareaRef}
                             onNoteChange={setDeliverNote}
                             onAddFiles={addDeliveryFiles}
                             onRemoveFile={(index) => setReviewFiles(prev => prev.filter((_, fileIndex) => fileIndex !== index))}
-                            onSubmit={() => void handleSubmitDelivery()}
+                            onSubmit={(links, fileStages) => void handleSubmitDelivery(links, fileStages)}
                             onCancel={() => {
                                 setDeliverOpen(false);
                                 setReviewFiles([]);
+                                setUploadedAssets([]);
+                                setSelectedMilestoneId('');
                             }}
+                            jobCategory={jobCategory}
+                            milestones={contract?.milestones}
+                            selectedMilestoneId={selectedMilestoneId}
+                            onMilestoneChange={setSelectedMilestoneId}
+                            isUploadPaused={isUploadPaused}
+                            onPauseUpload={handlePauseUpload}
+                            onResumeUpload={handleResumeUpload}
+                            uploadProgress={uploadProgress}
+                            uploadingFileName={uploadingFileName}
+                            tusProgress={tusProgress}
                         />
                     </div>
                 </div>
@@ -786,29 +983,68 @@ export default function ContractWorkspacePage() {
             {/* ─── Confirm Release Payment Modal ──────────────────────────── */}
             {confirmReleaseOpen ? (
                 <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-release-title" onClick={() => setConfirmReleaseOpen(false)}>
-                    <div className="w-full max-w-md rounded-[14px] border border-white/[0.08] bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
+                    <div className="w-full max-w-md rounded-[14px] border border-zinc-800 bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
                         <div className="mb-4 flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#1D9E75]/15">
-                                <PackageCheck className="h-5 w-5 text-[#1D9E75]" />
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10">
+                                <PackageCheck className="h-5 w-5 text-emerald-500" />
                             </div>
                             <div>
                                 <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Release payment</p>
                                 <h2 id="modal-release-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">Approve & release funds?</h2>
                             </div>
                         </div>
-                        <div className="mb-4 rounded-[10px] border border-[#1D9E75]/20 bg-[#0F6E56]/10 px-4 py-3">
+                        <div className="mb-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
                             <p className="text-[13px] leading-relaxed text-[var(--color-text-secondary)]">
                                 This will release the escrowed funds to the freelancer and mark the contract as completed. <strong className="text-[var(--color-text-primary)]">This action cannot be undone.</strong>
                             </p>
                         </div>
                         <div className="mt-4 flex justify-end gap-2">
                             <button type="button" onClick={() => setConfirmReleaseOpen(false)} disabled={isAccepting}
-                                className="rounded-[10px] border border-white/[0.07] bg-[#161719] px-4 py-2 text-[14px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40">
+                                className="rounded-full border border-zinc-700 bg-transparent px-4 py-2 text-[14px] font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:opacity-40">
                                 Cancel
                             </button>
                             <button type="button" onClick={() => void handleConfirmRelease()} disabled={isAccepting}
-                                className="inline-flex items-center gap-2 rounded-[10px] bg-[#1D9E75] px-4 py-2 text-[14px] font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[#24b889] disabled:opacity-50">
+                                className="inline-flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-500 px-5 py-2 text-[14px] font-semibold text-white transition-colors disabled:opacity-50">
                                 {isAccepting ? 'Releasing…' : 'Approve & release'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {/* ─── Hold Clearance Payment Modal ──────────────────────────── */}
+            {holdClearanceOpen ? (
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="modal-hold-title" onClick={() => setHoldClearanceOpen(false)}>
+                    <div className="w-full max-w-md rounded-[14px] border border-zinc-800 bg-[#111113] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.7)]" onClick={e => e.stopPropagation()}>
+                        <div className="mb-4 flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500/10">
+                                <AlertCircle className="h-5 w-5 text-red-400" />
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]">Hold escrow clearance</p>
+                                <h2 id="modal-hold-title" className="text-[16px] font-semibold text-[var(--color-text-primary)]">Suspend payment release?</h2>
+                            </div>
+                        </div>
+                        <div className="mb-4">
+                            <p className="text-[13px] leading-relaxed text-[var(--color-text-secondary)] mb-3">
+                                Suspending payment clearance will stop the automatic 48-hour release timer and open a dispute review. Please explain what issues you found in the deliverables (e.g. broken repositories, incorrect credentials, missing source files).
+                            </p>
+                            <textarea
+                                value={holdClearanceReason}
+                                onChange={(e) => setHoldClearanceReason(e.target.value)}
+                                placeholder="Describe the issues in detail..."
+                                rows={4}
+                                className="w-full rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-[13px] text-white focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50"
+                            />
+                        </div>
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button type="button" onClick={() => setHoldClearanceOpen(false)} disabled={isHoldingClearance}
+                                className="rounded-full border border-zinc-700 bg-transparent px-4 py-2 text-[14px] font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:opacity-40">
+                                Cancel
+                            </button>
+                            <button type="button" onClick={() => void handleSubmitHoldClearance(holdClearanceReason)} disabled={isHoldingClearance || !holdClearanceReason.trim()}
+                                className="inline-flex items-center gap-2 rounded-full bg-red-600 hover:bg-red-500 px-5 py-2 text-[14px] font-semibold text-white transition-colors disabled:opacity-50">
+                                {isHoldingClearance ? 'Holding…' : 'Suspend & report issue'}
                             </button>
                         </div>
                     </div>

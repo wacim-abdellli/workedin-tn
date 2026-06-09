@@ -32,6 +32,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/i18n';
 import { useToast } from '@/components/ui/Toast';
 import { getWallet, getTransactions, getWithdrawals } from '@/services/payments';
+import { getContractsByUser } from '@/services/contracts';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
 import {
   formatCurrency,
   formatTransactionType,
@@ -65,6 +75,123 @@ function formatDate(dateStr: string, language: string): string {
     month: 'short',
     day: 'numeric',
   });
+}
+
+function formatTimeRemaining(targetStr: string): string {
+  const diff = new Date(targetStr).getTime() - Date.now();
+  if (diff <= 0) return 'Expired';
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  if (hours > 24) {
+    const days = Math.floor(hours / 24);
+    return `${days}d ${hours % 24}h`;
+  }
+  return `${hours}h ${mins}m`;
+}
+
+function CountdownTimer({ targetDate }: { targetDate: string }) {
+  const [time, setTime] = useState(() => formatTimeRemaining(targetDate));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(formatTimeRemaining(targetDate));
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  return <span>{time}</span>;
+}
+
+interface LockedFundsSectionProps {
+  contracts: any[];
+  isFreelancer: boolean;
+  language: string;
+  tx: any;
+}
+
+function LockedFundsSection({
+  contracts,
+  isFreelancer,
+  language,
+  tx,
+}: LockedFundsSectionProps) {
+  const lockedContracts = (contracts || []).filter((c: any) => {
+    const hasClearanceHold = c.escrow_pending_clearance_until && new Date(c.escrow_pending_clearance_until) > new Date();
+    const isEscrowActive = ['active', 'delivery_submitted', 'revision_requested', 'disputed'].includes(c.status) && c.payment_status === 'in_escrow';
+    return hasClearanceHold || isEscrowActive;
+  });
+
+  return (
+    <div className="rounded-2xl border p-5 flex flex-col h-full" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 15%, var(--color-border-subtle))', background: 'var(--color-bg-elevated)' }}>
+      <div className="flex items-center gap-2 mb-4">
+        <Clock className="w-5 h-5 text-zinc-400" />
+        <h3 className="text-sm font-bold text-foreground">Locked Funds Schedule</h3>
+      </div>
+
+      {lockedContracts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center flex-1 py-8 text-center">
+          <BadgeCheck className="w-10 h-10 text-muted-foreground/30 mb-2" />
+          <p className="text-xs text-muted-foreground">No funds currently locked in escrow</p>
+        </div>
+      ) : (
+        <div className="space-y-3 overflow-y-auto max-h-[320px] pr-1">
+          {lockedContracts.map((c: any) => {
+            const hasClearanceHold = c.escrow_pending_clearance_until && new Date(c.escrow_pending_clearance_until) > new Date();
+            const partnerName = isFreelancer ? c.client?.full_name : c.freelancer?.full_name;
+            const amount = parseFloat(c.amount || '0');
+
+            let statusLabel = 'Locked';
+            let timerTarget = null;
+            let badgeStyle = 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20';
+
+            if (hasClearanceHold) {
+              statusLabel = 'Clearing Hold';
+              timerTarget = c.escrow_pending_clearance_until;
+              badgeStyle = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+            } else if (c.status === 'delivery_submitted') {
+              statusLabel = 'In Review';
+              timerTarget = c.review_due_at;
+              badgeStyle = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+            } else if (c.status === 'disputed' || c.escrow_hold_disputed) {
+              statusLabel = 'Frozen (Disputed)';
+              badgeStyle = 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
+            } else {
+              statusLabel = 'Active Escrow';
+              badgeStyle = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
+            }
+
+            return (
+              <div 
+                key={c.id} 
+                className="p-3 rounded-xl border flex items-center justify-between gap-4 transition-all hover:bg-zinc-800/10" 
+                style={{ borderColor: 'var(--color-border-subtle)', background: 'color-mix(in srgb, var(--workspace-primary) 3%, var(--color-bg-subtle))' }}
+              >
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-white truncate" title={c.title}>{c.title}</h4>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                    {isFreelancer ? 'Client' : 'Freelancer'}: <span className="text-zinc-300 font-semibold">{partnerName || 'Unknown User'}</span>
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <span className={`px-2 py-0.5 text-[9px] rounded-full font-medium ${badgeStyle}`}>
+                      {statusLabel}
+                    </span>
+                    {timerTarget && (
+                      <span className="text-[10px] text-zinc-400 flex items-center gap-1">
+                        ⏱️ <CountdownTimer targetDate={timerTarget} />
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-end shrink-0">
+                  <span className="text-sm font-black text-white">{formatCurrency(amount, true, language)}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ─── Sub-component: Balance Hero ─────────────────────────────────────────────
@@ -970,6 +1097,36 @@ export default function Wallet() {
     enabled: !!user?.id,
   });
 
+  // Fetch contracts for locked funds tracker
+  const { data: contracts = [], isLoading: contractsLoading } = useQuery({
+    queryKey: ['wallet-contracts', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await getContractsByUser(user.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch transactions for the chart
+  const { data: chartTransactions = [] } = useQuery({
+    queryKey: ['wallet-chart-transactions', user?.id],
+    queryFn: async (): Promise<Transaction[]> => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: true })
+        .limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
   // Real-time wallet balance updates
   useEffect(() => {
     if (!user?.id) return;
@@ -982,6 +1139,49 @@ export default function Wallet() {
 
   const transactions = transactionsData?.data || [];
   const totalPages = Math.ceil((transactionsData?.count || 0) / pageSize);
+
+  const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
+
+  // Derive chart dataset
+  const chartData = Array.from({ length: 6 }).map((_, i) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    return {
+      monthKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      label: d.toLocaleDateString(locale, { month: 'short' }),
+      amount: 0,
+    };
+  }).reverse();
+
+  (chartTransactions || []).forEach((t) => {
+    const date = new Date(t.created_at);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthObj = chartData.find(m => m.monthKey === monthKey);
+    if (monthObj) {
+      const isEarning = t.type === 'escrow_release' || t.type === 'earning' || t.type === 'release';
+      const isSpending = t.type === 'escrow_fund';
+      
+      if (isFreelancer && isEarning) {
+        monthObj.amount += parseFloat(t.amount as any);
+      } else if (!isFreelancer && isSpending) {
+        monthObj.amount += parseFloat(t.amount as any);
+      }
+    }
+  });
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="backdrop-blur-md bg-zinc-950/80 border border-zinc-800 p-3 rounded-xl shadow-xl">
+          <p className="text-xs text-zinc-400 font-semibold">{payload[0].payload.label}</p>
+          <p className="text-sm font-black text-violet-400 mt-1">
+            {formatCurrency(payload[0].value, true, language)}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   if (walletLoading) {
     return (
@@ -1029,90 +1229,146 @@ export default function Wallet() {
             <>
               <StatsRow wallet={wallet} language={language} t={t} />
 
-              {/* Quick links */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                {isFreelancer ? (
-                  <button
-                    onClick={() => setActiveTab('withdraw')}
-                    disabled={!wallet || wallet.balance < MIN_WITHDRAWAL_AMOUNT}
-                    className="flex items-center justify-between p-5 rounded-2xl border transition-all group disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-border-subtle)' }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--workspace-primary-dim)' }}>
-                        <CreditCard className="w-5 h-5" style={{ color: 'var(--workspace-primary)' }} />
-                      </div>
-                      <div className="text-start">
-                        <p className="font-bold text-foreground text-sm">{t.wallet?.requestWithdrawal || 'Request Withdrawal'}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Move earnings to your bank</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setActiveTab('deposit')}
-                    className="flex items-center justify-between p-5 rounded-2xl border transition-all group"
-                    style={{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-border-subtle)' }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--workspace-primary-dim)' }}>
-                        <Plus className="w-5 h-5" style={{ color: 'var(--workspace-primary)' }} />
-                      </div>
-                      <div className="text-start">
-                        <p className="font-bold text-foreground text-sm">{tx('wallet.deposit', undefined, 'Deposit Funds')}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Top up your wallet securely</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                  </button>
-                )}
-                <button
-                  onClick={() => setActiveTab('transactions')}
-                  className="flex items-center justify-between p-5 rounded-2xl border transition-all group"
-                  style={{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-border-subtle)' }}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--workspace-primary-dim)' }}>
-                      <ReceiptText className="w-5 h-5" style={{ color: 'var(--workspace-primary)' }} />
-                    </div>
-                    <div className="text-start">
-                      <p className="font-bold text-foreground text-sm">{tx('wallet.tabs.transactions', undefined, 'Transactions')}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">View full payment history</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-
-              {/* Recent transactions preview */}
-              {transactions.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-base font-bold text-foreground">Recent Transactions</h2>
-                    <button onClick={() => setActiveTab('transactions')} className="text-sm font-semibold transition-colors" style={{ color: 'var(--workspace-primary)' }}>
-                      View all →
-                    </button>
-                  </div>
-                  <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--card-bg)' }}>
-                    {transactions.slice(0, 5).map((tx: Transaction) => {
-                      const isCredit = isCreditTransaction(tx.type);
-                      const isDebit = isDebitTransaction(tx.type);
-                      return (
-                        <div key={tx.id} className="flex items-center justify-between px-5 py-4 border-b last:border-b-0" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">{tx.description || 'Transaction'}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{formatDate(tx.created_at, language)}</p>
-                          </div>
-                          <span className={`text-sm font-bold ${isCredit ? 'text-emerald-400' : isDebit ? 'text-rose-400' : 'text-foreground'}`}>
-                            {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount, true, language)}
-                          </span>
-                        </div>
-                      );
-                    })}
+              {/* Earnings/Spending Chart */}
+              <div 
+                className="mb-8 p-6 rounded-2xl border" 
+                style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 15%, var(--color-border-subtle))', background: 'var(--color-bg-elevated)' }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-base font-bold text-white">
+                      {isFreelancer ? 'Earnings Growth' : 'Spending History'}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {isFreelancer ? 'Monthly billing volume generated' : 'Monthly platform funding volume spent'} (last 6 months)
+                    </p>
                   </div>
                 </div>
-              )}
+
+                <div className="h-64 w-full text-xs">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--workspace-primary)" stopOpacity={0.25}/>
+                          <stop offset="95%" stopColor="var(--workspace-primary)" stopOpacity={0.01}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="label" stroke="#888888" tickLine={false} />
+                      <YAxis stroke="#888888" tickLine={false} tickFormatter={(val) => `${val} TND`} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area 
+                        type="monotone" 
+                        dataKey="amount" 
+                        stroke="var(--workspace-primary)" 
+                        strokeWidth={2}
+                        fillOpacity={1} 
+                        fill="url(#colorAmount)" 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Grid block: Left side Locked Funds, Right side Quick Links & Recent Transactions */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Left side: Locked Funds */}
+                <LockedFundsSection 
+                  contracts={contracts} 
+                  isFreelancer={isFreelancer} 
+                  language={language} 
+                  tx={tx} 
+                />
+
+                {/* Right side: Quick Links & Recent Transactions */}
+                <div className="space-y-6">
+                  {/* Quick links */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {isFreelancer ? (
+                      <button
+                        onClick={() => setActiveTab('withdraw')}
+                        disabled={!wallet || wallet.balance < MIN_WITHDRAWAL_AMOUNT}
+                        className="flex items-center justify-between p-5 rounded-2xl border transition-all group disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-border-subtle)' }}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--workspace-primary-dim)' }}>
+                            <CreditCard className="w-5 h-5" style={{ color: 'var(--workspace-primary)' }} />
+                          </div>
+                          <div className="text-start">
+                            <p className="font-bold text-foreground text-sm">{t.wallet?.requestWithdrawal || 'Request Withdrawal'}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Move earnings to bank</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setActiveTab('deposit')}
+                        className="flex items-center justify-between p-5 rounded-2xl border transition-all group"
+                        style={{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-border-subtle)' }}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--workspace-primary-dim)' }}>
+                            <Plus className="w-5 h-5" style={{ color: 'var(--workspace-primary)' }} />
+                          </div>
+                          <div className="text-start">
+                            <p className="font-bold text-foreground text-sm">{tx('wallet.deposit', undefined, 'Deposit Funds')}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Top up your wallet</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setActiveTab('transactions')}
+                      className="flex items-center justify-between p-5 rounded-2xl border transition-all group"
+                      style={{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-border-subtle)' }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--workspace-primary-dim)' }}>
+                          <ReceiptText className="w-5 h-5" style={{ color: 'var(--workspace-primary)' }} />
+                        </div>
+                        <div className="text-start">
+                          <p className="font-bold text-foreground text-sm">{tx('wallet.tabs.transactions', undefined, 'Transactions')}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Full payment history</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+
+                  {/* Recent transactions preview */}
+                  {transactions.length > 0 && (
+                    <div className="rounded-2xl border p-5" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-elevated)' }}>
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-sm font-bold text-foreground">Recent Transactions</h2>
+                        <button onClick={() => setActiveTab('transactions')} className="text-xs font-semibold transition-colors" style={{ color: 'var(--workspace-primary)' }}>
+                          View all →
+                        </button>
+                      </div>
+                      <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-subtle)' }}>
+                        {transactions.slice(0, 4).map((tx: Transaction) => {
+                          const isCredit = isCreditTransaction(tx.type);
+                          const isDebit = isDebitTransaction(tx.type);
+                          return (
+                            <div key={tx.id} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-foreground truncate">{tx.description || 'Transaction'}</p>
+                                <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(tx.created_at, language)}</p>
+                              </div>
+                              <span className={`text-xs font-bold shrink-0 ${isCredit ? 'text-emerald-400' : isDebit ? 'text-rose-400' : 'text-foreground'}`}>
+                                {isCredit ? '+' : isDebit ? '-' : ''}{formatCurrency(tx.amount, true, language)}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </>
           )}
 

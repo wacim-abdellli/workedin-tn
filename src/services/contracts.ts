@@ -39,6 +39,8 @@ export async function getContractById(contractId: string) {
         .from('contracts')
         .select(`
             id, status, title, amount, total_amount, created_at, client_id, freelancer_id, job_id,
+            delivery_note, delivery_submitted_at, review_due_at, revision_requests_count, max_revision_rounds,
+            escrow_pending_clearance_until, escrow_hold_disputed, payment_status,
             client:public_profiles!client_id(id, full_name, avatar_url),
             freelancer:public_profiles!freelancer_id(id, full_name, avatar_url),
             job:jobs(id, title, category),

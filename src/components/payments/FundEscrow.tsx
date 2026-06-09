@@ -1,6 +1,4 @@
-import { logger } from '@/lib/logger';
-import { useState } from 'react';
-import { Loader2, CreditCard, Shield, AlertCircle } from 'lucide-react';
+import { Loader2, CreditCard, Shield, AlertCircle, ArrowLeft, Check } from 'lucide-react';
 import { createEscrow } from '@/services/dhmad';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../ui/Toast';
@@ -34,6 +32,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
     const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [showBreakdown, setShowBreakdown] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     // Calculate fees
     const { originalAmount, feeAmount, totalAmount } = calculateTotalWithFee(
@@ -103,13 +102,115 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
 
     if (contract.funded_at) {
         return (
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+            <div className="p-4 bg-green-50/10 dark:bg-green-950/20 border border-green-500/20 rounded-xl">
                 <div className="flex items-center gap-3">
-                        <Shield className="w-5 h-5 text-green-600" />
-                    <span className="text-green-700 dark:text-green-300 font-medium">
+                    <Shield className="w-5 h-5 text-green-500" />
+                    <span className="text-green-500 font-medium">
                         {tx('payment.escrowFunded', undefined, 'Escrow funded successfully')}
                     </span>
                 </div>
+            </div>
+        );
+    }
+
+    if (showConfirm) {
+        return (
+            <div className="bg-[#0d0d12]/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6 shadow-[0_24px_50px_-12px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-2.5 mb-5">
+                    <button
+                        type="button"
+                        onClick={() => setShowConfirm(false)}
+                        className="p-1.5 rounded-lg hover:bg-white/5 border border-white/[0.04] text-zinc-400 hover:text-white transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                    </button>
+                    <div>
+                        <h3 className="font-bold text-white text-base">Confirm Funding</h3>
+                        <p className="text-xs text-zinc-400 mt-0.5">Please review the payment details</p>
+                    </div>
+                </div>
+
+                {/* Stepper / Escrow Workflow */}
+                <div className="mb-6 space-y-4">
+                    <h4 className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider">How Escrow Protection Works</h4>
+                    <div className="space-y-3">
+                        <div className="flex gap-3">
+                            <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xs font-bold text-amber-400 flex-shrink-0">
+                                1
+                            </div>
+                            <div>
+                                <h5 className="text-xs font-bold text-white">Deposit & Lock</h5>
+                                <p className="text-[11px] text-zinc-400 mt-0.5">Your funds are securely locked in WorkedIn escrow.</p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-400 flex-shrink-0">
+                                2
+                            </div>
+                            <div>
+                                <h5 className="text-xs font-semibold text-zinc-300">Work & Delivery</h5>
+                                <p className="text-[11px] text-zinc-400 mt-0.5">The freelancer completes the milestones and uploads final files.</p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-400 flex-shrink-0">
+                                3
+                            </div>
+                            <div>
+                                <h5 className="text-xs font-semibold text-zinc-300">Approval & Payout</h5>
+                                <p className="text-[11px] text-zinc-400 mt-0.5">You inspect the deliverables and approve them to release the payment.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Trust Badge */}
+                <div className="mb-6 p-4 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 flex gap-3.5">
+                    <Shield className="w-8 h-8 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                        <h4 className="text-xs font-bold text-amber-400">WorkedIn SafeEscrow Guaranteed</h4>
+                        <p className="text-[11px] text-amber-200/70 leading-relaxed mt-1">
+                            Funds can only be released to the freelancer when you approve, or automatically if the 3-day review period expires with no issues raised.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Payment Summary */}
+                <div className="mb-6 space-y-2.5 p-3.5 bg-white/[0.02] border border-white/[0.04] rounded-xl text-xs text-zinc-300">
+                    <div className="flex justify-between">
+                        <span className="text-zinc-500">Project Budget</span>
+                        <span className="font-semibold text-white">{formatCurrency(originalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-zinc-500">Platform Fee (5%)</span>
+                        <span className="font-semibold text-white">{formatCurrency(feeAmount)}</span>
+                    </div>
+                    <div className="h-px bg-white/[0.06] my-2" />
+                    <div className="flex justify-between font-bold text-sm">
+                        <span className="text-white">Total Charge</span>
+                        <span className="text-amber-400">{formatCurrency(totalAmount)}</span>
+                    </div>
+                </div>
+
+                <button
+                    onClick={handleFundEscrow}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-500 py-3 text-sm font-bold text-black shadow-lg shadow-amber-500/10 transition-all duration-200 hover:bg-amber-400 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <span>{tx('common.loading', undefined, 'Loading...')}</span>
+                        </>
+                    ) : (
+                        <>
+                            <Shield className="w-5 h-5" />
+                            <span>Confirm & Pay {formatCurrency(totalAmount, true)}</span>
+                        </>
+                    )}
+                </button>
             </div>
         );
     }
@@ -139,9 +240,9 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 <button
                     type="button"
                     onClick={() => setShowBreakdown(!showBreakdown)}
-                    className="text-xs font-bold uppercase tracking-wider text-amber-400 hover:text-amber-300 transition-colors mb-3"
+                    className="text-xs font-bold uppercase tracking-wider text-amber-400 hover:text-amber-300 transition-colors mb-3 flex items-center gap-1"
                 >
-                    {showBreakdown ? tx('common.hide', undefined, 'Hide details') : tx('common.show', undefined, 'Show details')}
+                    <span>{showBreakdown ? tx('common.hide', undefined, 'Hide details') : tx('common.show', undefined, 'Show details')}</span>
                 </button>
 
                 {showBreakdown && (
@@ -151,7 +252,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                             <span className="font-semibold text-white">{formatCurrency(originalAmount)}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-zinc-500">{tx('payment.platformFee', undefined, 'Platform fee')} (10%)</span>
+                            <span className="text-zinc-500">{tx('payment.platformFee', undefined, 'Platform fee')} (5%)</span>
                             <span className="font-semibold text-white">{formatCurrency(feeAmount)}</span>
                         </div>
                         <div className="h-px bg-white/[0.06] my-2" />
@@ -170,21 +271,11 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             </div>
 
             <button
-                onClick={handleFundEscrow}
-                disabled={loading}
+                onClick={() => setShowConfirm(true)}
                 className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-500 py-3 text-sm font-bold text-black shadow-lg shadow-amber-500/10 transition-all duration-200 hover:bg-amber-400 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {loading ? (
-                    <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>{tx('common.loading', undefined, 'Loading...')}</span>
-                    </>
-                ) : (
-                    <>
-                        <Shield className="w-5 h-5" />
-                        <span>{tx('payment.fundEscrowAction', undefined, 'Fund escrow now')}</span>
-                    </>
-                )}
+                <Shield className="w-5 h-5" />
+                <span>{tx('payment.fundEscrowAction', undefined, 'Fund escrow now')}</span>
             </button>
 
             <p className="text-center text-[11px] text-zinc-500 mt-4 leading-normal">

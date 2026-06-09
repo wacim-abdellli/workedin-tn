@@ -24,3 +24,6 @@ verify_jwt = true
 
 [functions.hire-proposal-fallback]
 verify_jwt = false
+
+[functions.dhmad-process-payout]
+verify_jwt = true

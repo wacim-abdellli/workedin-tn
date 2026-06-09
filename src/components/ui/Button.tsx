@@ -1,4 +1,4 @@
-﻿import { forwardRef } from "react";
+import { forwardRef } from "react";
 import type { ButtonHTMLAttributes } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -38,12 +38,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants: Record<string, string> = {
       primary: `
-                bg-[var(--workspace-primary-hover)]
-                text-[var(--workspace-primary-text,#fff)]
-                hover:bg-[var(--workspace-primary-active)]
-                active:bg-[var(--workspace-primary-active)]
-                shadow-[0_2px_8px_color-mix(in_srgb,var(--workspace-primary-hover)_35%,transparent)]
-                hover:shadow-[0_6px_20px_color-mix(in_srgb,var(--workspace-primary-hover)_40%,transparent)]
+                bg-emerald-600
+                text-white
+                hover:bg-emerald-500
+                active:bg-emerald-700
+                shadow-[0_2px_8px_rgba(16,185,129,0.2)]
+                hover:shadow-[0_6px_20px_rgba(16,185,129,0.3)]
                 hover:-translate-y-px
             `,
       accent: `
@@ -55,26 +55,25 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 hover:-translate-y-px
             `,
       secondary: `
-                bg-[var(--color-background-elevated,#fff)]
+                bg-transparent
                 text-[var(--color-text-primary)]
-                border border-[var(--color-border-default)]
-                hover:bg-[var(--color-background-muted)]
-                hover:border-[var(--color-border-strong)]
+                border border-zinc-700
+                hover:bg-zinc-800
                 shadow-[0_1px_3px_rgba(0,0,0,0.08)]
             `,
       outline: `
                 bg-transparent
-                text-[var(--workspace-primary-hover)]
-                border-2 border-[var(--workspace-primary-hover)]
-                hover:bg-[var(--workspace-primary-hover)]
-                hover:text-[var(--workspace-primary-text,#fff)]
+                text-zinc-300
+                border-2 border-zinc-700
+                hover:bg-zinc-800
+                hover:text-white
                 hover:-translate-y-px
             `,
       ghost: `
                 bg-transparent
-                text-[var(--color-text-secondary)]
-                hover:bg-[var(--workspace-primary-dim,rgba(147,51,234,0.10))]
-                hover:text-[var(--workspace-primary)]
+                text-zinc-400
+                hover:bg-zinc-800/50
+                hover:text-zinc-200
             `,
       danger: `
                 bg-[var(--color-status-error,#ef4444)]
@@ -88,11 +87,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes: Record<string, string> = {
-      xs: "px-3 py-1.5 text-xs rounded-lg",
-      sm: "px-4 py-2 text-sm rounded-lg",
-      md: "px-5 py-2.5 text-sm rounded-xl",
-      lg: "px-7 py-3 text-base rounded-xl",
-      xl: "px-9 py-4 text-lg rounded-2xl",
+      xs: "px-3 py-1.5 text-xs rounded-full",
+      sm: "px-4 py-2 text-sm rounded-full",
+      md: "px-5 py-2.5 text-sm rounded-full",
+      lg: "px-7 py-3 text-base rounded-full",
+      xl: "px-9 py-4 text-lg rounded-full",
     };
 
     const loaderSizes: Record<string, string> = {

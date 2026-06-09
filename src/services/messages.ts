@@ -306,20 +306,32 @@ export async function getConversations(
         const start = page * limit;
         const end = start + limit - 1;
         const scopes = options?.scopes;
-
-        // Determine which inbox values to filter on.
         const inboxValues = scopes && scopes.length > 0 ? scopes : null;
 
-        const { data: conversationsData, error } = await supabaseWithRetry(() => supabase
+        let query = supabase
             .from('conversations')
             .select(`
                 id, participant_1, participant_2, client_id, freelancer_id, contract_id, 
                 last_message_text, last_message_at, unread_count_1, unread_count_2, 
                 created_at, updated_at, conversation_scope, inbox_participant_1, 
                 inbox_participant_2, status
-            `, { count: 'estimated' })
-            .or(`client_id.eq.${userId},freelancer_id.eq.${userId}`)
-            .order('last_message_at', { ascending: false })
+            `, { count: 'estimated' });
+        if (inboxValues && inboxValues.length > 0) {
+            const hasClient = inboxValues.includes('client');
+            const hasFreelancer = inboxValues.includes('freelancer');
+            if (hasClient && !hasFreelancer) {
+                query = query.eq('client_id', userId);
+            } else if (hasFreelancer && !hasClient) {
+                query = query.eq('freelancer_id', userId);
+            } else {
+                query = query.or(`client_id.eq.${userId},freelancer_id.eq.${userId}`);
+            }
+        } else {
+            query = query.or(`client_id.eq.${userId},freelancer_id.eq.${userId}`);
+        }
+
+        const { data: conversationsData, error } = await supabaseWithRetry(() =>
+            query.order('last_message_at', { ascending: false })
         , { timeoutMs: CONVERSATIONS_TIMEOUT_MS });
 
         if (error) throw error;
@@ -432,11 +444,22 @@ export async function getConversations(
 export async function getTotalUnreadCount(userId: string, scopes?: ConversationScope[]) {
     try {
         if (scopes && scopes.length > 0) {
-            const { data, error } = await supabaseWithRetry(() => supabase
+            const hasClient = scopes.includes('client');
+            const hasFreelancer = scopes.includes('freelancer');
+
+            let query = supabase
                 .from('conversations')
-                .select('participant_1, participant_2, client_id, freelancer_id, inbox_participant_1, inbox_participant_2, unread_count_1, unread_count_2, status')
-                .or(`client_id.eq.${userId},freelancer_id.eq.${userId}`)
-            , { timeoutMs: 12000 });
+                .select('participant_1, participant_2, client_id, freelancer_id, inbox_participant_1, inbox_participant_2, unread_count_1, unread_count_2, status');
+
+            if (hasClient && !hasFreelancer) {
+                query = query.eq('client_id', userId);
+            } else if (hasFreelancer && !hasClient) {
+                query = query.eq('freelancer_id', userId);
+            } else {
+                query = query.or(`client_id.eq.${userId},freelancer_id.eq.${userId}`);
+            }
+
+            const { data, error } = await supabaseWithRetry(() => query, { timeoutMs: 12000 });
 
             if (error) throw error;
 

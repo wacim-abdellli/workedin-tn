@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Bell, CheckCheck, MessageSquare, Briefcase, FileText, Wallet, Trash2, Settings, BellOff } from 'lucide-react';
+import { Bell, CheckCheck, MessageSquare, Briefcase, FileText, Wallet, Trash2, Settings, BellOff, Play, Award, XCircle, AlertTriangle, Clock, Coins, ShieldCheck, ShieldX, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout';
 import Button from '@/components/ui/Button';
@@ -9,60 +9,82 @@ import type { AppNotification } from '@/hooks/useRealtimeNotifications';
 import { useTranslation } from '@/i18n';
 import { getDisplayNotification } from '@/lib/notificationDisplay';
 
-function iconForType(type: AppNotification['type']) {
-    switch (type) {
-        case 'message':  return <MessageSquare className="h-5 w-5" strokeWidth={1.75} />;
-        case 'proposal':
-        case 'new_proposal':
-            return <FileText className="h-5 w-5" strokeWidth={1.75} />;
-        case 'payment':  return <Wallet className="h-5 w-5" strokeWidth={1.75} />;
-        case 'contract':
-        case 'contract_update':
-            return <Briefcase className="h-5 w-5" strokeWidth={1.75} />;
-        default:         return <Bell className="h-5 w-5" strokeWidth={1.75} />;
+function iconForCategory(category?: AppNotification['category']) {
+    switch (category) {
+        case 'message':           return <MessageSquare className="h-5 w-5" strokeWidth={1.75} />;
+        case 'proposal_new':      return <FileText className="h-5 w-5" strokeWidth={1.75} />;
+        case 'proposal_accepted': return <CheckCircle2 className="h-5 w-5" strokeWidth={1.75} />;
+        case 'contract_accepted': return <Play className="h-4 w-4 ltr:translate-x-[0.5px]" strokeWidth={2.2} />;
+        case 'contract_completed':return <Award className="h-5 w-5" strokeWidth={1.75} />;
+        case 'contract_cancelled':return <XCircle className="h-5 w-5" strokeWidth={1.75} />;
+        case 'contract_disputed': return <AlertTriangle className="h-5 w-5" strokeWidth={1.75} />;
+        case 'contract_timeout':  return <Clock className="h-5 w-5" strokeWidth={1.75} />;
+        case 'payment_released':  return <Wallet className="h-5 w-5" strokeWidth={1.75} />;
+        case 'payment_funded':    return <Coins className="h-5 w-5" strokeWidth={1.75} />;
+        case 'system_verified':   return <ShieldCheck className="h-5 w-5" strokeWidth={1.75} />;
+        case 'system_rejected':   return <ShieldX className="h-5 w-5" strokeWidth={1.75} />;
+        case 'system_info':       return <Bell className="h-5 w-5" strokeWidth={1.75} />;
+        default:                  return <Briefcase className="h-5 w-5" strokeWidth={1.75} />;
     }
 }
 
-function badgeStyleForType(type: AppNotification['type'], isUnread: boolean) {
+function badgeStyleForCategory(category?: AppNotification['category'], isUnread?: boolean) {
     let styles;
-    switch (type) {
-        case 'contract':
-        case 'contract_update':
+    switch (category) {
+        // Green/Teal (Success & Payments)
+        case 'payment_released':
+        case 'payment_funded':
+        case 'system_verified':
+        case 'contract_completed':
             styles = {
-                bg: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
-                shadow: '0 6px 14px rgba(245, 158, 11, 0.35)',
-            };
-            break;
-        case 'proposal':
-        case 'new_proposal':
-            styles = {
-                bg: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                shadow: '0 6px 14px rgba(139, 92, 246, 0.35)',
-            };
-            break;
-        case 'payment':
-            styles = {
-                bg: 'linear-gradient(135deg, #10b981 0%, #0d9488 100%)',
+                bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 shadow: '0 6px 14px rgba(16, 185, 129, 0.35)',
             };
             break;
-        case 'message':
+
+        // Purple/Indigo (Proposals & Actions)
+        case 'proposal_new':
+        case 'proposal_accepted':
+        case 'contract_accepted':
             styles = {
-                bg: 'linear-gradient(135deg, #38bdf8 0%, #2563eb 100%)',
-                shadow: '0 6px 14px rgba(56, 189, 248, 0.35)',
+                bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                shadow: '0 6px 14px rgba(139, 92, 246, 0.35)',
             };
             break;
-        case 'system':
-        case 'review':
+
+        // Blue (Messages & Updates)
+        case 'message':
+        case 'contract_update':
             styles = {
-                bg: 'linear-gradient(135deg, #f43f5e 0%, #dc2626 100%)',
+                bg: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
+                shadow: '0 6px 14px rgba(14, 165, 233, 0.35)',
+            };
+            break;
+
+        // Amber/Orange (Warnings & Reminders)
+        case 'contract_timeout':
+            styles = {
+                bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                shadow: '0 6px 14px rgba(245, 158, 11, 0.35)',
+            };
+            break;
+
+        // Red/Rose (Disputes, Cancellations, Rejections)
+        case 'contract_cancelled':
+        case 'contract_disputed':
+        case 'system_rejected':
+            styles = {
+                bg: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)',
                 shadow: '0 6px 14px rgba(244, 63, 94, 0.35)',
             };
             break;
+
+        // Slate (System Info)
+        case 'system_info':
         default:
             styles = {
-                bg: 'linear-gradient(135deg, #71717a 0%, #52525b 100%)',
-                shadow: '0 6px 14px rgba(113, 113, 122, 0.2)',
+                bg: 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
+                shadow: '0 6px 14px rgba(100, 116, 139, 0.2)',
             };
     }
 
@@ -157,9 +179,9 @@ export default function Notifications() {
                             <div
                                 key={n.id}
                                 onClick={() => handleClick(n)}
-                                className={`group p-4 sm:p-5 cursor-pointer transition-all duration-200 relative flex gap-4 ${
+                                className={`group p-4 sm:p-5 cursor-pointer transition-all duration-200 hover:translate-x-0.5 relative flex gap-4 ${
                                     !n.is_read 
-                                        ? 'border-l-[4px] border-l-[var(--color-brand-accent)] shadow-[inset_5px_0_18px_-8px_var(--color-brand-accent)] bg-gradient-to-r from-[var(--color-brand-accent)]/[0.03] to-transparent' 
+                                        ? 'border-l-[4px] border-l-[var(--color-brand-accent)] shadow-[inset_5px_0_18px_-8px_var(--color-brand-accent)] bg-gradient-to-r from-[var(--color-brand-accent)]/[0.04] to-transparent' 
                                         : 'hover:bg-white/[0.015]'
                                 }`}
                             >
@@ -168,15 +190,23 @@ export default function Notifications() {
                                 )}
                                 <div 
                                     className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-md"
-                                    style={badgeStyleForType(n.type, !n.is_read)}
+                                    style={badgeStyleForCategory(n.category, !n.is_read)}
                                 >
-                                    {iconForType(n.type)}
+                                    {iconForCategory(n.category)}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-4">
-                                        <p className={`text-[15px] font-semibold leading-snug transition-colors ${!n.is_read ? 'text-[var(--color-text-primary)] font-bold' : 'text-[var(--color-text-primary)]/80 font-medium'}`}>
-                                            {n.title}
-                                        </p>
+                                        <div>
+                                            <p className={`text-[15px] font-semibold leading-snug transition-colors ${!n.is_read ? 'text-[var(--color-text-primary)] font-bold' : 'text-[var(--color-text-primary)]/80 font-medium'}`}>
+                                                {n.title}
+                                            </p>
+                                            {n.category && (n.category.startsWith('contract_') || n.category.startsWith('payment_')) && n.body && (
+                                                <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-zinc-800/30 dark:bg-white/[0.03] text-zinc-400 border border-white/[0.02] max-w-full">
+                                                    <Briefcase className="w-3.5 h-3.5 text-[var(--color-brand-accent)] shrink-0" />
+                                                    <span className="truncate">{n.body}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="flex items-center gap-2.5 flex-shrink-0 pt-0.5 z-10">
                                             <span className="text-xs font-medium text-[var(--color-text-secondary)] transition-colors group-hover:text-[var(--color-text-primary)]/70">{formatDate(n.created_at)}</span>
                                             {!n.is_read && (
@@ -197,7 +227,7 @@ export default function Notifications() {
                                             </button>
                                         </div>
                                     </div>
-                                    {n.body && (
+                                    {!(n.category && (n.category.startsWith('contract_') || n.category.startsWith('payment_'))) && n.body && (
                                         <p className="text-sm text-[var(--color-text-secondary)] mt-1.5 leading-relaxed line-clamp-2">{n.body}</p>
                                     )}
                                 </div>
@@ -314,7 +344,7 @@ export default function Notifications() {
                             <Button
                                 variant="outline"
                                 className="w-full justify-center text-xs py-2.5 font-bold transition-all duration-200 border-white/[0.1] hover:border-white/[0.2] hover:bg-white/[0.02]"
-                                onClick={() => navigate('/settings')}
+                                onClick={() => navigate('/settings?tab=notifications')}
                                 leftIcon={<Settings className="w-3.5 h-3.5" />}
                             >
                                 {tx('notifications.overview.settings', undefined, 'Preferences')}

@@ -20,7 +20,7 @@ BEGIN
     CASE OLD.status::text
         WHEN 'pending_payment'     THEN v_allowed := ARRAY['active', 'cancelled', 'disputed'];
         WHEN 'active'              THEN v_allowed := ARRAY['delivery_submitted', 'cancelled', 'disputed'];
-        WHEN 'delivery_submitted'  THEN v_allowed := ARRAY['revision_requested', 'completed', 'cancelled', 'disputed'];
+        WHEN 'delivery_submitted'  THEN v_allowed := ARRAY['active', 'revision_requested', 'completed', 'cancelled', 'disputed'];
         WHEN 'revision_requested'  THEN v_allowed := ARRAY['delivery_submitted', 'cancelled', 'disputed'];
         WHEN 'completed'           THEN v_allowed := ARRAY[]::text[];
         WHEN 'cancelled'           THEN v_allowed := ARRAY[]::text[];

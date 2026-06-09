@@ -60,9 +60,11 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-[var(--color-bg-subtle)] overflow-hidden">
+        <div className="h-screen flex flex-col bg-[var(--color-bg-base)] text-[var(--color-text-primary)] overflow-hidden" style={{
+            backgroundImage: 'radial-gradient(circle at 10% 20%, color-mix(in srgb, var(--workspace-primary) 7%, transparent) 0%, transparent 40%), radial-gradient(circle at 90% 80%, color-mix(in srgb, var(--workspace-primary) 4%, transparent) 0%, transparent 40%)'
+        }}>
             {/* Header */}
-            <header className="shrink-0 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/80 backdrop-blur-xl">
+            <header className="shrink-0 border-b border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-sm">
                 <div className="max-w-[1400px] mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -95,21 +97,21 @@ export default function AdminDashboard() {
                     <div className="flex gap-6">
                         {/* Sidebar */}
                         <div className="w-64 shrink-0">
-                            <div className="sticky top-0 space-y-1">
-                                <div className="px-3 mb-4">
-                                    <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{tx('common.navigate', undefined, 'Navigation')}</p>
+                            <div className="sticky top-0 space-y-1.5 bg-white/40 dark:bg-[#0e0c15]/40 border border-gray-200/80 dark:border-white/5 rounded-2xl p-4 backdrop-blur-xl shadow-lg">
+                                <div className="px-3 mb-3">
+                                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{tx('common.navigate', undefined, 'Navigation')}</p>
                                 </div>
                                 {tabs.map(tab => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                                        className={`group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                                             activeTab === tab.id
-                                                ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/25'
-                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                                ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/20 translate-x-0.5'
+                                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white hover:translate-x-1'
                                         }`}
                                     >
-                                        <tab.icon className="w-4 h-4" />
+                                        <tab.icon className={`w-4 h-4 transition-transform duration-200 ${activeTab === tab.id ? 'scale-110' : 'group-hover:scale-110 group-hover:rotate-3'}`} />
                                         <span>{tab.label}</span>
                                     </button>
                                 ))}

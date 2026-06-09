@@ -2171,9 +2171,9 @@ function MessagesComponent() {
                 client_id?: string | null;
             };
             const contractSelectColumns =
-                'id, proposal_id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, revision_requested_at, client_id, freelancer_id, job_id, created_at';
+                'id, proposal_id, status, title, amount, total_amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, revision_requested_at, client_id, freelancer_id, job_id, created_at, delivery_note';
             const legacyContractSelectColumns =
-                'id, proposal_id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, revision_requested_at, client_id, freelancer_id, job_id, created_at';
+                'id, proposal_id, status, title, amount, revision_requests_count, max_revision_rounds, funded_at, delivery_submitted_at, review_due_at, revision_requested_at, client_id, freelancer_id, job_id, created_at, delivery_note';
             const fetchContractRows = async (
                 field: 'id' | 'proposal_id' | 'job_id' | 'client_id' | 'freelancer_id',
                 ids: string[],
@@ -3437,7 +3437,7 @@ function MessagesComponent() {
         });
     }, []);
 
-    const handleDeliverContractWork = useCallback(async () => {
+    const handleDeliverContractWork = useCallback(async (links: Array<any> = [], fileStages: Record<number, 'review' | 'final'> = {}) => {
         if (isDeliveringContractWork) return;
         if (!selectedConversation || !selectedConversation.contract_id || !user?.id) return;
 
@@ -3456,8 +3456,12 @@ function MessagesComponent() {
             const contractId = selectedConversation.contract_id;
             const trimmedNote = deliveryNote.trim();
             const selectedDeliveryFiles = deliveryFiles;
-            if (selectedDeliveryFiles.length === 0) {
-                setDeliveryActionError('Add at least one delivery file before submitting.');
+            
+            const hasReview = selectedDeliveryFiles.some((_, idx) => fileStages[idx] === 'review') || links.some(l => l.link_kind === 'review_link');
+            const hasFinal = selectedDeliveryFiles.some((_, idx) => fileStages[idx] === 'final') || links.some(l => l.link_kind === 'final_link');
+            if (!hasReview || !hasFinal) {
+                setDeliveryActionError('Please provide deliverables for both review and final hand-off phases.');
+                setIsDeliveringContractWork(false);
                 return;
             }
 
@@ -3478,40 +3482,41 @@ function MessagesComponent() {
                 ? `[[delivery]] ${trimmedNote}`
                 : '[[delivery]] Work delivered and ready for review';
 
-            const uploadDeliveryAssets = async (files: File[], assetKind: 'delivery') => {
-                const uploadedAssets: Array<{ name: string; storage_bucket: string; storage_path: string; mime_type: string; size_bytes: number }> = [];
+            const uploadFile = async (file: File, stage: 'review' | 'final') => {
+                const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                const path = `${user.id}/${contractId}/submissions/${stage}/${Date.now()}_${safeName}`;
+                
+                const { error } = await supabase.storage.from('contract-files').upload(path, file, { upsert: false });
+                if (error) throw new Error(`${stage === 'review' ? 'Review' : 'Final'} upload failed for ${file.name}: ${error.message}`);
 
-                for (const file of files) {
-                    const uniqueFileName = `${Date.now()}-${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-                    const path = `${user.id}/${contractId}/submissions/${assetKind}/${uniqueFileName}`;
-                    
-                    const { data: uploadData, error: uploadErr } = await supabase.storage
-                        .from('contract-files')
-                        .upload(path, file, { upsert: false });
-
-                    if (uploadErr) {
-                        throw new Error(`File upload failed (${assetKind}): ${uploadErr.message}`);
-                    }
-
-                    uploadedAssets.push({
-                        name: file.name,
-                        storage_bucket: 'contract-files',
-                        storage_path: uploadData.path,
-                        mime_type: file.type,
-                        size_bytes: file.size,
-                    });
-                }
-
-                return uploadedAssets;
+                return {
+                    name: file.name,
+                    storage_path: path,
+                    storage_bucket: 'contract-files',
+                    mime_type: file.type || '',
+                    size_bytes: file.size,
+                };
             };
 
-            const deliveryAssets = await uploadDeliveryAssets(selectedDeliveryFiles, 'delivery');
+            const reviewAssets = [];
+            const finalAssets = [];
+            for (let idx = 0; idx < selectedDeliveryFiles.length; idx++) {
+                const file = selectedDeliveryFiles[idx];
+                const stage = fileStages[idx] || 'review';
+                const asset = await uploadFile(file, stage);
+                if (stage === 'review') {
+                    reviewAssets.push(asset);
+                } else {
+                    finalAssets.push(asset);
+                }
+            }
 
             const { data: deliveryResult, error: deliveryError } = await supabase.rpc('submit_contract_delivery_atomic', {
                 p_contract_id: contractId,
                 p_delivery_note: trimmedNote || 'submitted',
-                p_review_assets: deliveryAssets,
-                p_final_assets: deliveryAssets,
+                p_review_assets: reviewAssets,
+                p_final_assets: finalAssets,
+                p_delivery_links: links,
             });
 
             if (deliveryError) {
@@ -5668,8 +5673,8 @@ function MessagesComponent() {
                         setDeliveryFiles((prev) => [...prev, ...files]);
                     }}
                     onRemoveFile={(index) => setDeliveryFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index))}
-                    onSubmit={() => {
-                        void handleDeliverContractWork();
+                    onSubmit={(links, fileStages) => {
+                        void handleDeliverContractWork(links, fileStages);
                     }}
                     onCancel={() => {
                         setIsDeliverModalOpen(false);

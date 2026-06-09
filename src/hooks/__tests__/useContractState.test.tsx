@@ -111,6 +111,7 @@ describe('useContractState', () => {
                 p_delivery_note: 'Ready for review',
                 p_review_assets: [],
                 p_final_assets: [],
+                p_delivery_links: [],
             },
         });
         expect(result.current.contract).toEqual(expect.objectContaining({
@@ -179,7 +180,8 @@ describe('useContractState', () => {
         });
         expect(acceptHook.result.current.contract).toEqual(expect.objectContaining({
             status: 'completed',
-            payment_status: 'released',
+            payment_status: 'in_escrow',
+            escrow_pending_clearance_until: expect.any(String),
             completed_at: expect.any(String),
         }));
 

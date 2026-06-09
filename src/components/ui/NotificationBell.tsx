@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Bell, CheckCheck, Loader2, MessageSquare, Briefcase, FileText, Wallet, ArrowRight } from 'lucide-react';
+import { Bell, CheckCheck, Loader2, MessageSquare, Briefcase, FileText, Wallet, ArrowRight, Play, Award, XCircle, AlertTriangle, Clock, Coins, ShieldCheck, ShieldX, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTranslation } from '@/i18n';
@@ -20,58 +20,82 @@ const PALETTE = {
     alpha44: 'color-mix(in srgb, var(--accent-color) 44%, transparent)',
 } as const;
 
-function iconForType(type: AppNotification['type']) {
-    switch (type) {
-        case 'message':      return <MessageSquare className="h-[17px] w-[17px]" strokeWidth={1.75} />;
-        case 'proposal':
-        case 'new_proposal': return <FileText className="h-[17px] w-[17px]" strokeWidth={1.75} />;
-        case 'payment':      return <Wallet className="h-[17px] w-[17px]" strokeWidth={1.75} />;
-        case 'contract':
-        case 'contract_update': return <Briefcase className="h-[17px] w-[17px]" strokeWidth={1.75} />;
-        default:             return <Bell className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+function iconForCategory(category?: AppNotification['category']) {
+    switch (category) {
+        case 'message':           return <MessageSquare className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'proposal_new':      return <FileText className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'proposal_accepted': return <CheckCircle2 className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'contract_accepted': return <Play className="h-[14px] w-[14px] ltr:translate-x-[0.5px]" strokeWidth={2} />;
+        case 'contract_completed':return <Award className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'contract_cancelled':return <XCircle className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'contract_disputed': return <AlertTriangle className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'contract_timeout':  return <Clock className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'payment_released':  return <Wallet className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'payment_funded':    return <Coins className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'system_verified':   return <ShieldCheck className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'system_rejected':   return <ShieldX className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        case 'system_info':       return <Bell className="h-[17px] w-[17px]" strokeWidth={1.75} />;
+        default:                  return <Briefcase className="h-[17px] w-[17px]" strokeWidth={1.75} />;
     }
 }
 
-function badgeStyleForType(type: AppNotification['type'], isUnread: boolean) {
+function badgeStyleForCategory(category?: AppNotification['category'], isUnread?: boolean) {
     let styles;
-    switch (type) {
-        case 'contract':
-        case 'contract_update':
+    switch (category) {
+        // Green/Teal (Success & Payments)
+        case 'payment_released':
+        case 'payment_funded':
+        case 'system_verified':
+        case 'contract_completed':
             styles = {
-                bg: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
-                shadow: '0 4px 10px rgba(245, 158, 11, 0.35)',
-            };
-            break;
-        case 'proposal':
-        case 'new_proposal':
-            styles = {
-                bg: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                shadow: '0 4px 10px rgba(139, 92, 246, 0.35)',
-            };
-            break;
-        case 'payment':
-            styles = {
-                bg: 'linear-gradient(135deg, #10b981 0%, #0d9488 100%)',
+                bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 shadow: '0 4px 10px rgba(16, 185, 129, 0.35)',
             };
             break;
-        case 'message':
+
+        // Purple/Indigo (Proposals & Actions)
+        case 'proposal_new':
+        case 'proposal_accepted':
+        case 'contract_accepted':
             styles = {
-                bg: 'linear-gradient(135deg, #38bdf8 0%, #2563eb 100%)',
-                shadow: '0 4px 10px rgba(56, 189, 248, 0.35)',
+                bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                shadow: '0 4px 10px rgba(139, 92, 246, 0.35)',
             };
             break;
-        case 'system':
-        case 'review':
+
+        // Blue (Messages & Updates)
+        case 'message':
+        case 'contract_update':
             styles = {
-                bg: 'linear-gradient(135deg, #f43f5e 0%, #dc2626 100%)',
+                bg: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)',
+                shadow: '0 4px 10px rgba(14, 165, 233, 0.35)',
+            };
+            break;
+
+        // Amber/Orange (Warnings & Reminders)
+        case 'contract_timeout':
+            styles = {
+                bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                shadow: '0 4px 10px rgba(245, 158, 11, 0.35)',
+            };
+            break;
+
+        // Red/Rose (Disputes, Cancellations, Rejections)
+        case 'contract_cancelled':
+        case 'contract_disputed':
+        case 'system_rejected':
+            styles = {
+                bg: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)',
                 shadow: '0 4px 10px rgba(244, 63, 94, 0.35)',
             };
             break;
+
+        // Slate (System Info)
+        case 'system_info':
         default:
             styles = {
-                bg: 'linear-gradient(135deg, #71717a 0%, #52525b 100%)',
-                shadow: '0 4px 10px rgba(113, 113, 122, 0.2)',
+                bg: 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
+                shadow: '0 4px 10px rgba(100, 116, 139, 0.2)',
             };
     }
 
@@ -219,14 +243,16 @@ export function NotificationBell({
                     style={{
                         transformOrigin: 'top right',
                         background: isDark 
-                          ? '#141416'
-                          : 'var(--color-background-elevated)',
+                          ? 'rgba(20, 20, 22, 0.85)'
+                          : 'rgba(255, 255, 255, 0.88)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
                         border: isDark 
-                          ? '1px solid rgba(255,255,255,0.07)'
-                          : '1px solid var(--color-border-default)',
+                          ? '1px solid rgba(255, 255, 255, 0.08)'
+                          : '1px solid rgba(0, 0, 0, 0.08)',
                         boxShadow: isDark 
-                          ? '0 24px 48px rgba(0,0,0,0.5)'
-                          : '0 24px 48px rgba(0,0,0,0.08)',
+                          ? '0 24px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
+                          : '0 24px 48px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
                     }}
                 >
                     {/* Header */}
@@ -295,24 +321,25 @@ export function NotificationBell({
                             notifications.slice(0, 10).map(n => {
                                 const displayNotif = getDisplayNotification(n, tx);
                                 const isUnread = unreadIdsAtOpen.has(n.id);
+                                const isContractRelated = displayNotif.category?.startsWith('contract_') || displayNotif.category?.startsWith('payment_');
 
                                 return (
                                     <div
                                         key={n.id}
                                         onClick={() => handleNotificationClick(n)}
-                                        className={`group relative cursor-pointer rounded-xl p-3 transition-all duration-200 ${
+                                        className={`group relative cursor-pointer rounded-xl p-3 transition-all duration-200 hover:translate-x-0.5 ${
                                             isUnread 
-                                                ? 'border-l-[3.5px] rounded-l-none border-l-[var(--workspace-primary)] shadow-[inset_4px_0_12px_-6px_var(--workspace-primary)] bg-gradient-to-r from-[var(--workspace-primary)]/[0.03] to-transparent' 
-                                                : 'hover:bg-zinc-800/20 dark:hover:bg-white/[0.015]'
+                                                ? 'border-l-[3.5px] rounded-l-none border-l-[var(--workspace-primary)] shadow-[inset_4px_0_12px_-6px_var(--workspace-primary)] bg-gradient-to-r from-[var(--workspace-primary)]/[0.04] to-transparent' 
+                                                : 'hover:bg-zinc-800/10 dark:hover:bg-white/[0.015]'
                                         }`}
                                     >
                                         <div className="relative flex items-start gap-3">
                                             {/* Icon badge */}
                                             <div
-                                                className="mt-0.5 flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-full text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-md"
-                                                style={badgeStyleForType(n.type, isUnread)}
+                                                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-md"
+                                                style={badgeStyleForCategory(displayNotif.category, isUnread)}
                                             >
-                                                {iconForType(n.type)}
+                                                {iconForCategory(displayNotif.category)}
                                             </div>
 
                                             <div className="min-w-0 flex-1">
@@ -332,12 +359,19 @@ export function NotificationBell({
                                                         />
                                                     )}
                                                 </div>
-                                                <p
-                                                    className="mt-1 text-[12px] leading-[1.45] line-clamp-2"
-                                                    style={{ color: 'var(--color-text-secondary)' }}
-                                                >
-                                                    {displayNotif.body}
-                                                </p>
+                                                {isContractRelated ? (
+                                                    <div className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-zinc-800/30 dark:bg-white/[0.03] text-zinc-400 border border-white/[0.02] max-w-full">
+                                                        <Briefcase className="w-3 h-3 text-[var(--workspace-primary)] shrink-0" />
+                                                        <span className="truncate">{displayNotif.body}</span>
+                                                    </div>
+                                                ) : (
+                                                    <p
+                                                        className="mt-1 text-[12px] leading-[1.45] line-clamp-2"
+                                                        style={{ color: 'var(--color-text-secondary)' }}
+                                                    >
+                                                        {displayNotif.body}
+                                                    </p>
+                                                )}
                                                 <p
                                                     className="mt-1.5 text-[10.5px] font-medium text-zinc-500 dark:text-zinc-400"
                                                 >

@@ -12,6 +12,22 @@ function shouldShowIncomingToast(_notification: AppNotification) {
     return false;
 }
 
+export type NotificationCategory =
+    | 'message'
+    | 'proposal_new'
+    | 'proposal_accepted'
+    | 'contract_accepted'
+    | 'contract_completed'
+    | 'contract_cancelled'
+    | 'contract_disputed'
+    | 'contract_timeout'
+    | 'contract_update'
+    | 'payment_released'
+    | 'payment_funded'
+    | 'system_verified'
+    | 'system_rejected'
+    | 'system_info';
+
 export interface AppNotification {
     id: string;
     user_id: string;
@@ -22,6 +38,7 @@ export interface AppNotification {
     related_id: string | null;
     link: string | null;
     created_at: string;
+    category?: NotificationCategory;
 }
 
 const DUPLICATE_WINDOW_MS = 120_000;

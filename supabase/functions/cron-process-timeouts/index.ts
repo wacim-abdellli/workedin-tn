@@ -173,12 +173,86 @@ serve(async (req: Request): Promise<Response> => {
              console.error('Failed to process standard timeouts:', timeoutError);
         }
 
+        // 3. Finalize clearance for completed contracts past the 48-hour hold buffer
+        console.log('Processing 48-hour escrow clearance holds...');
+        const nowStr = new Date().toISOString();
+        const { data: clearanceCandidates, error: clearanceFetchError } = await supabaseAdmin
+            .from('contracts')
+            .select('id')
+            .eq('status', 'completed')
+            .eq('payment_status', 'in_escrow')
+            .eq('escrow_hold_disputed', false)
+            .lte('escrow_pending_clearance_until', nowStr);
+
+        let clearedCount = 0;
+        let clearanceFailures = 0;
+
+        if (clearanceFetchError) {
+            console.error('Failed to fetch escrow clearance candidates:', clearanceFetchError);
+        } else {
+            console.log(`Found ${clearanceCandidates?.length || 0} contracts due for 48-hour hold clearance.`);
+            for (const contract of clearanceCandidates || []) {
+                try {
+                    console.log(`Finalizing payment clearance for contract ${contract.id}...`);
+                    const { error: finalizeError } = await supabaseAdmin.rpc('finalize_clearance_payment', {
+                        p_contract_id: contract.id
+                    });
+
+                    if (finalizeError) throw finalizeError;
+
+                    clearedCount++;
+                    console.log(`Successfully cleared payment for contract ${contract.id}`);
+                } catch (err) {
+                    console.error(`Failed to finalize clearance for contract ${contract.id}:`, err);
+                    clearanceFailures++;
+                }
+            }
+        }
+
+        // 4. Finalize clearance for milestones past the 48-hour hold buffer
+        console.log('Processing 48-hour milestone escrow clearance holds...');
+        const { data: milestoneClearanceCandidates, error: milestoneFetchError } = await supabaseAdmin
+            .from('milestones')
+            .select('id')
+            .eq('status', 'approved')
+            .lte('escrow_pending_clearance_until', nowStr)
+            .eq('escrow_hold_disputed', false);
+
+        let clearedMilestonesCount = 0;
+        let milestoneClearanceFailures = 0;
+
+        if (milestoneFetchError) {
+            console.error('Failed to fetch milestone clearance candidates:', milestoneFetchError);
+        } else {
+            console.log(`Found ${milestoneClearanceCandidates?.length || 0} milestones due for 48-hour hold clearance.`);
+            for (const milestone of milestoneClearanceCandidates || []) {
+                try {
+                    console.log(`Finalizing payment clearance for milestone ${milestone.id}...`);
+                    const { error: finalizeError } = await supabaseAdmin.rpc('finalize_milestone_clearance_payment', {
+                        p_milestone_id: milestone.id
+                    });
+
+                    if (finalizeError) throw finalizeError;
+
+                    clearedMilestonesCount++;
+                    console.log(`Successfully cleared payment for milestone ${milestone.id}`);
+                } catch (err) {
+                    console.error(`Failed to finalize clearance for milestone ${milestone.id}:`, err);
+                    milestoneClearanceFailures++;
+                }
+            }
+        }
+
         return new Response(JSON.stringify({
             success: true,
             autoReleased: autoReleasedCount,
             autoReleaseFailures,
             pendingCancelled: pendingCancelledCount,
-            standardTimeouts: timeoutResults
+            standardTimeouts: timeoutResults,
+            clearedEscrows: clearedCount,
+            clearanceFailures,
+            clearedMilestones: clearedMilestonesCount,
+            milestoneClearanceFailures
         }), {
             headers: { 'Content-Type': 'application/json' },
         });
