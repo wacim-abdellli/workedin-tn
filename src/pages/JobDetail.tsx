@@ -767,14 +767,16 @@ function JobDetail() {
   }
 
   return (
-    <div className="page-enter min-h-screen bg-[var(--color-bg-base)] transition-colors duration-300">
+    <div className="page-enter relative min-h-screen bg-[var(--color-bg-base)] transition-colors duration-300">
+      {/* Deep ambient radial glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(139,92,246,0.05),transparent_40%),radial-gradient(circle_at_85%_85%,rgba(168,85,247,0.04),transparent_40%)] pointer-events-none" />
       <SEO
         title={job ? `${job.title} | ${t.seo.jobDetail.titleSuffix}` : t.seo.jobDetail.titleSuffix}
         description={job?.description?.slice(0, 160) || t.seo.jobDetail.descriptionFallback}
       />
       <Header />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 text-xs text-white/40 mb-7">
           <Link to="/" className="hover:text-white/70 transition-colors">{t.nav.home}</Link>
@@ -791,11 +793,11 @@ function JobDetail() {
           <div className="flex-1 min-w-0 space-y-5">
 
             {/* Hero Header Card */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-b from-violet-500/5 to-transparent">
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl transition-all duration-300">
               <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 h-56 w-56 rounded-full opacity-20 blur-3xl bg-violet-500" />
               <div className="relative p-6 sm:p-8">
                 <div className="flex items-start justify-between gap-4 mb-5">
-                  <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight break-words [overflow-wrap:anywhere]">
+                  <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight break-words [overflow-wrap:anywhere] font-display">
                     {job.title}
                   </h1>
                   <div className="flex items-center gap-2 shrink-0">
@@ -809,11 +811,11 @@ function JobDetail() {
                       )}
                       title={isSaved ? tx('jobDetail.removeFromSaves', undefined, 'Remove from saves') : tx('jobDetail.saveJob', undefined, 'Save this job')}
                     >
-                      <Heart className={cn('w-4 h-4 transition-colors', isSaved ? 'fill-rose-400 text-rose-400' : 'text-white/50 group-hover:text-rose-400')} />
+                      <Heart className={cn('w-4 h-4 transition-colors', isSaved ? 'fill-rose-400 text-rose-400' : 'text-gray-400 dark:text-white/50 group-hover:text-rose-400')} />
                     </button>
                     <button
                       onClick={shareJob}
-                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/5 bg-white/[0.02] text-white/50 transition-all hover:border-white/10 hover:bg-white/5 hover:text-white"
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/5 bg-white/[0.02] text-gray-400 dark:text-white/50 transition-all hover:border-white/10 hover:bg-white/5 hover:text-white"
                       title={tx('jobDetail.shareJob', undefined, 'Share this job')}
                     >
                       <Share2 className="w-4 h-4" />
@@ -821,23 +823,25 @@ function JobDetail() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] uppercase tracking-wider font-bold text-white/40 mb-5">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] uppercase tracking-wider font-bold text-gray-500 dark:text-white/40 mb-5">
                   <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{tx('jobDetail.postedLabel', undefined, 'Posted')} {timeAgo(job.posted_at, tx)}</span>
                   <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{job.proposals_count} {t.jobDetail.proposals}</span>
                   <span className="flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" />{job.views_count} {t.jobDetail.views}</span>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-white/5">
-                  <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                      job.job_type === 'fixed_price' ? 'bg-sky-500/10 text-sky-400' : 'bg-emerald-500/10 text-emerald-400'
+                <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-gray-200/40 dark:border-white/5">
+                  <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border ${
+                      job.job_type === 'fixed_price' 
+                        ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20' 
+                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                     }`}>
                     {job.job_type === 'fixed_price' ? t.jobDetail.fixedPrice : t.jobDetail.hourly}
                   </span>
-                  <span className="inline-flex items-center rounded-md border border-white/5 bg-white/[0.02] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white/70">
+                  <span className="inline-flex items-center rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-700 dark:text-white/70">
                     {t.jobDetail.experience[EXPERIENCE_LABELS[job.experience_level] as keyof typeof t.jobDetail.experience] || job.experience_level}
                   </span>
                   {job.duration && (
-                    <span className="inline-flex items-center rounded-md bg-violet-500/10 text-violet-400 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="inline-flex items-center rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border border-violet-500/25">
                       {(() => {
                         const durationKeyMap: Record<string, string> = {
                           less_than_1_month: 'jobs.new.stepBudget.durationLessThan1Month',
@@ -853,13 +857,13 @@ function JobDetail() {
                 </div>
 
                 {/* Budget */}
-                <div className="rounded-xl p-4 flex items-center gap-4 bg-gradient-to-br from-violet-500/10 to-transparent border border-violet-500/20">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-black bg-violet-500/20 text-violet-400">
+                <div className="rounded-2xl p-5 flex items-center gap-4 bg-gradient-to-br from-violet-500/15 to-transparent border border-violet-500/25 shadow-md">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-base font-black bg-violet-500/20 text-violet-600 dark:text-violet-400">
                     TND
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-violet-400/80 mb-0.5">{t.jobDetail.budget}</p>
-                    <p className="text-2xl font-black text-white leading-none">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400/80 mb-0.5">{t.jobDetail.budget}</p>
+                    <p className="text-2xl font-black text-gray-900 dark:text-white leading-none">
                       {job.job_type === 'fixed_price' ? (
                         job.budget_min === job.budget_max || !job.budget_max
                           ? `${job.budget_min} ${tx('common.currency', undefined, 'TND')}`
@@ -867,12 +871,12 @@ function JobDetail() {
                       ) : (
                         <>
                           {job.hourly_rate} {tx('common.currency', undefined, 'TND')}
-                          <span className="text-sm font-normal text-white/50 ms-1">{t.jobDetail.perHour}</span>
+                          <span className="text-sm font-normal text-gray-500 dark:text-white/50 ms-1">{t.jobDetail.perHour}</span>
                         </>
                       )}
                     </p>
                     {job.job_type === 'hourly' && job.estimated_hours && (
-                      <p className="text-xs text-white/50 mt-0.5 font-medium">{t.jobDetail.approxHours.replace('{{count}}', String(job.estimated_hours))}</p>
+                      <p className="text-xs text-gray-500 dark:text-white/50 mt-1 font-medium">{t.jobDetail.approxHours.replace('{{count}}', String(job.estimated_hours))}</p>
                     )}
                   </div>
                 </div>
@@ -880,21 +884,21 @@ function JobDetail() {
             </div>
 
             {/* Description */}
-            <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4 flex items-center gap-2">
-                <FileText className="w-4 h-4 opacity-60 text-violet-400" />
+            <div className="rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl p-6 sm:p-8 transition-all duration-300">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-white/70 mb-4 flex items-center gap-2">
+                <FileText className="w-4 h-4 opacity-60 text-violet-500 dark:text-violet-400" />
                 {t.jobDetail.description}
               </h2>
-              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-white/70 leading-7">
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-gray-700 dark:text-white/70 leading-7">
                 {job.description}
               </div>
             </div>
 
             {/* Reference Links */}
             {referenceLinkItems.length > 0 && (
-              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4 flex items-center gap-2">
-                  <Globe className="w-4 h-4 opacity-60 text-violet-400" />
+              <div className="rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl p-6 sm:p-8 transition-all duration-300">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-white/70 mb-4 flex items-center gap-2">
+                  <Globe className="w-4 h-4 opacity-60 text-violet-500 dark:text-violet-400" />
                   {tx('jobDetail.referenceLinks', undefined, 'Reference links')}
                 </h2>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -904,7 +908,7 @@ function JobDetail() {
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group rounded-xl border border-white/5 bg-white/[0.02] p-3.5 transition-colors hover:bg-white/5"
+                      className="group rounded-xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.01] p-3.5 transition-all hover:bg-gray-100 dark:hover:bg-white/5 hover:border-violet-500/30"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex items-start gap-3">
@@ -912,13 +916,13 @@ function JobDetail() {
                             <JobLinkPlatformIcon platform={item.platform} />
                           </span>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-white group-hover:text-violet-300 transition-colors">
+                            <p className="truncate text-sm font-semibold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                               {item.platformLabel}
                             </p>
-                            <p className="truncate text-[11px] text-white/40">{item.hostname}</p>
+                            <p className="truncate text-[11px] text-gray-400 dark:text-white/40">{item.hostname}</p>
                           </div>
                         </div>
-                        <ExternalLink className="h-4 w-4 shrink-0 text-white/30 transition group-hover:text-white/60" />
+                        <ExternalLink className="h-4 w-4 shrink-0 text-gray-400 dark:text-white/30 transition group-hover:text-gray-700 dark:group-hover:text-white/60" />
                       </div>
                     </a>
                   ))}
@@ -928,9 +932,9 @@ function JobDetail() {
 
             {/* Skills */}
             {job.required_skills && job.required_skills.length > 0 && (
-              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4 flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 opacity-60 text-violet-400" />
+              <div className="rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl p-6 sm:p-8 transition-all duration-300">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-white/70 mb-4 flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 opacity-60 text-violet-500 dark:text-violet-400" />
                   {t.jobDetail.requiredSkills}
                 </h2>
                 <div className="flex flex-wrap gap-2">
@@ -944,8 +948,8 @@ function JobDetail() {
                     return (
                       <span
                         key={index}
-                        className={`inline-flex items-center gap-1.5 break-words [overflow-wrap:anywhere] px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider border transition-colors ${
-                          isMatch ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-white/5 text-white/60 border-white/10'
+                        className={`inline-flex items-center gap-1.5 break-words [overflow-wrap:anywhere] px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-colors ${
+                          isMatch ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-gray-50/50 dark:bg-white/5 text-gray-700 dark:text-white/60 border-gray-200 dark:border-white/10'
                         }`}
                       >
                         {isMatch && <CheckCircle className="w-3 h-3 shrink-0" />}
@@ -959,8 +963,8 @@ function JobDetail() {
 
             {/* Attachments */}
             {attachmentItems.length > 0 && (
-              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4">{t.jobDetail.attachments}</h2>
+              <div className="rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl p-6 sm:p-8 transition-all duration-300">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-white/70 mb-4">{t.jobDetail.attachments}</h2>
 
                 {imageAttachments.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -970,7 +974,7 @@ function JobDetail() {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group overflow-hidden rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-colors"
+                        className="group overflow-hidden rounded-xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
                       >
                         <div className="aspect-[4/3] bg-black/40">
                           <img
@@ -980,11 +984,11 @@ function JobDetail() {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
-                        <div className="px-3 py-2 flex items-center justify-between border-t border-white/5">
-                          <span className="text-xs font-bold text-white group-hover:text-violet-300 transition-colors">
+                        <div className="px-3 py-2 flex items-center justify-between border-t border-gray-200 dark:border-white/5">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                             {tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
                           </span>
-                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">{item.extension || 'IMG'}</span>
+                          <span className="text-[10px] font-bold text-gray-450 dark:text-white/40 uppercase tracking-wider">{item.extension || 'IMG'}</span>
                         </div>
                       </a>
                     ))}
@@ -996,17 +1000,17 @@ function JobDetail() {
                     {pdfAttachments.map((item) => (
                       <div
                         key={`${item.url}-${item.displayIndex}`}
-                        className="rounded-xl border border-white/5 bg-white/[0.02] overflow-hidden"
+                        className="rounded-xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] overflow-hidden"
                       >
-                        <div className="px-3 py-2 flex items-center justify-between border-b border-white/5">
-                          <span className="text-xs font-bold text-white">
+                        <div className="px-3 py-2 flex items-center justify-between border-b border-gray-250 dark:border-white/5">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white">
                             {tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
                           </span>
                           <a
                             href={item.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[10px] uppercase tracking-wider font-bold text-violet-400 hover:text-violet-300 transition-colors"
+                            className="text-[10px] uppercase tracking-wider font-bold text-violet-600 dark:text-violet-400 hover:text-violet-500 dark:hover:text-violet-300 transition-colors"
                           >
                             {tx('jobDetail.openFile', undefined, 'Open file')}
                           </a>
@@ -1030,20 +1034,20 @@ function JobDetail() {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between p-3.5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-colors group"
+                        className="flex items-center justify-between p-3.5 rounded-xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/5 transition-all group"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400">
                             <FileText className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-white group-hover:text-violet-300 transition-colors">
+                            <p className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                               {tx('jobDetail.attachmentLabel', { index: item.displayIndex }, `Attachment ${item.displayIndex}`)}
                             </p>
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-white/40">{item.extension || tx('jobDetail.fileType', undefined, 'FILE')}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-white/40">{item.extension || tx('jobDetail.fileType', undefined, 'FILE')}</p>
                           </div>
                         </div>
-                        <Download className="w-4 h-4 text-white/30 group-hover:text-white/60 transition-colors" />
+                        <Download className="w-4 h-4 text-gray-400 dark:text-white/30 group-hover:text-gray-700 dark:group-hover:text-white/60 transition-colors" />
                       </a>
                     ))}
                   </div>
@@ -1053,8 +1057,8 @@ function JobDetail() {
 
             {/* Similar Jobs */}
             {similarJobs.length > 0 && (
-              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-white/70 mb-4">{tx('jobDetail.similarJobs', undefined, 'Similar jobs')}</h2>
+              <div className="rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl p-6 sm:p-8 transition-all duration-300">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-800 dark:text-white/70 mb-4">{tx('jobDetail.similarJobs', undefined, 'Similar jobs')}</h2>
                 <div className="grid gap-3 md:grid-cols-2">
                   {similarJobs.map((j) => (
                     <SimilarJobCard key={j.id} job={j} onClick={() => navigate(`/jobs/${j.id}`)} />
@@ -1068,7 +1072,7 @@ function JobDetail() {
           <div className="lg:w-[300px] shrink-0 space-y-4">
 
             {/* Action Card */}
-            <div className="rounded-2xl border border-white/5 bg-gradient-to-b from-white/[0.04] to-transparent p-5 space-y-4 shadow-xl">
+            <div className="rounded-[1.75rem] border border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl p-5 space-y-4 transition-all duration-300">
               {myProposal ? (
                 <div className="text-center py-2">
                   <div className={cn(
@@ -1087,15 +1091,15 @@ function JobDetail() {
                       <CheckCircle className="w-7 h-7 text-emerald-400" />
                     )}
                   </div>
-                  <h3 className="font-bold text-on-surface text-base mb-1">{proposalCardTitle}</h3>
-                  <p className="text-xs text-white/45 mb-1">{proposalStatusLabel}</p>
-                  <p className="text-sm text-white/50 mb-4">{tx('jobDetail.yourBid', undefined, 'Your bid:')} {myProposal.bid_amount} {tx('common.currency', undefined, 'TND')}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-base mb-1">{proposalCardTitle}</h3>
+                  <p className="text-xs text-gray-500 dark:text-white/45 mb-1">{proposalStatusLabel}</p>
+                  <p className="text-sm text-gray-500 dark:text-white/50 mb-4">{tx('jobDetail.yourBid', undefined, 'Your bid:')} {myProposal.bid_amount} {tx('common.currency', undefined, 'TND')}</p>
                   <div className="space-y-2">
-                    <Button variant="outline" className="w-full rounded-xl" onClick={() => navigate(ROUTES.myProposals)}>
+                    <Button variant="outline" className="w-full rounded-xl border-gray-200 dark:border-white/10 text-gray-700 dark:text-white" onClick={() => navigate(ROUTES.myProposals)}>
                       {tx('jobDetail.viewProposal', undefined, 'View proposal')}
                     </Button>
                     {canWithdrawCurrentProposal && (
-                      <Button variant="ghost" className="w-full rounded-xl text-rose-400 hover:text-rose-300" onClick={withdrawProposal}>
+                      <Button variant="ghost" className="w-full rounded-xl text-rose-500 dark:text-rose-400 hover:text-rose-400 dark:hover:text-rose-300" onClick={withdrawProposal}>
                         {tx('jobDetail.withdrawProposal', undefined, 'Withdraw proposal')}
                       </Button>
                     )}
@@ -1103,8 +1107,8 @@ function JobDetail() {
                 </div>
               ) : user?.id === job.client_id ? (
                 <div className="text-center py-2">
-                  <p className="text-sm text-white/50 mb-3">{tx('jobDetail.yourJob', undefined, 'This is your job')}</p>
-                  <Button variant="primary" className="w-full rounded-xl" onClick={() => navigate(getClientJobProposalsRoute(job.id))}>
+                  <p className="text-sm text-gray-500 dark:text-white/50 mb-3">{tx('jobDetail.yourJob', undefined, 'This is your job')}</p>
+                  <Button variant="primary" className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 text-white shadow-[0_4px_14px_rgba(139,92,246,0.39)]" onClick={() => navigate(getClientJobProposalsRoute(job.id))}>
                     {tx('jobDetail.manageJob', undefined, 'Manage job')}
                   </Button>
                 </div>
@@ -1121,10 +1125,10 @@ function JobDetail() {
                     }}
                   >
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                      style={{
-                        background: requiresFreelancerWorkspace
-                          ? 'rgba(245,158,11,0.15)' : 'rgba(59,130,246,0.15)',
-                      }}>
+                       style={{
+                         background: requiresFreelancerWorkspace
+                           ? 'rgba(245,158,11,0.15)' : 'rgba(59,130,246,0.15)',
+                       }}>
                       {requiresFreelancerWorkspace ? (
                         <Briefcase className="w-6 h-6 text-amber-400" />
                       ) : applyDecision.reason === 'auth_required' ? (
@@ -1133,7 +1137,7 @@ function JobDetail() {
                         <CheckCircle className="w-6 h-6 text-blue-400" />
                       )}
                     </div>
-                    <h3 className="font-bold text-on-surface text-sm mb-1">
+                    <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-1">
                       {requiresFreelancerWorkspace
                         ? tx('jobDetail.clientCantApplyTitle', undefined, 'Client accounts cannot apply')
                         : applyDecision.reason === 'auth_required'
@@ -1144,13 +1148,13 @@ function JobDetail() {
                         ? tx('jobDetail.completeProfileTitle', undefined, 'Complete your profile')
                         : tx('jobDetail.cannotApplyTitle', undefined, 'Cannot apply yet')}
                     </h3>
-                    <p className="text-xs text-white/45 mb-4 leading-relaxed">
+                    <p className="text-xs text-gray-550 dark:text-white/45 mb-4 leading-relaxed">
                       {getAccessMessage(applyDecision.reason, applyDecision.completion)}
                     </p>
                     {applyDecision.nextStepPath && (
                       <Button
                         variant="outline"
-                        className="w-full rounded-xl"
+                        className="w-full rounded-xl border-gray-250 dark:border-white/10 text-gray-800 dark:text-white"
                         onClick={() => navigate(applyDecision.nextStepPath!, { state: { from: location.pathname } })}
                       >
                         {requiresFreelancerWorkspace
@@ -1176,7 +1180,7 @@ function JobDetail() {
                   {freelancerProfile && (
                     <div className="flex flex-col items-center justify-center pt-1.5 pb-1">
                       {canSubmitToday ? (
-                        <p className="text-[11px] font-medium text-white/50 flex items-center gap-1.5">
+                        <p className="text-[11px] font-medium text-gray-500 dark:text-white/50 flex items-center gap-1.5">
                           <span className={cn(
                             "w-1.5 h-1.5 rounded-full",
                             dailyProposalUsage.remaining > 2 ? "bg-emerald-400/80 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-amber-400/80 shadow-[0_0_8px_rgba(251,191,36,0.5)]"
@@ -1184,7 +1188,7 @@ function JobDetail() {
                           {tx('jobDetail.inlineRemainingHint', { remaining: dailyProposalUsage.remaining }, `${dailyProposalUsage.remaining} applications available`)}
                         </p>
                       ) : (
-                        <p className="text-[11px] font-medium text-rose-400/80 flex items-center gap-1.5">
+                        <p className="text-[11px] font-medium text-rose-500 dark:text-rose-400/80 flex items-center gap-1.5">
                           <Clock className="w-3 h-3" />
                           {tx('jobDetail.inlineRechargingHint', undefined, 'Recharging in')}
                           {dailyProposalUsage.resetAt && <span className="font-bold tracking-wider"><CountdownTimer resetAt={dailyProposalUsage.resetAt} /></span>}
@@ -1217,21 +1221,21 @@ function JobDetail() {
             />
 
             {/* Job Stats */}
-            <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
-              <h3 className="text-xs uppercase tracking-wider font-bold text-white/70 mb-3">{tx('jobDetail.jobStats', undefined, 'Job Stats')}</h3>
+            <div className="rounded-[1.75rem] border border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl p-5 transition-all duration-300">
+              <h3 className="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-white/70 mb-3">{tx('jobDetail.jobStats', undefined, 'Job Stats')}</h3>
               <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between items-center">
-                  <span className="text-white/45 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{tx('jobDetail.proposals', undefined, 'Proposals')}</span>
-                  <span className="font-semibold text-white">{job.proposals_count}</span>
+                  <span className="text-gray-500 dark:text-white/45 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{tx('jobDetail.proposals', undefined, 'Proposals')}</span>
+                  <span className="font-bold text-gray-900 dark:text-white">{job.proposals_count}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-white/45 flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" />{tx('jobDetail.views', undefined, 'Views')}</span>
-                  <span className="font-semibold text-white">{job.views_count}</span>
+                  <span className="text-gray-500 dark:text-white/45 flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" />{tx('jobDetail.views', undefined, 'Views')}</span>
+                  <span className="font-bold text-gray-900 dark:text-white">{job.views_count}</span>
                 </div>
                 {job.deadline && (
                   <div className="flex justify-between items-center">
-                    <span className="text-white/45 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{tx('jobDetail.deadline', undefined, 'Deadline')}</span>
-                    <span className="font-semibold text-white">
+                    <span className="text-gray-500 dark:text-white/45 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{tx('jobDetail.deadline', undefined, 'Deadline')}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">
                       {new Date(job.deadline).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US')}
                     </span>
                   </div>
@@ -1242,7 +1246,7 @@ function JobDetail() {
             {/* Report */}
             <button
               onClick={() => setIsReportModalOpen(true)}
-              className="w-full text-center text-xs font-medium flex items-center justify-center gap-1.5 py-2 text-white/25 hover:text-rose-400/70 transition-colors"
+              className="w-full text-center text-xs font-semibold flex items-center justify-center gap-1.5 py-2 text-gray-400 dark:text-white/25 hover:text-rose-500 transition-colors"
             >
               <Flag className="w-3.5 h-3.5" />
               {tx('jobDetail.reportJob', undefined, 'Report This Job')}

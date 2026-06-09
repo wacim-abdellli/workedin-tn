@@ -205,7 +205,7 @@ serve(async (req: Request): Promise<Response> => {
 
       // Execute SQL RPC to mark completed, deduct fee, log transaction
       console.log(`[${timestamp}][${requestId}][dhmad-process-payout] Calling approve_withdrawal_admin RPC...`);
-      const { data: rpcData, error: rpcError } = await adminClient.rpc('approve_withdrawal_admin', {
+      const { data: rpcData, error: rpcError } = await authClient.rpc('approve_withdrawal_admin', {
         p_withdrawal_id: withdrawal_id,
         p_admin_notes: admin_notes ?? `Approved by admin. Payout Ref: ${payoutData.payout_id}`,
       });
@@ -221,7 +221,7 @@ serve(async (req: Request): Promise<Response> => {
     } else {
       // Reject withdrawal - refund user balance and log transaction
       console.log(`[${timestamp}][${requestId}][dhmad-process-payout] Calling reject_withdrawal_admin RPC...`);
-      const { data: rpcData, error: rpcError } = await adminClient.rpc('reject_withdrawal_admin', {
+      const { data: rpcData, error: rpcError } = await authClient.rpc('reject_withdrawal_admin', {
         p_withdrawal_id: withdrawal_id,
         p_admin_notes: admin_notes ?? 'Rejected by admin',
       });

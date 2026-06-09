@@ -57,17 +57,17 @@ export default function ClientInfoSidebar({
   ];
 
   return (
-    <aside className="rounded-2xl border border-white/5 bg-[var(--color-bg-elevated)] p-5 flex flex-col gap-5">
+    <aside className="rounded-[1.75rem] border border-gray-200/80 dark:border-white/10 bg-white/70 dark:bg-[#0e0c15]/75 backdrop-blur-xl shadow-xl p-5 flex flex-col gap-5 transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-bold text-[var(--color-text-primary)]/80">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
           {tx("jobDetail.aboutClient", undefined, "About the Client")}
         </h3>
         {onViewProfile && (
           <button
             type="button"
             onClick={onViewProfile}
-            className="text-[10px] font-bold uppercase tracking-wider text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap"
+            className="text-[10px] font-bold uppercase tracking-wider text-violet-400 hover:text-violet-300 transition-colors whitespace-nowrap"
           >
             {tx("jobDetail.viewClientProfile", undefined, "View profile")}
           </button>
@@ -85,14 +85,14 @@ export default function ClientInfoSidebar({
               imgClassName="object-cover"
             />
           ) : (
-            <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-[var(--color-text-primary)] ring-2 ring-white/5 bg-gradient-to-br from-amber-500 to-amber-700">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white ring-2 ring-white/5 bg-gradient-to-br from-violet-500 to-violet-700 shadow-md">
               {getInitials(clientName)}
             </div>
           )}
         </div>
         <div className="min-w-0">
-          <p className="font-semibold text-[var(--color-text-primary)] text-sm truncate">{clientName}</p>
-          <p className="text-xs text-[var(--color-text-primary)]/45 mt-0.5 flex items-center gap-1">
+          <p className="font-bold text-gray-900 dark:text-white text-sm truncate">{clientName}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
             <MapPin className="w-3 h-3 shrink-0" />
             {location}
           </p>
@@ -102,22 +102,22 @@ export default function ClientInfoSidebar({
       {/* Rating */}
       <div className="flex items-center gap-2">
         <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
-        <span className="text-xs text-[var(--color-text-primary)]/60">{ratingText}</span>
+        <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">{ratingText}</span>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-2 pt-4 border-t border-white/5">
+      <div className="grid grid-cols-2 gap-2.5 pt-4 border-t border-gray-200/60 dark:border-white/5">
         {statGrid.map(({ value, label }) => (
-          <div key={label} className="rounded-xl bg-[var(--color-bg-elevated)] border border-white/5 p-3">
-            <p className="text-base font-black text-[var(--color-text-primary)] leading-none">{value}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-primary)]/40 mt-1.5 leading-tight">{label}</p>
+          <div key={label} className="rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-200/40 dark:border-white/5 p-3">
+            <p className="text-base font-black text-gray-900 dark:text-white leading-none">{value}</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mt-2 leading-tight">{label}</p>
           </div>
         ))}
       </div>
 
       {/* Verifications */}
-      <div className="pt-4 border-t border-white/5 space-y-2.5">
-        <h4 className="text-xs font-bold text-[var(--color-text-primary)]/60 uppercase tracking-wider">
+      <div className="pt-4 border-t border-gray-200/60 dark:border-white/5 space-y-2.5">
+        <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
           {tx("jobDetail.clientVerifications", undefined, "Verifications")}
         </h4>
         {verifications.map(({ id, label, ok, fixUrl }) => {
@@ -125,8 +125,8 @@ export default function ClientInfoSidebar({
             <div key={id} className={`flex items-center gap-2 text-xs ${(!ok && isOwnProfile) ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}>
               {ok
                 ? <BadgeCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                : <CheckCircle2 className={`w-4 h-4 shrink-0 ${isOwnProfile ? 'text-amber-400/80' : 'text-[var(--color-text-primary)]/20'}`} />}
-              <span className={ok ? 'text-[var(--color-text-primary)]/70' : 'text-[var(--color-text-primary)]/30 line-through'}>
+                : <CheckCircle2 className={`w-4 h-4 shrink-0 ${isOwnProfile ? 'text-amber-400/80' : 'text-gray-500/20 dark:text-white/10'}`} />}
+              <span className={ok ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-400 dark:text-gray-500 line-through'}>
                 {label}
               </span>
               {!ok && isOwnProfile && (
@@ -144,12 +144,10 @@ export default function ClientInfoSidebar({
           }
           return content;
         })}
-        <p className="text-[10px] text-[var(--color-text-primary)]/25 pt-1">
+        <p className="text-[10px] text-gray-400/80 pt-1">
           {tx("jobDetail.memberSince", undefined, "Member since")} {memberSince}
         </p>
       </div>
     </aside>
   );
 }
-
-

@@ -147,7 +147,12 @@ async function getUserDetails(adminClient: ReturnType<typeof createClient>, user
   }
 }
 
-async function setUserStatus(adminClient: ReturnType<typeof createClient>, adminContext: AdminContext, payload: Record<string, unknown>) {
+async function setUserStatus(
+  adminClient: ReturnType<typeof createClient>,
+  authClient: ReturnType<typeof createClient>,
+  adminContext: AdminContext,
+  payload: Record<string, unknown>
+) {
   const userId = typeof payload.userId === 'string' ? payload.userId : ''
   const nextStatus = typeof payload.nextStatus === 'string' ? payload.nextStatus : ''
   const reason = typeof payload.reason === 'string' ? payload.reason : null
@@ -157,7 +162,7 @@ async function setUserStatus(adminClient: ReturnType<typeof createClient>, admin
     throw new Error('Invalid nextStatus')
   }
 
-  const rpc = await adminClient.rpc('set_user_account_status', {
+  const rpc = await authClient.rpc('set_user_account_status', {
     p_user_id: userId,
     p_next_status: nextStatus,
     p_reason: reason,
@@ -370,7 +375,7 @@ serve(async (req) => {
     }
 
     if (action === 'set_user_status') {
-      const result = await setUserStatus(adminClient, adminContext, body)
+      const result = await setUserStatus(adminClient, authClient, adminContext, body)
       return jsonResponse(corsHeaders, 200, { data: result })
     }
 
