@@ -391,7 +391,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
             {/* Duration and Deadline Grid */}
             <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
                 {/* Duration Selector */}
-                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-5.5 transition-all duration-300 hover:border-white/10 backdrop-blur-md flex flex-col justify-between shadow-inner">
+                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-5.5 transition-all duration-300 hover:border-white/10 backdrop-blur-md flex flex-col gap-4 shadow-inner">
                     <div className="space-y-4 w-full">
                         <label className="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-gray-400/80">
                             <Clock className="h-4 w-4 text-workspace-primary" />
@@ -420,7 +420,7 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                 </div>
 
                 {/* Deadline Selector */}
-                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-5.5 transition-all duration-300 hover:border-white/10 backdrop-blur-md flex flex-col justify-between shadow-inner">
+                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] p-5.5 transition-all duration-300 hover:border-white/10 backdrop-blur-md flex flex-col gap-4 shadow-inner">
                     <div className="space-y-4 w-full">
                         <label className="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-gray-400/80">
                             <Calendar className="h-4 w-4 text-workspace-primary" />
