@@ -57,8 +57,10 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
             // Enabled dynamically on localhost, vercel.app domains, or via env variable.
             // The RPC enforces auth + contract ownership server-side, so this is safe.
             const isSandbox = import.meta.env.VITE_SANDBOX_MODE === 'true' ||
-                              window.location.hostname.includes('vercel.app') ||
-                              window.location.hostname.includes('localhost');
+                              (import.meta.env.VITE_SANDBOX_MODE !== 'false' && (
+                                  window.location.hostname.includes('vercel.app') ||
+                                  window.location.hostname.includes('localhost')
+                              ));
             if (isSandbox) {
                 logger.info('[FundEscrow][SANDBOX] Funding escrow via sandbox_fund_escrow RPC');
                 const { error: rpcError } = await supabase.rpc('sandbox_fund_escrow', {
