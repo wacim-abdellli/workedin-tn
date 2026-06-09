@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Loader2, CreditCard, Shield, AlertCircle, ArrowLeft, Check } from 'lucide-react';
 import { createEscrow } from '@/services/dhmad';
 import { supabase } from '../../lib/supabase';
@@ -6,6 +7,7 @@ import { formatCurrency, calculateTotalWithFee } from '../../lib/currencyUtils';
 import { PLATFORM_FEE_PERCENTAGE } from '../../types/payment';
 import type { FundEscrowProps } from '../../types/payment';
 import { useTranslation } from "../../i18n";
+import { logger } from '../../lib/logger';
 
 type SupabaseLikeError = {
     message?: string;
@@ -28,7 +30,7 @@ const getPaymentErrorMessage = (error: unknown, fallback: string) => {
  * Allows clients to fund escrow for a contract via Flouci payment
  */
 const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
-    const { tx } = useTranslation();
+    const { tx, language } = useTranslation();
     const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [showBreakdown, setShowBreakdown] = useState(false);
@@ -181,16 +183,16 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                 <div className="mb-6 space-y-2.5 p-3.5 bg-white/[0.02] border border-white/[0.04] rounded-xl text-xs text-zinc-300">
                     <div className="flex justify-between">
                         <span className="text-zinc-500">Project Budget</span>
-                        <span className="font-semibold text-white">{formatCurrency(originalAmount)}</span>
+                        <span className="font-semibold text-white">{formatCurrency(originalAmount, true, language)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-zinc-500">Platform Fee (5%)</span>
-                        <span className="font-semibold text-white">{formatCurrency(feeAmount)}</span>
+                        <span className="font-semibold text-white">{formatCurrency(feeAmount, true, language)}</span>
                     </div>
                     <div className="h-px bg-white/[0.06] my-2" />
                     <div className="flex justify-between font-bold text-sm">
                         <span className="text-white">Total Charge</span>
-                        <span className="text-amber-400">{formatCurrency(totalAmount)}</span>
+                        <span className="text-amber-400">{formatCurrency(totalAmount, true, language)}</span>
                     </div>
                 </div>
 
@@ -207,7 +209,7 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                     ) : (
                         <>
                             <Shield className="w-5 h-5" />
-                            <span>Confirm & Pay {formatCurrency(totalAmount, true)}</span>
+                            <span>Confirm & Pay {formatCurrency(totalAmount, true, language)}</span>
                         </>
                     )}
                 </button>
@@ -249,23 +251,23 @@ const FundEscrow = ({ contract, onSuccess, onError }: FundEscrowProps) => {
                     <div className="space-y-2.5 p-3.5 bg-white/[0.02] border border-white/[0.04] rounded-xl text-sm text-zinc-300">
                         <div className="flex justify-between">
                             <span className="text-zinc-500">{tx('payment.projectBudget', undefined, 'Project budget')}</span>
-                            <span className="font-semibold text-white">{formatCurrency(originalAmount)}</span>
+                            <span className="font-semibold text-white">{formatCurrency(originalAmount, true, language)}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-zinc-500">{tx('payment.platformFee', undefined, 'Platform fee')} (5%)</span>
-                            <span className="font-semibold text-white">{formatCurrency(feeAmount)}</span>
+                            <span className="font-semibold text-white">{formatCurrency(feeAmount, true, language)}</span>
                         </div>
                         <div className="h-px bg-white/[0.06] my-2" />
                         <div className="flex justify-between font-bold">
                             <span className="text-white">{tx('payment.total', undefined, 'Total')}</span>
-                            <span className="text-amber-400">{formatCurrency(totalAmount)}</span>
+                            <span className="text-amber-400">{formatCurrency(totalAmount, true, language)}</span>
                         </div>
                     </div>
                 )}
 
                 {!showBreakdown && (
                     <div className="text-2xl font-black text-amber-400 tracking-tight">
-                        {formatCurrency(totalAmount)}
+                        {formatCurrency(totalAmount, true, language)}
                     </div>
                 )}
             </div>
