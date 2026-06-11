@@ -1831,6 +1831,8 @@ export const ar = {
         },
         "messages": {
             "title": "الرسائل",
+            "filterAll": "الكل",
+            "filterUnread": "غير مقروءة",
             "searchPlaceholder": "ابحث في المحادثات...",
             "noMessagesYet": "لا توجد رسائل بعد",
             "emptyThread": "لا توجد رسائل بعد. ابدأ المحادثة!",

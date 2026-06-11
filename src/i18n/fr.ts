@@ -1833,6 +1833,8 @@ export const fr: Translations = {
         },
         "messages": {
             "title": "Messages",
+            "filterAll": "Tout",
+            "filterUnread": "Non lus",
             "searchPlaceholder": "Rechercher dans les conversations...",
             "noMessagesYet": "Pas encore de messages",
             "emptyThread": "Pas encore de messages. Commencez la conversation !",

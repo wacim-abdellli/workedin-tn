@@ -1852,6 +1852,8 @@ export const en: Translations = {
         },
         "messages": {
             "title": "Messages",
+            "filterAll": "All",
+            "filterUnread": "Unread",
             "searchPlaceholder": "Search conversations...",
             "noMessagesYet": "No messages yet",
             "emptyThread": "No messages yet. Start the conversation!",
