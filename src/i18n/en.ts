@@ -1022,6 +1022,42 @@ export const en: Translations = {
         "contractError": "Error creating contract"
     },
     "profile": {
+        "companyDetailsTitle": "Company Details",
+        "companyDetailsDesc": "Company info, hiring preferences and communication style",
+        "companyWebsite": "Website",
+        "companyIndustry": "Industry",
+        "selectIndustry": "Select industry",
+        "companySize": "Company size",
+        "companyRole": "Your role",
+        "companyRolePlaceholder": "e.g. Hiring Manager, CEO",
+        "hiringNeeds": "Hiring needs (comma separated)",
+        "hiringNeedsPlaceholder": "e.g. Designers, Developers",
+        "budgetPreference": "Default budget preference",
+        "timelinePreference": "Default timeline preference",
+        "communicationPreferences": "Communication preferences",
+        "communicationPlaceholder": "e.g. Prefer Slack or email, weekly updates expected...",
+        "screeningPreferences": "Screening preferences",
+        "screeningPlaceholder": "e.g. Portfolio required, technical test expected...",
+        "legalPreferences": "Legal preferences",
+        "legalPlaceholder": "e.g. NDA required before starting...",
+        "companySizeOptions": {
+            "justMe": "Just me",
+            "oneToTen": "1–10 employees",
+            "elevenToFifty": "11–50 employees",
+            "fiftyOneToTwoHundred": "51–200 employees",
+            "twoHundredPlus": "201+ employees"
+        },
+        "budgetOptions": {
+            "fixed": "Fixed price",
+            "hourly": "Hourly rate",
+            "flexible": "Flexible / Depends on project"
+        },
+        "timelineOptions": {
+            "asap": "As soon as possible",
+            "oneToThreeMonths": "1 to 3 months",
+            "threeToSixMonths": "3 to 6 months",
+            "flexible": "Flexible"
+        },
         "fullName": "Full name",
         "fullNamePlaceholder": "Enter your full name",
         "companyName": "Company name",

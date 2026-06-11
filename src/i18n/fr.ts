@@ -1022,6 +1022,42 @@ export const fr: Translations = {
         "contractError": "Erreur lors de la création du contrat"
     },
     "profile": {
+        "companyDetailsTitle": "Détails de l'entreprise",
+        "companyDetailsDesc": "Informations sur l'entreprise, préférences d'embauche et style de communication",
+        "companyWebsite": "Site web",
+        "companyIndustry": "Secteur d'activité",
+        "selectIndustry": "Sélectionner le secteur d'activité",
+        "companySize": "Taille de l'entreprise",
+        "companyRole": "Votre rôle",
+        "companyRolePlaceholder": "ex. Responsable du recrutement, PDG",
+        "hiringNeeds": "Besoins de recrutement (séparés par des virgules)",
+        "hiringNeedsPlaceholder": "ex. Designers, Développeurs",
+        "budgetPreference": "Préférence budgétaire par défaut",
+        "timelinePreference": "Préférence de calendrier par défaut",
+        "communicationPreferences": "Préférences de communication",
+        "communicationPlaceholder": "ex. Slack ou e-mail de préférence, mises à jour hebdomadaires...",
+        "screeningPreferences": "Préférences de sélection",
+        "screeningPlaceholder": "ex. Portfolio requis, test technique prévu...",
+        "legalPreferences": "Préférences juridiques",
+        "legalPlaceholder": "ex. Accord de confidentialité requis avant de commencer...",
+        "companySizeOptions": {
+            "justMe": "Seulement moi",
+            "oneToTen": "1 à 10 employés",
+            "elevenToFifty": "11 à 50 employés",
+            "fiftyOneToTwoHundred": "51 à 200 employés",
+            "twoHundredPlus": "Plus de 200 employés"
+        },
+        "budgetOptions": {
+            "fixed": "Prix fixe",
+            "hourly": "Taux horaire",
+            "flexible": "Flexible / Dépend du projet"
+        },
+        "timelineOptions": {
+            "asap": "Dès que possible",
+            "oneToThreeMonths": "1 à 3 mois",
+            "threeToSixMonths": "3 à 6 mois",
+            "flexible": "Flexible"
+        },
         "fullName": "Nom complet",
         "fullNamePlaceholder": "Entrez votre nom complet",
         "companyName": "Nom de l'entreprise",

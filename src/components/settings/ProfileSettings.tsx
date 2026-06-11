@@ -372,10 +372,10 @@ export default function ProfileSettings() {
                                 </div>
                                 <div>
                                     <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                                        Company Details
+                                        {tx('profile.companyDetailsTitle', undefined, 'Company Details')}
                                     </h3>
                                     <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                                        Company info, hiring preferences and communication style
+                                        {tx('profile.companyDetailsDesc', undefined, 'Company info, hiring preferences and communication style')}
                                     </p>
                                 </div>
                             </div>

@@ -1020,6 +1020,42 @@ export const ar = {
         "contractError": "حدث خطأ في إنشاء العقد"
     },
     "profile": {
+        "companyDetailsTitle": "تفاصيل الشركة",
+        "companyDetailsDesc": "معلومات الشركة، وتفضيلات التوظيف وأسلوب التواصل",
+        "companyWebsite": "الموقع الإلكتروني",
+        "companyIndustry": "مجال العمل",
+        "selectIndustry": "اختر مجال العمل",
+        "companySize": "حجم الشركة",
+        "companyRole": "دورك",
+        "companyRolePlaceholder": "مثال: مدير التوظيف، الرئيس التنفيذي",
+        "hiringNeeds": "احتياجات التوظيف (مفصولة بفاصلة)",
+        "hiringNeedsPlaceholder": "مثال: مصممون، مطورون",
+        "budgetPreference": "تفضيل الميزانية الافتراضي",
+        "timelinePreference": "تفضيل الجدول الزمني الافتراضي",
+        "communicationPreferences": "تفضيلات التواصل",
+        "communicationPlaceholder": "مثال: نفضل Slack أو البريد الإلكتروني، تحديثات أسبوعية...",
+        "screeningPreferences": "تفضيلات الفحص والفرز",
+        "screeningPlaceholder": "مثال: معرض الأعمال مطلوب، اختبار تقني متوقع...",
+        "legalPreferences": "التفضيلات القانونية",
+        "legalPlaceholder": "مثال: مطلوب اتفاقية عدم إفشاء قبل البدء...",
+        "companySizeOptions": {
+            "justMe": "أنا فقط",
+            "oneToTen": "1–10 موظفين",
+            "elevenToFifty": "11–50 موظفاً",
+            "fiftyOneToTwoHundred": "51–200 موظفاً",
+            "twoHundredPlus": "+201 موظفاً"
+        },
+        "budgetOptions": {
+            "fixed": "سعر ثابت",
+            "hourly": "سعر بالساعة",
+            "flexible": "مرن / حسب المشروع"
+        },
+        "timelineOptions": {
+            "asap": "في أقرب وقت ممكن",
+            "oneToThreeMonths": "من 1 إلى 3 أشهر",
+            "threeToSixMonths": "من 3 إلى 6 أشهر",
+            "flexible": "مرن"
+        },
         "fullName": "الاسم الكامل",
         "fullNamePlaceholder": "أدخل اسمك الكامل",
         "companyName": "اسم الشركة",

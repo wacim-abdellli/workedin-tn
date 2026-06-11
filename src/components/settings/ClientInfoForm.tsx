@@ -64,24 +64,24 @@ export function ClientInfoForm({ form, onChange }: ClientInfoFormProps) {
     const set = (patch: Partial<ClientFormData>) => onChange({ ...form, ...patch });
 
     const COMPANY_SIZE_OPTIONS = [
-        { value: '1', label: 'Just me' },
-        { value: '1-10', label: '1–10 employees' },
-        { value: '11-50', label: '11–50 employees' },
-        { value: '51-200', label: '51–200 employees' },
-        { value: '201+', label: '201+ employees' },
+        { value: '1', label: tx('profile.companySizeOptions.justMe', undefined, 'Just me') },
+        { value: '1-10', label: tx('profile.companySizeOptions.oneToTen', undefined, '1–10 employees') },
+        { value: '11-50', label: tx('profile.companySizeOptions.elevenToFifty', undefined, '11–50 employees') },
+        { value: '51-200', label: tx('profile.companySizeOptions.fiftyOneToTwoHundred', undefined, '51–200 employees') },
+        { value: '201+', label: tx('profile.companySizeOptions.twoHundredPlus', undefined, '201+ employees') },
     ];
 
     const BUDGET_OPTIONS = [
-        { value: 'fixed', label: 'Fixed price' },
-        { value: 'hourly', label: 'Hourly rate' },
-        { value: 'flexible', label: 'Flexible / Depends on project' },
+        { value: 'fixed', label: tx('profile.budgetOptions.fixed', undefined, 'Fixed price') },
+        { value: 'hourly', label: tx('profile.budgetOptions.hourly', undefined, 'Hourly rate') },
+        { value: 'flexible', label: tx('profile.budgetOptions.flexible', undefined, 'Flexible / Depends on project') },
     ];
 
     const TIMELINE_OPTIONS = [
-        { value: 'asap', label: 'As soon as possible' },
-        { value: '1_to_3_months', label: '1 to 3 months' },
-        { value: '3_to_6_months', label: '3 to 6 months' },
-        { value: 'flexible', label: 'Flexible' },
+        { value: 'asap', label: tx('profile.timelineOptions.asap', undefined, 'As soon as possible') },
+        { value: '1_to_3_months', label: tx('profile.timelineOptions.oneToThreeMonths', undefined, '1 to 3 months') },
+        { value: '3_to_6_months', label: tx('profile.timelineOptions.threeToSixMonths', undefined, '3 to 6 months') },
+        { value: 'flexible', label: tx('profile.timelineOptions.flexible', undefined, 'Flexible') },
     ];
 
     return (
@@ -110,7 +110,7 @@ export function ClientInfoForm({ form, onChange }: ClientInfoFormProps) {
                         variant="client"
                         value={form.company_industry}
                         onChange={value => set({ company_industry: value })}
-                        placeholder="Select industry"
+                        placeholder={tx('profile.selectIndustry', undefined, 'Select industry')}
                     />
                 </div>
                 <div className="relative" style={{ zIndex: 40 }}>
@@ -127,14 +127,14 @@ export function ClientInfoForm({ form, onChange }: ClientInfoFormProps) {
                     label={tx('profile.companyRole', undefined, 'Your role')}
                     value={form.company_role}
                     onChange={e => set({ company_role: e.target.value })}
-                    placeholder="e.g. Hiring Manager, CEO"
+                    placeholder={tx('profile.companyRolePlaceholder', undefined, 'e.g. Hiring Manager, CEO')}
                     leftIcon={<Users className="w-4 h-4" />}
                 />
                 <Input
                     label={tx('profile.hiringNeeds', undefined, 'Hiring needs (comma separated)')}
                     value={form.hiring_needs}
                     onChange={e => set({ hiring_needs: e.target.value })}
-                    placeholder="e.g. Designers, Developers"
+                    placeholder={tx('profile.hiringNeedsPlaceholder', undefined, 'e.g. Designers, Developers')}
                     leftIcon={<Target className="w-4 h-4" />}
                 />
                 <div className="relative" style={{ zIndex: 30 }}>
@@ -166,7 +166,7 @@ export function ClientInfoForm({ form, onChange }: ClientInfoFormProps) {
                     label={tx('profile.communicationPreferences', undefined, 'Communication preferences')}
                     value={form.communication_preferences}
                     onChange={e => set({ communication_preferences: e.target.value })}
-                    placeholder="e.g. Prefer Slack or email, weekly updates expected..."
+                    placeholder={tx('profile.communicationPlaceholder', undefined, 'e.g. Prefer Slack or email, weekly updates expected...')}
                     leftIcon={<MessageCircle className="w-4 h-4" />}
                 />
                 <Input
@@ -175,7 +175,7 @@ export function ClientInfoForm({ form, onChange }: ClientInfoFormProps) {
                     label={tx('profile.screeningPreferences', undefined, 'Screening preferences')}
                     value={form.screening_preferences}
                     onChange={e => set({ screening_preferences: e.target.value })}
-                    placeholder="e.g. Portfolio required, technical test expected..."
+                    placeholder={tx('profile.screeningPlaceholder', undefined, 'e.g. Portfolio required, technical test expected...')}
                     leftIcon={<ShieldCheck className="w-4 h-4" />}
                 />
                 <Input
@@ -184,7 +184,7 @@ export function ClientInfoForm({ form, onChange }: ClientInfoFormProps) {
                     label={tx('profile.legalPreferences', undefined, 'Legal preferences')}
                     value={form.legal_preferences}
                     onChange={e => set({ legal_preferences: e.target.value })}
-                    placeholder="e.g. NDA required before starting..."
+                    placeholder={tx('profile.legalPlaceholder', undefined, 'e.g. NDA required before starting...')}
                     leftIcon={<FileText className="w-4 h-4" />}
                 />
             </div>
