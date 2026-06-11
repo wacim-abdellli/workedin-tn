@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Mic, Paperclip, Send, Square, X, FileText } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
+import { useTranslation } from '@/i18n';
 
 interface ChatInputAreaProps {
     value: string;
@@ -39,6 +40,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
 }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const { tx } = useTranslation();
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -59,6 +61,10 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
         e.currentTarget.style.height = '36px';
         e.currentTarget.style.height = `${Math.min(e.currentTarget.scrollHeight, 112)}px`;
     };
+
+    const activePlaceholder = isRecording 
+        ? tx('messages.recording', undefined, 'Recording...') 
+        : (placeholder === 'Type a message...' ? tx('messages.messagePlaceholder', undefined, 'Write your message...') : placeholder);
 
     return (
         <div className="flex flex-col gap-2 bg-transparent">
@@ -100,7 +106,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                 <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={disabled || isSending || isRecording || !canAttachFiles}
-                    aria-label="Attach file"
+                    aria-label={tx('messages.attachFile', undefined, 'Attach file')}
                     className="rounded-[12px] p-2 text-zinc-400 transition-all hover:bg-white/[0.04] hover:text-white disabled:opacity-50"
                 >
                     <Paperclip className="h-4 w-4 transition-colors" />
@@ -110,7 +116,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                 <button
                     onClick={onToggleRecord}
                     disabled={disabled || isSending || !canRecordAudio}
-                    aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+                    aria-label={isRecording ? tx('messages.stopRecording', undefined, 'Stop recording') : tx('messages.recordVoice', undefined, 'Record voice message')}
                     className={`rounded-[12px] p-2 transition-all disabled:opacity-50 ${isRecording ? 'bg-red-500/20 text-red-400' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-white'}`}
                 >
                     {isRecording ? <Square className="h-4 w-4 fill-current animate-pulse" /> : <Mic className="h-4 w-4 transition-colors" />}
@@ -124,7 +130,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
                     onBlur={onTypingStop}
-                    placeholder={isRecording ? 'Recording audio...' : placeholder}
+                    placeholder={activePlaceholder}
                     disabled={disabled || isSending || isRecording}
                     rows={1}
                     className="min-h-[36px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-[13.5px] text-white placeholder-zinc-500 outline-none ring-0 focus:outline-none focus:ring-0 disabled:opacity-50"
@@ -136,7 +142,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
                         onTypingStop?.();
                         onSend();
                     }}
-                    aria-label="Send message"
+                    aria-label={tx('contract.send', undefined, 'Send message')}
                     disabled={disabled || isSending || (!value.trim() && selectedFiles.length === 0)}
                     className="rounded-[12px] p-2 text-white transition-all duration-200 hover:scale-[1.03] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                     style={{ 

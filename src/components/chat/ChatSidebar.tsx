@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
+import { useTranslation } from '@/i18n';
 
 export interface ConversationPreview {
     id: string;
@@ -24,6 +25,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     onNewChat
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
+    const { tx } = useTranslation();
 
     const filteredConversations = conversations.filter(c => 
         c.participantName.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -31,10 +33,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     );
 
     return (
-        <div className="flex h-full w-full flex-col border-r bg-[var(--color-bg-base)]" style={{ borderColor: 'var(--color-border-subtle)' }}>
+        <div className="flex h-full w-full flex-col border-e bg-[var(--color-bg-base)]" style={{ borderColor: 'var(--color-border-subtle)' }}>
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Messages</h2>
+                <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>{tx('messages.title', undefined, 'Messages')}</h2>
                 {onNewChat && (
                     <button 
                         onClick={onNewChat}
@@ -52,10 +54,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     <Search className="h-4 w-4 shrink-0" style={{ color: 'var(--color-text-tertiary)' }} />
                     <input 
                         type="text"
-                        placeholder="Search messages..."
+                        placeholder={tx('messages.searchPlaceholder', undefined, 'Search messages...')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="ml-2 flex-1 bg-transparent border-0 outline-none ring-0 text-sm placeholder:opacity-70"
+                        className="ms-2 flex-1 bg-transparent border-0 outline-none ring-0 text-sm placeholder:opacity-70"
                         style={{ color: 'var(--color-text-primary)' }}
                     />
                 </div>
@@ -71,7 +73,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             className="p-6 text-center text-sm" 
                             style={{ color: 'var(--color-text-tertiary)' }}
                         >
-                            No conversations found.
+                            {tx('messages.noConversationsFound', undefined, 'No conversations found.')}
                         </m.div>
                     ) : (
                         filteredConversations.map((conv) => (
@@ -112,7 +114,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                     
                                     <div className="flex items-center justify-between gap-2 mt-0.5">
                                         <p className={`truncate text-[13px] ${conv.unreadCount > 0 ? 'font-medium' : ''}`} style={{ color: conv.unreadCount > 0 ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>
-                                            {conv.lastMessage || 'Sent an attachment'}
+                                            {conv.lastMessage || tx('messages.sentAttachment', undefined, 'Sent an attachment')}
                                         </p>
                                         
                                         {conv.unreadCount > 0 && (

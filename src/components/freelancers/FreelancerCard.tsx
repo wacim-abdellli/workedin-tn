@@ -21,7 +21,7 @@ interface FreelancerCardProps {
 
 function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onToggleSave, isOnline = false }: FreelancerCardProps) {
   const navigate = useNavigate();
-  const { tx, language } = useTranslation();
+  const { tx, txPlural, language } = useTranslation();
   const [from, to] = getAvatarGradient(freelancer.name);
 
   const badges = [
@@ -51,7 +51,7 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
         {onToggleSave && (
           <button
             onClick={(e) => { e.stopPropagation(); onToggleSave(freelancer.id); }}
-            className="absolute top-5 right-5 h-9 w-9 flex items-center justify-center rounded-xl border border-white/8 bg-white/4 hover:border-rose-500/40 hover:bg-rose-500/10 transition-all shrink-0 z-10"
+            className="absolute top-5 inset-inline-end-5 h-9 w-9 flex items-center justify-center rounded-xl border border-white/8 bg-white/4 hover:border-rose-500/40 hover:bg-rose-500/10 transition-all shrink-0 z-10"
           >
             <Heart className={cn('w-4 h-4 transition-colors', isSaved ? 'fill-rose-400 text-rose-400' : 'text-white/40')} />
           </button>
@@ -66,32 +66,32 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
             }
           </div>
           {isOnline && (
-            <span className="absolute bottom-0 right-0 h-4.5 w-4.5 rounded-full bg-emerald-400 ring-2 ring-[#0f0f15]" />
+            <span className="absolute bottom-0 inset-inline-end-0 h-4.5 w-4.5 rounded-full bg-emerald-400 ring-2 ring-[#0f0f15]" />
           )}
         </div>
 
         {/* Info content */}
-        <div className="flex-1 min-w-0 pr-10">
+        <div className="flex-1 min-w-0 pe-10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1.5">
             <div>
               <h3 className="flex items-center gap-2 text-base font-extrabold text-white transition-colors group-hover:text-[var(--workspace-primary,#8b5cf6)]">
                 {freelancer.name}
                 {freelancer.is_verified && <BadgeCheck className="w-4 h-4 text-emerald-400 shrink-0" />}
               </h3>
-              <p className="text-xs font-semibold text-white/55 mt-0.5">{freelancer.title || 'Freelancer'}</p>
+              <p className="text-xs font-semibold text-white/55 mt-0.5">{freelancer.title || tx('pages.freelancerCard.defaultTitle', undefined, 'Freelancer')}</p>
             </div>
             <div className="shrink-0">
-              <p className="text-lg font-black text-white">{freelancer.hourly_rate} <span className="text-xs font-normal text-white/40">TND/hr</span></p>
+              <p className="text-lg font-black text-white">{freelancer.hourly_rate} <span className="text-xs font-normal text-white/40">{tx('pages.freelancerCard.tndPerHour', undefined, 'TND/hr')}</span></p>
             </div>
           </div>
 
           {/* Location / rating row */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-white/45 mb-4">
-            <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" /> <strong className="text-white">{freelancer.rating > 0 ? freelancer.rating.toFixed(1) : '—'}</strong> ({freelancer.reviews} reviews)</span>
+            <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" /> <strong className="text-white">{freelancer.rating > 0 ? freelancer.rating.toFixed(1) : '—'}</strong> ({txPlural('pages.freelancerCard.reviewsCount', freelancer.reviews, { count: freelancer.reviews })})</span>
             <span className="text-white/20">•</span>
             {freelancer.success_rate > 0 && (
               <>
-                <span className="font-semibold text-emerald-400">{freelancer.success_rate}% Success</span>
+                <span className="font-semibold text-emerald-400">{tx('pages.freelancerCard.successRate', { rate: freelancer.success_rate }, `${freelancer.success_rate}% Success`)}</span>
                 <span className="text-white/20">•</span>
               </>
             )}
@@ -101,7 +101,7 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
                 <span className="text-white/20">•</span>
               </>
             )}
-            <span className="flex items-center gap-1"><Briefcase className="w-3.5 h-3.5 shrink-0" /> {freelancer.jobs_completed} {tx('pages.freelancerCard.completedJobs', { count: freelancer.jobs_completed }, 'jobs')}</span>
+            <span className="flex items-center gap-1"><Briefcase className="w-3.5 h-3.5 shrink-0" /> {tx('pages.freelancerCard.completedJobs', { count: freelancer.jobs_completed }, 'jobs')}</span>
             <span className="text-white/20">•</span>
             <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 shrink-0" /> {freelancer.response_time}</span>
           </div>
@@ -168,7 +168,7 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
           {freelancer.name}
           {freelancer.is_verified && <BadgeCheck className="w-4 h-4 text-emerald-400 shrink-0" />}
         </h3>
-        <p className="text-xs font-semibold text-white/50 mt-0.5 line-clamp-1">{freelancer.title || 'Freelancer'}</p>
+        <p className="text-xs font-semibold text-white/50 mt-0.5 line-clamp-1">{freelancer.title || tx('pages.freelancerCard.defaultTitle', undefined, 'Freelancer')}</p>
       </div>
 
       {/* Badges row (Clean placement, no absolute overlaps) */}
@@ -193,8 +193,8 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
       {/* Rate + success + jobs (Clean layout, no bulky boxes) */}
       <div className="flex items-center justify-between py-3 border-y border-white/[0.05] mb-4 text-xs">
         <div>
-          <span className="block text-sm font-black text-white">{freelancer.hourly_rate} <span className="text-[10px] font-normal text-white/40">TND/hr</span></span>
-          <span className="block text-[9px] text-white/35 uppercase tracking-wider mt-0.5">{tx('pages.freelancerCard.perHour', undefined, 'Rate')}</span>
+          <span className="block text-sm font-black text-white">{freelancer.hourly_rate} <span className="text-[10px] font-normal text-white/40">{tx('pages.freelancerCard.tndPerHour', undefined, 'TND/hr')}</span></span>
+          <span className="block text-[9px] text-white/35 uppercase tracking-wider mt-0.5">{tx('pages.freelancerCard.hourlyRate', undefined, 'Rate')}</span>
         </div>
         <div className="w-[1px] h-6 bg-white/[0.08]" />
         <div className="text-center">
@@ -204,7 +204,7 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
         <div className="w-[1px] h-6 bg-white/[0.08]" />
         <div className="text-right">
           <span className="block text-sm font-black text-white">{freelancer.jobs_completed}</span>
-          <span className="block text-[9px] text-white/35 uppercase tracking-wider mt-0.5">Jobs</span>
+          <span className="block text-[9px] text-white/35 uppercase tracking-wider mt-0.5">{tx('pages.freelancerCard.jobsLabel', undefined, 'Jobs')}</span>
         </div>
       </div>
 
@@ -213,7 +213,7 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
         {freelancer.skills.slice(0, 3).map((s) => (
           <span key={s} className="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-white/6 bg-white/4 text-white/60">{s}</span>
         ))}
-        {freelancer.skills.length > 3 && <span className="text-[10px] font-medium text-white/30 self-center ml-0.5">+{freelancer.skills.length - 3}</span>}
+        {freelancer.skills.length > 3 && <span className="text-[10px] font-medium text-white/30 self-center ms-0.5">+{freelancer.skills.length - 3}</span>}
       </div>
     </div>
   );

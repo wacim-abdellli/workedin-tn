@@ -1749,6 +1749,14 @@ export const ar = {
             "completedJobs": "{{count}} مكتمل",
             "repliesIn": "يرد خلال {{time}}",
             "viewProfile": "عرض الملف",
+            "defaultTitle": "مستقل",
+            "jobsLabel": "وظائف",
+            "success": "نجاح",
+            "reviewsCount": {
+                "zero": "لا توجد تقييمات",
+                "one": "تقييم واحد",
+                "other": "{{count}} تقييمًا"
+            },
             "badges": {
                 "verified": "موثق",
                 "verifiedTitle": "تمت مراجعة الهوية وبيانات الدفع.",
@@ -1757,7 +1765,9 @@ export const ar = {
                 "fastResponder": "سريع الرد",
                 "fastResponderTitle": "عادة يرد بسرعة على العملاء الجدد.",
                 "newTalent": "موهبة جديدة",
-                "newTalentTitle": "ملف حديث بزخم أولي جيد."
+                "newTalentTitle": "ملف حديث بزخم أولي جيد.",
+                "availableNow": "متاح الآن",
+                "availableNowTitle": "متاح لبدء مشاريع جديدة فوراً."
             }
         },
         "errorBoundary": {
@@ -1822,6 +1832,8 @@ export const ar = {
             "freelancerInboxLabel": "صندوق المستقل",
             "allConversationsLabel": "جميع المحادثات",
             "archivedLabel": "المؤرشفة",
+            "noConversationsFound": "لم يتم العثور على محادثات.",
+            "sentAttachment": "أرسل مرفقًا",
             "backToInbox": "العودة للصندوق",
             "viewArchived": "المحادثات المؤرشفة",
             "contractWorkspaceTitle": "مساحة عمل العقد",

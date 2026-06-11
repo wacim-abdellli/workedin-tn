@@ -1770,6 +1770,14 @@ export const en: Translations = {
             "completedJobs": "{{count}} completed",
             "repliesIn": "Replies in {{time}}",
             "viewProfile": "View profile",
+            "defaultTitle": "Freelancer",
+            "jobsLabel": "Jobs",
+            "success": "Success",
+            "reviewsCount": {
+                "zero": "no reviews",
+                "one": "1 review",
+                "other": "{{count}} reviews"
+            },
             "badges": {
                 "verified": "Verified",
                 "verifiedTitle": "Identity and payment details reviewed.",
@@ -1778,7 +1786,9 @@ export const en: Translations = {
                 "fastResponder": "Fast Responder",
                 "fastResponderTitle": "Usually replies quickly to new clients.",
                 "newTalent": "New Talent",
-                "newTalentTitle": "Fresh profile with early momentum."
+                "newTalentTitle": "Fresh profile with early momentum.",
+                "availableNow": "Available",
+                "availableNowTitle": "Available for new projects right now."
             }
         },
         "errorBoundary": {
@@ -1843,6 +1853,8 @@ export const en: Translations = {
             "freelancerInboxLabel": "Freelancer inbox",
             "allConversationsLabel": "All conversations",
             "archivedLabel": "ARCHIVED",
+            "noConversationsFound": "No conversations found.",
+            "sentAttachment": "Sent an attachment",
             "backToInbox": "Back to inbox",
             "viewArchived": "Archived conversations",
             "contractWorkspaceTitle": "Contract workspace",
