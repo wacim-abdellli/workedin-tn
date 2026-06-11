@@ -315,7 +315,7 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute end-0 top-full z-[70] mt-2.5 w-80 rounded-2xl p-1.5"
+            className="absolute end-0 top-full z-[70] mt-2.5 w-[270px] rounded-2xl p-1.5"
             style={{
               transformOrigin: "top right",
               background: isDark 
