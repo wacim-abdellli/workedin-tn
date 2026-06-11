@@ -315,7 +315,7 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute end-0 top-full z-[70] mt-2.5 w-64 rounded-2xl p-1.5"
+            className="absolute end-0 top-full z-[70] mt-2.5 w-80 rounded-2xl p-1.5"
             style={{
               transformOrigin: "top right",
               background: isDark 
@@ -398,7 +398,7 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
                     {tx('auth.accountPanel.switchWorkspace', undefined, 'Switch workspace')}
                   </p>
                   <p 
-                    className={`text-sm font-semibold transition-colors duration-150 ${
+                    className={`text-sm font-semibold whitespace-nowrap transition-colors duration-150 ${
                       isDark ? "text-zinc-300 group-hover:text-zinc-50" : "text-zinc-700 group-hover:text-zinc-900"
                     }`}
                   >
@@ -425,7 +425,7 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <span className={`w-2 h-2 rounded-full shrink-0 transition-all duration-300 ${isOnlineForMessages ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-zinc-400 dark:bg-zinc-600'}`} />
-                <span className="leading-tight">{tx('auth.accountPanel.onlineForMessages', undefined, 'Online for messages')}</span>
+                <span className="leading-tight whitespace-nowrap">{tx('auth.accountPanel.onlineForMessages', undefined, 'Online for messages')}</span>
               </div>
               <span className={toggleTrackClass(isOnlineForMessages, true)}>
                 <span className={toggleThumbClass(isOnlineForMessages)} />
