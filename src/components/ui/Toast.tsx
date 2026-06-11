@@ -28,36 +28,36 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 const toastConfig: Record<ToastType, { icon: React.ReactNode; titleKey: string; titleFallback: string; bgClass: string; textClass: string; iconClass: string }> = {
   success: {
-    icon: <CheckCircle className="h-5 w-5" />,
+    icon: <CheckCircle className="h-4.5 w-4.5" />,
     titleKey: 'toast.success',
     titleFallback: 'Success',
-    bgClass: 'bg-emerald-950/95 border-emerald-500/60',
-    textClass: 'text-emerald-100',
-    iconClass: 'text-emerald-300',
+    bgClass: 'bg-[#0b1611]/95 border-y border-r border-white/[0.06] border-l-4 border-l-emerald-500',
+    textClass: 'text-emerald-100/90',
+    iconClass: 'text-emerald-400',
   },
   error: {
-    icon: <AlertCircle className="h-5 w-5" />,
+    icon: <AlertCircle className="h-4.5 w-4.5" />,
     titleKey: 'toast.error',
     titleFallback: 'Error',
-    bgClass: 'bg-rose-950/95 border-rose-500/70',
-    textClass: 'text-rose-100',
-    iconClass: 'text-rose-300',
+    bgClass: 'bg-[#1a0a0a]/95 border-y border-r border-white/[0.06] border-l-4 border-l-rose-500',
+    textClass: 'text-rose-100/90',
+    iconClass: 'text-rose-400',
   },
   warning: {
-    icon: <AlertTriangle className="h-5 w-5" />,
+    icon: <AlertTriangle className="h-4.5 w-4.5" />,
     titleKey: 'toast.warning',
     titleFallback: 'Warning',
-    bgClass: 'bg-amber-950/95 border-amber-500/70',
-    textClass: 'text-amber-100',
-    iconClass: 'text-amber-300',
+    bgClass: 'bg-[#1a130a]/95 border-y border-r border-white/[0.06] border-l-4 border-l-amber-500',
+    textClass: 'text-amber-100/90',
+    iconClass: 'text-amber-400',
   },
   info: {
-    icon: <Info className="h-5 w-5" />,
+    icon: <Info className="h-4.5 w-4.5" />,
     titleKey: 'toast.info',
     titleFallback: 'Info',
-    bgClass: 'bg-sky-950/95 border-sky-500/65',
-    textClass: 'text-sky-100',
-    iconClass: 'text-sky-300',
+    bgClass: 'bg-[#0a111a]/95 border-y border-r border-white/[0.06] border-l-4 border-l-sky-500',
+    textClass: 'text-sky-100/90',
+    iconClass: 'text-sky-400',
   },
 };
 
@@ -81,7 +81,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     options?: ToastOptions
   ) => {
     const id = Math.random().toString(36).slice(2, 9);
-    const position = options?.position ?? 'bottom-right';
+    const position = options?.position ?? 'top-right';
 
     setToasts((prev) => [...prev, { id, message, type, duration, position }]);
   }, []);
@@ -165,9 +165,8 @@ function ToastCard({ toast, onClose }: { toast: Toast; onClose: () => void }) {
         w-[min(380px,calc(100vw-2rem))] 
         overflow-hidden 
         rounded-xl
-        border
         shadow-2xl
-        backdrop-blur-sm
+        backdrop-blur-md
         ${config.bgClass}
       `}
       role="status"
