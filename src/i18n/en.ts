@@ -1698,6 +1698,17 @@ export const en: Translations = {
             }
         },
         "settings": {
+            "title": "Settings",
+            "menu": {
+                "account": "Account",
+                "profile": "Profile Settings",
+                "notifications": "Notifications",
+                "earnings": "Earnings",
+                "billing": "Billing",
+                "privacy": "Privacy",
+                "freelancerMode": "Freelancer Mode",
+                "clientMode": "Client Mode"
+            },
             "account": {
                 "currentWorkspace": "Current workspace",
                 "accountType": "Account type",

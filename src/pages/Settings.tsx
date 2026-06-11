@@ -847,11 +847,11 @@ export default function Settings() {
   const accentColor = activeMode === 'freelancer' ? '#8B5CF6' : '#F59E0B';
 
   const navItems: Array<{ id: SettingsTab; label: string; icon: typeof SettingsIcon }> = [
-    { id: 'account', label: 'Account', icon: SettingsIcon },
-    { id: 'profile', label: 'Profile Settings', icon: UserCircle },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'payment', label: activeMode === 'freelancer' ? 'Earnings' : 'Billing', icon: CreditCard },
-    { id: 'privacy', label: 'Privacy', icon: Shield },
+    { id: 'account', label: tx('pages.settings.menu.account', undefined, 'Account'), icon: SettingsIcon },
+    { id: 'profile', label: tx('pages.settings.menu.profile', undefined, 'Profile Settings'), icon: UserCircle },
+    { id: 'notifications', label: tx('pages.settings.menu.notifications', undefined, 'Notifications'), icon: Bell },
+    { id: 'payment', label: activeMode === 'freelancer' ? tx('pages.settings.menu.earnings', undefined, 'Earnings') : tx('pages.settings.menu.billing', undefined, 'Billing'), icon: CreditCard },
+    { id: 'privacy', label: tx('pages.settings.menu.privacy', undefined, 'Privacy'), icon: Shield },
   ];
 
   const accountType =
@@ -868,7 +868,9 @@ export default function Settings() {
       : `/client/${user.id}?preview=public`
     : dashboardPath;
   const authProvider = user?.app_metadata?.provider || user?.app_metadata?.providers?.[0] || 'email';
-  const workspaceLabel = activeMode === 'freelancer' ? 'Freelancer Mode' : 'Client Mode';
+  const workspaceLabel = activeMode === 'freelancer'
+    ? tx('pages.settings.menu.freelancerMode', undefined, 'Freelancer Mode')
+    : tx('pages.settings.menu.clientMode', undefined, 'Client Mode');
 
   const handleSignOutAll = async () => {
     try {
@@ -943,7 +945,7 @@ export default function Settings() {
               style={{ borderColor: `color-mix(in srgb, ${accentColor} 28%, var(--color-border-default))` }}
             >
               <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, ${accentColor} 0%, transparent 80%)` }} />
-              <h1 className="text-2xl font-bold mb-2 text-on-surface">Settings</h1>
+              <h1 className="text-2xl font-bold mb-2 text-on-surface">{tx('pages.settings.title', undefined, 'Settings')}</h1>
               <div className="mb-6">
                 <span
                   className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border"

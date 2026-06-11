@@ -1679,6 +1679,17 @@ export const fr: Translations = {
             }
         },
         "settings": {
+            "title": "Paramètres",
+            "menu": {
+                "account": "Compte",
+                "profile": "Paramètres du profil",
+                "notifications": "Notifications",
+                "earnings": "Gains",
+                "billing": "Facturation",
+                "privacy": "Confidentialité",
+                "freelancerMode": "Mode Freelance",
+                "clientMode": "Mode Client"
+            },
             "account": {
                 "currentWorkspace": "Espace de travail actuel",
                 "accountType": "Type de compte",

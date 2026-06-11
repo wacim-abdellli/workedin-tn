@@ -1677,6 +1677,17 @@ export const ar = {
             }
         },
         "settings": {
+            "title": "الإعدادات",
+            "menu": {
+                "account": "الحساب",
+                "profile": "إعدادات الملف الشخصي",
+                "notifications": "الإشعارات",
+                "earnings": "الأرباح",
+                "billing": "الفواتير",
+                "privacy": "الخصوصية",
+                "freelancerMode": "وضع المستقل",
+                "clientMode": "وضع العميل"
+            },
             "account": {
                 "currentWorkspace": "مساحة العمل الحالية",
                 "accountType": "نوع الحساب",
