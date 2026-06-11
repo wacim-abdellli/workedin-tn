@@ -145,7 +145,7 @@ function Login() {
 
                     <div className="relative z-10 flex-1 flex flex-col justify-center py-10">
                         <p className="text-xs font-bold tracking-[0.2em] uppercase text-[#E8820C] mb-5">
-                            # Tunisia's Freelance Platform
+                            {tx('authPages.login.platformTagline', undefined, "# Tunisia's Freelance Platform")}
                         </p>
 
                         <h1 className="text-[clamp(36px,4vw,52px)] font-extrabold leading-[1.05] tracking-[-1.5px] text-[var(--color-text-primary)] mb-5">
@@ -154,26 +154,25 @@ function Login() {
                         </h1>
 
                         <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed max-w-[340px] mb-10">
-                            Connect with verified talent, manage projects securely,
-                            and get paid in TND — every time.
+                            {tx('authPages.login.platformSubtitle', undefined, 'Connect with verified talent, manage projects securely, and get paid in TND — every time.')}
                         </p>
 
                         <div className="grid grid-cols-3 gap-3">
                             {[
-                                { title: 'Verified profiles', sub: 'Every identity confirmed', icon: ShieldCheck, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
-                                { title: 'Escrow payments', sub: 'Funds held until delivery', icon: Lock, color: '#E8820C', bg: 'rgba(232,130,12,0.1)' },
-                                { title: 'Local & global', sub: 'Optimised for Tunisia', icon: Globe2, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
+                                { titleKey: 'authPages.login.featureCards.verified.title', subKey: 'authPages.login.featureCards.verified.sub', titleFb: 'Verified profiles', subFb: 'Every identity confirmed', icon: ShieldCheck, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+                                { titleKey: 'authPages.login.featureCards.escrow.title', subKey: 'authPages.login.featureCards.escrow.sub', titleFb: 'Escrow payments', subFb: 'Funds held until delivery', icon: Lock, color: '#E8820C', bg: 'rgba(232,130,12,0.1)' },
+                                { titleKey: 'authPages.login.featureCards.local.title', subKey: 'authPages.login.featureCards.local.sub', titleFb: 'Local & global', subFb: 'Optimised for Tunisia', icon: Globe2, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
                             ].map((f) => {
                                 const Icon = f.icon;
                                 return (
-                                    <div key={f.title}
+                                    <div key={f.titleKey}
                                         className="rounded-xl p-4 border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] transition-all duration-200 hover:border-[var(--color-border-strong)] hover:shadow-md"
                                     >
                                         <div className="w-9 h-9 rounded-lg mb-3.5 flex items-center justify-center" style={{ background: f.bg }}>
                                             <Icon className="w-[18px] h-[18px]" style={{ color: f.color }} strokeWidth={2.5} />
                                         </div>
-                                        <p className="text-[13px] font-bold text-[var(--color-text-primary)] mb-1 leading-snug">{f.title}</p>
-                                        <p className="text-[11px] text-[var(--color-text-tertiary)] leading-relaxed">{f.sub}</p>
+                                        <p className="text-[13px] font-bold text-[var(--color-text-primary)] mb-1 leading-snug">{tx(f.titleKey, undefined, f.titleFb)}</p>
+                                        <p className="text-[11px] text-[var(--color-text-tertiary)] leading-relaxed">{tx(f.subKey, undefined, f.subFb)}</p>
                                     </div>
                                 );
                             })}
@@ -231,7 +230,7 @@ function Login() {
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div>
                                 <label className="block text-[11px] font-bold tracking-[0.1em] uppercase text-[var(--color-text-tertiary)] mb-2">
-                                    Email
+                                    {tx('authPages.login.form.emailLabel', undefined, 'Email')}
                                 </label>
                                 <input
                                     type="email"
@@ -246,7 +245,7 @@ function Login() {
                             <div>
                                 <div className="flex justify-between items-center mb-2">
                                     <label className="text-[11px] font-bold tracking-[0.1em] uppercase text-[var(--color-text-tertiary)]">
-                                        Password
+                                        {tx('authPages.login.form.passwordLabel', undefined, 'Password')}
                                     </label>
                                     <button
                                         type="button"
@@ -276,12 +275,12 @@ function Login() {
                                 className="w-full py-3.5 rounded-xl text-[15px] font-extrabold text-white tracking-tight transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.98]"
                                 style={{ background: '#E8820C' }}
                             >
-                                {isLoading ? 'Signing in…' : 'Sign in →'}
+                                {isLoading ? tx('authPages.login.form.signingIn', undefined, 'Signing in…') : tx('authPages.login.form.signInButton', undefined, 'Sign in →')}
                             </button>
                         </form>
 
                         <p className="text-center mt-5 text-sm text-[var(--color-text-tertiary)]">
-                            Don't have an account?{' '}
+                            {tx('authPages.login.form.noAccount', undefined, "Don't have an account?")}{' '}
                             <button
                                 onClick={() => navigate('/signup', { state: location.state })}
                                 className="text-[#E8820C] font-bold hover:text-[#d4750a] transition-colors"

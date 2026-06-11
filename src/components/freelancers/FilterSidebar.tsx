@@ -163,7 +163,7 @@ export default function FilterSidebar({
             {/* Location Accordion */}
             <div className="border-b border-white/[0.04] pb-3">
                 <AccordionHeader
-                    label="Location"
+                    label={tx('findFreelancers.location', undefined, 'Location')}
                     expanded={locationExpanded}
                     onToggle={() => setLocationExpanded(!locationExpanded)}
                     icon={MapPin}
@@ -180,10 +180,10 @@ export default function FilterSidebar({
                         >
                             <span>
                                 {selectedGovernorates.length === 0
-                                    ? 'All Locations'
+                                    ? tx('findFreelancers.allLocations', undefined, 'All Locations')
                                     : selectedGovernorates.length === 1
                                         ? (governorateOptions.find(opt => opt.value === selectedGovernorates[0])?.label || selectedGovernorates[0])
-                                        : `${selectedGovernorates.length} Locations`
+                                        : tx('findFreelancers.nLocations', { count: selectedGovernorates.length }, `${selectedGovernorates.length} Locations`)
                                 }
                             </span>
                             <ChevronDown className={cn("h-3.5 w-3.5 text-white/30 transition-transform duration-200", locDropdownOpen && "rotate-180")} />
@@ -232,7 +232,7 @@ export default function FilterSidebar({
                                             type="text"
                                             value={locSearch}
                                             onChange={(e) => setLocSearch(e.target.value)}
-                                            placeholder="Search locations..."
+                                            placeholder={tx('findFreelancers.searchLocations', undefined, 'Search locations...')}
                                             className="w-full rounded-lg bg-white/4 border border-white/6 px-2.5 py-1.5 text-xs text-white outline-none focus:border-[var(--workspace-primary,#8b5cf6)] placeholder-white/35"
                                         />
                                     </div>
@@ -249,7 +249,7 @@ export default function FilterSidebar({
                                                 : "text-white/60 hover:bg-white/5 hover:text-white"
                                         )}
                                     >
-                                        <span>All Locations</span>
+                                        <span>{tx('findFreelancers.allLocations', undefined, 'All Locations')}</span>
                                         {selectedGovernorates.length === 0 && (
                                             <Check className="w-3.5 h-3.5 text-[var(--workspace-primary,#8b5cf6)]" />
                                         )}
@@ -294,7 +294,7 @@ export default function FilterSidebar({
                                     })}
 
                                     {filteredGovOptions.length === 0 && (
-                                        <div className="px-3 py-4 text-center text-[10px] text-white/30">No matches found</div>
+                                        <div className="px-3 py-4 text-center text-[10px] text-white/30">{tx('findFreelancers.noMatchesFound', undefined, 'No matches found')}</div>
                                     )}
                                 </div>
                             </>
@@ -358,8 +358,8 @@ export default function FilterSidebar({
                                 type="text"
                                 value={skillSearch}
                                 onChange={(e) => setSkillSearch(e.target.value)}
-                                placeholder="Search skills..."
-                                className="w-full rounded-xl bg-white/4 border border-white/8 pl-8 pr-3 py-1.5 text-xs text-white outline-none focus:border-[var(--workspace-primary,#8b5cf6)] placeholder-white/35"
+                                placeholder={tx('findFreelancers.searchSkills', undefined, 'Search skills...')}
+                                className="w-full rounded-xl bg-white/4 border border-white/8 ps-8 pe-3 py-1.5 text-xs text-white outline-none focus:border-[var(--workspace-primary,#8b5cf6)] placeholder-white/35"
                             />
                         </div>
 
@@ -410,7 +410,7 @@ export default function FilterSidebar({
                                 );
                             })}
                             {filteredSkillOptions.length === 0 && (
-                                <div className="text-[10px] text-white/30 text-center py-2 w-full">No skills found</div>
+                                <div className="text-[10px] text-white/30 text-center py-2 w-full">{tx('findFreelancers.noSkillsFound', undefined, 'No skills found')}</div>
                             )}
                         </div>
                     </div>
@@ -432,29 +432,29 @@ export default function FilterSidebar({
                                 <input
                                     type="number"
                                     value={rateRange[0] || ''}
-                                    placeholder="Min"
+                                    placeholder={tx('findFreelancers.min', undefined, 'Min')}
                                     onChange={(e) => setRateRange([Number(e.target.value), rateRange[1]])}
-                                    className="w-full rounded-xl bg-white/4 border border-white/10 pl-7 pr-3 py-2 text-xs text-white outline-none focus:border-[var(--workspace-primary,#8b5cf6)] focus:bg-white/[0.06] transition-all"
+                                    className="w-full rounded-xl bg-white/4 border border-white/10 ps-7 pe-3 py-2 text-xs text-white outline-none focus:border-[var(--workspace-primary,#8b5cf6)] focus:bg-white/[0.06] transition-all"
                                 />
-                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/25 pointer-events-none">DT</span>
+                                <span className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/25 pointer-events-none">DT</span>
                             </div>
-                            <span className="text-white/20 text-xs">to</span>
+                            <span className="text-white/20 text-xs">{tx('findFreelancers.to', undefined, 'to')}</span>
                             <div className="relative flex-1">
                                 <input
                                     type="number"
                                     value={rateRange[1] || ''}
-                                    placeholder="Max"
+                                    placeholder={tx('findFreelancers.max', undefined, 'Max')}
                                     onChange={(e) => setRateRange([rateRange[0], Number(e.target.value)])}
-                                    className="w-full rounded-xl bg-white/4 border border-white/10 pl-7 pr-3 py-2 text-xs text-white outline-none focus:border-[var(--workspace-primary,#8b5cf6)] focus:bg-white/[0.06] transition-all"
+                                    className="w-full rounded-xl bg-white/4 border border-white/10 ps-7 pe-3 py-2 text-xs text-white outline-none focus:border-[var(--workspace-primary,#8b5cf6)] focus:bg-white/[0.06] transition-all"
                                 />
-                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/25 pointer-events-none">DT</span>
+                                <span className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/25 pointer-events-none">DT</span>
                             </div>
                         </div>
 
                         {/* Rate Presets */}
                         <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-white/[0.03]">
                             {[
-                                { label: 'Any', min: 0, max: 100 },
+                                { label: tx('findFreelancers.rateAny', undefined, 'Any'), min: 0, max: 100 },
                                 { label: '< 20 DT', min: 0, max: 20 },
                                 { label: '20-50 DT', min: 20, max: 50 },
                                 { label: '50+ DT', min: 50, max: 100 },
@@ -484,16 +484,16 @@ export default function FilterSidebar({
             {/* Job Success Rate Accordion */}
             <div className="border-b border-white/[0.04] pb-2">
                 <AccordionHeader
-                    label="Job Success Rate"
+                    label={tx('findFreelancers.jobSuccessRate', undefined, 'Job Success Rate')}
                     expanded={successExpanded}
                     onToggle={() => setSuccessExpanded(!successExpanded)}
                 />
                 {successExpanded && (
                     <div className="space-y-1.5 mt-1 animate-fadeIn">
                         {[
-                            { label: 'Any Success Rate', value: 0, desc: 'Show all freelancers', icon: Trophy },
-                            { label: '90% & up', value: 90, desc: 'Highly rated professionals', icon: Zap },
-                            { label: '80% & up', value: 80, desc: 'Top tier consistency', icon: ThumbsUp },
+                            { label: tx('findFreelancers.anySuccessRate', undefined, 'Any Success Rate'), value: 0, desc: tx('findFreelancers.anySuccessRateDesc', undefined, 'Show all freelancers'), icon: Trophy },
+                            { label: tx('findFreelancers.rate90up', undefined, '90% & up'), value: 90, desc: tx('findFreelancers.rate90upDesc', undefined, 'Highly rated professionals'), icon: Zap },
+                            { label: tx('findFreelancers.rate80up', undefined, '80% & up'), value: 80, desc: tx('findFreelancers.rate80upDesc', undefined, 'Top tier consistency'), icon: ThumbsUp },
                         ].map((opt) => {
                             const active = minSuccessRate === opt.value;
                             const Icon = opt.icon;
@@ -534,17 +534,17 @@ export default function FilterSidebar({
             {/* Jobs Completed Accordion */}
             <div className="border-b border-white/[0.04] pb-2">
                 <AccordionHeader
-                    label="Jobs Completed"
+                    label={tx('findFreelancers.jobsCompleted', undefined, 'Jobs Completed')}
                     expanded={jobsExpanded}
                     onToggle={() => setJobsExpanded(!jobsExpanded)}
                 />
                 {jobsExpanded && (
                     <div className="space-y-1.5 mt-1 animate-fadeIn">
                         {[
-                            { label: 'Any Jobs Amount', value: 0, desc: 'Show everyone', icon: Briefcase },
-                            { label: '1+ jobs completed', value: 1, desc: 'Has marketplace experience', icon: Check },
-                            { label: '5+ jobs completed', value: 5, desc: 'Established track record', icon: Award },
-                            { label: '10+ jobs completed', value: 10, desc: 'Veteran freelancer status', icon: Trophy },
+                            { label: tx('findFreelancers.anyJobsAmount', undefined, 'Any Jobs Amount'), value: 0, desc: tx('findFreelancers.anyJobsAmountDesc', undefined, 'Show everyone'), icon: Briefcase },
+                            { label: tx('findFreelancers.jobs1plus', undefined, '1+ jobs completed'), value: 1, desc: tx('findFreelancers.jobs1plusDesc', undefined, 'Has marketplace experience'), icon: Check },
+                            { label: tx('findFreelancers.jobs5plus', undefined, '5+ jobs completed'), value: 5, desc: tx('findFreelancers.jobs5plusDesc', undefined, 'Established track record'), icon: Award },
+                            { label: tx('findFreelancers.jobs10plus', undefined, '10+ jobs completed'), value: 10, desc: tx('findFreelancers.jobs10plusDesc', undefined, 'Veteran freelancer status'), icon: Trophy },
                         ].map((opt) => {
                             const active = minJobsCompleted === opt.value;
                             const Icon = opt.icon;

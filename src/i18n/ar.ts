@@ -2702,7 +2702,34 @@ export const ar = {
             "title": "لا توجد نتائج مطابقة",
             "description": "لم نعثر على مستقلين يطابقون معاييرك. جرّب كلمات أخرى أو امسح الفلاتر.",
             "action": "مسح جميع الفلاتر"
-        }
+        },
+        "location": "الموقع",
+        "allLocations": "جميع المواقع",
+        "nLocations": "{{count}} مواقع",
+        "searchLocations": "ابحث عن الموقع...",
+        "noMatchesFound": "لا توجد نتائج",
+        "searchSkills": "ابحث عن مهارة...",
+        "noSkillsFound": "لا توجد مهارات مطابقة",
+        "min": "أدنى",
+        "max": "أقصى",
+        "to": "إلى",
+        "rateAny": "أي سعر",
+        "jobSuccessRate": "نسبة نجاح العمل",
+        "anySuccessRate": "أي نسبة نجاح",
+        "anySuccessRateDesc": "عرض جميع المستقلين",
+        "rate90up": "90% وأكثر",
+        "rate90upDesc": "محترفون بتقييم عالٍ جداً",
+        "rate80up": "80% وأكثر",
+        "rate80upDesc": "ثبات على مستوى عالٍ",
+        "jobsCompleted": "الوظائف المنجزة",
+        "anyJobsAmount": "أي عدد من الوظائف",
+        "anyJobsAmountDesc": "عرض الجميع",
+        "jobs1plus": "وظيفة واحدة فأكثر",
+        "jobs1plusDesc": "لديه خبرة في السوق",
+        "jobs5plus": "5 وظائف فأكثر",
+        "jobs5plusDesc": "سجل حافل",
+        "jobs10plus": "10 وظائف فأكثر",
+        "jobs10plusDesc": "مستقل متمرس"
     },
     "wallet": {
         "seo": {
@@ -3586,7 +3613,19 @@ export const ar = {
                 "google": "المتابعة باستخدام Google",
                 "orEmail": "أو سجّل الدخول بالبريد الإلكتروني",
                 "forgotPassword": "هل نسيت كلمة المرور؟",
-                "createOne": "إنشاء حساب"
+                "createOne": "إنشاء حساب",
+                "emailLabel": "البريد الإلكتروني",
+                "passwordLabel": "كلمة المرور",
+                "signingIn": "جارٍ تسجيل الدخول...",
+                "signInButton": "تسجيل الدخول →",
+                "noAccount": "ليس لديك حساب؟"
+            },
+            "platformTagline": "منصة العمل الحر التونسية",
+            "platformSubtitle": "تواصل مع المواهب الموثقة، أدر مشاريعك بأمان، واحصل على مدفوعاتك بالدينار التونسي — في كل مرة.",
+            "featureCards": {
+                "verified": { "title": "ملفات موثقة", "sub": "كل هوية مؤكدة" },
+                "escrow": { "title": "مدفوعات بالضمان", "sub": "الأموال محفوظة حتى التسليم" },
+                "local": { "title": "محلي وعالمي", "sub": "محسن لتونس" }
             },
             "createAccountAction": "إنشاء حساب",
             "finishingSignIn": "إنهاء دخولك",
@@ -3627,7 +3666,19 @@ export const ar = {
                 "passwordNumber": "يجب أن تحتوي على رقم واحد على الأقل"
             },
             "rateLimitErrorMinutes": "عدد محاولات كثير جداً. يرجى المحاولة مرة أخرى في {{minutes}} دقيقة.",
-            "rateLimitError15Min": "عدد محاولات كثير جداً. يرجى المحاولة مرة أخرى في 15 دقيقة."
+            "rateLimitError15Min": "عدد محاولات كثير جداً. يرجى المحاولة مرة أخرى في 15 دقيقة.",
+            "formTitle": "إنشاء حسابك",
+            "formSubtitle": "انضم إلى أكثر من 2500 محترف في WorkedIn",
+            "continueWithGoogle": "المتابعة باستخدام Google",
+            "orSignUpWithEmail": "أو سجّل بالبريد الإلكتروني",
+            "emailLabel": "البريد الإلكتروني",
+            "emailPlaceholder": "example@example.com",
+            "passwordLabel": "كلمة المرور",
+            "confirmPasswordLabel": "تأكيد كلمة المرور",
+            "creatingAccount": "جارٍ إنشاء الحساب...",
+            "createAccountButton": "إنشاء حساب →",
+            "alreadyHaveAccount": "هل لديك حساب بالفعل؟",
+            "signInLink": "تسجيل الدخول"
         }
     },
     "dashboards": {
@@ -3823,7 +3874,7 @@ export const ar = {
         "front": "front",
         "back": "back",
         "selfie": "selfie",
-        "workedin": "WorkedIn â€¢",
+        "workedin": "WorkedIn •",
         "times": "&times;",
         "read": "Read",
         "delivered": "Delivered",

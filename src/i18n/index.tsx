@@ -13,14 +13,24 @@ const SUPPORTED_LANGUAGES: readonly Language[] = ['ar', 'fr', 'en'];
 const isSupportedLanguage = (value: unknown): value is Language =>
     typeof value === 'string' && SUPPORTED_LANGUAGES.includes(value as Language);
 
+const STORAGE_KEY = 'i18n-language';
+
 const getStoredLanguage = (): Language | null => {
     if (typeof window === 'undefined') {
         return null;
     }
 
     try {
-        const stored = window.localStorage.getItem('i18n-language') || window.localStorage.getItem('language');
-        return isSupportedLanguage(stored) ? stored : null;
+        // Standardised to single key. Migrate legacy 'language' key on first read.
+        const stored = window.localStorage.getItem(STORAGE_KEY)
+            ?? window.localStorage.getItem('language');
+        if (stored && isSupportedLanguage(stored)) {
+            // Migrate: write canonical key, remove legacy key
+            window.localStorage.setItem(STORAGE_KEY, stored);
+            window.localStorage.removeItem('language');
+            return stored;
+        }
+        return null;
     } catch {
         return null;
     }
@@ -77,6 +87,7 @@ interface I18nContextType {
     setLanguage: (lang: Language) => void;
     t: Translations;
     tx: (key: string, params?: TranslationParams, fallback?: string) => string;
+    txPlural: (key: string, count: number, params?: TranslationParams, fallback?: string) => string;
     dir: 'rtl' | 'ltr';
 }
 
@@ -108,8 +119,9 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
         }
 
         try {
-            window.localStorage.setItem('i18n-language', language);
-            window.localStorage.setItem('language', language);
+            window.localStorage.setItem(STORAGE_KEY, language);
+            // Clean up legacy key if it exists
+            window.localStorage.removeItem('language');
         } catch {
             // Ignore storage restrictions (private mode, strict browser privacy settings).
         }
@@ -121,7 +133,7 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
         }
 
         const handleStorage = (event: StorageEvent) => {
-            if (event.key && event.key !== 'i18n-language' && event.key !== 'language') {
+            if (event.key && event.key !== STORAGE_KEY) {
                 return;
             }
 
@@ -147,20 +159,38 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
             const marker = `${language}:${key}`;
             if (!warnedMissingKeys.has(marker)) {
                 warnedMissingKeys.add(marker);
-                console.warn(`[i18n] Missing key "${key}" for language "${language}"`);
+                const usedLang = typeof fallbackEn === 'string' ? 'en'
+                    : typeof fallbackAr === 'string' ? 'ar'
+                    : typeof fallbackFr === 'string' ? 'fr'
+                    : 'fallback';
+                console.warn(
+                    `[i18n] Missing key "${key}" for language "${language}". Serving ${usedLang} fallback: "${resolved}"`
+                );
             }
         }
 
         return interpolate(resolved, params);
     }, [language]);
 
+    /** Pluralization helper: resolves key.one / key.other (or key.zero) based on count. */
+    const txPlural = useCallback((key: string, count: number, params?: TranslationParams, fallback?: string) => {
+        const pluralKey = count === 0 ? `${key}.zero` : count === 1 ? `${key}.one` : `${key}.other`;
+        // Try the specific plural form first, then fall back to the base key
+        const primaryForm = getNestedValue(translations[language], pluralKey);
+        if (typeof primaryForm === 'string') {
+            return interpolate(primaryForm, { count, ...params });
+        }
+        return tx(key, { count, ...params }, fallback);
+    }, [language, tx]);
+
     const value: I18nContextType = useMemo(() => ({
         language,
         setLanguage,
         t: translations[language],
         tx,
+        txPlural,
         dir: language === 'ar' ? 'rtl' : 'ltr',
-    }), [language, setLanguage, tx]);
+    }), [language, setLanguage, tx, txPlural]);
 
     return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
