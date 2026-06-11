@@ -152,7 +152,7 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
     : "border-amber-500/25 text-amber-400 bg-amber-500/[0.07]";
   const onlineDotClass = "bg-green-500"; // Semantic green for online status
   
-  const menuItemClass = `w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-150 ${
+  const menuItemClass = `w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-start transition-all duration-150 ${
     isDark
       ? "text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04]"
       : "text-zinc-600 hover:text-zinc-900 hover:bg-black/[0.03]"
@@ -423,9 +423,9 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
               disabled={isTogglingOnline}
               className={`group ${menuItemClass} justify-between disabled:opacity-60`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <span className={`w-2 h-2 rounded-full shrink-0 transition-all duration-300 ${isOnlineForMessages ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-zinc-400 dark:bg-zinc-600'}`} />
-                <span>{tx('auth.accountPanel.onlineForMessages', undefined, 'Online for messages')}</span>
+                <span className="leading-tight">{tx('auth.accountPanel.onlineForMessages', undefined, 'Online for messages')}</span>
               </div>
               <span className={toggleTrackClass(isOnlineForMessages, true)}>
                 <span className={toggleThumbClass(isOnlineForMessages)} />
