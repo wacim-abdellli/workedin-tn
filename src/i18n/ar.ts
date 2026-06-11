@@ -23,7 +23,34 @@ export const ar = {
         "postProject": "نشر مشروع",
         "myProjects": "مشاريعي",
         "wallet": "المحفظة",
-        "adminDashboard": "لوحة الإدارة"
+        "adminDashboard": "لوحة الإدارة",
+        "client": {
+            "activeProjects": "مشاريع نشطة",
+            "activeProjectsDesc": "إدارة المشاريع الحالية والتوظيف",
+            "drafts": "المسودات",
+            "draftsDesc": "جميع مشاريعك المنشورة",
+            "finished": "المكتملة",
+            "finishedDesc": "مراجعة تاريخ المشاريع المكتملة",
+            "freelancers": "المستقلون",
+            "browseTalent": "تصفح المواهب",
+            "browseTalentDesc": "البحث عن مستقلين تونسيين مؤهلين",
+            "savedProfiles": "الملفات المحفوظة",
+            "savedProfilesDesc": "العودة إلى المواهب المفضلة"
+        },
+        "freelancer": {
+            "browseJobs": "تصفح الوظائف",
+            "browseJobsDesc": "استكشاف المشاريع المحلية المفتوحة",
+            "bestMatches": "أفضل التطابقات",
+            "bestMatchesDesc": "فرص عمل متناسبة مع ملفك الشخصي",
+            "savedJobs": "الوظائف المحفوظة",
+            "savedJobsDesc": "متابعة الوظائف التي ترغب في العودة إليها",
+            "overview": "نظرة عامة",
+            "overviewDesc": "الرصيد وحالة الدفع",
+            "withdraw": "سحب",
+            "withdrawDesc": "تحويل الأرباح إلى حسابك",
+            "transactions": "المعاملات",
+            "transactionsDesc": "مراجعة حركة الدفع"
+        }
     },
     "notFound": {
         "title": "الصفحة غير موجودة",
@@ -3317,6 +3344,10 @@ export const ar = {
     },
     "heroSection": {
         "liveBadge": "مباشر",
+        "auth": {
+            "welcomeBack": "مرحباً بعودتك، {{name}} 👋",
+            "dashboard": "الذهاب للوحة التحكم"
+        },
         "typewriter": {
             "freelancer": {
                 "workWithBest": "اعمل مع الأفضل.",

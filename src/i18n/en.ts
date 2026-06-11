@@ -25,7 +25,34 @@ export const en: Translations = {
         "postProject": "Post Project",
         "myProjects": "My Projects",
         "wallet": "Wallet",
-        "adminDashboard": "Admin Dashboard"
+        "adminDashboard": "Admin Dashboard",
+        "client": {
+            "activeProjects": "Active Projects",
+            "activeProjectsDesc": "Manage live briefs and hiring",
+            "drafts": "Drafts",
+            "draftsDesc": "All your posted projects",
+            "finished": "Finished",
+            "finishedDesc": "Review completed project history",
+            "freelancers": "Freelancers",
+            "browseTalent": "Browse Talent",
+            "browseTalentDesc": "Find skilled Tunisian freelancers",
+            "savedProfiles": "Saved Profiles",
+            "savedProfilesDesc": "Return to shortlisted talent"
+        },
+        "freelancer": {
+            "browseJobs": "Browse Jobs",
+            "browseJobsDesc": "Explore open local projects",
+            "bestMatches": "Best Matches",
+            "bestMatchesDesc": "Opportunities tuned to your profile",
+            "savedJobs": "Saved Jobs",
+            "savedJobsDesc": "Track roles you want to revisit",
+            "overview": "Overview",
+            "overviewDesc": "Balance and payment status",
+            "withdraw": "Withdraw",
+            "withdrawDesc": "Move earnings to your account",
+            "transactions": "Transactions",
+            "transactionsDesc": "Review payout activity"
+        }
     },
     "notFound": {
         "title": "Page Not Found",
@@ -3338,6 +3365,10 @@ export const en: Translations = {
     },
     "heroSection": {
         "liveBadge": "Live",
+        "auth": {
+            "welcomeBack": "Welcome back, {{name}} 👋",
+            "dashboard": "Go to Dashboard"
+        },
         "typewriter": {
             "freelancer": {
                 "workWithBest": "Work with the best.",

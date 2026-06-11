@@ -21,6 +21,7 @@ import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspaceStore } from "@/lib/workspaceState";
 import { resolveActiveWorkspace } from "@/lib/workspaceRoutes";
+import { useTranslation } from "@/i18n";
 
 type Workspace = "client" | "freelancer";
 
@@ -36,48 +37,6 @@ interface NavItem {
   href?: string;
   children?: DropdownItem[];
 }
-
-const CLIENT_NAV: NavItem[] = [
-  { label: "Post Project", href: "/jobs/new" },
-  {
-    label: "My Projects",
-    children: [
-      { label: "Active Projects", href: "/client/jobs?tab=active", icon: FolderOpen, description: "Manage live briefs and hiring" },
-      { label: "Drafts", href: "/client/jobs?tab=all", icon: Clock3, description: "All your posted projects" },
-      { label: "Finished", href: "/client/jobs?tab=finished", icon: Archive, description: "Review completed project history" },
-    ],
-  },
-  {
-    label: "Freelancers",
-    children: [
-      { label: "Browse Talent", href: "/find-freelancers", icon: Users, description: "Find skilled Tunisian freelancers" },
-      { label: "Saved Profiles", href: "/saved", icon: Star, description: "Return to shortlisted talent" },
-    ],
-  },
-  { label: "Contracts", href: "/contracts" },
-  { label: "Wallet", href: "/wallet" },
-];
-
-const FREELANCER_NAV: NavItem[] = [
-  {
-    label: "Find Work",
-    children: [
-      { label: "Browse Jobs", href: "/jobs", icon: Briefcase, description: "Explore open local projects" },
-      { label: "Best Matches", href: "/jobs?sort=best-match", icon: Search, description: "Opportunities tuned to your profile" },
-      { label: "Saved Jobs", href: "/jobs?sort=saved", icon: Bookmark, description: "Track roles you want to revisit" },
-    ],
-  },
-  { label: "Proposals", href: "/my-proposals" },
-  { label: "Contracts", href: "/contracts" },
-  {
-    label: "Wallet",
-    children: [
-      { label: "Overview", href: "/wallet", icon: Wallet, description: "Balance and payment status" },
-      { label: "Withdraw", href: "/wallet?tab=withdraw", icon: CreditCard, description: "Move earnings to your account" },
-      { label: "Transactions", href: "/wallet?tab=transactions", icon: ReceiptText, description: "Review payout activity" },
-    ],
-  },
-];
 
 function accentClass(workspace: Workspace) {
   return workspace === "freelancer" ? "text-purple-400" : "text-amber-400";
@@ -171,7 +130,7 @@ function DropdownNavItem({
       >
         {item.label}
         <ChevronDown
-          className={`w-3 h-3 ml-0.5 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180 ${
+          className={`w-3.5 h-3.5 ml-0.5 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180 ${
             isActive ? "opacity-70" : "opacity-40"
           }`}
         />
@@ -185,8 +144,53 @@ export function WorkspaceNav() {
   const { profile, freelancerProfile } = useAuth();
   const { activeWorkspace } = useWorkspaceStore();
   const { pathname } = useLocation();
+  const { tx } = useTranslation();
+  
   const workspace = resolveActiveWorkspace(profile, freelancerProfile, activeWorkspace);
-  const items = workspace === "freelancer" ? FREELANCER_NAV : CLIENT_NAV;
+
+  const clientNav: NavItem[] = [
+    { label: tx('nav.postProject', undefined, "Post Project"), href: "/jobs/new" },
+    {
+      label: tx('nav.myProjects', undefined, "My Projects"),
+      children: [
+        { label: tx('nav.client.activeProjects', undefined, "Active Projects"), href: "/client/jobs?tab=active", icon: FolderOpen, description: tx('nav.client.activeProjectsDesc', undefined, "Manage live briefs and hiring") },
+        { label: tx('nav.client.drafts', undefined, "Drafts"), href: "/client/jobs?tab=all", icon: Clock3, description: tx('nav.client.draftsDesc', undefined, "All your posted projects") },
+        { label: tx('nav.client.finished', undefined, "Finished"), href: "/client/jobs?tab=finished", icon: Archive, description: tx('nav.client.finishedDesc', undefined, "Review completed project history") },
+      ],
+    },
+    {
+      label: tx('nav.client.freelancers', undefined, "Freelancers"),
+      children: [
+        { label: tx('nav.client.browseTalent', undefined, "Browse Talent"), href: "/find-freelancers", icon: Users, description: tx('nav.client.browseTalentDesc', undefined, "Find skilled Tunisian freelancers") },
+        { label: tx('nav.client.savedProfiles', undefined, "Saved Profiles"), href: "/saved", icon: Star, description: tx('nav.client.savedProfilesDesc', undefined, "Return to shortlisted talent") },
+      ],
+    },
+    { label: tx('nav.contracts', undefined, "Contracts"), href: "/contracts" },
+    { label: tx('nav.wallet', undefined, "Wallet"), href: "/wallet" },
+  ];
+
+  const freelancerNav: NavItem[] = [
+    {
+      label: tx('nav.findWork', undefined, "Find Work"),
+      children: [
+        { label: tx('nav.freelancer.browseJobs', undefined, "Browse Jobs"), href: "/jobs", icon: Briefcase, description: tx('nav.freelancer.browseJobsDesc', undefined, "Explore open local projects") },
+        { label: tx('nav.freelancer.bestMatches', undefined, "Best Matches"), href: "/jobs?sort=best-match", icon: Search, description: tx('nav.freelancer.bestMatchesDesc', undefined, "Opportunities tuned to your profile") },
+        { label: tx('nav.freelancer.savedJobs', undefined, "Saved Jobs"), href: "/jobs?sort=saved", icon: Bookmark, description: tx('nav.freelancer.savedJobsDesc', undefined, "Track roles you want to revisit") },
+      ],
+    },
+    { label: tx('nav.proposals', undefined, "Proposals"), href: "/my-proposals" },
+    { label: tx('nav.contracts', undefined, "Contracts"), href: "/contracts" },
+    {
+      label: tx('nav.wallet', undefined, "Wallet"),
+      children: [
+        { label: tx('nav.freelancer.overview', undefined, "Overview"), href: "/wallet", icon: Wallet, description: tx('nav.freelancer.overviewDesc', undefined, "Balance and payment status") },
+        { label: tx('nav.freelancer.withdraw', undefined, "Withdraw"), href: "/wallet?tab=withdraw", icon: CreditCard, description: tx('nav.freelancer.withdrawDesc', undefined, "Move earnings to your account") },
+        { label: tx('nav.freelancer.transactions', undefined, "Transactions"), href: "/wallet?tab=transactions", icon: ReceiptText, description: tx('nav.freelancer.transactionsDesc', undefined, "Review payout activity") },
+      ],
+    },
+  ];
+
+  const items = workspace === "freelancer" ? freelancerNav : clientNav;
 
   return (
     <nav className="flex items-center gap-1">

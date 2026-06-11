@@ -25,7 +25,34 @@ export const fr: Translations = {
         "postProject": "Publier un projet",
         "myProjects": "Mes Projets",
         "wallet": "Portefeuille",
-        "adminDashboard": "Tableau de bord admin"
+        "adminDashboard": "Tableau de bord admin",
+        "client": {
+            "activeProjects": "Projets actifs",
+            "activeProjectsDesc": "Gérer les projets en cours et les recrutements",
+            "drafts": "Brouillons",
+            "draftsDesc": "Tous vos projets publiés",
+            "finished": "Terminés",
+            "finishedDesc": "Consulter l'historique des projets terminés",
+            "freelancers": "Freelances",
+            "browseTalent": "Parcourir les talents",
+            "browseTalentDesc": "Trouver des freelances tunisiens qualifiés",
+            "savedProfiles": "Profils enregistrés",
+            "savedProfilesDesc": "Revenir aux talents sélectionnés"
+        },
+        "freelancer": {
+            "browseJobs": "Parcourir les missions",
+            "browseJobsDesc": "Explorer les missions locales ouvertes",
+            "bestMatches": "Meilleures correspondances",
+            "bestMatchesDesc": "Opportunités adaptées à votre profil",
+            "savedJobs": "Missions enregistrées",
+            "savedJobsDesc": "Suivre les missions à revisiter",
+            "overview": "Vue d'ensemble",
+            "overviewDesc": "Solde et statut des paiements",
+            "withdraw": "Retirer",
+            "withdrawDesc": "Transférer les gains vers votre compte",
+            "transactions": "Transactions",
+            "transactionsDesc": "Consulter l'historique des transactions"
+        }
     },
     "notFound": {
         "title": "Page Introuvable",
@@ -3292,6 +3319,10 @@ export const fr: Translations = {
     },
     "heroSection": {
         "liveBadge": "En direct",
+        "auth": {
+            "welcomeBack": "Bon retour, {{name}} 👋",
+            "dashboard": "Accéder au tableau de bord"
+        },
         "typewriter": {
             "freelancer": {
                 "workWithBest": "Travaillez avec les meilleurs.",
