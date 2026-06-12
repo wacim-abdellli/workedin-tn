@@ -189,10 +189,25 @@ export const en: Translations = {
                 "suggested": "Suggested:",
                 "attachments": "Attachments (optional)",
                 "attachmentsDrop": "Drag files here or click to browse",
-                "chooseFiles": "Choose files"
+                "chooseFiles": "Choose files",
+                "titleHint": "Use specific technical terms to help the right freelancers find you.",
+                "categoryHint": "Choose the best fit category to enable automated expert match alerts.",
+                "subcategoryHint": "Pick the exact specialty to filter bids and ensure precise skills matching.",
+                "descriptionHint": "Explain the scope, expected parameters, and what successful deliverables look like.",
+                "skillsHint": "Tag precise skills to target specialized freelancers for direct application invitations.",
+                "attachmentsHint2": "Provide assets, mockups, or detailed specs to clarify work deliverables.",
+                "charCount": "{{current}} / {{max}} characters",
+                "skillsPlaceholder": "Try Graphic Design, React, Motion Design...",
+                "attachmentsHint": "PDF, DOC, DOCX, TXT, PNG, JPG, WEBP - Max 10MB per file",
+                "descriptionPlaceholder": "Provide detailed background, target audience, technical specifications, and key deliverables...",
+                "titlePlaceholder": "Example: Modern bilingual logo system for a Tunisian cafe"
             },
             "quality": {
-                "title": "Quality Score"
+                "title": "Quality Score",
+                "clearTitle": "Clear title",
+                "categorySelected": "Category selected",
+                "strongDescription": "Strong description",
+                "relevantSkills": "Relevant skills"
             },
             "autosave": {
                 "saving": "Saving...",
@@ -240,6 +255,16 @@ export const en: Translations = {
                 "minutesAgo": "{{count}} min ago",
                 "hoursAgo": "{{count}} h ago"
             },
+            "links": {
+                "title": "Reference links (optional)",
+                "description": "Add Google Drive, portfolio, or social links so freelancers can review context quickly.",
+                "placeholder": "Paste link (e.g. drive.google.com/... or linkedin.com/in/...)",
+                "add": "Add link",
+                "remove": "Remove link",
+                "maxLinksReached": "You can add up to {{count}} links.",
+                "duplicate": "This link was already added.",
+                "invalid": "Please enter a valid URL."
+            },
             "stepBasics": {
                 "badge": "Project brief",
                 "title": "Job details",
@@ -269,28 +294,49 @@ export const en: Translations = {
                 "badge": "Pricing setup",
                 "title": "Budget and timeline",
                 "subtitle": "Choose the payment model and set your project budget",
+                "pricingMode": "Pricing Model",
+                "fixedExact": "Fixed Price (Exact)",
+                "fixedExactSubtitle": "Single fixed budget",
+                "fixedExactDescription": "Specify a set budget for the entire scope of work. Best for well-defined tasks.",
+                "fixedExactHint": "Specify the exact fixed price for this project.",
+                "fixedRange": "Fixed Price (Range)",
+                "fixedRangeSubtitle": "Budget min-max range",
+                "fixedRangeDescription": "Define a budget window to invite proposals matching your expected bracket.",
+                "fixedRangeHint": "Specify a range to attract bids within your target cost.",
                 "fixedPrice": "Fixed price",
                 "fixedPriceDescription": "Pay a fixed amount for the entire project upon completion.",
-                "hourly": "Hourly",
-                "hourlyDescription": "Pay the freelancer based on hours worked.",
-                "estimatedBudget": "Estimated project budget (TND)",
-                "min": "Min",
-                "max": "Max",
-                "hourlyRate": "Hourly rate (TND)",
+                "hourly": "Hourly Rate",
+                "hourlySubtitle": "Time-logged billing",
+                "hourlyDescription": "Pay by the hour based on tracked logs. Best for ongoing or evolving work.",
+                "hourlyHint": "Determine the hourly rate and weekly time commitment limit.",
+                "hourlySetup": "Hourly Pricing Details",
+                "estimatedBudget": "Estimated Project Budget",
+                "budgetAmount": "Budget Amount",
+                "min": "Minimum Budget",
+                "max": "Maximum Budget",
+                "hourlyRate": "Hourly Rate",
                 "hourlyRateExample": "Example: 20",
-                "weeklyHours": "Estimated weekly hours",
+                "weeklyHours": "Weekly hours limit",
                 "weeklyHoursExample": "Example: 10-20",
-                "duration": "Project duration",
+                "partTime10": "Part-time (up to 10 hrs/week)",
+                "partTime20": "Part-time (up to 20 hrs/week)",
+                "fullTime30": "Full-time (up to 30 hrs/week)",
+                "fullTime40": "Full-time (up to 40 hrs/week)",
+                "duration": "Project Duration",
                 "selectDuration": "Select duration",
                 "durationLessThan1Month": "Less than 1 month",
                 "duration1To3Months": "1 to 3 months",
                 "duration3To6Months": "3 to 6 months",
                 "durationMoreThan6Months": "More than 6 months",
-                "experienceLevel": "Required experience level",
-                "beginner": "Beginner",
+                "experienceLevel": "Required Experience Level",
+                "experienceLevelHint": "Select the expertise level needed to ensure relevant applications.",
+                "beginner": "Entry Level",
+                "beginnerSubtitle": "Simple tasks or budget-friendly options",
                 "intermediate": "Intermediate",
+                "intermediateSubtitle": "Solid experience for standard goals",
                 "expert": "Expert",
-                "deadline": "Deadline"
+                "expertSubtitle": "High-tier specialists for complex needs",
+                "deadline": "Deadline Date"
             },
             "stepVisibility": {
                 "badge": "Audience control",
@@ -346,6 +392,39 @@ export const en: Translations = {
                 "budgetRequired": "Please set a budget",
                 "budgetRange": "Maximum budget must be greater than or equal to minimum budget",
                 "subcategoryInvalid": "Please select a valid subcategory"
+            },
+            "expertTips": {
+                "specificTitleLabel": "Specific Title:",
+                "specificTitleText": "Describe exactly what you need. A clear title attracts matching specialists immediately.",
+                "richContextLabel": "Rich Context:",
+                "richContextText": "Provide clear parameters on scope, final deliverables, and success criteria.",
+                "budgetModelLabel": "Budget Model:",
+                "budgetModelText": "Choose Fixed Price for well-defined outcomes, and Hourly for ongoing or dynamic briefs.",
+                "deadlineBufferLabel": "Deadline Buffer:",
+                "deadlineBufferText": "Setting a realistic date encourages high-quality, professional applications.",
+                "publicBriefsLabel": "Public Briefs:",
+                "publicBriefsText": "Great for maximum proposals and competitive price bidding.",
+                "inviteOnlyLabel": "Invite-only:",
+                "inviteOnlyText": "Best for private/sensitive IP or when you personally select top freelancers.",
+                "lockStructureLabel": "Lock Structure:",
+                "lockStructureText": "Verify all specs. The core structure is finalized upon publishing to ensure bid consistency."
+            },
+            "titleTemplateLogo": "Logo design for a food company",
+            "titleTemplateLanding": "Landing page redesign for SaaS product",
+            "titleTemplateVideo": "Short-form video editor for social ads",
+            "titleTemplateDash": "React dashboard with analytics widgets",
+            "snippetScope": "Scope",
+            "snippetScopeText": "Scope: Build a responsive experience aligned with our brand guidelines.",
+            "snippetDeliverables": "Deliverables",
+            "snippetDeliverablesText": "Deliverables: Source files, deployment-ready build, and concise documentation.",
+            "snippetSuccess": "Success",
+            "snippetSuccessText": "Success criteria: Pixel-perfect UI, strong performance, and clean handoff.",
+            "expertTipsTitle": "Expert Tips",
+            "tips": {
+                "scope": "Be specific about scope and expected quality.",
+                "success": "Clearly define what success looks like.",
+                "references": "Add links, references, or examples if available.",
+                "handoff": "Clarify what should be delivered at handoff."
             }
         }
     },
@@ -1308,7 +1387,8 @@ export const en: Translations = {
         "status": {
             "active": "Active",
             "completed": "Completed",
-            "disputed": "Disputed"
+            "disputed": "Disputed",
+            "cancelled": "Cancelled"
         },
         "role": {
             "client": "Client",
@@ -1325,7 +1405,15 @@ export const en: Translations = {
         "unknownUser": "Unknown User",
         "startedOn": "Started {{date}}",
         "milestonesProgress": "1 of 3 milestones complete",
-        "openWorkspace": "Open workspace ->"
+        "openWorkspace": "Open workspace ->",
+        "subtitle": "Manage your active contracts, past work, and client communications.",
+        "paymentProtectionTitle": "Payment Protection",
+        "paymentProtectionDesc": "Always communicate and request payments through WorkedIn. Contracts paid outside the platform are not protected by our secure escrow system.",
+        "searchPlaceholder": "Search contracts or users...",
+        "emptyTitle": "No contracts found",
+        "emptyDescription": "Try another tab or adjust your search to find contracts faster.",
+        "emptyCancelledTitle": "No cancelled contracts",
+        "emptyCancelledDescription": "You don't have any cancelled contracts."
     },
     "common": {
         "viewJob": "View Job",
@@ -1505,7 +1593,7 @@ export const en: Translations = {
         "transactionId": "Transaction ID",
         "totalToPay": "Total to pay",
         "payNow": "Pay now",
-        "flouciDescription": "الدفع عبر Flouci - بطاقات بنكية ومحافظ إلكترونية",
+        "flouciDescription": "Pay via Flouci - bank cards & digital wallets",
         "escrowFunded": "Escrow funded successfully",
         "redirectingToPayment": "Redirecting to secure payment...",
         "startFailed": "Failed to start payment. Please try again.",
@@ -1707,6 +1795,33 @@ export const en: Translations = {
             }
         },
         "jobBoard": {
+            "currency": "TND",
+            "hourlyRateFormat": "TND/hr",
+            "tabs": {
+                "bestMatches": "Best Matches",
+                "mostRecent": "Most Recent",
+                "savedJobs": "Saved Jobs"
+            },
+            "infoBanner": {
+                "loginPrompt": "Sign in to view jobs tailored to your skills.",
+                "clientModePrompt": "You are viewing jobs as a client. Switch to freelancer to see matching jobs.",
+                "noSkillsPrompt": "Add skills to your profile to see matching jobs.",
+                "addSkillsLink": "Add skills",
+                "matchingSkills": "Matching jobs based on your skills: ___SKILLS___"
+            },
+            "jobCard": {
+                "untitledJob": "Untitled job",
+                "noDescription": "No description provided.",
+                "appliedLabel": "Applied"
+            },
+            "proposals": {
+                "zero": "0 proposals",
+                "lessThan5": "Less than 5 proposals",
+                "range5_10": "5 to 10 proposals",
+                "range10_15": "10 to 15 proposals",
+                "range15_20": "15 to 20 proposals",
+                "twentyPlus": "20+ proposals"
+            },
             "budgetNotSpecified": "Budget not specified",
             "toasts": {
                 "removedFromSaved": "Removed from saved jobs",
@@ -1714,6 +1829,7 @@ export const en: Translations = {
                 "savedJobsUpdateError": "Could not update saved jobs"
             },
             "header": {
+                "jobsYouMightLike": "Jobs you might like",
                 "title": "Find Work",
                 "subtitle": "Browse and apply to freelance opportunities in Tunisia."
             },
@@ -1724,9 +1840,11 @@ export const en: Translations = {
                 "showing": "Showing {{count}} jobs"
             },
             "actions": {
+                "applied": "Applied",
                 "applyNow": "Apply Now"
             },
             "empty": {
+                "saved": "You haven't saved any jobs yet.",
                 "filtered": "No jobs found for the selected filters."
             },
             "errors": {
@@ -2057,7 +2175,23 @@ export const en: Translations = {
                 "workInformation": "Work information"
             },
             "stats": {
-                "hourlyRate": "Hourly rate"
+                "hourlyRate": "Hourly rate",
+                "lessThanTwoHours": "< 2 hrs",
+                "hoursResponseTime": "< {{hours}} hrs",
+                "availabilityAndStats": "Availability & Stats",
+                "status": "Status",
+                "availableForWork": "Available for work",
+                "weeklyAvailability": "Weekly availability",
+                "hoursPerWeek": "{{hours}} hrs/week",
+                "yearsOfExperience": "Years of experience",
+                "yearsCount": {
+                    "one": "{{count}} year",
+                    "other": "{{count}} years"
+                },
+                "responseTime": "Response time",
+                "jobSuccess": "Job Success",
+                "profileVisibility": "Profile Visibility",
+                "public": "Public"
             },
             "toasts": {
                 "workSampleDeleted": "Work sample deleted",
@@ -2081,7 +2215,11 @@ export const en: Translations = {
                 "avatarSize": "Image size should be less than 5MB."
             },
             "verifications": {
-                "paymentMethod": "Payment method"
+                "title": "Verifications",
+                "identityVerified": "Identity Verified",
+                "phoneNumber": "Phone Number",
+                "emailAddress": "Email Address",
+                "paymentMethod": "Payment Method"
             },
             "viewer": {
                 "close": "Close portfolio viewer",
@@ -2107,7 +2245,69 @@ export const en: Translations = {
                 "startError": "Something went wrong while starting the conversation",
                 "opening": "Opening...",
                 "startAction": "Start conversation"
-            }
+            },
+            "main": {
+                "portfolio": "Portfolio",
+                "add": "Add",
+                "untitledWork": "Untitled work",
+                "noDescription": "No description provided.",
+                "openLink": "Open Link",
+                "viewProject": "View Project",
+                "workSamplesEmptyDesc": "Showcase case studies, designs, products, and measurable outcomes to attract clients.",
+                "addFirstWorkSample": "Add your first work sample",
+                "workHistoryAndReviews": "Work History & Reviews",
+                "projectCollaboration": "Project Collaboration",
+                "reviewBy": "by {{name}}",
+                "reviewsCount": {
+                    "one": "{{count}} review",
+                    "other": "{{count}} reviews"
+                },
+                "hourlyRateFormat": "{{rate}}/hr",
+                "localTime": "{{time}} local time",
+                "jobsCompletedCount": {
+                    "one": "{{count}} job completed",
+                    "other": "{{count}} jobs completed"
+                },
+                "responseTimeSuffix": "response time",
+                "copied": "Copied!",
+                "share": "Share",
+                "independentSpecialist": "Independent Specialist",
+                "specializedIn": "Specialized in {{skills}}",
+                "specializedFreelancer": "Specialized Freelancer",
+                "noBio": "No biography details provided yet.",
+                "addDescription": "+ Add description",
+                "skills": "Skills",
+                "services": "Services",
+                "tools": "Tools",
+                "industries": "Industries",
+                "photosCount": {
+                    "one": "{{count}} photo",
+                    "other": "{{count}} photos"
+                }
+            },
+            "projectPreferences": {
+                "title": "Project Preferences & Details",
+                "revisionPolicy": "Revision Policy",
+                "revisionPolicyDefault": "2 revisions included, additional billed separately.",
+                "projectPreferences": "Project Preferences",
+                "projectPreferencesDefault": "Open to project scope changes, regular text/call communication, and milestone-based deliverables."
+            },
+            "portfolioLinks": {
+                "title": "Portfolio Links",
+                "empty": "No links added yet.",
+                "add": "+ Add portfolio links"
+            },
+            "languages": {
+                "title": "Languages",
+                "empty": "No languages listed."
+            },
+            "education": {
+                "title": "Education",
+                "studyField": "{{degree}} in {{field}}",
+                "empty": "No education entered yet.",
+                "add": "+ Add education details"
+            },
+            "jobFallback": "Project"
         },
         "searchModal": {
             "placeholderFreelancer": "Search jobs, skills...",
@@ -2841,6 +3041,19 @@ export const en: Translations = {
         "jobs10plusDesc": "Veteran freelancer status"
     },
     "wallet": {
+        "tabs": {
+            "overview": "Overview",
+            "withdraw": "Withdraw",
+            "deposit": "Deposit",
+            "transactions": "Transactions"
+        },
+        "withdrawalAmount": "Withdrawal Amount",
+        "bankTransferDesc": "Withdraw directly to your local bank account",
+        "d17Desc": "Withdraw via e-Dinar. Coming soon.",
+        "flouciDesc": "Withdraw via Flouci mobile wallet. Coming soon.",
+        "youWithdraw": "You withdraw",
+        "minWithdrawalNotice": "Minimum withdrawal is {{min}} TND. Requests are reviewed manually before processing.",
+        "recentTransactions": "Recent Transactions",
         "seo": {
             "title": "Wallet",
             "description": "Track your balance, transactions, and withdrawal requests."
@@ -2915,7 +3128,31 @@ export const en: Translations = {
             "completed": "Completed",
             "rejected": "Rejected"
         },
-        "mockDepositFailed": "Failed to credit mock wallet deposit"
+        "mockDepositFailed": "Failed to credit mock wallet deposit",
+        "lockedFundsTitle": "Locked Funds Schedule",
+        "noLockedFunds": "No funds currently locked in escrow",
+        "moveEarnings": "Move earnings to bank",
+        "topUpWallet": "Top up your wallet",
+        "fullPaymentHistory": "Full payment history",
+        "viewAllArrow": "View all →",
+        "summary": "Summary",
+        "platformFeeNotice": "Platform fee (~1%)",
+        "youReceive": "You receive",
+        "howItWorksTitle": "How it works",
+        "steps": {
+            "submitRequest": "Submit request",
+            "submitRequestDesc": "Fill and submit your withdrawal details",
+            "review": "Review (2–5 days)",
+            "reviewDesc": "Our team verifies your request",
+            "transferSent": "Transfer sent",
+            "transferSentDesc": "Funds hit your account"
+        },
+        "available": "Available",
+        "transferEarningsDesc": "Transfer earnings to your payment method",
+        "earningsGrowth": "Earnings Growth",
+        "spendingHistory": "Spending History",
+        "monthlyBillingVolume": "Monthly billing volume generated (last 6 months)",
+        "monthlyFundingVolume": "Monthly platform funding volume spent (last 6 months)"
     },
     "verifyEmail": {
         "title": "Check your email",
@@ -3111,7 +3348,7 @@ export const en: Translations = {
                 "addMore": "Add image",
                 "addUrl": "Add URL",
                 "extraUrlPlaceholder": "https://image-url.com/preview.jpg",
-                "galleryLabel": "Additional images",
+                "galleryLabel": "Project Gallery (Optional)",
                 "extraAdded": "Image added to gallery",
                 "uploading": "Uploading...",
                 "success": "Image uploaded successfully",
@@ -3119,7 +3356,15 @@ export const en: Translations = {
                 "networkError": "Upload service is unreachable right now. You can still paste a direct image URL.",
                 "permissionError": "You do not have permission to upload files to storage.",
                 "loginRequired": "Please sign in to upload images.",
-                "previewAlt": "Portfolio preview image"
+                "previewAlt": "Portfolio preview image",
+                "replaceCover": "Replace Cover",
+                "deleteCover": "Delete Cover",
+                "uploadCover": "Upload Cover Image",
+                "dragDropHint": "Drag & drop or click to browse. JPEG, PNG, WEBP (Max 5MB)",
+                "pasteUrlHint": "Or paste a direct image URL for the cover:",
+                "coverUrlPlaceholder": "https://example.com/cover-image.jpg",
+                "extraImageUrlPlaceholder": "Add extra image URL...",
+                "addExtraUrl": "Add"
             },
             "skills": {
                 "remove": "Remove skill",
@@ -3278,6 +3523,54 @@ export const en: Translations = {
         }
     },
     "jobDetail": {
+        "defaultCity": "Tunis",
+        "removeFromSaves": "Remove from saves",
+        "saveJob": "Save this job",
+        "shareJob": "Share this job",
+        "referenceLinks": "Reference links",
+        "attachmentLabel": "Attachment {{index}}",
+        "openFile": "Open file",
+        "fileType": "FILE",
+        "proposalAccepted": "Your proposal was accepted",
+        "proposalDeclined": "Your proposal was declined",
+        "proposalWithdrawnTitle": "Your proposal was withdrawn",
+        "proposalAcceptedStatus": "Accepted",
+        "proposalDeclinedStatus": "Declined",
+        "proposalWithdrawnStatus": "Withdrawn",
+        "proposalPendingStatus": "Pending",
+        "clientCantApplyTitle": "Client accounts cannot apply",
+        "loginRequiredTitle": "Sign in to apply",
+        "completeOnboardingTitle": "Complete onboarding first",
+        "completeProfileTitle": "Complete your profile",
+        "cannotApplyTitle": "Cannot apply yet",
+        "switchToFreelancer": "Switch to Freelancer",
+        "signIn": "Sign in",
+        "completeNow": "Complete now",
+        "confirmWithdrawal": "Confirm Withdrawal",
+        "withdrawConfirmDesc": "Are you sure you want to withdraw this proposal? This action cannot be undone.",
+        "yesWithdraw": "Yes, Withdraw",
+        "reportJobTitle": "Report Job",
+        "reportJobDescription": "Tell us why this job violates our community guidelines.",
+        "submitReport": "Submit Report",
+        "reportReason": {
+            "spam": "Spam",
+            "misleading": "Misleading",
+            "inappropriate": "Inappropriate",
+            "fraud": "Fraud",
+            "other": "Other"
+        },
+        "hireRate": "Hire Rate",
+        "avgHourlyPaid": "Avg Hourly Paid",
+        "paymentMethodVerified": "Payment method verified",
+        "phoneNumberVerified": "Phone number verified",
+        "emailAddressVerified": "Email address verified",
+        "clientVerifications": "Verifications",
+        "inlineRemainingHint": "{{remaining}} applications available",
+        "inlineRechargingHint": "Recharging in",
+        "clientRatingText": "{{rating}} of 5 reviews",
+        "avgHourlyPaidFormat": "{{rate}} TND/hr",
+        "defaultTotalSpent": "15k+ TND",
+        "defaultMemberSince": "Mar 2026",
         "jobSaved": "Job saved",
         "jobRemoved": "Job removed from saved",
         "error": "An error occurred",
@@ -3567,7 +3860,74 @@ export const en: Translations = {
         "title": "Tunisia's freelance economy starts here.",
         "subtitle": "Join thousands of professionals already earning fairly on WorkedIn.",
         "primary": "Get started free",
-        "secondary": "Post a project"
+        "secondary": "Post a project",
+        "goToDashboard": "Go to Dashboard",
+        "clientDashboard": "Client Dashboard",
+        "browseJobs": "Browse Jobs",
+        "findFreelancers": "Find Freelancers"
+    },
+    "clientProfile": {
+        "notFound": "Client not found",
+        "notFoundDesc": "This profile does not exist or has been removed.",
+        "previewTitle": "Public Profile Preview",
+        "previewDesc": "You are viewing your profile as other users see it.",
+        "exitPreview": "Exit Preview",
+        "client": "Client",
+        "localTime": "{{time}} local time",
+        "reviewsCount": {
+            "one": "{{count}} review",
+            "other": "{{count}} reviews"
+        },
+        "jobsPostedCount": {
+            "one": "{{count}} job posted",
+            "other": "{{count}} jobs posted"
+        },
+        "memberSinceLabel": "Member since",
+        "copied": "Copied!",
+        "share": "Share",
+        "businessOwner": "Business Owner",
+        "specializedIn": "Specialized in {{industry}}",
+        "noBio": "No biography or about details provided yet.",
+        "addDescription": "+ Add description",
+        "companyInformation": "Company Information",
+        "noCompanyDetails": "No company details added yet.",
+        "hiringNeeds": "Hiring Needs",
+        "hiringPreferences": "Hiring Preferences & Details",
+        "activeJobs": "Active Job Postings",
+        "postJob": "Post a Job",
+        "proposalsCount": {
+            "one": "{{count}} proposal",
+            "other": "{{count}} proposals"
+        },
+        "upTo": "Up to",
+        "apply": "Apply",
+        "noActiveJobs": "No active job postings yet",
+        "noActiveJobsDesc": "Post projects, launch milestone tasks, and collaborate with Top Freelancers.",
+        "postFirstJob": "Post your first job",
+        "workHistory": "Work History & Reviews",
+        "by": "by",
+        "noReviewsYet": "No reviews yet. Complete your first contract with a freelancer to receive feedback.",
+        "hiringAndStats": "Hiring & Stats",
+        "hiringStatus": "Hiring Status",
+        "paymentVerified": "Payment Verified",
+        "standardStatus": "Standard",
+        "locationLabel": "Location",
+        "jobsPostedLabel": "Jobs Posted",
+        "completedContractsLabel": "Completed Contracts",
+        "totalSpentLabel": "Total spent",
+        "avgRatingLabel": "Average Rating",
+        "linksTitle": "Links & Resources",
+        "companyWebsite": "Company Website",
+        "noLinks": "No links added yet.",
+        "verificationsTitle": "Verifications",
+        "verifications": {
+            "identity": "Identity Verified",
+            "phone": "Phone Number",
+            "payment": "Payment Method"
+        },
+        "workspaceControls": "Workspace Controls",
+        "myProjects": "My Projects",
+        "settings": "Settings"
     },
     "faqPage": {
         "page": {
@@ -3736,9 +4096,18 @@ export const en: Translations = {
             "platformTagline": "# Tunisia's Freelance Platform",
             "platformSubtitle": "Connect with verified talent, manage projects securely, and get paid in TND — every time.",
             "featureCards": {
-                "verified": { "title": "Verified profiles", "sub": "Every identity confirmed" },
-                "escrow": { "title": "Escrow payments", "sub": "Funds held until delivery" },
-                "local": { "title": "Local & global", "sub": "Optimised for Tunisia" }
+                "verified": {
+                    "title": "Verified profiles",
+                    "sub": "Every identity confirmed"
+                },
+                "escrow": {
+                    "title": "Escrow payments",
+                    "sub": "Funds held until delivery"
+                },
+                "local": {
+                    "title": "Local & global",
+                    "sub": "Optimised for Tunisia"
+                }
             },
             "createAccountAction": "Create account",
             "finishingSignIn": "Securing session...",

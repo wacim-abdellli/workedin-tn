@@ -1727,12 +1727,25 @@ button[aria-haspopup="listbox"]:focus-visible {
 }
 
 @keyframes highlight-glow {
-  0%, 100% {
+  0% {
     box-shadow: 0 0 0 0 transparent;
+    background-color: transparent;
   }
-  20%, 70% {
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--workspace-primary) 30%, transparent);
-    border-color: var(--workspace-primary);
+  15% {
+    box-shadow: 
+      0 0 0 1px color-mix(in srgb, var(--workspace-primary) 15%, transparent),
+      0 0 32px 8px color-mix(in srgb, var(--workspace-primary) 12%, transparent);
+    background-color: color-mix(in srgb, var(--workspace-primary) 4%, transparent);
+  }
+  85% {
+    box-shadow: 
+      0 0 0 1px color-mix(in srgb, var(--workspace-primary) 15%, transparent),
+      0 0 32px 8px color-mix(in srgb, var(--workspace-primary) 12%, transparent);
+    background-color: color-mix(in srgb, var(--workspace-primary) 4%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    background-color: transparent;
   }
 }
 

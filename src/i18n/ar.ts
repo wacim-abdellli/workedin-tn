@@ -187,10 +187,25 @@ export const ar = {
                 "suggested": "مقترح:",
                 "attachments": "المرفقات (اختياري)",
                 "attachmentsDrop": "اسحب الملفات هنا أو اضغط للتصفح",
-                "chooseFiles": "اختيار الملفات"
+                "chooseFiles": "اختيار الملفات",
+                "titleHint": "استخدم مصطلحات تقنية دقيقة لمساعدة المستقلين المناسبين في العثور عليك.",
+                "categoryHint": "اختر التصنيف الأنسب لتفعيل تنبيهات مطابقة الخبراء تلقائياً.",
+                "subcategoryHint": "حدد التخصص الدقيق لتصفية العروض وضمان دقة مطابقة المهارات.",
+                "descriptionHint": "اشرح نطاق العمل، المعايير المتوقعة، وكيف تبدو المخرجات الناجحة.",
+                "skillsHint": "حدد المهارات الدقيقة لاستهداف المستقلين المتخصصين ودعوتهم مباشرةً.",
+                "attachmentsHint2": "قدم الأصول والنماذج أو المواصفات التفصيلية لتوضيح المخرجات المطلوبة.",
+                "charCount": "{{current}} / {{max}} حرف",
+                "skillsPlaceholder": "جرب: تصميم جرافيك، React، تحريك رسومي...",
+                "attachmentsHint": "PDF, DOC, DOCX, TXT, PNG, JPG, WEBP - حد أقصى 10MB لكل ملف",
+                "descriptionPlaceholder": "أضف خلفية تفصيلية، الجمهور المستهدف، المواصفات التقنية، والمخرجات الرئيسية...",
+                "titlePlaceholder": "مثال: نظام هوية بصرية ثنائية اللغة لمقهى تونسي"
             },
             "quality": {
-                "title": "درجة الجودة"
+                "title": "درجة الجودة",
+                "clearTitle": "عنوان واضح",
+                "categorySelected": "التصنيف محدد",
+                "strongDescription": "وصف قوي",
+                "relevantSkills": "مهارات ملائمة"
             },
             "autosave": {
                 "saving": "جاري الحفظ...",
@@ -238,6 +253,16 @@ export const ar = {
                 "minutesAgo": "منذ {{count}} دقيقة",
                 "hoursAgo": "منذ {{count}} ساعة"
             },
+            "links": {
+                "title": "روابط مرجعية (اختياري)",
+                "description": "أضف روابط Google Drive أو ملف الأعمال أو الشبكات الاجتماعية ليتمكن المستقلون من مراجعة السياق بسرعة.",
+                "placeholder": "ألصق الرابط (مثال: drive.google.com/... أو linkedin.com/in/...)",
+                "add": "إضافة رابط",
+                "remove": "حذف الرابط",
+                "maxLinksReached": "يمكنك إضافة حتى {{count}} روابط.",
+                "duplicate": "تم إضافة هذا الرابط من قبل.",
+                "invalid": "يرجى إدخال رابط صحيح."
+            },
             "stepBasics": {
                 "badge": "موجز المشروع",
                 "title": "تفاصيل المهمة",
@@ -267,17 +292,34 @@ export const ar = {
                 "badge": "إعداد التسعير",
                 "title": "الميزانية والمدة",
                 "subtitle": "حدد طريقة الدفع المناسبة وميزانية المشروع",
+                "pricingMode": "نموذج التسعير",
+                "fixedExact": "سعر ثابت (محدد)",
+                "fixedExactSubtitle": "ميزانية ثابتة واحدة",
+                "fixedExactDescription": "حدد ميزانية محددة لكامل نطاق العمل. الأفضل للمهام المحددة جيداً.",
+                "fixedExactHint": "حدد السعر الثابت الدقيق لهذا المشروع.",
+                "fixedRange": "سعر ثابت (نطاق)",
+                "fixedRangeSubtitle": "نطاق ميزانية بين حد أدنى وأقصى",
+                "fixedRangeDescription": "حدد نطاق ميزانية لاستقطاب العروض المناسبة لتوقعاتك.",
+                "fixedRangeHint": "حدد نطاقاً لاستقطاب العروض ضمن التكلفة المستهدفة.",
                 "fixedPrice": "سعر ثابت",
                 "fixedPriceDescription": "ادفع مبلغاً ثابتاً للمشروع بالكامل عند اكتماله.",
-                "hourly": "بالساعة",
-                "hourlyDescription": "ادفع للمستقل بناءً على عدد ساعات العمل.",
-                "estimatedBudget": "ميزانية المشروع التقديرية (د.ت)",
-                "min": "من",
-                "max": "إلى",
-                "hourlyRate": "السعر بالساعة (د.ت)",
+                "hourly": "الأجر بالساعة",
+                "hourlySubtitle": "الفوترة بحسب الوقت المسجّل",
+                "hourlyDescription": "ادفع بالساعة بناءً على السجلات. الأفضل للعمل المستمر أو المتطور.",
+                "hourlyHint": "حدد السعر بالساعة والحد الأقصى للساعات الأسبوعية.",
+                "hourlySetup": "تفاصيل التسعير بالساعة",
+                "estimatedBudget": "ميزانية المشروع التقديرية",
+                "budgetAmount": "قيمة الميزانية",
+                "min": "الحد الأدنى للميزانية",
+                "max": "الحد الأقصى للميزانية",
+                "hourlyRate": "السعر بالساعة",
                 "hourlyRateExample": "مثال: 20",
-                "weeklyHours": "الساعات المتوقعة أسبوعياً",
+                "weeklyHours": "حد الساعات الأسبوعية",
                 "weeklyHoursExample": "مثال: 10-20",
+                "partTime10": "دوام جزئي (حتى 10 ساعات/أسبوع)",
+                "partTime20": "دوام جزئي (حتى 20 ساعة/أسبوع)",
+                "fullTime30": "دوام كامل (حتى 30 ساعة/أسبوع)",
+                "fullTime40": "دوام كامل (حتى 40 ساعة/أسبوع)",
                 "duration": "مدة المشروع",
                 "selectDuration": "اختر المدة",
                 "durationLessThan1Month": "أقل من شهر",
@@ -285,9 +327,13 @@ export const ar = {
                 "duration3To6Months": "من 3 إلى 6 أشهر",
                 "durationMoreThan6Months": "أكثر من 6 أشهر",
                 "experienceLevel": "مستوى الخبرة المطلوب",
-                "beginner": "مبتدئ (Beginner)",
-                "intermediate": "متوسط (Intermediate)",
-                "expert": "خبير (Expert)",
+                "experienceLevelHint": "اختر مستوى الخبرة المطلوب لضمان الحصول على طلبات ملائمة.",
+                "beginner": "مستوى مبتدئ",
+                "beginnerSubtitle": "مهام بسيطة أو خيارات اقتصادية",
+                "intermediate": "مستوى متوسط",
+                "intermediateSubtitle": "خبرة متينة لأهداف قياسية",
+                "expert": "مستوى خبير",
+                "expertSubtitle": "متخصصون من أعلى مستوى لاحتياجات معقدة",
                 "deadline": "الموعد النهائي"
             },
             "stepVisibility": {
@@ -344,6 +390,39 @@ export const ar = {
                 "budgetRequired": "يرجى تحديد الميزانية",
                 "budgetRange": "الحد الأقصى يجب أن يكون أكبر من أو يساوي الحد الأدنى",
                 "subcategoryInvalid": "يرجى اختيار تخصص فرعي مناسب"
+            },
+            "expertTips": {
+                "specificTitleLabel": "عنوان دقيق:",
+                "specificTitleText": "صف بالضبط ما تحتاجه. العنوان الواضح يجذب المتخصصين المناسبين فوراً.",
+                "richContextLabel": "سياق غني:",
+                "richContextText": "أضف معايير واضحة للنطاق والمخرجات النهائية ومعايير النجاح.",
+                "budgetModelLabel": "نموذج الميزانية:",
+                "budgetModelText": "اختر السعر الثابت للمشاريع المحددة، والأجر بالساعة للمشاريع الديناميكية.",
+                "deadlineBufferLabel": "هامش الموعد النهائي:",
+                "deadlineBufferText": "تحديد تاريخ واقعي يشجع على تقديم طلبات ذات جودة عالية.",
+                "publicBriefsLabel": "الإعلانات العامة:",
+                "publicBriefsText": "ممتازة للحصول على أكبر عدد من العروض وتنافسية الأسعار.",
+                "inviteOnlyLabel": "الدعوة فقط:",
+                "inviteOnlyText": "الأنسب للمشاريع الحساسة أو عندما تختار المستقلين بنفسك.",
+                "lockStructureLabel": "تأكيد الهيكل:",
+                "lockStructureText": "تحقق من كل المواصفات. الهيكل الأساسي يُحسم عند النشر لضمان اتساق العروض."
+            },
+            "titleTemplateLogo": "تصميم شعار لشركة مواد غذائية",
+            "titleTemplateLanding": "إعادة تصميم صفحة هبوط لمنتج SaaS",
+            "titleTemplateVideo": "مونتاج فيديوهات قصيرة للإعلانات",
+            "titleTemplateDash": "لوحة تحكم React مع أدوات تحليل البيانات",
+            "snippetScope": "النطاق",
+            "snippetScopeText": "النطاق: بناء تجربة متجاوبة تتماشى مع إرشادات علامتنا التجارية.",
+            "snippetDeliverables": "المخرجات",
+            "snippetDeliverablesText": "المخرجات: الملفات المصدرية، بناء جاهز للنشر، وتوثيق موجز.",
+            "snippetSuccess": "معايير النجاح",
+            "snippetSuccessText": "معايير النجاح: واجهة مثالية، أداء عالٍ، وتسليم نظيف.",
+            "expertTipsTitle": "نصائح الخبراء",
+            "tips": {
+                "scope": "كن دقيقاً في تحديد النطاق والجودة المتوقعة.",
+                "success": "حدد بوضوح كيف يبدو النجاح.",
+                "references": "أضف روابط ومراجع أو أمثلة إن توفرت.",
+                "handoff": "وضح ما الذي يجب تسليمه عند الانتهاء."
             }
         }
     },
@@ -1306,7 +1385,8 @@ export const ar = {
         "status": {
             "active": "نشط",
             "completed": "مكتمل",
-            "disputed": "متنازع عليه"
+            "disputed": "متنازع عليه",
+            "cancelled": "ملغى"
         },
         "role": {
             "client": "العميل",
@@ -1323,7 +1403,15 @@ export const ar = {
         "unknownUser": "مستخدم غير معروف",
         "startedOn": "بدأ في {{date}}",
         "milestonesProgress": "1 من 3 مراحل مكتملة",
-        "openWorkspace": "فتح مساحة العمل ->"
+        "openWorkspace": "فتح مساحة العمل ->",
+        "subtitle": "إدارة عقودك النشطة، وأعمالك السابقة، والتواصل مع العملاء.",
+        "paymentProtectionTitle": "حماية الدفع",
+        "paymentProtectionDesc": "تواصل دائماً واطلب المدفوعات عبر WorkedIn. العقود المدفوعة خارج المنصة غير محمية بنظام الضمان الآمن لدينا.",
+        "searchPlaceholder": "البحث في العقود أو المستخدمين...",
+        "emptyTitle": "لم يتم العثور على عقود",
+        "emptyDescription": "جرّب علامة تبويب أخرى أو اضبط البحث للعثور على العقود بشكل أسرع.",
+        "emptyCancelledTitle": "لا توجد عقود ملغاة",
+        "emptyCancelledDescription": "ليس لديك أي عقود ملغاة."
     },
     "common": {
         "viewJob": "عرض المهمة",
@@ -1439,7 +1527,26 @@ export const ar = {
         },
         "goBack": "العودة",
         "success": "نجاح",
-        "tndPerHour": "د.ت/ساعة"
+        "tndPerHour": "د.ت/ساعة",
+        "delete": "حذف",
+        "edit": "تعديل",
+        "view": "عرض",
+        "open": "فتح",
+        "yes": "نعم",
+        "no": "لا",
+        "all": "الكل",
+        "none": "بلا",
+        "you": "أنت",
+        "available": "متاح",
+        "busy": "مشغول",
+        "offline": "غير متصل",
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "completed": "مكتمل",
+        "pending": "قيد الانتظار",
+        "cancelled": "ملغى",
+        "approved": "مقبول",
+        "rejected": "مرفوض"
     },
     "accountStatus": {
         "suspended": {
@@ -1694,7 +1801,8 @@ export const ar = {
             },
             "header": {
                 "title": "ابحث عن عمل",
-                "subtitle": "تصفح فرص العمل الحر في تونس وقدّم بثقة."
+                "subtitle": "تصفح فرص العمل الحر في تونس وقدّم بثقة.",
+                "jobsYouMightLike": "وظائف قد تعجبك"
             },
             "filters": {
                 "clearAll": "مسح الكل",
@@ -1703,13 +1811,42 @@ export const ar = {
                 "showing": "يعرض"
             },
             "actions": {
-                "applyNow": "قدم الآن"
+                "applyNow": "قدم الآن",
+                "applied": "تم التقديم"
             },
             "empty": {
-                "filtered": "لا توجد وظائف مطابقة للفلاتر المحددة."
+                "filtered": "لا توجد وظائف مطابقة للفلاتر المحددة.",
+                "saved": "لم تقم بحفظ أي وظائف بعد."
             },
             "errors": {
                 "loadFailed": "تعذر تحميل الوظائف. يرجى المحاولة مرة أخرى."
+            },
+            "currency": "د.ت",
+            "hourlyRateFormat": "د.ت/ساعة",
+            "tabs": {
+                "bestMatches": "أفضل التطابقات",
+                "mostRecent": "الأحدث",
+                "savedJobs": "الوظائف المحفوظة"
+            },
+            "infoBanner": {
+                "loginPrompt": "سجل الدخول لعرض الوظائف المتناسبة مع مهاراتك.",
+                "clientModePrompt": "أنت تتصفح الوظائف كعميل. قم بالتبديل إلى مستقل لرؤية الوظائف المتطابقة.",
+                "noSkillsPrompt": "أضف مهارات إلى ملفك الشخصي لرؤية الوظائف المتطابقة.",
+                "addSkillsLink": "إضافة مهارات",
+                "matchingSkills": "الوظائف المتطابقة بناءً على مهاراتك: ___SKILLS___"
+            },
+            "jobCard": {
+                "untitledJob": "وظيفة بدون عنوان",
+                "noDescription": "لم يتم تقديم وصف.",
+                "appliedLabel": "تم التقديم"
+            },
+            "proposals": {
+                "zero": "0 عروض",
+                "lessThan5": "أقل من 5 عروض",
+                "range5_10": "من 5 إلى 10 عروض",
+                "range10_15": "من 10 إلى 15 عرضاً",
+                "range15_20": "من 15 إلى 20 عرضاً",
+                "twentyPlus": "أكثر من 20 عرضاً"
             }
         },
         "settings": {
@@ -2036,7 +2173,23 @@ export const ar = {
                 "workInformation": "معلومات العمل"
             },
             "stats": {
-                "hourlyRate": "السعر بالساعة"
+                "hourlyRate": "السعر بالساعة",
+                "lessThanTwoHours": "أقل من ساعتين",
+                "hoursResponseTime": "أقل من {{hours}} ساعات",
+                "availabilityAndStats": "التوافر والإحصائيات",
+                "status": "الحالة",
+                "availableForWork": "متاح للعمل",
+                "weeklyAvailability": "التوافر الأسبوعي",
+                "hoursPerWeek": "{{hours}} ساعة/أسبوع",
+                "yearsOfExperience": "سنوات الخبرة",
+                "yearsCount": {
+                    "one": "سنة واحدة",
+                    "other": "{{count}} سنوات"
+                },
+                "responseTime": "سرعة الرد",
+                "jobSuccess": "نجاح العمل",
+                "profileVisibility": "ظهور الملف الشخصي",
+                "public": "عام"
             },
             "toasts": {
                 "workSampleDeleted": "تم حذف نموذج العمل",
@@ -2060,7 +2213,11 @@ export const ar = {
                 "avatarSize": "يجب أن يكون حجم الصورة أقل من 5 ميغابايت."
             },
             "verifications": {
-                "paymentMethod": "طريقة الدفع"
+                "paymentMethod": "طريقة الدفع",
+                "title": "التوثيقات",
+                "identityVerified": "الهوية موثقة",
+                "phoneNumber": "رقم الهاتف",
+                "emailAddress": "البريد الإلكتروني"
             },
             "viewer": {
                 "close": "إغلاق عارض الأعمال",
@@ -2086,7 +2243,69 @@ export const ar = {
                 "startError": "حدث خطأ أثناء بدء المحادثة",
                 "opening": "جارٍ الفتح...",
                 "startAction": "بدء المحادثة"
-            }
+            },
+            "main": {
+                "portfolio": "معرض الأعمال",
+                "add": "إضافة",
+                "untitledWork": "عمل بدون عنوان",
+                "noDescription": "لم يتم تقديم وصف.",
+                "openLink": "فتح الرابط",
+                "viewProject": "عرض المشروع",
+                "workSamplesEmptyDesc": "اعرض دراسات الحالة، والتصميمات، والمنتجات، والنتائج الملموسة لجذب العملاء.",
+                "addFirstWorkSample": "أضف نموذج عملك الأول",
+                "workHistoryAndReviews": "تاريخ العمل والتقييمات",
+                "projectCollaboration": "التعاون في المشروع",
+                "reviewBy": "من قبل {{name}}",
+                "reviewsCount": {
+                    "one": "تقييم واحد",
+                    "other": "{{count}} تقييمات"
+                },
+                "hourlyRateFormat": "{{rate}}/ساعة",
+                "localTime": "التوقيت المحلي {{time}}",
+                "jobsCompletedCount": {
+                    "one": "وظيفة مكتملة واحدة",
+                    "other": "{{count}} وظيفة مكتملة"
+                },
+                "responseTimeSuffix": "وقت الاستجابة",
+                "copied": "تم النسخ!",
+                "share": "مشاركة",
+                "independentSpecialist": "مختص مستقل",
+                "specializedIn": "متخصص في {{skills}}",
+                "specializedFreelancer": "مستقل متخصص",
+                "noBio": "لم يتم تقديم تفاصيل السيرة الذاتية بعد.",
+                "addDescription": "+ إضافة وصف",
+                "skills": "المهارات",
+                "services": "الخدمات",
+                "tools": "الأدوات",
+                "industries": "الصناعات",
+                "photosCount": {
+                    "one": "صورة واحدة",
+                    "other": "{{count}} صور"
+                }
+            },
+            "projectPreferences": {
+                "title": "تفضيلات وتفاصيل المشروع",
+                "revisionPolicy": "سياسة المراجعة",
+                "revisionPolicyDefault": "تتضمن مراجعتين، وأي مراجعات إضافية تُحسب بشكل منفصل.",
+                "projectPreferences": "تفضيلات المشروع",
+                "projectPreferencesDefault": "منفتح على التغييرات في نطاق المشروع، والتواصل العادي عبر الرسائل/المكالمات، والتسليمات المستندة إلى المراحل."
+            },
+            "portfolioLinks": {
+                "title": "روابط معرض الأعمال",
+                "empty": "لم يتم إضافة روابط بعد.",
+                "add": "+ إضافة روابط معرض الأعمال"
+            },
+            "languages": {
+                "title": "اللغات",
+                "empty": "لا توجد لغات مدرجة."
+            },
+            "education": {
+                "title": "التعليم",
+                "studyField": "{{degree}} في {{field}}",
+                "empty": "لم يتم إدخال التعليم بعد.",
+                "add": "+ إضافة تفاصيل التعليم"
+            },
+            "jobFallback": "مشروع"
         },
         "searchModal": {
             "placeholderFreelancer": "ابحث في الوظائف والمهارات...",
@@ -2894,7 +3113,44 @@ export const ar = {
             "completed": "مكتمل",
             "rejected": "مرفوض"
         },
-        "mockDepositFailed": "فشل إيداع المحفظة التجريبي"
+        "mockDepositFailed": "فشل إيداع المحفظة التجريبي",
+        "tabs": {
+            "overview": "نظرة عامة",
+            "withdraw": "سحب",
+            "deposit": "إيداع",
+            "transactions": "المعاملات"
+        },
+        "withdrawalAmount": "قيمة السحب",
+        "bankTransferDesc": "السحب مباشرة إلى حسابك البنكي المحلي",
+        "d17Desc": "السحب عبر D17. قريباً.",
+        "flouciDesc": "السحب عبر محفظة فلوصي. قريباً.",
+        "youWithdraw": "المبلغ المسحوب",
+        "minWithdrawalNotice": "الحد الأدنى للسحب هو {{min}} د.ت. تتم مراجعة الطلبات يدوياً قبل معالجتها.",
+        "recentTransactions": "المعاملات الأخيرة",
+        "lockedFundsTitle": "جدول الأموال المحجوزة",
+        "noLockedFunds": "لا توجد أموال محجوزة في الضمان حالياً",
+        "moveEarnings": "تحويل الأرباح إلى البنك",
+        "topUpWallet": "شحن المحفظة",
+        "fullPaymentHistory": "سجل المدفوعات الكامل",
+        "viewAllArrow": "عرض الكل ←",
+        "summary": "ملخص",
+        "platformFeeNotice": "رسوم المنصة (~1%)",
+        "youReceive": "ستتلقى",
+        "howItWorksTitle": "كيف يعمل",
+        "steps": {
+            "submitRequest": "تقديم الطلب",
+            "submitRequestDesc": "املأ وقدم تفاصيل عملية السحب الخاصة بك",
+            "review": "المراجعة (2-5 أيام)",
+            "reviewDesc": "يقوم فريقنا بالتحقق من طلبك",
+            "transferSent": "تم إرسال التحويل",
+            "transferSentDesc": "تصل الأموال إلى حسابك"
+        },
+        "available": "متاح",
+        "transferEarningsDesc": "تحويل الأرباح إلى وسيلة الدفع الخاصة بك",
+        "earningsGrowth": "نمو الأرباح",
+        "spendingHistory": "سجل الإنفاق",
+        "monthlyBillingVolume": "حجم الفواتير الشهري المتولد (آخر 6 أشهر)",
+        "monthlyFundingVolume": "حجم تمويل المنصة الشهري المنفق (آخر 6 أشهر)"
     },
     "verifyEmail": {
         "title": "تحقق من بريدك الإلكتروني",
@@ -3090,7 +3346,7 @@ export const ar = {
                 "addMore": "إضافة صورة",
                 "addUrl": "إضافة الرابط",
                 "extraUrlPlaceholder": "https://image-url.com/preview.jpg",
-                "galleryLabel": "صور إضافية",
+                "galleryLabel": "معرض المشروع (اختياري)",
                 "extraAdded": "تمت إضافة الصورة إلى المعرض",
                 "uploading": "جارٍ الرفع...",
                 "success": "تم رفع الصورة بنجاح",
@@ -3098,7 +3354,15 @@ export const ar = {
                 "networkError": "خدمة رفع الصور غير متاحة حالياً. يمكنك إدخال رابط صورة مباشر.",
                 "permissionError": "ليس لديك صلاحية لرفع الملفات إلى التخزين.",
                 "loginRequired": "يرجى تسجيل الدخول لرفع الصور.",
-                "previewAlt": "صورة معاينة معرض الأعمال"
+                "previewAlt": "صورة معاينة معرض الأعمال",
+                "replaceCover": "استبدال الغلاف",
+                "deleteCover": "حذف الغلاف",
+                "uploadCover": "رفع صورة الغلاف",
+                "dragDropHint": "قم بسحب وإفلات الصورة أو انقر للتصفح. JPEG، PNG، WEBP (الحد الأقصى 5 ميغابايت)",
+                "pasteUrlHint": "أو الصق رابط صورة مباشر للغلاف:",
+                "coverUrlPlaceholder": "https://example.com/cover-image.jpg",
+                "extraImageUrlPlaceholder": "أضف رابط صورة إضافي...",
+                "addExtraUrl": "إضافة"
             },
             "skills": {
                 "remove": "إزالة المهارة",
@@ -3334,7 +3598,55 @@ export const ar = {
         "yourBid": "عرضك:",
         "viewProposal": "عرض العرض",
         "yourJob": "هذه وظيفتك",
-        "manageJob": "إدارة الوظيفة"
+        "manageJob": "إدارة الوظيفة",
+        "defaultCity": "تونس",
+        "removeFromSaves": "إلغاء الحفظ",
+        "saveJob": "حفظ هذه الوظيفة",
+        "shareJob": "مشاركة هذه الوظيفة",
+        "referenceLinks": "الروابط المرجعية",
+        "attachmentLabel": "مرفق {{index}}",
+        "openFile": "فتح الملف",
+        "fileType": "ملف",
+        "proposalAccepted": "تم قبول عرضك",
+        "proposalDeclined": "تم رفض عرضك",
+        "proposalWithdrawnTitle": "تم سحب عرضك",
+        "proposalAcceptedStatus": "مقبول",
+        "proposalDeclinedStatus": "مرفوض",
+        "proposalWithdrawnStatus": "مسحوب",
+        "proposalPendingStatus": "معلق",
+        "clientCantApplyTitle": "حسابات العملاء لا يمكنها التقديم",
+        "loginRequiredTitle": "سجل الدخول للتقديم",
+        "completeOnboardingTitle": "أكمل إعداد الحساب أولاً",
+        "completeProfileTitle": "أكمل ملفك الشخصي",
+        "cannotApplyTitle": "لا يمكن التقديم بعد",
+        "switchToFreelancer": "التبديل إلى مستقل",
+        "signIn": "تسجيل الدخول",
+        "completeNow": "أكمل الآن",
+        "confirmWithdrawal": "تأكيد السحب",
+        "withdrawConfirmDesc": "هل أنت متأكد من رغبتك في سحب هذا العرض؟ لا يمكن التراجع عن هذا الإجراء.",
+        "yesWithdraw": "نعم، اسحب العرض",
+        "reportJobTitle": "الإبلاغ عن وظيفة",
+        "reportJobDescription": "أخبرنا لماذا تنتهك هذه الوظيفة إرشادات المجتمع الخاصة بنا.",
+        "submitReport": "تقديم البلاغ",
+        "reportReason": {
+            "spam": "محتوى غير مرغوب فيه",
+            "misleading": "مضلل",
+            "inappropriate": "غير لائق",
+            "fraud": "احتيال",
+            "other": "أخرى"
+        },
+        "hireRate": "معدل التوظيف",
+        "avgHourlyPaid": "متوسط سعر الساعة المدفوع",
+        "paymentMethodVerified": "طريقة الدفع موثقة",
+        "phoneNumberVerified": "رقم الهاتف موثق",
+        "emailAddressVerified": "البريد الإلكتروني موثق",
+        "clientVerifications": "التوثيقات",
+        "inlineRemainingHint": "متبقي {{remaining}} تقديمات متاحة",
+        "inlineRechargingHint": "إعادة الشحن خلال",
+        "clientRatingText": "{{rating}} من أصل 5 تقييمات",
+        "avgHourlyPaidFormat": "{{rate}} د.ت/ساعة",
+        "defaultTotalSpent": "أكثر من 15 ألف د.ت",
+        "defaultMemberSince": "مارس 2026"
     },
     "proposalModal": {
         "jobContext": "سياق الوظيفة",
@@ -3546,7 +3858,11 @@ export const ar = {
         "title": "اقتصاد التوظيف المستقل في تونس يبدأ هنا.",
         "subtitle": "انضم إلى آلاف المحترفين الذين يربحون بعدالة على خدمة.",
         "primary": "ابدأ مجاناً",
-        "secondary": "انشر مشروعاً"
+        "secondary": "انشر مشروعاً",
+        "goToDashboard": "الذهاب إلى لوحة التحكم",
+        "clientDashboard": "لوحة تحكم العميل",
+        "browseJobs": "تصفح الوظائف",
+        "findFreelancers": "البحث عن مستقلين"
     },
     "faqPage": {
         "page": {
@@ -3715,9 +4031,18 @@ export const ar = {
             "platformTagline": "منصة العمل الحر التونسية",
             "platformSubtitle": "تواصل مع المواهب الموثقة، أدر مشاريعك بأمان، واحصل على مدفوعاتك بالدينار التونسي — في كل مرة.",
             "featureCards": {
-                "verified": { "title": "ملفات موثقة", "sub": "كل هوية مؤكدة" },
-                "escrow": { "title": "مدفوعات بالضمان", "sub": "الأموال محفوظة حتى التسليم" },
-                "local": { "title": "محلي وعالمي", "sub": "محسن لتونس" }
+                "verified": {
+                    "title": "ملفات موثقة",
+                    "sub": "كل هوية مؤكدة"
+                },
+                "escrow": {
+                    "title": "مدفوعات بالضمان",
+                    "sub": "الأموال محفوظة حتى التسليم"
+                },
+                "local": {
+                    "title": "محلي وعالمي",
+                    "sub": "محسن لتونس"
+                }
             },
             "createAccountAction": "إنشاء حساب",
             "finishingSignIn": "إنهاء دخولك",
@@ -4179,6 +4504,69 @@ export const ar = {
         "openToRequestChanges": "افتح هذا العقد في الرسائل لطلب تعديلات.",
         "openToReleasePay": "افتح هذا العقد في الرسائل لتحرير الدفع.",
         "openToDispute": "افتح هذا العقد في الرسائل لفتح نزاع."
+    },
+    "clientProfile": {
+        "notFound": "العميل غير موجود",
+        "notFoundDesc": "هذا الملف الشخصي غير موجود أو تم حذفه.",
+        "previewTitle": "معاينة الملف الشخصي العام",
+        "previewDesc": "أنت تشاهد ملفك الشخصي كما يراه المستخدمون الآخرون.",
+        "exitPreview": "الخروج من المعاينة",
+        "client": "عميل",
+        "localTime": "التوقيت المحلي {{time}}",
+        "reviewsCount": {
+            "one": "تقييم واحد",
+            "other": "{{count}} تقييمات"
+        },
+        "jobsPostedCount": {
+            "one": "وظيفة واحدة منشورة",
+            "other": "{{count}} وظيفة منشورة"
+        },
+        "memberSinceLabel": "عضو منذ",
+        "copied": "تم النسخ!",
+        "share": "مشاركة",
+        "businessOwner": "صاحب عمل",
+        "specializedIn": "متخصص في {{industry}}",
+        "noBio": "لم يتم تقديم سيرة ذاتية أو تفاصيل حول العمل بعد.",
+        "addDescription": "+ إضافة وصف",
+        "companyInformation": "معلومات الشركة",
+        "noCompanyDetails": "لم يتم إضافة تفاصيل الشركة بعد.",
+        "hiringNeeds": "احتياجات التوظيف",
+        "hiringPreferences": "تفضيلات وتفاصيل التوظيف",
+        "activeJobs": "الوظائف النشطة المنشورة",
+        "postJob": "نشر وظيفة",
+        "proposalsCount": {
+            "one": "عرض واحد",
+            "other": "{{count}} عروض"
+        },
+        "upTo": "يصل إلى",
+        "apply": "التقديم",
+        "noActiveJobs": "لا توجد وظائف نشطة منشورة بعد",
+        "noActiveJobsDesc": "انشر المشاريع، وأطلق المهام المرحلية، وتعاون مع أفضل المستقلين.",
+        "postFirstJob": "انشر أول وظيفة لك",
+        "workHistory": "تاريخ العمل والتقييمات",
+        "by": "بواسطة",
+        "noReviewsYet": "لا توجد تقييمات بعد. أكمل أول عقد لك مع مستقل لتلقي التقييمات.",
+        "hiringAndStats": "التوظيف والإحصائيات",
+        "hiringStatus": "حالة التوظيف",
+        "paymentVerified": "طريقة الدفع موثقة",
+        "standardStatus": "قياسي",
+        "locationLabel": "الموقع",
+        "jobsPostedLabel": "الوظائف المنشورة",
+        "completedContractsLabel": "العقود المكتملة",
+        "totalSpentLabel": "إجمالي الإنفاق",
+        "avgRatingLabel": "متوسط التقييم",
+        "linksTitle": "الروابط والموارد",
+        "companyWebsite": "موقع الشركة الإلكتروني",
+        "noLinks": "لم يتم إضافة روابط بعد.",
+        "verificationsTitle": "التوثيقات",
+        "verifications": {
+            "identity": "الهوية موثقة",
+            "phone": "رقم الهاتف",
+            "payment": "طريقة الدفع"
+        },
+        "workspaceControls": "عناصر التحكم في مساحة العمل",
+        "myProjects": "مشاريعي",
+        "settings": "الإعدادات"
     }
 };
 export type Translations = typeof ar;

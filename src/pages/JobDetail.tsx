@@ -1203,17 +1203,24 @@ function JobDetail() {
             {/* Client Info */}
             <ClientInfoSidebar
               clientName={job.client?.full_name || t.jobDetail.defaultClient}
-              location={job.client?.location ? localizeGovernorate(job.client.location, language) : 'Tunis'}
+              location={job.client?.location ? localizeGovernorate(job.client.location, language) : tx('jobDetail.defaultCity', undefined, 'Tunis')}
               avatarUrl={job.client?.avatar_url || null}
-              ratingText={clientStats.rating > 0 ? `${clientStats.rating.toFixed(1)} of 5 reviews` : '4.8 of 5 reviews'}
+              ratingText={tx('jobDetail.clientRatingText', { rating: clientStats.rating > 0 ? clientStats.rating.toFixed(1) : '4.8' }, clientStats.rating > 0 ? `${clientStats.rating.toFixed(1)} of 5 reviews` : '4.8 of 5 reviews')}
               jobsPosted={clientStats.totalJobs > 0 ? `${clientStats.totalJobs}` : '15'}
               hireRate="75%"
-              totalSpent={clientStats.totalSpent > 0 ? `${clientStats.totalSpent.toLocaleString()} TND` : '15k+ TND'}
-              avgHourlyPaid="45 TND/hr"
+              totalSpent={clientStats.totalSpent > 0 ? `${clientStats.totalSpent.toLocaleString()} ${tx('common.currency', undefined, 'TND')}` : tx('jobDetail.defaultTotalSpent', undefined, '15k+ TND')}
+              avgHourlyPaid={tx('jobDetail.avgHourlyPaidFormat', { rate: '45' }, '45 TND/hr')}
               paymentVerified={!!job.client?.payment_verified}
               phoneVerified={!!job.client?.phone_verified}
               emailVerified={true} // Usually true since Auth requires it
-              memberSince={job.client?.created_at ? new Date(job.client.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Mar 2026'}
+              memberSince={
+                job.client?.created_at
+                  ? new Date(job.client.created_at).toLocaleDateString(
+                      language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US',
+                      { month: 'short', year: 'numeric' }
+                    )
+                  : tx('jobDetail.defaultMemberSince', undefined, 'Mar 2026')
+              }
               onViewProfile={
                 canViewClientProfile ? () => navigate(`/client/${job.client_id}`) : undefined
               }

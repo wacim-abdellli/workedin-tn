@@ -1,47 +1,215 @@
-# WorkedIn TN - Agent Instructions & Behavior Rules
+# WorkedIn TN — Agent Entry Point
 
-This file is automatically loaded by AI coding agents (Antigravity, Cursor, etc.) to set prompt constraints, code styles, and architecture instructions.
+> All agent context lives in the `.agent/` folder. Read `INDEX.md` first.
 
-## 📌 Context Initialization
-Before writing code or answering complex architectural questions, you MUST read and absorb the core project map:
-👉 **[PROJECT_MAP.md](file:///c:/Users/pc/Desktop/workedin_tn/PROJECT_MAP.md)**
+## Boot sequence:
+1. Read `.agent/INDEX.md` (30 lines — tells you which file to read next)
+2. Read `.agent/RULES.md` for any code change (safety rails)
+3. Read `.agent/ARCHITECTURE.md` if you need structure/flows/DB understanding
+4. Read `.agent/AUDIT.md` if working on bugs, known issues, or publish prep
 
-This file contains the complete database schema, design token systems, project structure, and technical requirements. Reading this map is enough to give you 100% accurate context on the codebase without wasting tokens scanning 60+ individual files.
-
----
-
-## 🛠️ Code Conventions & Preferences
-
-### 1. React & TypeScript
-- **Version:** React 19 (use React 19 compliant hooks/APIs, no legacy features).
-- **TypeScript:** Strict type checks. Avoid `any` at all costs. Utilize explicit return types for critical components/functions.
-- **State Management:** Use Zustand stores (`src/store/` or corresponding page state) instead of bloated Contexts unless globally required.
-
-### 2. Styling System
-- **Strict Token Compliance:** Do NOT write raw HEX, HSL, or RGB colors.
-- Use CSS variables defined in the Design System:
-  - Colors: `var(--color-text-primary)`, `var(--color-background-base)`, `var(--color-brand-primary)`
-  - Spacing: `var(--spacing-2)`, `var(--spacing-4)`, `var(--spacing-8)`
-  - Radii: `var(--radius-md)`, `var(--radius-lg)`
-- Custom designs must utilize HSL tailoring and standard semantic values.
-- Dark mode compatibility is mandatory. All layouts must support `.dark` theme toggling seamlessly.
-
-### 3. Supabase & Database Integrity
-- Client queries must use `supabase` from `src/lib/supabase.ts`.
-- Never alter RLS (Row Level Security) configurations without double-checking RLS policies in `supabase/schema_v2.sql`.
-- **Contract Delivery Uploads**: Uploads under the `contract-files` bucket must use the prefix `/submissions/` (not `/deliveries/`) to bypass ad-blockers. Since the remote `secure-upload` Edge function might be outdated, use direct uploads via `supabase.storage.from('contract-files').upload()` instead of `uploadFileWithMetadata()`, as authenticated users are allowed direct inserts by default.
-- Maintain transactional safety.
-
-### 4. Internationalization (i18n)
-- The app supports Arabic, French, and English.
-- Avoid hardcoding user-facing strings. Use `react-i18next` for translations.
-- Run `npm run i18n:audit` to verify translation completeness.
+DO NOT read `PROJECT_MAP.md` or `DEEP_AUDIT_JUNE2026.md` — they are superseded by the `.agent/` folder.
 
 ---
 
-## 📈 Agent Workflow Directives
+## 1. ABSOLUTE SAFETY RULES (NEVER violate)
 
-1. **Maintain the Project Map:** Whenever you create or delete a file, add/modify a database table or schema in `supabase/`, or introduce a new core routing context, you MUST update the `PROJECT_MAP.md` as the final step of your task execution. Keep the map perfectly accurate.
-2. **Keep Edits Precise:** Avoid replacing entire files when making small fixes. Use localized replacements to reduce bundle drift.
-3. **Document Steps:** Update `task.md` continuously during execution to keep the user informed of exactly what has been completed, what is in progress, and what is next.
-4. **Verify Before Declaring Done:** Propose running local tests (`npm run test:run` or `npm run test:e2e`) to verify that modifications do not break existing features.
+### 1.1 Secrets & Keys
+- **NEVER** put `SUPABASE_SERVICE_ROLE_KEY` in any file prefixed with `VITE_` — Vite exposes all `VITE_*` vars to the browser bundle.
+- **NEVER** hardcode API keys, tokens, or secrets in source files.
+- **NEVER** commit `.env.local` or any `*.local` file.
+- Service role operations belong ONLY in Supabase Edge Functions (server-side).
+
+### 1.2 Security
+- **ALL user-generated HTML** must go through `SanitizedHtml` component (`src/components/ui/SanitizedHtml.tsx`) which uses DOMPurify.
+- **NEVER** use raw `dangerouslySetInnerHTML` or `innerHTML` directly.
+- **NEVER** disable or weaken RLS policies without explicit user approval.
+- **NEVER** expose `is_admin`, `is_super_admin`, or `account_status` fields in public-facing API responses.
+- **NEVER** add `eval()`, `Function()`, or `unsafe-eval` to production code paths.
+
+### 1.3 Payments & Contracts
+- **NEVER** modify the contract state machine (`src/lib/contractWorkflow.ts`) without understanding all transitions. Terminal states (`completed`, `cancelled`, `disputed`) must NEVER have outbound transitions.
+- **NEVER** bypass payment verification in production code. Mock payment flows are DEV-only.
+- **ALL** financial mutations (wallet credits, escrow release, refunds) must use atomic RPCs, not individual inserts/updates.
+
+### 1.4 Auth
+- **NEVER** trust client-side `isAdmin` checks alone. Admin operations must verify at the database level via `public.is_admin()` SECURITY DEFINER function.
+- **NEVER** expose session tokens in URLs, logs, or error messages.
+- Route protection uses layered guards (`ProtectedRoute` → `ProtectedGate` → `WorkspaceRoute`/`AdminRoute`). Do not bypass this chain.
+
+---
+
+## 2. CODE CONVENTIONS
+
+### 2.1 TypeScript
+- React 19 + TypeScript 5.9 strict mode.
+- **Zero `any`** — use `unknown` and narrow, or define proper interfaces.
+- **Zero `@ts-ignore`** — this codebase has none; keep it that way.
+- Explicit return types on exported functions and hooks.
+
+### 2.2 Styling (Design Token System)
+- **NEVER** write raw HEX/HSL/RGB colors. Use CSS variables:
+  - `var(--color-text-primary)`, `var(--color-background-base)`, `var(--color-brand-primary)`
+  - `var(--spacing-2)`, `var(--radius-md)`, etc.
+- **RTL-first**: Use logical properties ONLY:
+  - `ms-` / `me-` (not `ml-` / `mr-`)
+  - `ps-` / `pe-` (not `pl-` / `pr-`)
+  - `start-` / `end-` (not `left-` / `right-`)
+  - `inset-inline-start` (not `left`)
+- Dark mode compatibility mandatory. All UI must work with `.dark` class.
+- Run `npm run tokens:compliance` to verify design token usage.
+
+### 2.3 i18n (Arabic · French · English)
+- **NEVER** hardcode user-facing strings. Use translation keys via `useTranslation()`.
+- Arabic is the PRIMARY language (RTL). French secondary. English tertiary.
+- After any UI text changes, run `npm run i18n:audit:strict` — it must pass clean.
+
+### 2.4 State Management
+- **Zustand** for client-side state (`src/lib/workspaceState.ts`, stores)
+- **React Query** for server state (all Supabase data fetching)
+- **Context** only for auth (`AuthContext`) and cross-cutting concerns (Theme, Workspace, Notifications)
+- Never duplicate server state in Zustand — let React Query be the cache.
+
+### 2.5 File Uploads
+- All uploads go through `uploadFileWithMetadata()` in `src/lib/supabase.ts` → calls `secure-upload` edge function.
+- **Exception**: Contract delivery files use direct upload via `supabase.storage.from('contract-files').upload()` with prefix `submissions/` (not `deliveries/`) to bypass ad-blockers.
+- Upload validation rules live in `src/lib/uploadPolicy.ts` — both client AND server enforce these.
+- Blocked extensions: `html, htm, js, mjs, cjs, jsx, ts, tsx, php, exe, dll, sh, bat, cmd, ps1, jar, msi, apk, com, scr`
+
+---
+
+## 3. ARCHITECTURE RULES
+
+### 3.1 Data Flow (downward trace only)
+```
+Page → Service → Lib → Supabase (DB/Auth/Storage)
+```
+- NEVER reverse-engineer from DB to UI.
+- NEVER modify a service without checking which pages import it.
+
+### 3.2 Route Protection Layers
+| Guard | Purpose | File |
+|-------|---------|------|
+| `public` | No auth needed | Direct render |
+| `public-redirect` | Redirect to dashboard if logged in | Login/Signup |
+| `protected` | Must be authenticated | `ProtectedRoute` → `ProtectedGate` |
+| `protected-workspace` | Auth + workspace context | `WorkspaceRoute` |
+| `protected-onboarding` | Auth + onboarding step | `OnboardingRoute` |
+| `admin` | Auth + `is_admin` check | `AdminRoute` |
+
+### 3.3 Edge Functions (Supabase)
+All 15 edge functions live in `supabase/functions/`. Every function:
+- Validates auth via `supabase.auth.getUser()` (except webhooks which use HMAC)
+- Uses CORS headers from `ALLOWED_ORIGINS` env var
+- Returns proper HTTP status codes
+- Logs to appropriate audit tables
+
+### 3.4 Contract State Machine
+```
+pending_payment → [active, cancelled, disputed]
+active → [delivery_submitted, cancelled, disputed]
+delivery_submitted → [active, revision_requested, completed, cancelled, disputed]
+revision_requested → [delivery_submitted, cancelled, disputed]
+completed → [] (TERMINAL)
+cancelled → [] (TERMINAL)
+disputed → [] (TERMINAL)
+```
+Source: `src/lib/contractWorkflow.ts` — use `canTransitionContractStatus()` to validate.
+
+---
+
+## 4. KNOWN HAZARDS (from June 2026 audit)
+
+### Files that MUST NOT ship to production:
+- `public/test-admin.html` — DELETE THIS (exposes admin patterns)
+- `scratch/` directory — 32 debug scripts, add to .gitignore
+
+### Known domain conflict:
+- `sitemap.xml` and `robots.txt` say `khedmetna.tn`
+- Everything else says `workedin.tn`
+- Until resolved: do NOT create new references to either domain without asking user.
+
+### God components (high regression risk):
+- `src/pages/Messages.tsx` — 5,410 lines. Be EXTREMELY careful editing this.
+- `src/pages/ContractWorkspacePage.tsx` — complex lifecycle logic.
+- When modifying these: make minimal changes, test thoroughly.
+
+### Circular dependency:
+- Build has `form-vendor → react-vendor → form-vendor` circular chunk.
+- Do NOT add new cross-chunk imports between form/react vendor groups.
+
+### Files with `: any` (tech debt — fix when touching):
+- `src/pages/Wallet.tsx`, `src/pages/JobBoard.tsx`, `src/pages/JobDetail.tsx`
+- `src/services/jobs.ts`, `src/pages/admin/PaymentsTab.tsx`
+- `src/components/settings/ProfileSettings.tsx`
+
+---
+
+## 5. VALIDATION CHECKLIST (before declaring any task done)
+
+```bash
+# Type check (must pass with 0 errors)
+npx tsc --noEmit
+
+# Unit tests
+npm run test:run
+
+# i18n completeness
+npm run i18n:audit:strict
+
+# Build (check for circular deps, size warnings)
+npm run build:budget
+
+# Avatar consistency
+npm run avatar:audit
+
+# Full strict audit (combines all above + E2E a11y)
+npm run audit:strict
+```
+
+### Quick validation (minimum for small changes):
+```bash
+npx tsc --noEmit && npm run test:run && npm run i18n:audit
+```
+
+---
+
+## 6. MUTATION RISK LEVELS
+
+| Risk | Scope | Required checks |
+|------|-------|----------------|
+| LOW | UI-only (pages, components, styles) | `tsc` + visual check |
+| MEDIUM | Services, hooks, lib utilities | `tsc` + `test:run` + check importers |
+| HIGH | Auth, payments, contracts, RLS | `tsc` + `test:run` + `test:e2e` + user approval |
+| CRITICAL | Edge functions, migrations, secrets | Full `audit:strict` + user approval + deployment plan |
+
+---
+
+## 7. WORKFLOW DIRECTIVES
+
+1. **Trace before modifying**: Follow the import chain from entry point to the file you want to edit. Understand the context.
+2. **Minimal changes**: Fix what's asked. Don't refactor surroundings. Don't add features.
+3. **No exploration spirals**: If you can't find something in 3 file reads, ask the user.
+4. **Update PROJECT_MAP.md** when you create/delete files, modify routes, or change DB schema.
+5. **Never break existing tests**: If a test fails after your change, your change is wrong (unless the test itself is wrong — verify with user).
+6. **Console logs**: Use `logger` from `src/lib/logger.ts` (dev-only). NEVER add raw `console.log` in production paths.
+7. **Error handling**: Use `ErrorBoundary` for component trees. Use try/catch in services. Report to Sentry in production via `@sentry/react`.
+
+---
+
+## 8. QUICK REFERENCE
+
+| What | Where |
+|------|-------|
+| Supabase client | `src/lib/supabase.ts` |
+| Auth context | `src/contexts/AuthContext.tsx` |
+| Contract logic | `src/lib/contractWorkflow.ts` |
+| Upload policies | `src/lib/uploadPolicy.ts` |
+| Sanitization | `src/lib/sanitization.ts` |
+| Route definitions | `src/routes/routeDefinitions.tsx` |
+| Design tokens | `design-system/` |
+| Edge functions | `supabase/functions/*/index.ts` |
+| Migrations | `supabase/migrations/*.sql` |
+| Tests | `src/**/*.test.{ts,tsx}` + `e2e/*.spec.ts` |
+| Logger | `src/lib/logger.ts` |
+| Known issues | `DEEP_AUDIT_JUNE2026.md` |

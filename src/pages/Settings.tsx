@@ -422,21 +422,21 @@ function PaymentSettingsTab({
       <div className="surface-card border rounded-2xl overflow-hidden">
         <div className="px-6 pt-5 pb-4 border-b border-surface">
           <h2 className="text-base font-bold text-on-surface tracking-tight">
-            {isFreelancer ? 'Payment Providers' : 'Payment Methods'}
+            {isFreelancer ? tx('pages.settings.payment.providers', undefined, 'Payment Providers') : tx('pages.settings.payment.methods', undefined, 'Payment Methods')}
           </h2>
           <p className="text-xs text-on-surface-muted mt-0.5">
             {isFreelancer
-              ? 'How your clients fund contracts - your earnings go through escrow.'
-              : 'How you fund contracts for your projects.'}
+              ? tx('pages.settings.payment.freelancerDesc', undefined, 'How your clients fund contracts - your earnings go through escrow.')
+              : tx('pages.settings.payment.clientDesc', undefined, 'How you fund contracts for your projects.')}
           </p>
         </div>
         <div className="p-4 space-y-3">
           <PaymentMethodCard
             id="dhmad"
-            name="Dhmad Escrow"
+            name={tx('pages.settings.payment.dhmadName', undefined, 'Dhmad Escrow')}
             description={isFreelancer
-              ? 'Active escrow clearinghouse. Contract funds are secured safely by Dhmad until delivery is approved, then credited to your wallet balance.'
-              : 'Active billing gateway. Supports Visa, Mastercard, Flouci, and e-Dinar checkouts natively during contract funding.'}
+              ? tx('pages.settings.payment.dhmadFreelancerDesc', undefined, 'Active escrow clearinghouse. Contract funds are secured safely by Dhmad until delivery is approved, then credited to your wallet balance.')
+              : tx('pages.settings.payment.dhmadClientDesc', undefined, 'Active billing gateway. Supports Visa, Mastercard, Flouci, and e-Dinar checkouts natively during contract funding.')}
             status="live"
             active
             onWallet={isFreelancer ? () => navigate('/wallet') : undefined}
@@ -449,8 +449,12 @@ function PaymentSettingsTab({
         <div className="surface-card border rounded-2xl overflow-hidden">
           <div className="px-6 pt-5 pb-4 border-b border-surface flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-bold text-on-surface tracking-tight">Payout Accounts</h2>
-              <p className="text-xs text-on-surface-muted mt-0.5">Where your earnings land when you withdraw.</p>
+              <h2 className="text-base font-bold text-on-surface tracking-tight">
+                {tx('pages.settings.payment.payoutAccounts', undefined, 'Payout Accounts')}
+              </h2>
+              <p className="text-xs text-on-surface-muted mt-0.5">
+                {tx('pages.settings.payment.payoutDesc', undefined, 'Where your earnings land when you withdraw.')}
+              </p>
             </div>
             {!adding && (
               <button
@@ -459,7 +463,7 @@ function PaymentSettingsTab({
                 className="inline-flex items-center gap-1.5 text-white text-xs font-semibold px-3 py-2 rounded-lg shrink-0 transition-opacity hover:opacity-90"
                 style={{ background: accentColor }}
               >
-                <Plus className="w-3.5 h-3.5" />Add account
+                <Plus className="w-3.5 h-3.5" />{tx('pages.settings.payment.addAccount', undefined, 'Add account')}
               </button>
             )}
           </div>
@@ -468,13 +472,15 @@ function PaymentSettingsTab({
             <div className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl border border-amber-500/15 bg-amber-500/5">
               <Info className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
               <p className="text-[11px] text-amber-300/80 leading-relaxed">
-                Bank transfer (IBAN) is live now. Flouci and D17 payout options coming soon.
+                {tx('pages.settings.payment.payoutInfo', undefined, 'Bank transfer (IBAN) is live now. Flouci and D17 payout options coming soon.')}
               </p>
             </div>
 
             {adding && (
               <div className="rounded-xl border border-[var(--color-border-subtle)] p-4 space-y-3 surface-sunken">
-                <p className="text-xs font-semibold text-on-surface mb-1">New bank account</p>
+                <p className="text-xs font-semibold text-on-surface mb-1">
+                  {tx('pages.settings.payment.newBankAccount', undefined, 'New bank account')}
+                </p>
 
                 <div className="space-y-1">
                   <div className="relative">
@@ -504,7 +510,7 @@ function PaymentSettingsTab({
                   {touched.iban && ibanResult.valid && (
                     <p className="text-[11px] text-emerald-400 flex items-center gap-1">
                       <span className="w-3 h-3 inline-flex items-center justify-center rounded-full bg-emerald-500/20 shrink-0" style={{ fontSize: '9px' }}>OK</span>
-                      Valid Tunisian IBAN
+                      {tx('pages.settings.payment.validIban', undefined, 'Valid Tunisian IBAN')}
                     </p>
                   )}
                 </div>
@@ -512,7 +518,7 @@ function PaymentSettingsTab({
                 <input
                   value={form.bankName}
                   onChange={(e) => setForm((p) => ({ ...p, bankName: e.target.value }))}
-                  placeholder="Bank name (e.g. STB, BNA, BIAT)"
+                  placeholder={tx('pages.settings.payment.bankNamePlaceholder', undefined, 'Bank name (e.g. STB, BNA, BIAT)')}
                   className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] px-3 py-2.5 outline-none text-sm placeholder:text-[var(--text-muted)] transition-colors"
                 />
 
@@ -521,7 +527,7 @@ function PaymentSettingsTab({
                     value={form.accountName}
                     onChange={(e) => setForm((p) => ({ ...p, accountName: e.target.value }))}
                     onBlur={() => setTouched((p) => ({ ...p, accountName: true }))}
-                    placeholder="Account holder full name *"
+                    placeholder={tx('pages.settings.payment.accountHolderNamePlaceholder', undefined, 'Account holder full name *')}
                     className="w-full bg-[var(--input-bg)] border rounded-lg text-[var(--text-primary)] px-3 py-2.5 outline-none text-sm placeholder:text-[var(--text-muted)] transition-colors"
                     style={{
                       borderColor: touched.accountName
@@ -540,7 +546,7 @@ function PaymentSettingsTab({
                 <input
                   value={form.label}
                   onChange={(e) => setForm((p) => ({ ...p, label: e.target.value }))}
-                  placeholder="Friendly label (optional, e.g. My STB account)"
+                  placeholder={tx('pages.settings.payment.friendlyLabelPlaceholder', undefined, 'Friendly label (optional, e.g. My STB account)')}
                   className="w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-lg text-[var(--text-primary)] px-3 py-2.5 outline-none text-sm placeholder:text-[var(--text-muted)] transition-colors"
                 />
 
@@ -550,7 +556,7 @@ function PaymentSettingsTab({
                     onClick={() => { setAdding(false); resetForm(); }}
                     className="px-3 py-2 rounded-lg border border-[var(--color-border-subtle)] text-on-surface-muted hover:text-on-surface text-xs font-medium transition-colors"
                   >
-                    Cancel
+                    {tx('common.cancel', undefined, 'Cancel')}
                   </button>
                   <button
                     type="button"
@@ -559,7 +565,7 @@ function PaymentSettingsTab({
                     className="px-4 py-2 rounded-lg text-white text-xs font-semibold disabled:opacity-40 transition-opacity"
                     style={{ background: accentColor }}
                   >
-                    {saving ? 'Saving...' : 'Save account'}
+                    {saving ? tx('common.saving', undefined, 'Saving...') : tx('pages.settings.payment.saveAccount', undefined, 'Save account')}
                   </button>
                 </div>
               </div>
@@ -574,15 +580,15 @@ function PaymentSettingsTab({
                 <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ background: `color-mix(in srgb,${accentColor} 10%,transparent)` }}>
                   <Shield className="w-5 h-5" style={{ color: accentColor }} />
                 </div>
-                <p className="text-sm font-semibold text-on-surface">No payout account yet</p>
-                <p className="text-xs text-on-surface-muted mt-1">Add a bank account to receive your earnings.</p>
+                <p className="text-sm font-semibold text-on-surface">{tx('pages.settings.payment.noPayoutAccountYet', undefined, 'No payout account yet')}</p>
+                <p className="text-xs text-on-surface-muted mt-1">{tx('pages.settings.payment.addBankAccountDesc', undefined, 'Add a bank account to receive your earnings.')}</p>
                 <button
                   type="button"
                   onClick={() => setAdding(true)}
                   className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg text-white"
                   style={{ background: accentColor }}
                 >
-                  <Plus className="w-3.5 h-3.5" />Add bank account
+                  <Plus className="w-3.5 h-3.5" />{tx('pages.settings.payment.addBankAccount', undefined, 'Add bank account')}
                 </button>
               </div>
             ) : (
@@ -608,8 +614,12 @@ function PaymentSettingsTab({
       {isFreelancer && (
         <div className="surface-card border rounded-2xl overflow-hidden">
           <div className="px-6 pt-5 pb-4 border-b border-surface">
-            <h2 className="text-base font-bold text-on-surface tracking-tight">Your Wallet</h2>
-            <p className="text-xs text-on-surface-muted mt-0.5">View your escrow balance and withdraw earnings.</p>
+            <h2 className="text-base font-bold text-on-surface tracking-tight">
+              {tx('pages.settings.payment.yourWallet', undefined, 'Your Wallet')}
+            </h2>
+            <p className="text-xs text-on-surface-muted mt-0.5">
+              {tx('pages.settings.payment.walletDesc', undefined, 'View your escrow balance and withdraw earnings.')}
+            </p>
           </div>
           <div className="p-4">
             <button
@@ -622,8 +632,12 @@ function PaymentSettingsTab({
                   <Wallet className="w-4 h-4 text-violet-400" />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-on-surface">Open Wallet Dashboard</p>
-                  <p className="text-xs text-on-surface-muted">Balance, transactions, withdrawals</p>
+                  <p className="text-sm font-semibold text-on-surface">
+                    {tx('pages.settings.payment.openWallet', undefined, 'Open Wallet Dashboard')}
+                  </p>
+                  <p className="text-xs text-on-surface-muted">
+                    {tx('pages.settings.payment.walletMetrics', undefined, 'Balance, transactions, withdrawals')}
+                  </p>
                 </div>
               </div>
               <ExternalLink className="w-4 h-4 text-on-surface-muted group-hover:text-on-surface transition-colors" />
@@ -637,39 +651,43 @@ function PaymentSettingsTab({
         <div className="surface-card border rounded-2xl overflow-hidden">
           <div className="px-6 pt-5 pb-4 border-b border-surface flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-on-surface tracking-tight">Direct Funding Options</h2>
-              <p className="text-xs text-on-surface-muted mt-0.5">Fund contracts securely through Dhmad Escrow checkout.</p>
+              <h2 className="text-base font-bold text-on-surface tracking-tight">
+                {tx('pages.settings.payment.directFunding', undefined, 'Direct Funding Options')}
+              </h2>
+              <p className="text-xs text-on-surface-muted mt-0.5">
+                {tx('pages.settings.payment.directFundingDesc', undefined, 'Fund contracts securely through Dhmad Escrow checkout.')}
+              </p>
             </div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-400/20">
-              <CheckCircle className="w-2.5 h-2.5" />ACTIVE
+              <CheckCircle className="w-2.5 h-2.5" />{tx('pages.settings.payment.active', undefined, 'ACTIVE')}
             </span>
           </div>
           <div className="p-4 space-y-3">
             <div className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl border border-blue-500/15 bg-blue-500/5">
               <Info className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
               <p className="text-[11px] text-blue-300/80 leading-relaxed">
-                Contracts are funded directly during checkout when you hire a freelancer. No pre-funding or complex deposits are needed!
+                {tx('pages.settings.payment.directFundingTip', undefined, 'Contracts are funded directly during checkout when you hire a freelancer. No pre-funding or complex deposits are needed!')}
               </p>
             </div>
             <div className="space-y-2">
               <PaymentMethodCard
                 id="bank"
-                name="Credit / Debit Card"
-                description="Pay securely with local Visa, Mastercard, or CIB cards"
+                name={tx('pages.settings.payment.cardName', undefined, 'Credit / Debit Card')}
+                description={tx('pages.settings.payment.cardDesc', undefined, 'Pay securely with local Visa, Mastercard, or CIB cards')}
                 status="live"
                 active
               />
               <PaymentMethodCard
                 id="flouci"
-                name="Flouci Wallet"
-                description="Fund using your Flouci mobile wallet account"
+                name={tx('pages.settings.payment.flouciName', undefined, 'Flouci Wallet')}
+                description={tx('pages.settings.payment.flouciDesc', undefined, 'Fund using your Flouci mobile wallet account')}
                 status="live"
                 active
               />
               <PaymentMethodCard
                 id="d17"
-                name="e-Dinar Card (D17)"
-                description="Pay with La Poste e-Dinar card"
+                name={tx('pages.settings.payment.edinarName', undefined, 'e-Dinar Card (D17)')}
+                description={tx('pages.settings.payment.edinarDesc', undefined, 'Pay with La Poste e-Dinar card')}
                 status="live"
                 active
               />
@@ -755,7 +773,7 @@ function PrivacySettingsTab({
       <div className="border border-[var(--color-border-subtle)] rounded-xl p-4 mb-4 surface-sunken">
         <p className="text-sm font-semibold text-on-surface mb-1">{tx('pages.settings.privacy.changePassword', undefined, 'Change password')}</p>
         <p className="text-sm text-on-surface-muted">
-          You signed in with {authProvider}. Password management is handled by your identity provider.
+          {tx('settings.oauthPasswordMessage', { provider: authProvider }, `You signed in with ${authProvider}. Password management is handled by your identity provider.`)}
         </p>
       </div>
 
@@ -787,7 +805,9 @@ function PrivacySettingsTab({
           disabled={submittingDeleteRequest}
           className="bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg mt-4 transition-all disabled:opacity-60"
         >
-          {submittingDeleteRequest ? 'Submitting...' : 'Delete my account'}
+          {submittingDeleteRequest 
+            ? tx('pages.settings.privacy.submitting', undefined, 'Submitting...') 
+            : tx('pages.settings.privacy.deleteAccountButton', undefined, 'Delete my account')}
         </button>
       </div>
     </div>

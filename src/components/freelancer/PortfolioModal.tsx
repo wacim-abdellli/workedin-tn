@@ -881,13 +881,13 @@ export default function PortfolioModal({
                                                 className="px-3.5 py-2 rounded-xl bg-white text-black hover:bg-white/90 text-xs font-semibold flex items-center gap-1.5 shadow-lg transition-transform duration-150 active:scale-95"
                                             >
                                                 <Upload className="w-3.5 h-3.5" />
-                                                Replace Cover
+                                                {tx('portfolio.form.upload.replaceCover', undefined, 'Replace Cover')}
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={clearSelectedImage}
                                                 className="p-2 rounded-xl bg-red-500/90 text-white hover:bg-red-600 text-xs font-semibold flex items-center justify-center shadow-lg transition-transform duration-150 active:scale-95"
-                                                title="Delete Cover"
+                                                title={tx('portfolio.form.upload.deleteCover', undefined, 'Delete Cover')}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -902,8 +902,12 @@ export default function PortfolioModal({
                                             <Upload className="w-5 h-5" />
                                         </span>
                                         <div className="text-center">
-                                            <p className="text-sm font-semibold text-white/70 group-hover:text-white transition-colors">Upload Cover Image</p>
-                                            <p className="text-[11px] text-white/35 mt-0.5">Drag & drop or click to browse. JPEG, PNG, WEBP (Max 5MB)</p>
+                                            <p className="text-sm font-semibold text-white/70 group-hover:text-white transition-colors">
+                                                {tx('portfolio.form.upload.uploadCover', undefined, 'Upload Cover Image')}
+                                            </p>
+                                            <p className="text-[11px] text-white/35 mt-0.5">
+                                                {tx('portfolio.form.upload.dragDropHint', undefined, 'Drag & drop or click to browse. JPEG, PNG, WEBP (Max 5MB)')}
+                                            </p>
                                         </div>
                                     </div>
                                 )}
@@ -911,10 +915,12 @@ export default function PortfolioModal({
                                 {/* Image URL Input Drawer - Only show when no cover image is set */}
                                 {!resolvedPreviewUrl && (
                                     <div className="pt-3 border-t border-white/[0.05]">
-                                        <p className="text-[11px] text-white/40 mb-2 font-medium">Or paste a direct image URL for the cover:</p>
+                                        <p className="text-[11px] text-white/40 mb-2 font-medium">
+                                            {tx('portfolio.form.upload.pasteUrlHint', undefined, 'Or paste a direct image URL for the cover:')}
+                                        </p>
                                         <input
                                             type="url"
-                                            placeholder="https://example.com/cover-image.jpg"
+                                            placeholder={tx('portfolio.form.upload.coverUrlPlaceholder', undefined, 'https://example.com/cover-image.jpg')}
                                             className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-[var(--color-bg-base)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/25 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all"
                                             dir="ltr"
                                             {...register('media_url')}
@@ -926,7 +932,9 @@ export default function PortfolioModal({
                                 )}
 
                                 <div className="pt-4 border-t border-white/[0.05] space-y-2">
-                                    <p className="text-xs font-semibold text-[var(--color-text-primary)]/75">Project Gallery (Optional)</p>
+                                    <p className="text-xs font-semibold text-[var(--color-text-primary)]/75">
+                                        {tx('portfolio.form.upload.galleryLabel', undefined, 'Project Gallery (Optional)')}
+                                    </p>
                                     
                                     <div className="grid grid-cols-4 gap-2">
                                         <button
@@ -936,7 +944,9 @@ export default function PortfolioModal({
                                             title="Add gallery image"
                                         >
                                             <Plus className="w-4 h-4" />
-                                            <span className="text-[9px] font-bold uppercase tracking-wider">Add</span>
+                                            <span className="text-[9px] font-bold uppercase tracking-wider">
+                                                {tx('portfolio.form.upload.addMore', undefined, 'Add')}
+                                            </span>
                                         </button>
 
                                         {extraMediaUrls.map((url, index) => (
@@ -964,7 +974,7 @@ export default function PortfolioModal({
                                             type="url"
                                             value={extraImageUrlInput}
                                             onChange={(event) => setExtraImageUrlInput(event.target.value)}
-                                            placeholder="Add extra image URL..."
+                                            placeholder={tx('portfolio.form.upload.extraImageUrlPlaceholder', undefined, 'Add extra image URL...')}
                                             className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-white/10 bg-[var(--color-bg-base)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/25 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all"
                                             dir="ltr"
                                         />
@@ -973,7 +983,7 @@ export default function PortfolioModal({
                                             onClick={handleAddExtraImageUrl}
                                             className="px-3 py-1.5 rounded-xl border border-white/15 text-xs font-semibold text-[var(--color-text-primary)]/75 hover:text-[var(--color-text-primary)] hover:border-white/30 transition-colors"
                                         >
-                                            Add
+                                            {tx('portfolio.form.upload.addExtraUrl', undefined, 'Add')}
                                         </button>
                                     </div>
                                 </div>

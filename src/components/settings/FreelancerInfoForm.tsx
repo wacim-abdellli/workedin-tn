@@ -133,7 +133,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
             <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-150 dark:border-white/[0.04]">
                     <Briefcase className="w-4 h-4 text-purple-500" />
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">General Professional Info</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('profile.generalInfo', undefined, 'General Professional Info')}</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -160,13 +160,13 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
 
                     <div id="field-hourly_rate" className="transition-all duration-300 rounded-xl p-0.5">
                         <Input
-                            label={tx('onboarding.freelancer.hourlyRateLabel', undefined, `Hourly rate (${tx('common.tnd', undefined, 'TND')}/hr)`)}
+                            label={tx('profile.hourlyRate', { currency: tx('common.tnd', undefined, 'TND') }, `Hourly rate (${tx('common.tnd', undefined, 'TND')}/hr)`)}
                             type="number"
                             min="0"
                             step="0.01"
                             value={form.hourly_rate}
                             onChange={e => set({ hourly_rate: e.target.value })}
-                            placeholder="e.g. 35"
+                            placeholder={tx('profile.hourlyRatePlaceholder', undefined, 'e.g. 35')}
                             leftIcon={<DollarSign className="w-4 h-4 text-purple-400" />}
                         />
                     </div>
@@ -178,19 +178,19 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                             min="0"
                             value={form.years_experience}
                             onChange={e => set({ years_experience: e.target.value })}
-                            placeholder="e.g. 3"
+                            placeholder={tx('profile.yearsExperiencePlaceholder', undefined, 'e.g. 3')}
                         />
                     </div>
 
                     <div id="field-weekly_availability_hours" className="md:col-span-2 transition-all duration-300 rounded-xl p-0.5">
                         <Input
-                            label={tx('profile.weeklyAvailabilityHours', undefined, 'Weekly availability (hrs)')}
+                            label={tx('profile.weeklyAvailability', undefined, 'Weekly availability (hrs)')}
                             type="number"
                             min="1"
                             max="168"
                             value={form.weekly_availability_hours}
                             onChange={e => set({ weekly_availability_hours: e.target.value })}
-                            placeholder="e.g. 30"
+                            placeholder={tx('profile.weeklyAvailabilityPlaceholder', undefined, 'e.g. 30')}
                             leftIcon={<Timer className="w-4 h-4 text-purple-400" />}
                         />
                     </div>
@@ -201,24 +201,24 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
             <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-6 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-150 dark:border-white/[0.04]">
                     <Zap className="w-4 h-4 text-purple-500" />
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Expertise & Skills</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('profile.skillsTitle', undefined, 'Expertise & Skills')}</h3>
                 </div>
 
                 {/* Skills Section */}
                 <div id="field-skills" className="space-y-3 transition-all duration-300 rounded-xl p-0.5">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500">
-                            Skills you specialize in
+                            {tx('profile.skillsSpec', undefined, 'Skills you specialize in')}
                         </p>
                         <span className="text-[10px] font-bold text-purple-400 dark:text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 rounded-full">
-                            {form.skills.length}/10 selected
+                            {tx('profile.skillsLimit', { count: form.skills.length }, `${form.skills.length}/10 selected`)}
                         </span>
                     </div>
 
                     {/* Selected Skills Bar */}
                     <div className="flex flex-wrap gap-1.5 min-h-[36px] p-2.5 rounded-xl border border-gray-200/60 dark:border-white/[0.04] bg-gray-50/50 dark:bg-black/10">
                         {form.skills.length === 0 ? (
-                            <span className="text-xs text-gray-400 dark:text-zinc-500">No skills selected yet. Search below to add skills.</span>
+                            <span className="text-xs text-gray-400 dark:text-zinc-500">{tx('profile.noSkills', undefined, 'No skills selected yet. Search below to add skills.')}</span>
                         ) : (
                             form.skills.map(skillId => {
                                 const skill = PREDEFINED_SKILLS.find(s => s.id === skillId);
@@ -244,10 +244,10 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                     {/* Search Field */}
                     <div className="relative">
                         <Input
-                            label="Search skills to add"
+                            label={tx('profile.searchSkills', undefined, 'Search skills to add')}
                             value={skillsSearch}
                             onChange={e => setSkillsSearch(e.target.value)}
-                            placeholder="Type to search e.g. React, UI/UX..."
+                            placeholder={tx('profile.searchSkillsPlaceholder', undefined, 'Type to search e.g. React, UI/UX...')}
                             leftIcon={<Search className="w-4 h-4 text-gray-400" />}
                         />
                     </div>
@@ -255,7 +255,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                     {/* Inline Search Results or Suggestions */}
                     {skillsSearch.trim() ? (
                         <div className="space-y-1.5 p-3 rounded-xl border border-dashed border-gray-200 dark:border-white/[0.08] bg-gray-50/20 dark:bg-black/5">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500">Search Results</p>
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500">{tx('profile.searchResults', undefined, 'Search Results')}</p>
                             <div className="flex flex-wrap gap-1.5">
                                 {matchingPredefined.slice(0, 10).map(skill => {
                                     const isSelected = form.skills.includes(skill.id);
@@ -282,13 +282,13 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                                     );
                                 })}
                                 {matchingPredefined.length === 0 && (
-                                    <span className="text-xs text-gray-400 dark:text-zinc-500">No matching skills found.</span>
+                                    <span className="text-xs text-gray-400 dark:text-zinc-500">{tx('profile.noMatchingSkills', undefined, 'No matching skills found.')}</span>
                                 )}
                             </div>
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Suggested Skills</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-zinc-500">{tx('profile.suggestedSkills', undefined, 'Suggested Skills')}</p>
                             <div className="flex flex-wrap gap-1.5">
                                 {PREDEFINED_SKILLS.slice(0, 12).map(skill => {
                                     const isSelected = form.skills.includes(skill.id);
@@ -324,10 +324,10 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500 flex items-center gap-1.5">
                             <Wrench className="w-3.5 h-3.5" />
-                            {tx('profile.tools', undefined, 'Tools you use')}
+                            {tx('profile.toolsTitle', undefined, 'Tools you use')}
                         </p>
                         <span className="text-[10px] font-bold text-purple-400 dark:text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 rounded-full">
-                            {form.tools.length}/6 selected
+                            {tx('profile.toolsLimit', { count: form.tools.length }, `${form.tools.length}/6 selected`)}
                         </span>
                     </div>
 
@@ -357,10 +357,10 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500 flex items-center gap-1.5">
                             <Briefcase className="w-3.5 h-3.5" />
-                            {tx('profile.industries', undefined, 'Industries')}
+                            {tx('profile.industriesTitle', undefined, 'Industries')}
                         </p>
                         <span className="text-[10px] font-bold text-purple-400 dark:text-purple-300 bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 rounded-full">
-                            {form.industries.length}/4 selected
+                            {tx('profile.industriesLimit', { count: form.industries.length }, `${form.industries.length}/4 selected`)}
                         </span>
                     </div>
 
@@ -391,7 +391,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                 <div className="flex items-center justify-between pb-3 border-b border-gray-150 dark:border-white/[0.04]">
                     <div className="flex items-center gap-2">
                         <Languages className="w-4 h-4 text-purple-500" />
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Languages</h3>
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('profile.languages.title', undefined, 'Languages')}</h3>
                     </div>
                     <button
                         type="button"
@@ -401,12 +401,12 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                         className="inline-flex items-center gap-1 text-xs font-semibold text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
                     >
                         <Plus className="w-3.5 h-3.5" />
-                        Add Language
+                        {tx('profile.addLanguage', undefined, 'Add Language')}
                     </button>
                 </div>
 
                 {form.languages.length === 0 ? (
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">No languages listed. Click "Add Language" to add.</p>
+                    <p className="text-xs text-gray-400 dark:text-zinc-500">{tx('profile.noLanguages', undefined, 'No languages listed. Click "Add Language" to add.')}</p>
                 ) : (
                     <div className="space-y-3">
                         {form.languages.map((lang, index) => (
@@ -421,10 +421,13 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                                         }}
                                         className="w-full h-9 rounded-lg border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#141414] text-xs px-2.5 text-gray-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-purple-500"
                                     >
-                                        <option value="" disabled>Select language...</option>
+                                        <option value="" disabled>{tx('profile.selectLanguagePlaceholder', undefined, 'Select language...')}</option>
                                         {COMMON_LANGUAGES.map(option => (
                                             <option key={option.value} value={option.value}>
-                                                {option.label}
+                                                {option.value === 'English' ? tx('profile.languages.names.english', undefined, 'English')
+                                                 : option.value === 'French' ? tx('profile.languages.names.french', undefined, 'French')
+                                                 : option.value === 'Arabic' ? tx('profile.languages.names.arabic', undefined, 'Arabic')
+                                                 : option.label}
                                             </option>
                                         ))}
                                         {lang.language && !COMMON_LANGUAGES.some(o => o.value === lang.language) && (
@@ -442,10 +445,10 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                                         }}
                                         className="w-full h-9 rounded-lg border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#141414] text-xs px-2.5 text-gray-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-purple-500"
                                     >
-                                        <option value="basic">Basic</option>
-                                        <option value="conversational">Conversational</option>
-                                        <option value="fluent">Fluent</option>
-                                        <option value="native">Native or Bilingual</option>
+                                        <option value="basic">{tx('profile.languages.levels.basic', undefined, 'Basic')}</option>
+                                        <option value="conversational">{tx('profile.languages.levels.conversational', undefined, 'Conversational')}</option>
+                                        <option value="fluent">{tx('profile.languages.levels.fluent', undefined, 'Fluent')}</option>
+                                        <option value="native">{tx('profile.languages.levels.nativeBilingual', undefined, 'Native or Bilingual')}</option>
                                     </select>
                                 </div>
                                 <button
@@ -468,7 +471,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                 <div className="flex items-center justify-between pb-3 border-b border-gray-150 dark:border-white/[0.04]">
                     <div className="flex items-center gap-2">
                         <GraduationCap className="w-4 h-4 text-purple-500" />
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Education</h3>
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('profile.education.title', undefined, 'Education')}</h3>
                     </div>
                     <button
                         type="button"
@@ -483,12 +486,12 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                         className="inline-flex items-center gap-1 text-xs font-semibold text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
                     >
                         <Plus className="w-3.5 h-3.5" />
-                        Add Education
+                        {tx('profile.education.add', undefined, 'Add Education')}
                     </button>
                 </div>
 
                 {form.education.length === 0 ? (
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">No education details listed. Click "Add Education" to add.</p>
+                    <p className="text-xs text-gray-400 dark:text-zinc-500">{tx('profile.education.noEducationList', undefined, 'No education details listed. Click "Add Education" to add.')}</p>
                 ) : (
                     <div className="space-y-4">
                         {form.education.map((edu, index) => (
@@ -505,8 +508,8 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-8">
                                     <Input
-                                        label="Institution"
-                                        placeholder="e.g. University of Tunis"
+                                        label={tx('profile.education.institution', undefined, 'Institution')}
+                                        placeholder={tx('profile.education.institutionPlaceholder', undefined, 'e.g. University of Tunis')}
                                         value={edu.institution}
                                         onChange={e => {
                                             const updated = [...form.education];
@@ -516,8 +519,8 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                                         className="h-9 text-xs"
                                     />
                                     <Input
-                                        label="Degree"
-                                        placeholder="e.g. Bachelor's, Master's"
+                                        label={tx('profile.education.degree', undefined, 'Degree')}
+                                        placeholder={tx('profile.education.degreePlaceholder', undefined, "e.g. Bachelor's, Master's")}
                                         value={edu.degree}
                                         onChange={e => {
                                             const updated = [...form.education];
@@ -527,8 +530,8 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                                         className="h-9 text-xs"
                                     />
                                     <Input
-                                        label="Field of study"
-                                        placeholder="e.g. Computer Science"
+                                        label={tx('profile.education.field', undefined, 'Field of study')}
+                                        placeholder={tx('profile.education.fieldPlaceholder', undefined, 'e.g. Computer Science')}
                                         value={edu.field}
                                         onChange={e => {
                                             const updated = [...form.education];
@@ -539,8 +542,8 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                                     />
                                     <div className="grid grid-cols-2 gap-2">
                                         <Input
-                                            label="Start Year"
-                                            placeholder="e.g. 2020"
+                                            label={tx('profile.education.startYear', undefined, 'Start Year')}
+                                            placeholder={tx('profile.education.startYearPlaceholder', undefined, 'e.g. 2020')}
                                             value={edu.startYear}
                                             onChange={e => {
                                                 const updated = [...form.education];
@@ -550,8 +553,8 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                                             className="h-9 text-xs"
                                         />
                                         <Input
-                                            label="End Year"
-                                            placeholder="e.g. 2023"
+                                            label={tx('profile.education.endYear', undefined, 'End Year')}
+                                            placeholder={tx('profile.education.endYearPlaceholder', undefined, 'e.g. 2023')}
                                             value={edu.endYear}
                                             onChange={e => {
                                                 const updated = [...form.education];
@@ -572,7 +575,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
             <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-150 dark:border-white/[0.04]">
                     <FileText className="w-4 h-4 text-purple-500" />
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Portfolio & Work Preferences</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('profile.portfolioPreferencesTitle', undefined, 'Portfolio & Work Preferences')}</h3>
                 </div>
 
                 <div className="space-y-5">
@@ -581,7 +584,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                             label={tx('profile.portfolioLinks', undefined, 'Portfolio links (comma separated)')}
                             value={form.portfolio_links}
                             onChange={e => set({ portfolio_links: e.target.value })}
-                            placeholder="https://site.com/work-1, https://behance.net/mywork"
+                            placeholder={tx('profile.portfolioLinksPlaceholder', undefined, 'https://site.com/work-1, https://behance.net/mywork')}
                             leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
                         />
                     </div>

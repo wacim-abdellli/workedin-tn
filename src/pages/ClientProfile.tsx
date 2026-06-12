@@ -90,6 +90,8 @@ interface RecentJob {
   proposals_count: number | null;
 }
 
+import { formatCurrency } from "@/lib/currencyUtils";
+
 // === Helpers ===
 
 function getErrorMessage(error: unknown): string {
@@ -144,15 +146,12 @@ function getAvatarUpdateErrorMessage(error: unknown): string {
   return 'Could not update profile picture';
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString(undefined, {
+function formatDate(dateStr: string, language: string): string {
+  const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US';
+  return new Date(dateStr).toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
   });
-}
-
-function formatCurrency(amount: number): string {
-  return amount.toLocaleString("en-TN") + " TND";
 }
 
 function toRecord(value: unknown): Record<string, unknown> {
@@ -250,7 +249,7 @@ function ProfileSkeleton() {
 export default function ClientProfile() {
   const { clientId } = useParams<{ clientId: string }>();
   const { user, updateProfile, profile, activeMode } = useAuth();
-  const { tx, language } = useTranslation() as any;
+  const { tx, txPlural, language } = useTranslation() as any;
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
@@ -265,24 +264,25 @@ export default function ClientProfile() {
     setMounted(true);
   }, []);
 
-  const [localTime, setLocalTime] = useState(() => {
-    return new Date().toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-  });
+  const [time, setTime] = useState(() => new Date());
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setLocalTime(new Date().toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      }));
+      setTime(new Date());
     }, 30000);
     return () => clearInterval(timer);
   }, []);
+
+  const localTime = useMemo(() => {
+    return time.toLocaleTimeString(
+      language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US',
+      {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: language !== 'fr'
+      }
+    );
+  }, [time, language]);
 
   const { isOnline } = usePresence({
     userId: user?.id,
@@ -818,7 +818,7 @@ export default function ClientProfile() {
                     )}
                     <span className="inline-flex items-center gap-1.5">
                       <Clock className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
-                      <span>{localTime} local time</span>
+                      <span>{tx("clientProfile.localTime", { time: localTime }, `${localTime} local time`)}</span>
                     </span>
                   </div>
 
@@ -828,17 +828,17 @@ export default function ClientProfile() {
                       <>
                         <span className="inline-flex items-center gap-1 text-[#F59E0B] font-medium">
                           <Star className="w-4 h-4 fill-current" />
-                          <span>{stats.avgRating.toFixed(1)} ({stats.reviewCount} {stats.reviewCount === 1 ? 'review' : 'reviews'})</span>
+                          <span>{stats.avgRating.toFixed(1)} ({txPlural("clientProfile.reviewsCount", stats.reviewCount, { count: stats.reviewCount }, `${stats.reviewCount} reviews`)})</span>
                         </span>
                         <span className="text-gray-300 dark:text-[#2d2d2d] select-none">•</span>
                         <span className="inline-flex items-center gap-1.5">
                           <Briefcase className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
-                          <span>{stats.totalJobs} {stats.totalJobs === 1 ? 'job posted' : 'jobs posted'}</span>
+                          <span>{txPlural("clientProfile.jobsPostedCount", stats.totalJobs, { count: stats.totalJobs }, `${stats.totalJobs} jobs posted`)}</span>
                         </span>
                         <span className="text-gray-300 dark:text-[#2d2d2d] select-none">•</span>
                         <span className="inline-flex items-center gap-1.5">
                           <Calendar className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
-                          <span>Member since {formatDate(client.created_at)}</span>
+                          <span>{tx("clientProfile.memberSinceLabel", undefined, "Member since")} {formatDate(client.created_at, language)}</span>
                         </span>
                       </>
                     )}
@@ -852,10 +852,10 @@ export default function ClientProfile() {
                   <button
                     type="button"
                     onClick={() => navigate('/settings?tab=profile&focus=full_name')}
-                    className="rounded-full border border-[#F59E0B] hover:bg-[#F59E0B]/5 text-[#F59E0B] dark:text-[#F59E0B] dark:border-[#F59E0B] px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
+                    className="rounded-full border border-[#F59E0B] hover:bg-[#F59E0B]/5 text-[#F59E0B] dark:text-[#F59E0B] dark:border-[#F59E0B] px-5 py-2 text-sm font-semibold flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all duration-200"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
-                    Edit Profile
+                    {tx("profile.editProfile", undefined, "Edit Profile")}
                   </button>
                 ) : canContact ? (
                   <button
@@ -869,7 +869,7 @@ export default function ClientProfile() {
                     ) : (
                       <MessageSquare className="w-3.5 h-3.5" />
                     )}
-                    Send Message
+                    {tx("profile.sendMessage", undefined, "Send Message")}
                   </button>
                 ) : null}
 
@@ -890,12 +890,12 @@ export default function ClientProfile() {
                   {copied ? (
                     <>
                       <Check className="w-3.5 h-3.5" />
-                      Copied!
+                      {tx("clientProfile.copied", undefined, "Copied!")}
                     </>
                   ) : (
                     <>
                       <Share2 className="w-3.5 h-3.5" />
-                      Share
+                      {tx("clientProfile.share", undefined, "Share")}
                     </>
                   )}
                 </button>
@@ -920,11 +920,11 @@ export default function ClientProfile() {
                       <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50">
                         {client.company_role && client.company_name 
                           ? `${client.company_role} at ${client.company_name}` 
-                          : client.company_role || client.company_name || 'Business Owner'}
+                          : client.company_role || client.company_name || tx("clientProfile.businessOwner", undefined, "Business Owner")}
                       </h2>
                       {client.company_industry && (
                         <p className="text-xs text-gray-400 dark:text-zinc-500">
-                          Specialized in {client.company_industry}
+                          {tx("clientProfile.specializedIn", { industry: client.company_industry }, `Specialized in ${client.company_industry}`)}
                         </p>
                       )}
                     </div>
@@ -932,7 +932,7 @@ export default function ClientProfile() {
                       <button
                         type="button"
                         onClick={() => navigate('/settings?tab=profile&focus=bio')}
-                        className="p-1.5 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors shrink-0"
+                        className="p-1.5 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-[#F59E0B]/10 dark:hover:bg-[#F59E0B]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200 shrink-0"
                         aria-label="Edit bio and headline details"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -942,7 +942,7 @@ export default function ClientProfile() {
 
                   {/* Biography Paragraph */}
                   <div className="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
-                    {clientIntro || 'No biography or about details provided yet.'}
+                    {clientIntro || tx("clientProfile.noBio", undefined, "No biography or about details provided yet.")}
                   </div>
 
                   {isOwnProfile && !clientIntro && (
@@ -951,7 +951,7 @@ export default function ClientProfile() {
                       onClick={() => navigate('/settings?tab=profile&focus=bio')}
                       className="text-sm font-semibold text-[#F59E0B] hover:underline self-start"
                     >
-                      + Add description
+                      {tx("clientProfile.addDescription", undefined, "+ Add description")}
                     </button>
                   )}
                 </section>
@@ -961,13 +961,13 @@ export default function ClientProfile() {
                   <section className="p-6 sm:p-8 flex flex-col gap-6">
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
-                        Company Information
+                        {tx("clientProfile.companyInformation", undefined, "Company Information")}
                       </h3>
                       {isOwnProfile && (
                         <button
                           type="button"
                           onClick={() => navigate('/settings?tab=profile&focus=company')}
-                          className="p-1.5 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-[#F59E0B]/10 dark:hover:bg-[#F59E0B]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                           aria-label="Edit company details"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -1008,14 +1008,14 @@ export default function ClientProfile() {
                         </div>
                       ) : (
                         <div className="text-center py-4 border border-dashed border-gray-300 dark:border-[#2d2d2d] rounded-xl bg-gray-50/20 dark:bg-[#161618]/10">
-                          <p className="text-xs text-gray-400 dark:text-zinc-500">No company details added yet.</p>
+                          <p className="text-xs text-gray-400 dark:text-zinc-500">{tx("clientProfile.noCompanyDetails", undefined, "No company details added yet.")}</p>
                         </div>
                       )}
 
                       {Array.isArray(client.hiring_needs) && client.hiring_needs.length > 0 && (
                         <div className="space-y-2.5">
                           <h4 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
-                            Hiring Needs
+                            {tx("clientProfile.hiringNeeds", undefined, "Hiring Needs")}
                           </h4>
                           <div className="flex flex-wrap gap-2">
                             {client.hiring_needs.map((need) => (
@@ -1038,13 +1038,13 @@ export default function ClientProfile() {
                   <section className="p-6 sm:p-8 flex flex-col gap-6">
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
-                        Hiring Preferences & Details
+                        {tx("clientProfile.hiringPreferences", undefined, "Hiring Preferences & Details")}
                       </h3>
                       {isOwnProfile && (
                         <button
                           type="button"
                           onClick={() => navigate('/settings?tab=profile&focus=preferences')}
-                          className="p-1.5 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-[#F59E0B]/10 dark:hover:bg-[#F59E0B]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                           aria-label="Edit hiring preferences"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -1078,7 +1078,7 @@ export default function ClientProfile() {
                 <section className="p-6 sm:p-8 flex flex-col gap-6">
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
-                      Active Job Postings
+                      {tx("clientProfile.activeJobs", undefined, "Active Job Postings")}
                     </h3>
                     {isOwnProfile && (
                       <button
@@ -1087,7 +1087,7 @@ export default function ClientProfile() {
                         className="text-[#F59E0B] hover:underline text-sm font-semibold flex items-center gap-1"
                       >
                         <Plus className="w-4 h-4" />
-                        Post a Job
+                        {tx("clientProfile.postJob", undefined, "Post a Job")}
                       </button>
                     )}
                   </div>
@@ -1113,7 +1113,7 @@ export default function ClientProfile() {
                               {job.proposals_count != null && (
                                 <span className="text-[10px] px-2 py-0.5 rounded-full border border-gray-200 dark:border-[#2d2d2d] text-gray-400 dark:text-zinc-500 bg-gray-50 dark:bg-[#161618]/50 flex items-center gap-1">
                                   <Users className="w-3 h-3" />
-                                  {job.proposals_count} props
+                                  {txPlural("clientProfile.proposalsCount", job.proposals_count, { count: job.proposals_count }, `${job.proposals_count} proposals`)}
                                 </span>
                               )}
                             </div>
@@ -1123,10 +1123,10 @@ export default function ClientProfile() {
                             {(job.budget_min != null || job.budget_max != null) ? (
                               <span className="text-xs font-semibold text-[#F59E0B]">
                                 {job.budget_min != null && job.budget_max != null
-                                  ? `${job.budget_min.toLocaleString()} - ${job.budget_max.toLocaleString()} TND`
+                                  ? `${formatCurrency(job.budget_min, false, language)} - ${formatCurrency(job.budget_max, true, language)}`
                                   : job.budget_min != null
-                                    ? `From ${job.budget_min.toLocaleString()} TND`
-                                    : `Up to ${job.budget_max!.toLocaleString()} TND`}
+                                    ? `${tx("common.from", undefined, "From")} ${formatCurrency(job.budget_min, true, language)}`
+                                    : `${tx("clientProfile.upTo", undefined, "Up to")} ${formatCurrency(job.budget_max!, true, language)}`}
                               </span>
                             ) : (
                               <span />
@@ -1146,10 +1146,10 @@ export default function ClientProfile() {
                         <Briefcase className="w-5 h-5" />
                       </div>
                       <h4 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-1">
-                        No active jobs postings yet
+                        {tx("clientProfile.noActiveJobs", undefined, "No active job postings yet")}
                       </h4>
                       <p className="text-xs text-gray-500 dark:text-zinc-400 max-w-[280px] leading-relaxed mb-4">
-                        Post projects, launch milestone tasks, and collaborate with Top Freelancers.
+                        {tx("clientProfile.noActiveJobsDesc", undefined, "Post projects, launch milestone tasks, and collaborate with Top Freelancers.")}
                       </p>
                       {isOwnProfile && (
                         <button
@@ -1157,7 +1157,7 @@ export default function ClientProfile() {
                           onClick={() => navigate(ROUTES.jobsNew)}
                           className="px-5 py-2 bg-[#F59E0B] hover:bg-[#d97706] text-white text-xs font-semibold rounded-full transition-colors shadow-sm"
                         >
-                          Post your first job
+                          {tx("clientProfile.postFirstJob", undefined, "Post your first job")}
                         </button>
                       )}
                     </div>
@@ -1167,7 +1167,7 @@ export default function ClientProfile() {
                 {/* Work History & Reviews */}
                 <section className="p-6 sm:p-8 flex flex-col gap-6">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
-                    Work History & Reviews
+                    {tx("clientProfile.workHistory", undefined, "Work History & Reviews")}
                   </h3>
 
                   {stats && (
@@ -1189,7 +1189,7 @@ export default function ClientProfile() {
                           ))}
                         </div>
                         <p className="text-xs text-gray-500 dark:text-zinc-400 mt-2">
-                          {stats.reviewCount} {stats.reviewCount === 1 ? 'review' : 'reviews'}
+                          {txPlural("clientProfile.reviewsCount", stats.reviewCount, { count: stats.reviewCount }, `${stats.reviewCount} reviews`)}
                         </p>
                       </div>
 
@@ -1220,7 +1220,7 @@ export default function ClientProfile() {
                                 {review.job_title}
                               </h4>
                               <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-                                by {review.client_name} • {new Date(review.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                {tx("clientProfile.by", undefined, "by")} {review.client_name} • {new Date(review.created_at).toLocaleDateString(language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                               </p>
                             </div>
                             <div className="inline-flex items-center gap-1 text-[#F59E0B] font-medium text-sm">
@@ -1237,7 +1237,7 @@ export default function ClientProfile() {
                   ) : (
                     <div className="py-6 text-center border border-gray-100 dark:border-[#2d2d2d] rounded-xl bg-gray-50/20 dark:bg-[#161618]/10">
                       <p className="text-xs text-gray-400 dark:text-zinc-500">
-                        No reviews yet. Complete your first contract with a freelancer to receive feedback.
+                        {tx("clientProfile.noReviewsYet", undefined, "No reviews yet. Complete your first contract with a freelancer to receive feedback.")}
                       </p>
                     </div>
                   )}
@@ -1251,13 +1251,13 @@ export default function ClientProfile() {
                 <section className="p-6 flex flex-col gap-4">
                   <div className="flex justify-between items-center">
                     <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
-                      Hiring & Stats
+                      {tx("clientProfile.hiringAndStats", undefined, "Hiring & Stats")}
                     </h3>
                     {isOwnProfile && (
                       <button
                         type="button"
                         onClick={() => navigate('/settings?tab=profile&focus=location')}
-                        className="p-1 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-gray-150 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                        className="p-1 text-gray-400 hover:text-[#F59E0B] dark:text-zinc-500 dark:hover:text-[#fbbf24] hover:bg-[#F59E0B]/10 dark:hover:bg-[#F59E0B]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                         aria-label="Edit account settings"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -1268,19 +1268,21 @@ export default function ClientProfile() {
                   {stats && (
                     <dl className="space-y-3.5 text-sm">
                       <div className="flex justify-between items-start gap-3">
-                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Hiring Status</dt>
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx("clientProfile.hiringStatus", undefined, "Hiring Status")}</dt>
                         <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right flex items-center gap-1.5">
                           <span
                             className="w-2 h-2 rounded-full"
                             style={{ background: client.payment_verified ? '#4ade80' : '#fbbf24' }}
                           />
-                          {client.payment_verified ? 'Payment Verified' : 'Standard'}
+                          {client.payment_verified 
+                            ? tx("clientProfile.paymentVerified", undefined, "Payment Verified") 
+                            : tx("clientProfile.standardStatus", undefined, "Standard")}
                         </dd>
                       </div>
 
                       {client.location && (
                         <div className="flex justify-between items-start gap-3">
-                          <dt className="text-gray-500 dark:text-zinc-400 text-xs">Location</dt>
+                          <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx("clientProfile.locationLabel", undefined, "Location")}</dt>
                           <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
                             {localizeGovernorate(client.location, language)}
                           </dd>
@@ -1288,35 +1290,35 @@ export default function ClientProfile() {
                       )}
 
                       <div className="flex justify-between items-start gap-3">
-                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Member since</dt>
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx("clientProfile.memberSinceLabel", undefined, "Member since")}</dt>
                         <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
-                          {formatDate(client.created_at)}
+                          {formatDate(client.created_at, language)}
                         </dd>
                       </div>
 
                       <div className="flex justify-between items-start gap-3">
-                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Jobs Posted</dt>
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx("clientProfile.jobsPostedLabel", undefined, "Jobs Posted")}</dt>
                         <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
                           {stats.totalJobs}
                         </dd>
                       </div>
 
                       <div className="flex justify-between items-start gap-3">
-                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Completed Contracts</dt>
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx("clientProfile.completedContractsLabel", undefined, "Completed Contracts")}</dt>
                         <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
                           {stats.completedContracts}
                         </dd>
                       </div>
 
                       <div className="flex justify-between items-start gap-3">
-                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Total spent</dt>
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx("clientProfile.totalSpentLabel", undefined, "Total spent")}</dt>
                         <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right text-[#F59E0B]">
-                          {stats.totalSpent > 0 ? formatCurrency(stats.totalSpent) : '0 TND'}
+                          {formatCurrency(stats.totalSpent, true, language)}
                         </dd>
                       </div>
 
                       <div className="flex justify-between items-start gap-3">
-                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">Average Rating</dt>
+                        <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx("clientProfile.avgRatingLabel", undefined, "Average Rating")}</dt>
                         <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right flex items-center justify-end gap-1">
                           <Star className="w-3.5 h-3.5 fill-[#F59E0B] text-[#F59E0B]" />
                           <span>{stats.avgRating.toFixed(1)} / 5.0</span>
@@ -1329,7 +1331,7 @@ export default function ClientProfile() {
                 {/* Company Website / Resource links */}
                 <section className="p-6 flex flex-col gap-4">
                   <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
-                    Links & Resources
+                    {tx("clientProfile.linksTitle", undefined, "Links & Resources")}
                   </h3>
                   {client.company_website ? (
                     <ul className="space-y-2.5">
@@ -1341,14 +1343,14 @@ export default function ClientProfile() {
                           className="flex items-center gap-2 text-sm text-[#F59E0B] dark:text-[#fbbf24] hover:underline hover:translate-x-1 transition-transform duration-200"
                         >
                           <Globe className="w-4 h-4 shrink-0 text-gray-400 dark:text-zinc-500" />
-                          <span className="truncate">{client.company_name || 'Company Website'}</span>
+                          <span className="truncate">{client.company_name || tx("clientProfile.companyWebsite", undefined, "Company Website")}</span>
                           <ExternalLink className="w-3 h-3 shrink-0 opacity-60" />
                         </a>
                       </li>
                     </ul>
                   ) : (
                     <div className="text-center py-2">
-                      <p className="text-xs text-gray-400 dark:text-zinc-500">No links added yet.</p>
+                      <p className="text-xs text-gray-400 dark:text-zinc-500">{tx("clientProfile.noLinks", undefined, "No links added yet.")}</p>
                     </div>
                   )}
                 </section>
@@ -1356,7 +1358,7 @@ export default function ClientProfile() {
                 {/* Verifications Checklist */}
                 <section className="p-6 flex flex-col gap-4">
                   <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
-                    Verifications
+                    {tx("clientProfile.verificationsTitle", undefined, "Verifications")}
                   </h3>
 
                   <ul className="space-y-3 text-sm">
@@ -1367,7 +1369,7 @@ export default function ClientProfile() {
                         <div className="w-4 h-4 rounded-full border border-gray-300 dark:border-zinc-700 shrink-0" />
                       )}
                       <span className={client.cin_verified ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
-                        Identity Verified
+                        {tx("clientProfile.verifications.identity", undefined, "Identity Verified")}
                       </span>
                     </li>
 
@@ -1378,7 +1380,7 @@ export default function ClientProfile() {
                         <div className="w-4 h-4 rounded-full border border-gray-300 dark:border-zinc-700 shrink-0" />
                       )}
                       <span className={client.phone_verified ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
-                        Phone Number
+                        {tx("clientProfile.verifications.phone", undefined, "Phone Number")}
                       </span>
                     </li>
 
@@ -1389,7 +1391,7 @@ export default function ClientProfile() {
                         <div className="w-4 h-4 rounded-full border border-gray-300 dark:border-zinc-700 shrink-0" />
                       )}
                       <span className={client.payment_verified ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
-                        Payment Method
+                        {tx("clientProfile.verifications.payment", undefined, "Payment Method")}
                       </span>
                     </li>
                   </ul>
@@ -1399,12 +1401,12 @@ export default function ClientProfile() {
                 {isOwnProfile && (
                   <section className="p-6 flex flex-col gap-3">
                     <h3 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1">
-                      Workspace Controls
+                      {tx("clientProfile.workspaceControls", undefined, "Workspace Controls")}
                     </h3>
                     {[
-                      { icon: <Plus className="w-4 h-4" />, label: "Post a Job", onClick: () => navigate(ROUTES.jobsNew) },
-                      { icon: <Briefcase className="w-4 h-4" />, label: "My Projects", onClick: () => navigate(ROUTES.clientJobs) },
-                      { icon: <Settings className="w-4 h-4" />, label: "Settings", onClick: () => navigate(ROUTES.settings) },
+                      { icon: <Plus className="w-4 h-4" />, label: tx("clientProfile.postJob", undefined, "Post a Job"), onClick: () => navigate(ROUTES.jobsNew) },
+                      { icon: <Briefcase className="w-4 h-4" />, label: tx("clientProfile.myProjects", undefined, "My Projects"), onClick: () => navigate(ROUTES.clientJobs) },
+                      { icon: <Settings className="w-4 h-4" />, label: tx("clientProfile.settings", undefined, "Settings"), onClick: () => navigate(ROUTES.settings) },
                     ].map((item, idx) => (
                       <button
                         key={idx}

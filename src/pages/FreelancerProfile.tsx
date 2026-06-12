@@ -358,7 +358,7 @@ function ProfileView({
 }) {
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const { tx } = useTranslation();
+    const { tx, txPlural, language } = useTranslation();
     const { user, profile } = useAuth();
     const { isOnline } = usePresence({
         userId: user?.id,
@@ -636,34 +636,34 @@ function ProfileView({
 
     const availabilityBadge = freelancer.availability === 'available'
         ? {
-            label: 'Available',
+            label: tx('publicProfile.available', undefined, 'Available'),
             color: '#4ade80',
             background: 'rgba(34,197,94,0.12)',
             border: 'rgba(34,197,94,0.3)',
         }
         : freelancer.availability === 'busy'
             ? {
-                label: 'Busy',
+                label: tx('publicProfile.busy', undefined, 'Busy'),
                 color: '#fbbf24',
                 background: 'rgba(245,158,11,0.12)',
                 border: 'rgba(245,158,11,0.3)',
             }
             : {
-                label: 'Offline',
+                label: tx('publicProfile.offline', undefined, 'Offline'),
                 color: '#d1d5db',
                 background: 'rgba(107,114,128,0.12)',
                 border: 'rgba(107,114,128,0.3)',
             };
 
   const heroBadges = [
-    { label: "Freelancer", style: "filled" as const },
+    { label: tx('settings.profileTabs.freelancer', undefined, 'Freelancer'), style: "filled" as const },
     { label: availabilityBadge.label, style: "filled" as const },
   ];
 
   const heroMeta = [
-    { icon: <MapPin className="w-3.5 h-3.5" />, label: freelancer.location || 'Ariana' },
-    { icon: <Star className="w-3.5 h-3.5" />, label: `${freelancer.stats.rating.toFixed(1)} - ${freelancer.stats.reviews_count} reviews` },
-    { icon: <TrendingUp className="w-3.5 h-3.5" />, label: `${freelancer.stats.success_rate}% success` },
+    { icon: <MapPin className="w-3.5 h-3.5" />, label: localizeGovernorate(freelancer.location, language) || localizeGovernorate('Ariana', language) },
+    { icon: <Star className="w-3.5 h-3.5" />, label: `${freelancer.stats.rating.toFixed(1)} - ${txPlural('pages.freelancerProfile.main.reviewsCount', freelancer.stats.reviews_count, undefined, `${freelancer.stats.reviews_count} reviews`)}` },
+    { icon: <TrendingUp className="w-3.5 h-3.5" />, label: `${freelancer.stats.success_rate}% ${tx('pages.freelancerCard.success', undefined, 'success')}` },
   ];
 
   const heroActions = isOwner ? (
@@ -691,8 +691,8 @@ function ProfileView({
   };
 
   const displayRate = freelancer.hourly_rate > 0
-    ? `${formatRate(freelancer.hourly_rate)}/hr`
-    : '$0.00/hr';
+    ? tx('pages.freelancerProfile.main.hourlyRateFormat', { rate: formatRate(freelancer.hourly_rate) }, `${formatRate(freelancer.hourly_rate)}/hr`)
+    : tx('pages.freelancerProfile.main.hourlyRateFormat', { rate: formatRate(0) }, '$0.00/hr');
 
   const initialAvatar = freelancer.full_name
     .split(' ')
@@ -785,11 +785,11 @@ function ProfileView({
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 mt-2 text-sm text-gray-500 dark:text-zinc-400">
                 <span className="inline-flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
-                  <span>{freelancer.location}</span>
+                  <span>{localizeGovernorate(freelancer.location, language)}</span>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
-                  <span>{localTime} local time</span>
+                  <span>{tx('pages.freelancerProfile.main.localTime', { time: localTime }, `${localTime} local time`)}</span>
                 </span>
               </div>
 
@@ -797,17 +797,22 @@ function ProfileView({
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1.5 mt-4 text-sm text-gray-500 dark:text-zinc-400">
                 <span className="inline-flex items-center gap-1 text-[#F59E0B] font-medium">
                   <Star className="w-4 h-4 fill-current" />
-                  <span>{freelancer.stats.rating.toFixed(1)} ({freelancer.stats.reviews_count} {freelancer.stats.reviews_count === 1 ? 'review' : 'reviews'})</span>
+                  <span>{freelancer.stats.rating.toFixed(1)} ({txPlural('pages.freelancerProfile.main.reviewsCount', freelancer.stats.reviews_count, undefined, `${freelancer.stats.reviews_count} reviews`)})</span>
                 </span>
                 <span className="text-gray-300 dark:text-[#2d2d2d] select-none">•</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Briefcase className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
-                  <span>{freelancer.stats.jobs_completed} {freelancer.stats.jobs_completed === 1 ? 'job' : 'jobs'} completed</span>
+                  <span>{txPlural('pages.freelancerProfile.main.jobsCompletedCount', freelancer.stats.jobs_completed, undefined, `${freelancer.stats.jobs_completed} jobs completed`)}</span>
                 </span>
                 <span className="text-gray-300 dark:text-[#2d2d2d] select-none">•</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
-                  <span>{freelancer.stats.response_time_hours <= 2 ? '< 2 hrs' : `${freelancer.stats.response_time_hours} hrs`} response time</span>
+                  <span>
+                    {freelancer.stats.response_time_hours <= 2 
+                      ? tx('pages.freelancerProfile.stats.lessThanTwoHours', undefined, '< 2 hrs') 
+                      : tx('pages.freelancerProfile.stats.hoursResponseTime', { hours: freelancer.stats.response_time_hours }, `< ${freelancer.stats.response_time_hours} hrs`)}
+                    {' '}{tx('pages.freelancerProfile.main.responseTimeSuffix', undefined, 'response time')}
+                  </span>
                 </span>
               </div>
             </div>
@@ -822,7 +827,7 @@ function ProfileView({
                 className="rounded-full border border-[#8B5CF6] hover:bg-[#8B5CF6]/5 text-[#8B5CF6] dark:text-[#8B5CF6] dark:border-[#8B5CF6] px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
               >
                 <Edit2 className="w-3.5 h-3.5" />
-                Edit Profile
+                {tx('pages.freelancerProfile.cta.editProfile', undefined, 'Edit Profile')}
               </button>
             ) : viewerRole === 'client' ? (
               <>
@@ -831,7 +836,7 @@ function ProfileView({
                   onClick={onHireNow}
                   className="rounded-full bg-[#8B5CF6] hover:bg-[#7c3aed] text-white px-5 py-2 text-sm font-semibold transition-all duration-150"
                 >
-                  Hire Me
+                  {tx('pages.freelancerProfile.cta.hireMe', undefined, 'Hire Me')}
                 </button>
                 <button
                   type="button"
@@ -839,7 +844,7 @@ function ProfileView({
                   className="rounded-full border border-gray-300 dark:border-[#2d2d2d] hover:bg-gray-50 dark:hover:bg-[#161618] text-gray-700 dark:text-zinc-300 px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
-                  Send Message
+                  {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
                 </button>
               </>
             ) : (
@@ -849,7 +854,7 @@ function ProfileView({
                 className="rounded-full border border-gray-300 dark:border-[#2d2d2d] hover:bg-gray-50 dark:hover:bg-[#161618] text-gray-700 dark:text-zinc-300 px-5 py-2 text-sm font-semibold flex items-center gap-1.5 transition-all duration-150"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
-                Send Message
+                {tx('pages.freelancerProfile.cta.sendMessage', undefined, 'Send Message')}
               </button>
             )}
 
@@ -870,12 +875,12 @@ function ProfileView({
               {copied ? (
                 <>
                   <Check className="w-3.5 h-3.5" />
-                  Copied!
+                  {tx('pages.freelancerProfile.main.copied', undefined, 'Copied!')}
                 </>
               ) : (
                 <>
                   <Share2 className="w-3.5 h-3.5" />
-                  Share
+                  {tx('pages.freelancerProfile.main.share', undefined, 'Share')}
                 </>
               )}
             </button>
@@ -898,10 +903,12 @@ function ProfileView({
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="space-y-1">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-50">
-                    {freelancer.title || 'Independent Specialist'}
+                    {freelancer.title || tx('pages.freelancerProfile.main.independentSpecialist', undefined, 'Independent Specialist')}
                   </h2>
                   <p className="text-xs text-gray-400 dark:text-zinc-500">
-                    {freelancer.skills && freelancer.skills.length > 0 ? `Specialized in ${freelancer.skills.slice(0, 3).map(s => s.name_en).join(', ')}` : 'Specialized Freelancer'}
+                    {freelancer.skills && freelancer.skills.length > 0 
+                      ? tx('pages.freelancerProfile.main.specializedIn', { skills: freelancer.skills.slice(0, 3).map(s => getFreelancerSkillName(s)).join(', ') }, `Specialized in ${freelancer.skills.slice(0, 3).map(s => getFreelancerSkillName(s)).join(', ')}`)
+                      : tx('pages.freelancerProfile.main.specializedFreelancer', undefined, 'Specialized Freelancer')}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -912,7 +919,7 @@ function ProfileView({
                     <button
                       type="button"
                       onClick={() => navigate('/settings?tab=profile&focus=title')}
-                      className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-[#8B5CF6]/10 dark:hover:bg-[#8B5CF6]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                       aria-label="Edit title and rate"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -923,7 +930,7 @@ function ProfileView({
 
               {/* Bio Description Paragraph */}
               <div className="text-sm text-gray-600 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
-                {freelancer.bio || 'No biography details provided yet.'}
+                {freelancer.bio || tx('pages.freelancerProfile.main.noBio', undefined, 'No biography details provided yet.')}
               </div>
 
               {isOwner && !freelancer.bio && (
@@ -932,7 +939,7 @@ function ProfileView({
                   onClick={() => navigate('/settings?tab=profile&focus=bio')}
                   className="text-sm font-semibold text-[#8B5CF6] hover:underline self-start"
                 >
-                  + Add description
+                  {tx('pages.freelancerProfile.main.addDescription', undefined, '+ Add description')}
                 </button>
               )}
             </section>
@@ -941,13 +948,13 @@ function ProfileView({
             <section className="p-6 sm:p-8 flex flex-col gap-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
-                  Skills
+                  {tx('pages.freelancerProfile.main.skills', undefined, 'Skills')}
                 </h3>
                 {isOwner && (
                   <button
                     type="button"
                     onClick={() => navigate('/settings?tab=profile&focus=skills')}
-                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-[#8B5CF6]/10 dark:hover:bg-[#8B5CF6]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                     aria-label="Edit skills and tools"
                   >
                     <Edit2 className="w-4 h-4" />
@@ -960,7 +967,7 @@ function ProfileView({
                 {freelancer.skills && freelancer.skills.length > 0 && (
                   <div className="space-y-2.5">
                     <h4 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
-                      Services
+                      {tx('pages.freelancerProfile.main.services', undefined, 'Services')}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {freelancer.skills.map((skill) => (
@@ -979,7 +986,7 @@ function ProfileView({
                 {freelancer.tools && freelancer.tools.length > 0 && (
                   <div className="space-y-2.5">
                     <h4 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
-                      Tools
+                      {tx('pages.freelancerProfile.main.tools', undefined, 'Tools')}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {freelancer.tools.map((tool) => (
@@ -998,7 +1005,7 @@ function ProfileView({
                 {freelancer.industries && freelancer.industries.length > 0 && (
                   <div className="space-y-2.5">
                     <h4 className="text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">
-                      Industries
+                      {tx('pages.freelancerProfile.main.industries', undefined, 'Industries')}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {freelancer.industries.map((industry) => (
@@ -1019,13 +1026,13 @@ function ProfileView({
             <section className="p-6 sm:p-8 flex flex-col gap-5">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
-                  Project Preferences & Details
+                  {tx('pages.freelancerProfile.projectPreferences.title', undefined, 'Project Preferences & Details')}
                 </h3>
                 {isOwner && (
                   <button
                     type="button"
                     onClick={() => navigate('/settings?tab=profile&focus=project_preferences')}
-                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-[#2d2d2d] rounded-full transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-[#8B5CF6]/10 dark:hover:bg-[#8B5CF6]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                     aria-label="Edit project preferences"
                   >
                     <Edit2 className="w-4 h-4" />
@@ -1037,20 +1044,20 @@ function ProfileView({
                 <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30 hover:-translate-y-0.5 hover:border-[#8B5CF6]/20 hover:shadow-sm transition-all duration-300">
                   <h4 className="font-semibold text-gray-800 dark:text-zinc-200 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-[#8B5CF6]" />
-                    Revision Policy
+                    {tx('pages.freelancerProfile.projectPreferences.revisionPolicy', undefined, 'Revision Policy')}
                   </h4>
                   <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-xs">
-                    {freelancer.revision_policy || '2 revisions included, additional billed separately.'}
+                    {freelancer.revision_policy || tx('pages.freelancerProfile.projectPreferences.revisionPolicyDefault', undefined, '2 revisions included, additional billed separately.')}
                   </p>
                 </div>
 
                 <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30 hover:-translate-y-0.5 hover:border-[#8B5CF6]/20 hover:shadow-sm transition-all duration-300">
                   <h4 className="font-semibold text-gray-800 dark:text-zinc-200 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-[#8B5CF6]" />
-                    Project Preferences
+                    {tx('pages.freelancerProfile.projectPreferences.projectPreferences', undefined, 'Project Preferences')}
                   </h4>
                   <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-xs">
-                    {(freelancer.project_preferences?.details as string) || 'Open to project scope changes, regular text/call communication, and milestone-based deliverables.'}
+                    {(freelancer.project_preferences?.details as string) || tx('pages.freelancerProfile.projectPreferences.projectPreferencesDefault', undefined, 'Open to project scope changes, regular text/call communication, and milestone-based deliverables.')}
                   </p>
                 </div>
               </div>
@@ -1060,7 +1067,7 @@ function ProfileView({
             <section className="p-6 sm:p-8 flex flex-col gap-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
-                  Portfolio
+                  {tx('pages.freelancerProfile.main.portfolio', undefined, 'Portfolio')}
                 </h3>
                 {isOwner && (
                   <button
@@ -1069,7 +1076,7 @@ function ProfileView({
                     className="text-[#8B5CF6] hover:underline text-sm font-semibold flex items-center gap-1"
                   >
                     <Plus className="w-4 h-4" />
-                    Add
+                    {tx('pages.freelancerProfile.main.add', undefined, 'Add')}
                   </button>
                 )}
               </div>
@@ -1079,7 +1086,7 @@ function ProfileView({
                   {workSamples.map((item) => {
                     const workImages = getWorkSampleImages(item);
                     const workImage = workImages[0] || '';
-                    const workTitle = item.title?.trim() || 'Untitled work';
+                    const workTitle = item.title?.trim() || tx('pages.freelancerProfile.main.untitledWork', undefined, 'Untitled work');
 
                     return (
                       <article
@@ -1103,7 +1110,7 @@ function ProfileView({
                           
                           <div className="absolute left-3 bottom-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] text-white">
                             <Images className="w-3.5 h-3.5" />
-                            {workImages.length} {workImages.length === 1 ? 'photo' : 'photos'}
+                            {txPlural('pages.freelancerProfile.main.photosCount', workImages.length, undefined, `${workImages.length} photos`)}
                           </div>
                         </div>
 
@@ -1114,7 +1121,7 @@ function ProfileView({
                               {workTitle}
                             </h4>
                             <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
-                              {item.description || 'No description provided.'}
+                              {item.description || tx('pages.freelancerProfile.main.noDescription', undefined, 'No description provided.')}
                             </p>
                           </div>
 
@@ -1147,7 +1154,7 @@ function ProfileView({
                                 className="inline-flex items-center gap-1 text-xs text-[#8B5CF6] dark:text-[#a78bfa] hover:underline"
                               >
                                 <ExternalLink className="w-3 h-3" />
-                                Open Link
+                                {tx('pages.freelancerProfile.main.openLink', undefined, 'Open Link')}
                               </a>
                             ) : (
                               <span />
@@ -1181,7 +1188,7 @@ function ProfileView({
                                 onClick={() => openWorkSampleViewer(item.id)}
                                 className="text-xs font-semibold text-[#8B5CF6] hover:underline"
                               >
-                                View Project
+                                {tx('pages.freelancerProfile.main.viewProject', undefined, 'View Project')}
                               </button>
                             </div>
                           </div>
@@ -1196,10 +1203,10 @@ function ProfileView({
                     <Briefcase className="w-5 h-5" />
                   </div>
                   <h4 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 mb-1">
-                    No work samples added yet
+                    {tx('pages.freelancerProfile.workSamples.emptyTitle', undefined, 'No work samples added yet')}
                   </h4>
                   <p className="text-xs text-gray-500 dark:text-zinc-400 max-w-[280px] leading-relaxed mb-4">
-                    Showcase case studies, designs, products, and measurable outcomes to attract clients.
+                    {tx('pages.freelancerProfile.main.workSamplesEmptyDesc', undefined, 'Showcase case studies, designs, products, and measurable outcomes to attract clients.')}
                   </p>
                   {isOwner && (
                     <button
@@ -1207,7 +1214,7 @@ function ProfileView({
                       onClick={() => navigate(ROUTES.freelancerPortfolio)}
                       className="px-5 py-2 bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-semibold rounded-full transition-colors shadow-sm"
                     >
-                      Add your first work sample
+                      {tx('pages.freelancerProfile.main.addFirstWorkSample', undefined, 'Add your first work sample')}
                     </button>
                   )}
                 </div>
@@ -1217,7 +1224,7 @@ function ProfileView({
             {/* Work History & Reviews */}
             <section className="p-6 sm:p-8 flex flex-col gap-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
-                Work History & Reviews
+                {tx('pages.freelancerProfile.main.workHistoryAndReviews', undefined, 'Work History & Reviews')}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 items-start">
@@ -1238,7 +1245,7 @@ function ProfileView({
                     ))}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-zinc-400 mt-2">
-                    {freelancer.stats.reviews_count} {freelancer.stats.reviews_count === 1 ? 'review' : 'reviews'}
+                    {txPlural('pages.freelancerProfile.main.reviewsCount', freelancer.stats.reviews_count, undefined, `${freelancer.stats.reviews_count} reviews`)}
                   </p>
                 </div>
 
@@ -1265,10 +1272,10 @@ function ProfileView({
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <h4 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
-                            {review.job_title || 'Project Collaboration'}
+                            {review.job_title || tx('pages.freelancerProfile.main.projectCollaboration', undefined, 'Project Collaboration')}
                           </h4>
                           <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-                            by {review.client_name} • {new Date(review.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                            {tx('pages.freelancerProfile.main.reviewBy', { name: review.client_name }, `by ${review.client_name}`)} • {new Date(review.created_at).toLocaleDateString(language, { year: 'numeric', month: 'short', day: 'numeric' })}
                           </p>
                         </div>
                         <div className="inline-flex items-center gap-1 text-[#F59E0B] font-medium text-sm">
@@ -1285,7 +1292,7 @@ function ProfileView({
               ) : (
                 <div className="py-6 text-center border border-gray-100 dark:border-[#2d2d2d] rounded-xl bg-gray-50/20 dark:bg-[#161618]/10">
                   <p className="text-xs text-gray-400 dark:text-zinc-500">
-                    No reviews yet. Complete your first contract to receive feedback.
+                    {tx('pages.freelancerProfile.reviews.empty', undefined, 'No reviews yet. Complete your first contract to receive feedback.')}
                   </p>
                 </div>
               )}
@@ -1299,13 +1306,13 @@ function ProfileView({
             <section className="p-6 flex flex-col gap-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
-                  Availability & Stats
+                  {tx('pages.freelancerProfile.stats.availabilityAndStats', undefined, 'Availability & Stats')}
                 </h3>
                 {isOwner && (
                   <button
                     type="button"
                     onClick={() => navigate('/settings?tab=profile&focus=availability')}
-                    className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-[#8B5CF6]/10 dark:hover:bg-[#8B5CF6]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                     aria-label="Edit availability settings"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -1315,49 +1322,53 @@ function ProfileView({
 
               <dl className="space-y-3.5 text-sm">
                 <div className="flex justify-between items-start gap-3">
-                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Status</dt>
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx('pages.freelancerProfile.stats.status', undefined, 'Status')}</dt>
                   <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right flex items-center gap-1.5">
                     <span
                       className="w-2 h-2 rounded-full"
                       style={{ background: freelancer.availability === 'available' ? '#4ade80' : '#fbbf24' }}
                     />
-                    {freelancer.availability === 'available' ? 'Available for work' : freelancer.availability}
+                    {freelancer.availability === 'available' 
+                      ? tx('pages.freelancerProfile.stats.availableForWork', undefined, 'Available for work') 
+                      : availabilityBadge.label}
                   </dd>
                 </div>
 
                 <div className="flex justify-between items-start gap-3">
-                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Weekly availability</dt>
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx('pages.freelancerProfile.stats.weeklyAvailability', undefined, 'Weekly availability')}</dt>
                   <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
-                    {freelancer.weekly_availability_hours || 30} hrs/week
+                    {tx('pages.freelancerProfile.stats.hoursPerWeek', { hours: freelancer.weekly_availability_hours || 30 }, `${freelancer.weekly_availability_hours || 30} hrs/week`)}
                   </dd>
                 </div>
 
                 <div className="flex justify-between items-start gap-3">
-                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Years of experience</dt>
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx('pages.freelancerProfile.stats.yearsOfExperience', undefined, 'Years of experience')}</dt>
                   <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
-                    {freelancer.years_experience || 1} {freelancer.years_experience === 1 ? 'year' : 'years'}
+                    {txPlural('pages.freelancerProfile.stats.yearsCount', freelancer.years_experience || 1, undefined, `${freelancer.years_experience || 1} years`)}
                   </dd>
                 </div>
 
                 <div className="flex justify-between items-start gap-3">
-                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Response time</dt>
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx('pages.freelancerProfile.stats.responseTime', undefined, 'Response time')}</dt>
                   <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
-                    {freelancer.stats.response_time_hours <= 2 ? '< 2 hrs' : `< ${freelancer.stats.response_time_hours} hrs`}
+                    {freelancer.stats.response_time_hours <= 2 
+                      ? tx('pages.freelancerProfile.stats.lessThanTwoHours', undefined, '< 2 hrs') 
+                      : tx('pages.freelancerProfile.stats.hoursResponseTime', { hours: freelancer.stats.response_time_hours }, `< ${freelancer.stats.response_time_hours} hrs`)}
                   </dd>
                 </div>
 
                 <div className="flex justify-between items-start gap-3">
-                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Job Success</dt>
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx('pages.freelancerProfile.stats.jobSuccess', undefined, 'Job Success')}</dt>
                   <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right">
                     {freelancer.stats.success_rate}%
                   </dd>
                 </div>
 
                 <div className="flex justify-between items-start gap-3">
-                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">Profile Visibility</dt>
+                  <dt className="text-gray-500 dark:text-zinc-400 text-xs">{tx('pages.freelancerProfile.stats.profileVisibility', undefined, 'Profile Visibility')}</dt>
                   <dd className="font-semibold text-gray-900 dark:text-zinc-100 text-right flex items-center gap-1">
                     <Globe className="w-3.5 h-3.5 text-gray-400 dark:text-zinc-500" />
-                    <span>Public</span>
+                    <span>{tx('pages.freelancerProfile.stats.public', undefined, 'Public')}</span>
                   </dd>
                 </div>
               </dl>
@@ -1367,13 +1378,13 @@ function ProfileView({
             <section className="p-6 flex flex-col gap-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
-                  Portfolio Links
+                  {tx('pages.freelancerProfile.portfolioLinks.title', undefined, 'Portfolio Links')}
                 </h3>
                 {isOwner && (
                   <button
                     type="button"
                     onClick={() => navigate('/settings?tab=profile&focus=portfolio_links')}
-                    className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-[#8B5CF6]/10 dark:hover:bg-[#8B5CF6]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                     aria-label="Edit portfolio links"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -1405,14 +1416,14 @@ function ProfileView({
                 </ul>
               ) : (
                 <div className="text-center py-2">
-                  <p className="text-xs text-gray-400 dark:text-zinc-500">No links added yet.</p>
+                  <p className="text-xs text-gray-400 dark:text-zinc-500">{tx('pages.freelancerProfile.portfolioLinks.empty', undefined, 'No links added yet.')}</p>
                   {isOwner && (
                     <button
                       type="button"
                       onClick={() => navigate('/settings?tab=profile&focus=portfolio_links')}
                       className="text-xs font-semibold text-[#8B5CF6] hover:underline mt-1"
                     >
-                      + Add portfolio links
+                      {tx('pages.freelancerProfile.portfolioLinks.add', undefined, '+ Add portfolio links')}
                     </button>
                   )}
                 </div>
@@ -1422,7 +1433,7 @@ function ProfileView({
             {/* Verifications */}
             <section className="p-6 flex flex-col gap-4">
               <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
-                Verifications
+                {tx('pages.freelancerProfile.verifications.title', undefined, 'Verifications')}
               </h3>
 
               <ul className="space-y-3 text-sm">
@@ -1433,7 +1444,7 @@ function ProfileView({
                     <Circle className="w-4 h-4 shrink-0 text-gray-300 dark:text-zinc-700" />
                   )}
                   <span className={freelancer.verifications.cin ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
-                    Identity Verified
+                    {tx('pages.freelancerProfile.verifications.identityVerified', undefined, 'Identity Verified')}
                   </span>
                 </li>
 
@@ -1444,7 +1455,7 @@ function ProfileView({
                     <Circle className="w-4 h-4 shrink-0 text-gray-300 dark:text-zinc-700" />
                   )}
                   <span className={freelancer.verifications.phone ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
-                    Phone Number
+                    {tx('pages.freelancerProfile.verifications.phoneNumber', undefined, 'Phone Number')}
                   </span>
                 </li>
 
@@ -1455,7 +1466,7 @@ function ProfileView({
                     <Circle className="w-4 h-4 shrink-0 text-gray-300 dark:text-zinc-700" />
                   )}
                   <span className={freelancer.verifications.email ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
-                    Email Address
+                    {tx('pages.freelancerProfile.verifications.emailAddress', undefined, 'Email Address')}
                   </span>
                 </li>
 
@@ -1466,7 +1477,7 @@ function ProfileView({
                     <Circle className="w-4 h-4 shrink-0 text-gray-300 dark:text-zinc-700" />
                   )}
                   <span className={freelancer.verifications.payment ? 'text-gray-950 dark:text-zinc-100 font-medium' : 'text-gray-400 dark:text-zinc-500'}>
-                    Payment Method
+                    {tx('pages.freelancerProfile.verifications.paymentMethod', undefined, 'Payment Method')}
                   </span>
                 </li>
               </ul>
@@ -1476,13 +1487,13 @@ function ProfileView({
             <section className="p-6 flex flex-col gap-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
-                  Languages
+                  {tx('pages.freelancerProfile.languages.title', undefined, 'Languages')}
                 </h3>
                 {isOwner && (
                   <button
                     type="button"
                     onClick={() => navigate('/settings?tab=profile&focus=languages')}
-                    className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-[#8B5CF6]/10 dark:hover:bg-[#8B5CF6]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                     aria-label="Edit languages"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -1494,13 +1505,17 @@ function ProfileView({
                 <ul className="space-y-3">
                   {freelancer.languages.map((lang, idx) => (
                     <li key={idx} className="flex justify-between text-sm gap-2">
-                      <span className="font-semibold text-gray-800 dark:text-zinc-200">{lang.language}</span>
-                      <span className="text-gray-500 dark:text-zinc-400 capitalize text-xs">{lang.proficiency}</span>
+                      <span className="font-semibold text-gray-800 dark:text-zinc-200">
+                        {tx(`profile.languages.names.${lang.language.toLowerCase()}`, undefined, lang.language)}
+                      </span>
+                      <span className="text-gray-500 dark:text-zinc-400 capitalize text-xs">
+                        {tx(`profile.languages.levels.${lang.proficiency.toLowerCase()}`, undefined, lang.proficiency)}
+                      </span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-gray-400 dark:text-zinc-500">No languages listed.</p>
+                <p className="text-xs text-gray-400 dark:text-zinc-500">{tx('pages.freelancerProfile.languages.empty', undefined, 'No languages listed.')}</p>
               )}
             </section>
 
@@ -1508,13 +1523,13 @@ function ProfileView({
             <section className="p-6 flex flex-col gap-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-zinc-50">
-                  Education
+                  {tx('pages.freelancerProfile.education.title', undefined, 'Education')}
                 </h3>
                 {isOwner && (
                   <button
                     type="button"
                     onClick={() => navigate('/settings?tab=profile&focus=education')}
-                    className="p-1 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-[#8B5CF6]/10 dark:hover:bg-[#8B5CF6]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
                     aria-label="Add education"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -1527,21 +1542,23 @@ function ProfileView({
                   {freelancer.education.map((edu, idx) => (
                     <li key={idx} className="text-sm">
                       <p className="font-semibold text-gray-800 dark:text-zinc-200">{edu.institution}</p>
-                      <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">{edu.degree} in {edu.field}</p>
+                      <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
+                        {tx('pages.freelancerProfile.education.studyField', { degree: edu.degree, field: edu.field }, `${edu.degree} in ${edu.field}`)}
+                      </p>
                       <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">{edu.startYear} - {edu.endYear}</p>
                     </li>
                   ))}
                 </ul>
               ) : (
                 <div className="text-center py-2">
-                  <p className="text-xs text-gray-400 dark:text-zinc-500">No education entered yet.</p>
+                  <p className="text-xs text-gray-400 dark:text-zinc-500">{tx('pages.freelancerProfile.education.empty', undefined, 'No education entered yet.')}</p>
                   {isOwner && (
                     <button
                       type="button"
                       onClick={() => navigate('/settings?tab=profile&focus=education')}
                       className="text-xs font-semibold text-[#8B5CF6] hover:underline mt-1"
                     >
-                      + Add education details
+                      {tx('pages.freelancerProfile.education.add', undefined, '+ Add education details')}
                     </button>
                   )}
                 </div>

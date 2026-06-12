@@ -52,7 +52,7 @@ export function CTASection() {
                   style={{ background: 'var(--workspace-primary)', fontSize: '1rem' }}
                 >
                   <LayoutDashboard className="w-4 h-4" />
-                  {isFreelancer ? 'Go to Dashboard' : 'Client Dashboard'}
+                  {isFreelancer ? tx('ctaSection.goToDashboard') : tx('ctaSection.clientDashboard')}
                 </button>
                 <button
                   onClick={() => navigate(workspaceActionPath)}
@@ -64,7 +64,7 @@ export function CTASection() {
                     fontSize: '1rem',
                   }}
                 >
-                  {isFreelancer ? 'Browse Jobs' : 'Find Freelancers'}
+                  {isFreelancer ? tx('ctaSection.browseJobs') : tx('ctaSection.findFreelancers')}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </>

@@ -172,11 +172,27 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
         return interpolate(resolved, params);
     }, [language]);
 
-    /** Pluralization helper: resolves key.one / key.other (or key.zero) based on count. */
+    /** Pluralization helper: resolves key.one / key.other (or key.zero/two/few/many) based on count. */
     const txPlural = useCallback((key: string, count: number, params?: TranslationParams, fallback?: string) => {
-        const pluralKey = count === 0 ? `${key}.zero` : count === 1 ? `${key}.one` : `${key}.other`;
+        let category: Intl.LDMLPluralRule | 'zero' = 'other';
+        if (count === 0) {
+            category = 'zero';
+        } else {
+            try {
+                category = new Intl.PluralRules(language).select(count);
+            } catch (e) {
+                category = count === 1 ? 'one' : 'other';
+            }
+        }
+
+        const pluralKey = `${key}.${category}`;
         // Try the specific plural form first, then fall back to the base key
-        const primaryForm = getNestedValue(translations[language], pluralKey);
+        let primaryForm = getNestedValue(translations[language], pluralKey);
+
+        if (typeof primaryForm !== 'string' && category !== 'other') {
+            primaryForm = getNestedValue(translations[language], `${key}.other`);
+        }
+
         if (typeof primaryForm === 'string') {
             return interpolate(primaryForm, { count, ...params });
         }

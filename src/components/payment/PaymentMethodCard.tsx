@@ -187,7 +187,11 @@ export function PaymentMethodCard({
             {cfg && (
               <span className={["inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold", cfg.cls].join(" ")}>
                 <cfg.Icon className="h-3 w-3" />
-                {cfg.label}
+                {cfg.label === 'LIVE' 
+                  ? tx('pages.settings.payment.live', undefined, 'LIVE') 
+                  : cfg.label === 'SOON' 
+                  ? tx('pages.settings.payment.soon', undefined, 'SOON') 
+                  : tx('pages.settings.payment.default', undefined, 'DEFAULT')}
               </span>
             )}
           </div>

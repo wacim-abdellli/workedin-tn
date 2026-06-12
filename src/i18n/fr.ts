@@ -189,10 +189,25 @@ export const fr: Translations = {
                 "suggested": "Suggestions :",
                 "attachments": "Pièces jointes (optionnel)",
                 "attachmentsDrop": "Glissez les fichiers ici ou cliquez pour parcourir",
-                "chooseFiles": "Choisir des fichiers"
+                "chooseFiles": "Choisir des fichiers",
+                "titleHint": "Utilisez des termes techniques précis pour aider les bons freelances à vous trouver.",
+                "categoryHint": "Choisissez la catégorie la plus appropriée pour activer des alertes automatiques de correspondance.",
+                "subcategoryHint": "Sélectionnez la spécialité exacte pour filtrer les offres et assurer une correspondance précise.",
+                "descriptionHint": "Expliquez la portée, les paramètres attendus et à quoi ressemblent des livrables réussis.",
+                "skillsHint": "Identifiez les compétences précises pour cibler des freelances spécialisés et les inviter directement.",
+                "attachmentsHint2": "Fournissez des assets, maquettes ou spécifications détaillées pour clarifier les livrables.",
+                "charCount": "{{current}} / {{max}} caractères",
+                "skillsPlaceholder": "Essayez : Design graphique, React, Motion design...",
+                "attachmentsHint": "PDF, DOC, DOCX, TXT, PNG, JPG, WEBP - 10MB max par fichier",
+                "descriptionPlaceholder": "Fournissez un contexte détaillé, le public cible, les spécifications techniques et les livrables clés...",
+                "titlePlaceholder": "Exemple : Système d'identité visuelle bilingue pour un café tunisien"
             },
             "quality": {
-                "title": "Score de qualité"
+                "title": "Score de qualité",
+                "clearTitle": "Titre clair",
+                "categorySelected": "Catégorie sélectionnée",
+                "strongDescription": "Description solide",
+                "relevantSkills": "Compétences pertinentes"
             },
             "autosave": {
                 "saving": "Enregistrement...",
@@ -240,6 +255,16 @@ export const fr: Translations = {
                 "minutesAgo": "Il y a {{count}} min",
                 "hoursAgo": "Il y a {{count}} h"
             },
+            "links": {
+                "title": "Liens de référence (optionnel)",
+                "description": "Ajoutez des liens Google Drive, de portfolio ou de réseaux sociaux pour que les freelances puissent rapidement consulter le contexte.",
+                "placeholder": "Collez un lien (ex. drive.google.com/... ou linkedin.com/in/...)",
+                "add": "Ajouter un lien",
+                "remove": "Supprimer le lien",
+                "maxLinksReached": "Vous pouvez ajouter jusqu'à {{count}} liens.",
+                "duplicate": "Ce lien a déjà été ajouté.",
+                "invalid": "Veuillez saisir une URL valide."
+            },
             "stepBasics": {
                 "badge": "Brief du projet",
                 "title": "Détails de la mission",
@@ -269,17 +294,34 @@ export const fr: Translations = {
                 "badge": "Configuration du tarif",
                 "title": "Budget et durée",
                 "subtitle": "Choisissez le mode de paiement et définissez votre budget",
+                "pricingMode": "Modèle de tarification",
+                "fixedExact": "Prix fixe (exact)",
+                "fixedExactSubtitle": "Budget fixe unique",
+                "fixedExactDescription": "Définissez un budget précis pour l'ensemble du périmètre. Idéal pour les tâches bien définies.",
+                "fixedExactHint": "Indiquez le prix fixe exact de ce projet.",
+                "fixedRange": "Prix fixe (fourchette)",
+                "fixedRangeSubtitle": "Fourchette min-max",
+                "fixedRangeDescription": "Définissez une fenêtre budgétaire pour attirer des propositions correspondant à votre enveloppe.",
+                "fixedRangeHint": "Spécifiez une fourchette pour attirer les offres dans votre budget cible.",
                 "fixedPrice": "Prix fixe",
                 "fixedPriceDescription": "Payez un montant fixe pour tout le projet une fois terminé.",
-                "hourly": "Horaire",
-                "hourlyDescription": "Payez le freelance selon le nombre d'heures travaillées.",
-                "estimatedBudget": "Budget estimé du projet (TND)",
-                "min": "Min",
-                "max": "Max",
-                "hourlyRate": "Taux horaire (TND)",
+                "hourly": "Tarif horaire",
+                "hourlySubtitle": "Facturation au temps passé",
+                "hourlyDescription": "Payez à l'heure selon les logs. Idéal pour un travail continu ou évolutif.",
+                "hourlyHint": "Déterminez le taux horaire et la limite hebdomadaire d'heures.",
+                "hourlySetup": "Détails de la tarification horaire",
+                "estimatedBudget": "Budget estimé du projet",
+                "budgetAmount": "Montant du budget",
+                "min": "Budget minimum",
+                "max": "Budget maximum",
+                "hourlyRate": "Taux horaire",
                 "hourlyRateExample": "Exemple : 20",
-                "weeklyHours": "Heures estimées par semaine",
+                "weeklyHours": "Limite d'heures hebdomadaires",
                 "weeklyHoursExample": "Exemple : 10-20",
+                "partTime10": "Temps partiel (jusqu'à 10 h/semaine)",
+                "partTime20": "Temps partiel (jusqu'à 20 h/semaine)",
+                "fullTime30": "Temps plein (jusqu'à 30 h/semaine)",
+                "fullTime40": "Temps plein (jusqu'à 40 h/semaine)",
                 "duration": "Durée du projet",
                 "selectDuration": "Sélectionner la durée",
                 "durationLessThan1Month": "Moins d'un mois",
@@ -287,9 +329,13 @@ export const fr: Translations = {
                 "duration3To6Months": "3 à 6 mois",
                 "durationMoreThan6Months": "Plus de 6 mois",
                 "experienceLevel": "Niveau d'expérience requis",
-                "beginner": "Débutant",
-                "intermediate": "Intermédiaire",
-                "expert": "Expert",
+                "experienceLevelHint": "Sélectionnez le niveau d'expertise requis pour garantir des candidatures pertinentes.",
+                "beginner": "Niveau débutant",
+                "beginnerSubtitle": "Tâches simples ou options économiques",
+                "intermediate": "Niveau intermédiaire",
+                "intermediateSubtitle": "Expérience solide pour des objectifs standards",
+                "expert": "Niveau expert",
+                "expertSubtitle": "Spécialistes de haut niveau pour des besoins complexes",
                 "deadline": "Date limite"
             },
             "stepVisibility": {
@@ -346,6 +392,39 @@ export const fr: Translations = {
                 "budgetRequired": "Veuillez définir un budget",
                 "budgetRange": "Le budget maximum doit être supérieur ou égal au budget minimum",
                 "subcategoryInvalid": "Veuillez sélectionner une sous-catégorie valide"
+            },
+            "expertTips": {
+                "specificTitleLabel": "Titre précis :",
+                "specificTitleText": "Décrivez exactement ce dont vous avez besoin. Un titre clair attire immédiatement les bons spécialistes.",
+                "richContextLabel": "Contexte riche :",
+                "richContextText": "Fournissez des paramètres clairs sur la portée, les livrables finaux et les critères de succès.",
+                "budgetModelLabel": "Modèle de budget :",
+                "budgetModelText": "Choisissez le prix fixe pour des résultats bien définis, et le tarif horaire pour des briefs évolutifs.",
+                "deadlineBufferLabel": "Marge de délai :",
+                "deadlineBufferText": "Fixer une date réaliste encourage des candidatures de haute qualité.",
+                "publicBriefsLabel": "Briefs publics :",
+                "publicBriefsText": "Idéal pour obtenir un maximum de propositions et une concurrence tarifaire.",
+                "inviteOnlyLabel": "Sur invitation :",
+                "inviteOnlyText": "Idéal pour les projets confidentiels ou quand vous sélectionnez personnellement les meilleurs freelances.",
+                "lockStructureLabel": "Verrouiller la structure :",
+                "lockStructureText": "Vérifiez toutes les spécifications. La structure de base est définitive à la publication pour assurer la cohérence des offres."
+            },
+            "titleTemplateLogo": "Conception de logo pour une entreprise agroalimentaire",
+            "titleTemplateLanding": "Refonte de page d'accueil pour un produit SaaS",
+            "titleTemplateVideo": "Montage de vidéos courtes pour des publicités sociales",
+            "titleTemplateDash": "Tableau de bord React avec widgets d'analyse",
+            "snippetScope": "Portée",
+            "snippetScopeText": "Portée : Créer une expérience responsive alignée avec nos directives de marque.",
+            "snippetDeliverables": "Livrables",
+            "snippetDeliverablesText": "Livrables : Fichiers sources, build prêt pour le déploiement et documentation concise.",
+            "snippetSuccess": "Succès",
+            "snippetSuccessText": "Critères de succès : Interface parfaite, performances élevées et livraison propre.",
+            "expertTipsTitle": "Conseils d'experts",
+            "tips": {
+                "scope": "Soyez précis sur la portée et la qualité attendue.",
+                "success": "Définissez clairement ce à quoi ressemble le succès.",
+                "references": "Ajoutez des liens, références ou exemples si disponibles.",
+                "handoff": "Précisez ce qui doit être livré à la remise."
             }
         }
     },
@@ -1308,7 +1387,8 @@ export const fr: Translations = {
         "status": {
             "active": "Actif",
             "completed": "Terminé",
-            "disputed": "En litige"
+            "disputed": "En litige",
+            "cancelled": "Annulé"
         },
         "role": {
             "client": "Client",
@@ -1325,7 +1405,15 @@ export const fr: Translations = {
         "unknownUser": "Utilisateur inconnu",
         "startedOn": "Commencé {{date}}",
         "milestonesProgress": "1 étape sur 3 terminée",
-        "openWorkspace": "Ouvrir l'espace de travail ->"
+        "openWorkspace": "Ouvrir l'espace de travail ->",
+        "subtitle": "Gerez vos contrats actifs, vos travaux passés et vos communications clients.",
+        "paymentProtectionTitle": "Protection des Paiements",
+        "paymentProtectionDesc": "Communiquez et demandez toujours les paiements via WorkedIn. Les contrats payés en dehors de la plateforme ne sont pas protégés par notre système d'entiercement sécurisé.",
+        "searchPlaceholder": "Rechercher des contrats ou des utilisateurs...",
+        "emptyTitle": "Aucun contrat trouvé",
+        "emptyDescription": "Essayez un autre onglet ou ajustez votre recherche pour trouver des contrats plus rapidement.",
+        "emptyCancelledTitle": "Aucun contrat annulé",
+        "emptyCancelledDescription": "Vous n'avez pas de contrats annulés."
     },
     "common": {
         "viewJob": "Voir la mission",
@@ -1441,7 +1529,26 @@ export const fr: Translations = {
         },
         "goBack": "Revenir",
         "success": "Succès",
-        "tndPerHour": "TND/h"
+        "tndPerHour": "TND/h",
+        "delete": "Supprimer",
+        "edit": "Modifier",
+        "view": "Voir",
+        "open": "Ouvrir",
+        "yes": "Oui",
+        "no": "Non",
+        "all": "Tous",
+        "none": "Aucun",
+        "you": "Vous",
+        "available": "Disponible",
+        "busy": "Occupé",
+        "offline": "Hors ligne",
+        "active": "Actif",
+        "inactive": "Inactif",
+        "completed": "Terminé",
+        "pending": "En attente",
+        "cancelled": "Annulé",
+        "approved": "Approuvé",
+        "rejected": "Rejeté"
     },
     "accountStatus": {
         "suspended": {
@@ -1696,7 +1803,8 @@ export const fr: Translations = {
             },
             "header": {
                 "title": "Trouver du travail",
-                "subtitle": "Parcourez et postulez à des opportunités freelance en Tunisie."
+                "subtitle": "Parcourez et postulez à des opportunités freelance en Tunisie.",
+                "jobsYouMightLike": "Offres qui pourraient vous plaire"
             },
             "filters": {
                 "clearAll": "Tout effacer",
@@ -1705,13 +1813,42 @@ export const fr: Translations = {
                 "showing": "Affichage"
             },
             "actions": {
-                "applyNow": "Postuler"
+                "applyNow": "Postuler",
+                "applied": "Candidature envoyée"
             },
             "empty": {
-                "filtered": "Aucune mission trouvée avec les filtres sélectionnés."
+                "filtered": "Aucune mission trouvée avec les filtres sélectionnés.",
+                "saved": "Vous n'avez pas encore enregistré d'offres."
             },
             "errors": {
                 "loadFailed": "Impossible de charger les missions. Veuillez réessayer."
+            },
+            "currency": "TND",
+            "hourlyRateFormat": "TND/h",
+            "tabs": {
+                "bestMatches": "Meilleures correspondances",
+                "mostRecent": "Plus récents",
+                "savedJobs": "Offres enregistrées"
+            },
+            "infoBanner": {
+                "loginPrompt": "Connectez-vous pour voir les offres adaptées à vos compétences.",
+                "clientModePrompt": "Vous visualisez les offres en mode client. Passez en mode freelance pour voir les offres correspondantes.",
+                "noSkillsPrompt": "Ajoutez des compétences à votre profil pour voir les offres correspondantes.",
+                "addSkillsLink": "Ajouter des compétences",
+                "matchingSkills": "Offres correspondantes basées sur vos compétences : ___SKILLS___"
+            },
+            "jobCard": {
+                "untitledJob": "Projet sans titre",
+                "noDescription": "Aucune description fournie.",
+                "appliedLabel": "Candidature envoyée"
+            },
+            "proposals": {
+                "zero": "0 proposition",
+                "lessThan5": "Moins de 5 propositions",
+                "range5_10": "5 à 10 propositions",
+                "range10_15": "10 à 15 propositions",
+                "range15_20": "15 à 20 propositions",
+                "twentyPlus": "20+ propositions"
             }
         },
         "settings": {
@@ -2038,7 +2175,23 @@ export const fr: Translations = {
                 "workInformation": "Informations de travail"
             },
             "stats": {
-                "hourlyRate": "Taux horaire"
+                "hourlyRate": "Taux horaire",
+                "lessThanTwoHours": "< 2 h",
+                "hoursResponseTime": "< {{hours}} h",
+                "availabilityAndStats": "Disponibilité et Statistiques",
+                "status": "Statut",
+                "availableForWork": "Disponible pour travailler",
+                "weeklyAvailability": "Disponibilité hebdomadaire",
+                "hoursPerWeek": "{{hours}} h/semaine",
+                "yearsOfExperience": "Années d'expérience",
+                "yearsCount": {
+                    "one": "{{count}} an",
+                    "other": "{{count}} ans"
+                },
+                "responseTime": "Temps de réponse",
+                "jobSuccess": "Réussite des projets",
+                "profileVisibility": "Visibilité du profil",
+                "public": "Public"
             },
             "toasts": {
                 "workSampleDeleted": "Exemple de travail supprimé",
@@ -2062,7 +2215,11 @@ export const fr: Translations = {
                 "avatarSize": "La taille de l'image doit être inférieure à 5 Mo."
             },
             "verifications": {
-                "paymentMethod": "Moyen de paiement"
+                "paymentMethod": "Moyen de paiement",
+                "title": "Vérifications",
+                "identityVerified": "Identité Vérifiée",
+                "phoneNumber": "Numéro de téléphone",
+                "emailAddress": "Adresse e-mail"
             },
             "viewer": {
                 "close": "Fermer la visionneuse du portfolio",
@@ -2088,7 +2245,69 @@ export const fr: Translations = {
                 "startError": "Une erreur est survenue au démarrage de la conversation",
                 "opening": "Ouverture...",
                 "startAction": "Démarrer la conversation"
-            }
+            },
+            "main": {
+                "portfolio": "Portfolio",
+                "add": "Ajouter",
+                "untitledWork": "Projet sans titre",
+                "noDescription": "Aucune description fournie.",
+                "openLink": "Ouvrir le lien",
+                "viewProject": "Voir le projet",
+                "workSamplesEmptyDesc": "Présentez des études de cas, des designs, des produits ou des résultats mesurables pour attirer les clients.",
+                "addFirstWorkSample": "Ajoutez votre premier exemple de travail",
+                "workHistoryAndReviews": "Historique de travail et avis",
+                "projectCollaboration": "Collaboration de projet",
+                "reviewBy": "par {{name}}",
+                "reviewsCount": {
+                    "one": "{{count}} avis",
+                    "other": "{{count}} avis"
+                },
+                "hourlyRateFormat": "{{rate}}/h",
+                "localTime": "{{time}} heure locale",
+                "jobsCompletedCount": {
+                    "one": "{{count}} projet terminé",
+                    "other": "{{count}} projets terminés"
+                },
+                "responseTimeSuffix": "temps de réponse",
+                "copied": "Copié !",
+                "share": "Partager",
+                "independentSpecialist": "Spécialiste indépendant",
+                "specializedIn": "Spécialisé en {{skills}}",
+                "specializedFreelancer": "Freelance Spécialisé",
+                "noBio": "Aucune biographie biographique fournie pour le moment.",
+                "addDescription": "+ Ajouter une description",
+                "skills": "Compétences",
+                "services": "Services",
+                "tools": "Outils",
+                "industries": "Secteurs",
+                "photosCount": {
+                    "one": "{{count}} photo",
+                    "other": "{{count}} photos"
+                }
+            },
+            "projectPreferences": {
+                "title": "Préférences et détails du projet",
+                "revisionPolicy": "Politique de révision",
+                "revisionPolicyDefault": "2 révisions incluses, révisions supplémentaires facturées séparément.",
+                "projectPreferences": "Préférences de projet",
+                "projectPreferencesDefault": "Ouvert aux modifications du périmètre du projet, communication régulière par messages/appels, livrables basés sur des jalons."
+            },
+            "portfolioLinks": {
+                "title": "Liens de portfolio",
+                "empty": "Aucun lien ajouté pour le moment.",
+                "add": "+ Ajouter des liens de portfolio"
+            },
+            "languages": {
+                "title": "Langues",
+                "empty": "Aucune langue répertoriée."
+            },
+            "education": {
+                "title": "Éducation",
+                "studyField": "{{degree}} en {{field}}",
+                "empty": "Aucune éducation saisie pour le moment.",
+                "add": "+ Ajouter des détails d'éducation"
+            },
+            "jobFallback": "Projet"
         },
         "searchModal": {
             "placeholderFreelancer": "Rechercher missions, compétences...",
@@ -2792,7 +3011,34 @@ export const fr: Translations = {
             "title": "Aucun résultat correspondant",
             "description": "Nous n’avons pas trouvé de freelances correspondant à vos critères. Essayez d’autres mots-clés ou effacez les filtres.",
             "action": "Effacer tous les filtres"
-        }
+        },
+        "location": "Emplacement",
+        "allLocations": "Tous les emplacements",
+        "nLocations": "{{count}} emplacements",
+        "searchLocations": "Rechercher des emplacements...",
+        "noMatchesFound": "Aucune correspondance trouvée",
+        "searchSkills": "Rechercher des compétences...",
+        "noSkillsFound": "Aucune compétence trouvée",
+        "min": "Min",
+        "max": "Max",
+        "to": "à",
+        "rateAny": "Tous",
+        "jobSuccessRate": "Taux de réussite des projets",
+        "anySuccessRate": "Tous les taux de réussite",
+        "anySuccessRateDesc": "Afficher tous les freelances",
+        "rate90up": "90% et plus",
+        "rate90upDesc": "Professionnels très bien notés",
+        "rate80up": "80% et plus",
+        "rate80upDesc": "Excellente régularité",
+        "jobsCompleted": "Projets terminés",
+        "anyJobsAmount": "Tous les volumes de projets",
+        "anyJobsAmountDesc": "Afficher tout le monde",
+        "jobs1plus": "1+ projet terminé",
+        "jobs1plusDesc": "A de l'expérience sur la plateforme",
+        "jobs5plus": "5+ projets terminés",
+        "jobs5plusDesc": "Historique de projets établi",
+        "jobs10plus": "10+ projets terminés",
+        "jobs10plusDesc": "Statut de freelance chevronné"
     },
     "wallet": {
         "seo": {
@@ -2869,7 +3115,44 @@ export const fr: Translations = {
             "completed": "Terminé",
             "rejected": "Rejeté"
         },
-        "mockDepositFailed": "Échec du dépôt fictif sur le portefeuille"
+        "mockDepositFailed": "Échec du dépôt fictif sur le portefeuille",
+        "tabs": {
+            "overview": "Vue d'ensemble",
+            "withdraw": "Retirer",
+            "deposit": "Déposer",
+            "transactions": "Transactions"
+        },
+        "withdrawalAmount": "Montant du retrait",
+        "bankTransferDesc": "Retirer directement vers votre compte bancaire local",
+        "d17Desc": "Retirer via D17. Bientôt disponible.",
+        "flouciDesc": "Retirer via le portefeuille mobile Flouci. Bientôt disponible.",
+        "youWithdraw": "Vous retirez",
+        "minWithdrawalNotice": "Le retrait minimum est de {{min}} TND. Les demandes sont examinées manuellement avant traitement.",
+        "recentTransactions": "Transactions récentes",
+        "lockedFundsTitle": "Calendrier des fonds bloqués",
+        "noLockedFunds": "Aucun fonds actuellement bloqué en entiercement",
+        "moveEarnings": "Transférer les gains vers la banque",
+        "topUpWallet": "Recharger votre portefeuille",
+        "fullPaymentHistory": "Historique complet des paiements",
+        "viewAllArrow": "Voir tout →",
+        "summary": "Résumé",
+        "platformFeeNotice": "Frais de plateforme (~1%)",
+        "youReceive": "Vous recevez",
+        "howItWorksTitle": "Comment ça marche",
+        "steps": {
+            "submitRequest": "Soumettre la demande",
+            "submitRequestDesc": "Remplissez et soumettez les détails de votre retrait",
+            "review": "Examen (2 à 5 jours)",
+            "reviewDesc": "Notre équipe vérifie votre demande",
+            "transferSent": "Transfert envoyé",
+            "transferSentDesc": "Les fonds arrivent sur votre compte"
+        },
+        "available": "Disponible",
+        "transferEarningsDesc": "Transférer les gains vers votre méthode de paiement",
+        "earningsGrowth": "Croissance des gains",
+        "spendingHistory": "Historique des dépenses",
+        "monthlyBillingVolume": "Volume de facturation mensuel généré (6 derniers mois)",
+        "monthlyFundingVolume": "Volume de financement mensuel dépensé (6 derniers mois)"
     },
     "verifyEmail": {
         "title": "Vérifiez votre email",
@@ -3065,7 +3348,7 @@ export const fr: Translations = {
                 "addMore": "Ajouter une image",
                 "addUrl": "Ajouter l'URL",
                 "extraUrlPlaceholder": "https://image-url.com/preview.jpg",
-                "galleryLabel": "Images supplémentaires",
+                "galleryLabel": "Galerie du projet (Optionnel)",
                 "extraAdded": "Image ajoutée à la galerie",
                 "uploading": "Import en cours...",
                 "success": "Image importée avec succès",
@@ -3073,7 +3356,15 @@ export const fr: Translations = {
                 "networkError": "Le service d'import est indisponible pour le moment. Vous pouvez coller une URL d'image directe.",
                 "permissionError": "Vous n'avez pas l'autorisation d'importer des fichiers dans le stockage.",
                 "loginRequired": "Veuillez vous connecter pour importer des images.",
-                "previewAlt": "Image d'aperçu du portfolio"
+                "previewAlt": "Image d'aperçu du portfolio",
+                "replaceCover": "Remplacer la couverture",
+                "deleteCover": "Supprimer la couverture",
+                "uploadCover": "Importer une image de couverture",
+                "dragDropHint": "Glissez-déposez ou cliquez pour parcourir. JPEG, PNG, WEBP (Max 5 Mo)",
+                "pasteUrlHint": "Ou collez un lien d'image direct pour la couverture :",
+                "coverUrlPlaceholder": "https://example.com/cover-image.jpg",
+                "extraImageUrlPlaceholder": "Ajouter une URL d'image supplémentaire...",
+                "addExtraUrl": "Ajouter"
             },
             "skills": {
                 "remove": "Retirer la compétence",
@@ -3309,7 +3600,55 @@ export const fr: Translations = {
         "yourBid": "Votre offre:",
         "viewProposal": "Voir la proposition",
         "yourJob": "C'est votre mission",
-        "manageJob": "Gérer la mission"
+        "manageJob": "Gérer la mission",
+        "defaultCity": "Tunis",
+        "removeFromSaves": "Retirer des favoris",
+        "saveJob": "Enregistrer ce projet",
+        "shareJob": "Partager ce projet",
+        "referenceLinks": "Liens de référence",
+        "attachmentLabel": "Pièce jointe {{index}}",
+        "openFile": "Ouvrir le fichier",
+        "fileType": "FICHIER",
+        "proposalAccepted": "Votre proposition a été acceptée",
+        "proposalDeclined": "Votre proposition a été déclinée",
+        "proposalWithdrawnTitle": "Votre proposition a été retirée",
+        "proposalAcceptedStatus": "Acceptée",
+        "proposalDeclinedStatus": "Déclinée",
+        "proposalWithdrawnStatus": "Retirée",
+        "proposalPendingStatus": "En attente",
+        "clientCantApplyTitle": "Les comptes clients ne peuvent pas postuler",
+        "loginRequiredTitle": "Connectez-vous pour postuler",
+        "completeOnboardingTitle": "Complétez d'abord votre inscription",
+        "completeProfileTitle": "Complétez votre profil",
+        "cannotApplyTitle": "Impossible de postuler pour le moment",
+        "switchToFreelancer": "Passer en mode Freelance",
+        "signIn": "Se connecter",
+        "completeNow": "Compléter maintenant",
+        "confirmWithdrawal": "Confirmer le retrait",
+        "withdrawConfirmDesc": "Êtes-vous sûr de vouloir retirer cette proposition ? Cette action est irréversible.",
+        "yesWithdraw": "Oui, retirer",
+        "reportJobTitle": "Signaler le projet",
+        "reportJobDescription": "Dites-nous pourquoi ce projet enfreint nos règles communautaires.",
+        "submitReport": "Soumettre le signalement",
+        "reportReason": {
+            "spam": "Spam",
+            "misleading": "Trompeur",
+            "inappropriate": "Inapproprié",
+            "fraud": "Fraude",
+            "other": "Autre"
+        },
+        "hireRate": "Taux d'embauche",
+        "avgHourlyPaid": "Taux horaire moyen payé",
+        "paymentMethodVerified": "Moyen de paiement vérifié",
+        "phoneNumberVerified": "Numéro de téléphone vérifié",
+        "emailAddressVerified": "Adresse e-mail vérifiée",
+        "clientVerifications": "Vérifications",
+        "inlineRemainingHint": "{{remaining}} candidatures disponibles",
+        "inlineRechargingHint": "Recharge dans",
+        "clientRatingText": "{{rating}} sur 5 avis",
+        "avgHourlyPaidFormat": "{{rate}} TND/h",
+        "defaultTotalSpent": "15k+ TND",
+        "defaultMemberSince": "Mar 2026"
     },
     "proposalModal": {
         "jobContext": "CONTEXTE DE LA MISSION",
@@ -3521,7 +3860,11 @@ export const fr: Translations = {
         "title": "L'économie des indépendants en Tunisie commence ici.",
         "subtitle": "Rejoignez des milliers de professionnels qui gagnent déjà équitablement sur WorkedIn.",
         "primary": "Commencez gratuitement",
-        "secondary": "Publiez un projet"
+        "secondary": "Publiez un projet",
+        "goToDashboard": "Aller au Tableau de bord",
+        "clientDashboard": "Tableau de bord Client",
+        "browseJobs": "Parcourir les offres",
+        "findFreelancers": "Trouver des freelances"
     },
     "faqPage": {
         "page": {
@@ -3690,9 +4033,18 @@ export const fr: Translations = {
             "platformTagline": "# La Plateforme Freelance Tunisienne",
             "platformSubtitle": "Connectez-vous avec des talents vérifiés, gérez vos projets en toute sécurité et soyez payé en TND — à chaque fois.",
             "featureCards": {
-                "verified": { "title": "Profils vérifiés", "sub": "Chaque identité confirmée" },
-                "escrow": { "title": "Paiements en séquestre", "sub": "Fonds bloqués jusqu'à la livraison" },
-                "local": { "title": "Local et mondial", "sub": "Optimisé pour la Tunisie" }
+                "verified": {
+                    "title": "Profils vérifiés",
+                    "sub": "Chaque identité confirmée"
+                },
+                "escrow": {
+                    "title": "Paiements en séquestre",
+                    "sub": "Fonds bloqués jusqu'à la livraison"
+                },
+                "local": {
+                    "title": "Local et mondial",
+                    "sub": "Optimisé pour la Tunisie"
+                }
             },
             "createAccountAction": "Créer un compte",
             "finishingSignIn": "Sécurisation de la session...",
@@ -4154,5 +4506,68 @@ export const fr: Translations = {
         "openToRequestChanges": "Ouvrez ce contrat dans Messages pour demander des modifications.",
         "openToReleasePay": "Ouvrez ce contrat dans Messages pour libérer le paiement.",
         "openToDispute": "Ouvrez ce contrat dans Messages pour ouvrir un litige."
+    },
+    "clientProfile": {
+        "notFound": "Client introuvable",
+        "notFoundDesc": "Ce profil n'existe pas ou a été supprimé.",
+        "previewTitle": "Aperçu du profil public",
+        "previewDesc": "Vous visualisez votre profil tel que les autres utilisateurs le voient.",
+        "exitPreview": "Quitter l'aperçu",
+        "client": "Client",
+        "localTime": "{{time}} heure locale",
+        "reviewsCount": {
+            "one": "{{count}} avis",
+            "other": "{{count}} avis"
+        },
+        "jobsPostedCount": {
+            "one": "{{count}} projet publié",
+            "other": "{{count}} projets publiés"
+        },
+        "memberSinceLabel": "Membre depuis",
+        "copied": "Copié !",
+        "share": "Partager",
+        "businessOwner": "Propriétaire de l'entreprise",
+        "specializedIn": "Spécialisé en {{industry}}",
+        "noBio": "Aucune biographie ou description d'entreprise fournie pour le moment.",
+        "addDescription": "+ Ajouter une description",
+        "companyInformation": "Informations sur l'entreprise",
+        "noCompanyDetails": "Aucune information d'entreprise ajoutée pour le moment.",
+        "hiringNeeds": "Besoins d'embauche",
+        "hiringPreferences": "Préférences et détails d'embauche",
+        "activeJobs": "Offres de projet actives",
+        "postJob": "Publier un projet",
+        "proposalsCount": {
+            "one": "{{count}} proposition",
+            "other": "{{count}} propositions"
+        },
+        "upTo": "Jusqu'à",
+        "apply": "Postuler",
+        "noActiveJobs": "Aucun projet actif publié pour le moment",
+        "noActiveJobsDesc": "Publiez des projets, lancez des jalons et collaborez avec les meilleurs freelances.",
+        "postFirstJob": "Publier votre premier projet",
+        "workHistory": "Historique de travail et avis",
+        "by": "par",
+        "noReviewsYet": "Aucun avis pour le moment. Terminez votre premier contrat avec un freelance pour recevoir des retours.",
+        "hiringAndStats": "Embauche et Statistiques",
+        "hiringStatus": "Statut d'embauche",
+        "paymentVerified": "Paiement vérifié",
+        "standardStatus": "Standard",
+        "locationLabel": "Emplacement",
+        "jobsPostedLabel": "Projets publiés",
+        "completedContractsLabel": "Contrats terminés",
+        "totalSpentLabel": "Dépenses totales",
+        "avgRatingLabel": "Note moyenne",
+        "linksTitle": "Liens et ressources",
+        "companyWebsite": "Site web de l'entreprise",
+        "noLinks": "Aucun lien ajouté pour le moment.",
+        "verificationsTitle": "Vérifications",
+        "verifications": {
+            "identity": "Identité Vérifiée",
+            "phone": "Téléphone",
+            "payment": "Moyen de paiement"
+        },
+        "workspaceControls": "Contrôles de l'espace",
+        "myProjects": "Mes Projets",
+        "settings": "Paramètres"
     }
 };

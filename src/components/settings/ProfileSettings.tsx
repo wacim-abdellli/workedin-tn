@@ -283,10 +283,10 @@ export default function ProfileSettings() {
     // They can switch mode from the header to access the other workspace.
     type TabConfig = { id: ProfileTab; label: string; icon: typeof User; show: boolean; dirty?: boolean };
     const TABS: TabConfig[] = [
-        { id: 'basic' as ProfileTab,      label: 'Basic Info',   icon: User,      show: true,                                        dirty: basicDirty },
-        { id: 'freelancer' as ProfileTab, label: 'Freelancer',   icon: Briefcase, show: isFreelancer && activeMode === 'freelancer', dirty: freelancerDirty },
-        { id: 'client' as ProfileTab,     label: 'Client',       icon: Building2, show: isClient     && activeMode === 'client',     dirty: clientDirty },
-        { id: 'workspace' as ProfileTab,  label: 'Workspace',    icon: Zap,       show: true },
+        { id: 'basic' as ProfileTab,      label: tx('settings.profileTabs.basic', undefined, 'Basic Info'),   icon: User,      show: true,                                        dirty: basicDirty },
+        { id: 'freelancer' as ProfileTab, label: tx('settings.profileTabs.freelancer', undefined, 'Freelancer'),   icon: Briefcase, show: isFreelancer && activeMode === 'freelancer', dirty: freelancerDirty },
+        { id: 'client' as ProfileTab,     label: tx('settings.profileTabs.client', undefined, 'Client'),       icon: Building2, show: isClient     && activeMode === 'client',     dirty: clientDirty },
+        { id: 'workspace' as ProfileTab,  label: tx('settings.profileTabs.workspace', undefined, 'Workspace'),    icon: Zap,       show: true },
     ].filter(tab => tab.show);
 
     // ── CSS accent token per active tab ────────────────────────────────────
@@ -356,8 +356,12 @@ export default function ProfileSettings() {
                                     <Briefcase className="w-4 h-4" style={{ color: '#8B5CF6' }} />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Professional Details</h3>
-                                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Manage your title, rate, skills and availability</p>
+                                    <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                                        {tx('profile.professionalDetails', undefined, 'Professional Details')}
+                                    </h3>
+                                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                                        {tx('profile.professionalDetailsDesc', undefined, 'Manage your title, rate, skills and availability')}
+                                    </p>
                                 </div>
                             </div>
                             <FreelancerInfoForm form={freelancerForm} onChange={setFreelancerForm} />
@@ -400,8 +404,20 @@ export default function ProfileSettings() {
                                 <div className="flex items-start gap-3 p-3 rounded-xl border text-xs" style={{ background: 'color-mix(in srgb, var(--workspace-primary) 6%, var(--color-background-elevated))', borderColor: 'color-mix(in srgb, var(--workspace-primary) 25%, var(--color-border-subtle))' }}>
                                     <Zap className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: 'var(--workspace-primary)' }} />
                                     <span style={{ color: 'var(--color-text-secondary)' }}>
-                                        You are currently in <strong style={{ color: 'var(--color-text-primary)' }}>{activeMode === 'freelancer' ? 'Freelancer' : 'Client'} mode</strong>.
-                                        Switch your workspace in the header to edit the other profile's settings.
+                                        {(() => {
+                                            const modeName = activeMode === 'freelancer'
+                                                ? tx('settings.profileTabs.freelancer', undefined, 'Freelancer')
+                                                : tx('settings.profileTabs.client', undefined, 'Client');
+                                            const fullTip = tx('profile.workspaceModeTip', { mode: '___MODE___' }, 'You are currently in ___MODE___ mode. Switch your workspace in the header to edit the other profile\'s settings.');
+                                            const parts = fullTip.split('___MODE___');
+                                            return (
+                                                <>
+                                                    {parts[0]}
+                                                    <strong style={{ color: 'var(--color-text-primary)' }}>{modeName}</strong>
+                                                    {parts[1]}
+                                                </>
+                                            );
+                                        })()}
                                     </span>
                                 </div>
                             )}
@@ -490,10 +506,14 @@ export default function ProfileSettings() {
                         <div className="flex items-center gap-2.5">
                             <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                             <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                You have unsaved changes
+                                {tx('settings.unsavedChanges', undefined, 'You have unsaved changes')}
                             </span>
                             <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                                {[basicDirty && 'Basic', isFreelancer && freelancerDirty && 'Freelancer', isClient && clientDirty && 'Client'].filter(Boolean).join(', ')}
+                                {[
+                                    basicDirty && tx('settings.profileTabs.basic', undefined, 'Basic Info'),
+                                    isFreelancer && freelancerDirty && tx('settings.profileTabs.freelancer', undefined, 'Freelancer'),
+                                    isClient && clientDirty && tx('settings.profileTabs.client', undefined, 'Client')
+                                ].filter(Boolean).join(', ')}
                             </span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -504,7 +524,7 @@ export default function ProfileSettings() {
                                 className="px-4 py-2 text-sm font-medium rounded-xl border transition-all hover:bg-[var(--color-background-base)] disabled:opacity-40"
                                 style={{ borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-secondary)' }}
                             >
-                                Discard
+                                {tx('settings.discard', undefined, 'Discard')}
                             </button>
                             <button
                                 type="button"
@@ -514,8 +534,8 @@ export default function ProfileSettings() {
                                 style={{ background: 'var(--workspace-primary)' }}
                             >
                                 {isSaving
-                                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
-                                    : <><Save className="w-4 h-4" /> Save all changes</>
+                                    ? <><Loader2 className="w-4 h-4 animate-spin" /> {tx('settings.saving', undefined, 'Saving...')}</>
+                                    : <><Save className="w-4 h-4" /> {tx('settings.saveAll', undefined, 'Save all changes')}</>
                                 }
                             </button>
                         </div>

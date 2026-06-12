@@ -113,28 +113,66 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-function formatTimeAgo(dateInput: string): string {
+const BUDGET_RANGE_KEYS: Record<string, string> = {
+  '0-50': 'r0_50',
+  '50-100': 'r50_100',
+  '100-250': 'r100_250',
+  '250-500': 'r250_500',
+  '500+': 'r500_plus',
+};
+
+function formatTimeAgo(dateInput: string, tx: (key: string, params?: any, fallback?: string) => string): string {
   const now = Date.now();
   const then = new Date(dateInput).getTime();
 
   if (!Number.isFinite(then)) {
-    return 'just now';
+    return tx('jobs.time.now', undefined, 'just now');
   }
 
   const seconds = Math.max(0, Math.floor((now - then) / 1000));
-  if (seconds < 60) return 'just now';
+  if (seconds < 60) return tx('jobs.time.now', undefined, 'just now');
 
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+  let value: number;
+  let unitKey: string;
+  let fallback: string;
 
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (minutes < 60) {
+    value = minutes;
+    unitKey = 'minute';
+    fallback = `${minutes} min`;
+  } else {
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+      value = hours;
+      unitKey = 'hour';
+      fallback = `${hours} h`;
+    } else {
+      const days = Math.floor(hours / 24);
+      if (days < 7) {
+        value = days;
+        unitKey = 'day';
+        fallback = `${days} d`;
+      } else {
+        const weeks = Math.floor(days / 7);
+        value = weeks;
+        unitKey = 'week';
+        fallback = `${weeks} w`;
+      }
+    }
+  }
 
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+  const prefix = tx('jobs.time.ago_prefix', undefined, '');
+  const suffix = tx('jobs.time.ago', undefined, 'ago');
+  const unit = tx(`jobs.time.${unitKey}`, undefined, fallback);
 
-  const weeks = Math.floor(days / 7);
-  return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+  const parts = [];
+  if (prefix) parts.push(prefix);
+  parts.push(value);
+  parts.push(unit);
+  if (suffix) parts.push(suffix);
+
+  return parts.join(' ');
 }
 
 function toSkillLabel(skill: string | Skill, language: 'ar' | 'fr' | 'en', tx: (key: string, params?: any, fallback?: string) => string): string {
@@ -147,34 +185,60 @@ function toSkillLabel(skill: string | Skill, language: 'ar' | 'fr' | 'en', tx: (
 
 function getBudgetLabel(job: Job, tx: (key: string, params?: any, fallback?: string) => string): string {
   if (job.job_type === 'hourly') {
-    return `${job.hourly_rate ?? 0} TND/h`;
+    const rateFormat = tx('pages.jobBoard.hourlyRateFormat', undefined, 'TND/h');
+    return `${job.hourly_rate ?? 0} ${rateFormat}`;
   }
 
   if (typeof job.budget_min === 'number' || typeof job.budget_max === 'number') {
-    return `${job.budget_min ?? 0}-${job.budget_max ?? 0} TND`;
+    const currency = tx('pages.jobBoard.currency', undefined, 'TND');
+    return `${job.budget_min ?? 0}-${job.budget_max ?? 0} ${currency}`;
   }
 
   return tx('pages.jobBoard.budgetNotSpecified', undefined, 'Budget not specified');
 }
 
-function getCategoryLabel(category: string): string {
-  return category
+function getCategoryLabel(category: string, tx: (key: string, params?: any, fallback?: string) => string): string {
+  const fallback = category
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
+  return tx(`jobs.filters.categories.${category}`, undefined, fallback);
 }
 
-function formatProposalsCount(count: number): string {
-  if (!count || count === 0) return '0 proposals';
-  if (count < 5) return 'Less than 5 proposals';
-  if (count < 10) return '5 to 10 proposals';
-  if (count < 15) return '10 to 15 proposals';
-  if (count < 20) return '15 to 20 proposals';
-  return '20+ proposals';
+function formatProposalsCount(count: number, tx: (key: string, params?: any, fallback?: string) => string): string {
+  if (!count || count === 0) return tx('pages.jobBoard.proposals.zero', undefined, '0 proposals');
+  if (count < 5) return tx('pages.jobBoard.proposals.lessThan5', undefined, 'Less than 5 proposals');
+  if (count < 10) return tx('pages.jobBoard.proposals.range5_10', undefined, '5 to 10 proposals');
+  if (count < 15) return tx('pages.jobBoard.proposals.range10_15', undefined, '10 to 15 proposals');
+  if (count < 20) return tx('pages.jobBoard.proposals.range15_20', undefined, '15 to 20 proposals');
+  return tx('pages.jobBoard.proposals.twentyPlus', undefined, '20+ proposals');
 }
 
-function formatExperienceLevel(level: string): string {
-  if (!level) return 'Any Level';
+function formatExperienceLevel(level: string, tx: (key: string, params?: any, fallback?: string) => string): string {
+  if (!level) return tx('jobs.filters.experience.title', undefined, 'Any Level');
+  const key = level.toLowerCase();
+  if (key === 'entry' || key === 'intermediate' || key === 'expert') {
+    return tx(`jobs.filters.experience.${key}`, undefined, level.charAt(0).toUpperCase() + level.slice(1).toLowerCase());
+  }
   return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+}
+
+function getSortOptionLabel(value: string, tx: (key: string, params?: any, fallback?: string) => string): string {
+  switch (value) {
+    case 'newest':
+      return tx('jobs.sort.newest', undefined, 'Newest First');
+    case 'best-match':
+      return tx('nav.freelancer.bestMatches', undefined, 'Best Matches');
+    case 'budget_high':
+      return tx('jobs.sort.budgetHigh', undefined, 'Budget: High to Low');
+    case 'budget_low':
+      return tx('jobs.sort.budgetLow', undefined, 'Budget: Low to High');
+    case 'proposals_high':
+      return tx('jobs.sort.proposalsHigh', undefined, 'Most Proposals');
+    case 'proposals_low':
+      return tx('jobs.sort.proposalsLow', undefined, 'Least Proposals');
+    default:
+      return value;
+  }
 }
 
 function getSkillIdentifiers(skill: any): string[] {
@@ -620,7 +684,7 @@ function JobBoard() {
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="flex items-center gap-2 text-sm font-bold text-on-surface">
                     <SlidersHorizontal className="w-4 h-4 opacity-60" />
-                    {tx('pages.jobBoard.filters.clearAll', undefined, 'Filters')}
+                    {tx('jobs.filters.title', undefined, 'Filters')}
                   </h2>
                   <button
                     type="button"
@@ -637,7 +701,7 @@ function JobBoard() {
                 <div className="space-y-6">
                   {/* Category */}
                   <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-subtle mb-3">Category</h3>
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-subtle mb-3">{tx('jobs.filters.categories.title', undefined, 'Category')}</h3>
                     <div className="flex flex-col gap-2">
                       {CATEGORY_VALUES.map((category) => {
                         const checked = filters.categories.includes(category);
@@ -660,7 +724,7 @@ function JobBoard() {
                                 <input id={`cat-${category}`} type="checkbox" checked={checked} onChange={() => handleToggleCategory(category)} className="sr-only" />
                               </div>
                               <span className={`text-sm transition-colors ${checked ? 'text-on-surface' : 'text-on-surface-muted group-hover:text-on-surface'}`}>
-                                {getCategoryLabel(category)}
+                                {getCategoryLabel(category, tx)}
                               </span>
                             </div>
                             {count > 0 && (
@@ -703,7 +767,7 @@ function JobBoard() {
                               )}
                               <input id={`type-${item.value}`} type="checkbox" checked={checked} onChange={() => handleToggleJobType(item.value)} className="sr-only" />
                             </div>
-                            <span className={`text-sm transition-colors ${checked ? 'text-on-surface' : 'text-on-surface-muted group-hover:text-on-surface'}`}>{item.label}</span>
+                            <span className={`text-sm transition-colors ${checked ? 'text-on-surface' : 'text-on-surface-muted group-hover:text-on-surface'}`}>{tx(`jobs.filters.jobType.${item.value}`, undefined, item.label)}</span>
                           </label>
                         );
                       })}
@@ -712,7 +776,7 @@ function JobBoard() {
 
                   {/* Budget */}
                   <div className="pt-5 border-t border-surface">
-                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-subtle mb-3">Budget</h3>
+                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-on-surface-subtle mb-3">{tx('jobs.filters.budget.title', undefined, 'Budget')}</h3>
                     <div className="flex flex-col gap-2">
                       {BUDGET_OPTIONS.map((item) => {
                         const checked = filters.budgetRange === item.value;
@@ -732,7 +796,7 @@ function JobBoard() {
                               )}
                               <input id={`budget-${item.value}`} type="checkbox" checked={checked} onChange={() => handleToggleBudget(item.value)} className="sr-only" />
                             </div>
-                            <span className={`text-sm transition-colors ${checked ? 'text-on-surface' : 'text-on-surface-muted group-hover:text-on-surface'}`}>{item.label}</span>
+                            <span className={`text-sm transition-colors ${checked ? 'text-on-surface' : 'text-on-surface-muted group-hover:text-on-surface'}`}>{tx(`jobs.filters.budget.ranges.${BUDGET_RANGE_KEYS[item.value]}`, undefined, item.label)}</span>
                           </label>
                         );
                       })}
@@ -771,15 +835,15 @@ function JobBoard() {
 
             {/* Upwork-style Tabs Navigation */}
             <div className="mt-1">
-              <h2 className="text-lg font-extrabold text-on-surface mb-2">Jobs you might like</h2>
+              <h2 className="text-lg font-extrabold text-on-surface mb-2">{tx('pages.jobBoard.header.jobsYouMightLike', undefined, 'Jobs you might like')}</h2>
               
               <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] mb-2.5">
                 <div className="flex gap-6">
-                  {([
-                    { id: 'best-match', label: 'Best Matches' },
-                    { id: 'newest', label: 'Most Recent' },
-                    { id: 'saved', label: 'Saved Jobs' },
-                  ] as const).map((tab) => {
+                  {[
+                    { id: 'best-match', label: tx('pages.jobBoard.tabs.bestMatches', undefined, 'Best Matches') },
+                    { id: 'newest', label: tx('pages.jobBoard.tabs.mostRecent', undefined, 'Most Recent') },
+                    { id: 'saved', label: tx('pages.jobBoard.tabs.savedJobs', undefined, 'Saved Jobs') },
+                  ].map((tab) => {
                     const isActive = 
                       tab.id === 'best-match' ? filters.sortBy === 'best-match' :
                       tab.id === 'saved' ? filters.sortBy === 'saved' :
@@ -824,7 +888,7 @@ function JobBoard() {
                       onClick={() => setIsSortMenuOpen((p) => !p)}
                       className="rounded-xl px-3 py-1.5 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] flex items-center gap-1.5 border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] transition-all"
                     >
-                      <span>Sort: {selectedSortOption.label}</span>
+                      <span>{tx('common.sort', undefined, 'Sort')}: {getSortOptionLabel(selectedSortOption.value, tx)}</span>
                       <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${isSortMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isSortMenuOpen && (
@@ -842,7 +906,7 @@ function JobBoard() {
                                 color: isSelected ? 'var(--workspace-primary,#8b5cf6)' : 'var(--color-text-secondary)',
                               }}
                             >
-                              {option.label}
+                              {getSortOptionLabel(option.value, tx)}
                             </button>
                           );
                         })}
@@ -865,16 +929,32 @@ function JobBoard() {
                 <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--workspace-primary, #8b5cf6)' }} />
                 <div className="flex-1 text-on-surface-muted/90 leading-normal">
                   {!user?.id ? (
-                    "Log in as a freelancer and add skills to your profile to see jobs matching your expertise."
+                    tx('pages.jobBoard.infoBanner.loginPrompt', undefined, 'Log in as a freelancer and add skills to your profile to see jobs matching your expertise.')
                   ) : !freelancerProfile ? (
-                    "You are in client mode. Switch to freelancer mode to view best matching jobs."
+                    tx('pages.jobBoard.infoBanner.clientModePrompt', undefined, 'You are in client mode. Switch to freelancer mode to view best matching jobs.')
                   ) : !Array.isArray(freelancerProfile.skills) || freelancerProfile.skills.length === 0 ? (
                     <span>
-                      You haven't set up skills on your profile yet! We are currently showing jobs sorted by newest first. To see customized opportunities, <button type="button" onClick={() => navigate('/settings?tab=profile')} className="underline font-bold text-[var(--workspace-primary)] hover:opacity-85">Add Skills to Profile</button>.
+                      {tx('pages.jobBoard.infoBanner.noSkillsPrompt', undefined, "You haven't set up skills on your profile yet! We are currently showing jobs sorted by newest first. To see customized opportunities,")} <button type="button" onClick={() => navigate('/settings?tab=profile')} className="underline font-bold text-[var(--workspace-primary)] hover:opacity-85">{tx('pages.jobBoard.infoBanner.addSkillsLink', undefined, 'Add Skills to Profile')}</button>.
                     </span>
                   ) : (
                     <span>
-                      Matching jobs based on your skills: <strong className="text-on-surface">{(Array.isArray(freelancerProfile.skills) ? freelancerProfile.skills : []).map((s: any) => typeof s === 'string' ? s : s.name_en || s.name || '').filter(Boolean).slice(0, 8).join(', ')}</strong>
+                      {tx('pages.jobBoard.infoBanner.matchingSkills', { skills: '___SKILLS___' }, 'Matching jobs based on your skills: ___SKILLS___')
+                        .split('___SKILLS___')
+                        .map((part, index) => (
+                          <span key={index}>
+                            {part}
+                            {index === 0 && (
+                              <strong className="text-on-surface">
+                                {(Array.isArray(freelancerProfile.skills) ? freelancerProfile.skills : [])
+                                  .map((s: any) => toSkillLabel(s, language, tx))
+                                  .filter(Boolean)
+                                  .slice(0, 8)
+                                  .join(', ')}
+                              </strong>
+                            )}
+                          </span>
+                        ))
+                      }
                     </span>
                   )}
                 </div>
@@ -907,7 +987,7 @@ function JobBoard() {
               <div className="rounded-2xl border border-surface surface-card p-10 text-center">
                 <p className="text-on-surface-muted">
                   {filters.sortBy === 'saved'
-                    ? "You haven't saved any jobs yet."
+                    ? tx('pages.jobBoard.empty.saved', undefined, "You haven't saved any jobs yet.")
                     : tx('pages.jobBoard.empty.filtered', undefined, 'No jobs found for the selected filters.')}
                 </p>
               </div>
@@ -920,8 +1000,8 @@ function JobBoard() {
                   const isSaved = savedJobIds.has(job.id);
                   const isAlreadyApplied = isFreelancerViewer && proposalJobIds.has(job.id);
                   const skillLabels = (job.required_skills || []).map((s) => toSkillLabel(s, language, tx)).filter(Boolean).slice(0, 5);
-                  const postedAgo = formatTimeAgo(job.posted_at);
-                  const clientName = job.client?.full_name || 'Client';
+                  const postedAgo = formatTimeAgo(job.posted_at, tx);
+                  const clientName = job.client?.full_name || tx('common.client', undefined, 'Client');
                   const ratingValue = typeof (job.client as { rating?: number } | undefined)?.rating === 'number'
                     ? (job.client as { rating?: number }).rating!.toFixed(1)
                     : 'N/A';
@@ -932,7 +1012,7 @@ function JobBoard() {
                       key={job.id}
                       role="button"
                       tabIndex={0}
-                      aria-label={job.title || 'Untitled job'}
+                      aria-label={job.title || tx('pages.jobBoard.jobCard.untitledJob', undefined, 'Untitled job')}
                       onClick={() => navigate(`/jobs/${job.id}`)}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter' || event.key === ' ') {
@@ -957,7 +1037,7 @@ function JobBoard() {
                             onMouseEnter={(e) => e.currentTarget.style.color = 'var(--workspace-primary)'}
                             onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
                           >
-                            {job.title || 'Untitled job'}
+                            {job.title || tx('pages.jobBoard.jobCard.untitledJob', undefined, 'Untitled job')}
                           </h3>
                           <span
                             className="shrink-0 inline-flex items-center text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border self-start sm:self-auto"
@@ -967,7 +1047,7 @@ function JobBoard() {
                               borderColor: isFixed ? 'rgba(59,130,246,0.15)' : 'rgba(16,185,129,0.15)',
                             }}
                           >
-                            {isFixed ? 'Fixed-price' : 'Hourly'}
+                            {isFixed ? tx('jobs.filters.jobType.fixed_price', undefined, 'Fixed-price') : tx('jobs.filters.jobType.hourly', undefined, 'Hourly')}
                           </span>
                         </div>
 
@@ -989,11 +1069,11 @@ function JobBoard() {
                         </span>
                         <span className="text-on-surface-subtle/40 select-none">•</span>
                         <span className="shrink-0">
-                          {formatExperienceLevel(job.experience_level)}
+                          {formatExperienceLevel(job.experience_level, tx)}
                         </span>
                         <span className="text-on-surface-subtle/40 select-none">•</span>
                         <span className="shrink-0">
-                          {formatProposalsCount(job.proposals_count)}
+                          {formatProposalsCount(job.proposals_count, tx)}
                         </span>
                         <span className="text-on-surface-subtle/40 select-none">•</span>
                         <span className="flex items-center gap-1 shrink-0">
@@ -1004,7 +1084,7 @@ function JobBoard() {
 
                       {/* Job Description (Clamped, clean lines) */}
                       <p className="relative text-xs sm:text-sm text-on-surface-muted/90 line-clamp-3 leading-relaxed [overflow-wrap:anywhere] pr-2">
-                        {job.description || 'No description provided.'}
+                        {job.description || tx('pages.jobBoard.jobCard.noDescription', undefined, 'No description provided.')}
                       </p>
 
                       {/* Skills section */}
@@ -1028,7 +1108,9 @@ function JobBoard() {
                           <span className="flex items-center gap-1 shrink-0">
                             <BadgeCheck className={`w-3.5 h-3.5 ${job.client?.payment_verified ? 'text-emerald-500' : 'opacity-60 text-on-surface-subtle'}`} />
                             <span className={job.client?.payment_verified ? 'text-emerald-500/90 font-medium' : ''}>
-                              {job.client?.payment_verified ? 'Payment verified' : 'Payment unverified'}
+                              {job.client?.payment_verified 
+                                ? tx('jobs.verifiedPayment', undefined, 'Payment verified')
+                                : tx('jobs.unverifiedPayment', undefined, 'Payment unverified')}
                             </span>
                           </span>
 
@@ -1042,13 +1124,13 @@ function JobBoard() {
                           {/* Location */}
                           <span className="flex items-center gap-1 shrink-0">
                             <MapPin className="w-3 h-3 opacity-60" />
-                            <span>{job.client?.location || 'Tunisia'}</span>
+                            <span>{job.client?.location || tx('common.tunisia', undefined, 'Tunisia')}</span>
                           </span>
 
                           {/* Applied Badge */}
                           {isAlreadyApplied && (
                             <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-500 border border-emerald-500/10 shrink-0">
-                              ✓ Applied
+                              ✓ {tx('pages.jobBoard.jobCard.appliedLabel', undefined, 'Applied')}
                             </span>
                           )}
                         </div>
@@ -1104,7 +1186,7 @@ function JobBoard() {
                     e.currentTarget.style.color = 'var(--color-text-secondary)';
                   }}
                 >
-                  {isFetchingNextPage ? 'Loading...' : 'Load more'}
+                  {isFetchingNextPage ? tx('common.loading', undefined, 'Loading...') : tx('jobs.loadMore', undefined, 'Load more')}
                 </button>
               </div>
             )}

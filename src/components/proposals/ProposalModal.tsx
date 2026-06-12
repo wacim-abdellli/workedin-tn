@@ -131,9 +131,15 @@ export default function ProposalModal({
         await onSubmit(data, attachments);
     };
 
-    const budgetLabel = job.job_type === 'fixed_price'
-        ? (job.budget_min === job.budget_max ? `${job.budget_min ?? 0} ${currency}` : `${job.budget_min ?? 0} - ${job.budget_max ?? 0} ${currency}`)
-        : `${job.hourly_rate ?? 0} ${currency} ${tx('jobDetail.perHour', undefined, '/hour')}`;
+    const budgetLabel = job.job_type === 'fixed_price' ? (
+        job.budget_min === job.budget_max ? (
+            <span><span dir="ltr">{job.budget_min ?? 0}</span> {currency}</span>
+        ) : (
+            <span><span dir="ltr">{job.budget_min ?? 0} - {job.budget_max ?? 0}</span> {currency}</span>
+        )
+    ) : (
+        <span><span dir="ltr">{job.hourly_rate ?? 0}</span> {currency} {tx('jobDetail.perHour', undefined, '/hour')}</span>
+    );
 
     if (!isOpen) {
         return null;
@@ -193,10 +199,10 @@ export default function ProposalModal({
                                             step={1}
                                             disabled={isSubmitting}
                                             {...register('bid_amount', { valueAsNumber: true })}
-                                            className={`w-full rounded-xl bg-black/20 border px-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/30 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${errors.bid_amount ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/10 focus:border-violet-500'}`}
+                                            className={`w-full rounded-xl bg-black/20 border ltr:pl-4 ltr:pr-12 rtl:pr-4 rtl:pl-12 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-primary)]/30 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ltr:text-left rtl:text-right ${errors.bid_amount ? 'border-rose-500/50 focus:border-rose-500' : 'border-white/10 focus:border-violet-500'}`}
                                             placeholder="0"
                                         />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--color-text-primary)]/40">{currency}</span>
+                                        <span className="absolute ltr:right-4 rtl:left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--color-text-primary)]/40">{currency}</span>
                                     </div>
                                     {errors.bid_amount ? (
                                         <p className="text-rose-400 text-xs">{errors.bid_amount.message}</p>
@@ -207,11 +213,11 @@ export default function ProposalModal({
                                             <span>
                                                 {tx('proposalModal.platformFee', { percent: PLATFORM_FEE_PERCENT }, 'Platform fee ({{percent}}%)')}
                                             </span>
-                                            <span>-{platformFee.toFixed(2)} {currency}</span>
+                                            <span dir="ltr">-{platformFee.toFixed(2)} {currency}</span>
                                         </div>
                                         <div className="flex items-center justify-between text-[var(--color-text-primary)] font-semibold pt-2 border-t border-white/5 mt-2">
                                             <span>{tx('proposalModal.youReceive', undefined, 'You will receive')}</span>
-                                            <span className="text-violet-400">{netAmount.toFixed(2)} {currency}</span>
+                                            <span className="text-violet-400" dir="ltr">{netAmount.toFixed(2)} {currency}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -315,7 +321,7 @@ export default function ProposalModal({
                                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                 />
                                 <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-primary)]/30">
-                                    {tx('proposalModal.fileLimit', undefined, 'Up to 5 files, 10MB each')}
+                                    {tx('proposalModal.fileLimit', { size: 10 }, 'Up to 5 files, 10MB each')}
                                 </p>
                             </div>
                         </div>

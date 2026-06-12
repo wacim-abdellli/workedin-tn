@@ -125,13 +125,13 @@ function LockedFundsSection({
     <div className="rounded-2xl border p-5 flex flex-col h-full" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 15%, var(--color-border-subtle))', background: 'var(--color-bg-elevated)' }}>
       <div className="flex items-center gap-2 mb-4">
         <Clock className="w-5 h-5 text-zinc-400" />
-        <h3 className="text-sm font-bold text-foreground">Locked Funds Schedule</h3>
+        <h3 className="text-sm font-bold text-foreground">{tx('wallet.lockedFundsTitle', undefined, 'Locked Funds Schedule')}</h3>
       </div>
 
       {lockedContracts.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 py-8 text-center">
           <BadgeCheck className="w-10 h-10 text-muted-foreground/30 mb-2" />
-          <p className="text-xs text-muted-foreground">No funds currently locked in escrow</p>
+          <p className="text-xs text-muted-foreground">{tx('wallet.noLockedFunds', undefined, 'No funds currently locked in escrow')}</p>
         </div>
       ) : (
         <div className="space-y-3 overflow-y-auto max-h-[320px] pr-1">
@@ -140,23 +140,23 @@ function LockedFundsSection({
             const partnerName = isFreelancer ? c.client?.full_name : c.freelancer?.full_name;
             const amount = parseFloat(c.amount || '0');
 
-            let statusLabel = 'Locked';
+            let statusLabel = tx('wallet.locked', undefined, 'Locked');
             let timerTarget = null;
             let badgeStyle = 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20';
 
             if (hasClearanceHold) {
-              statusLabel = 'Clearing Hold';
+              statusLabel = tx('wallet.clearingHold', undefined, 'Clearing Hold');
               timerTarget = c.escrow_pending_clearance_until;
               badgeStyle = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
             } else if (c.status === 'delivery_submitted') {
-              statusLabel = 'In Review';
+              statusLabel = tx('wallet.inReview', undefined, 'In Review');
               timerTarget = c.review_due_at;
               badgeStyle = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
             } else if (c.status === 'disputed' || c.escrow_hold_disputed) {
-              statusLabel = 'Frozen (Disputed)';
+              statusLabel = tx('wallet.frozenDisputed', undefined, 'Frozen (Disputed)');
               badgeStyle = 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
             } else {
-              statusLabel = 'Active Escrow';
+              statusLabel = tx('wallet.activeEscrow', undefined, 'Active Escrow');
               badgeStyle = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
             }
 
@@ -169,7 +169,7 @@ function LockedFundsSection({
                 <div className="min-w-0">
                   <h4 className="text-xs font-bold text-white truncate" title={c.title}>{c.title}</h4>
                   <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
-                    {isFreelancer ? 'Client' : 'Freelancer'}: <span className="text-zinc-300 font-semibold">{partnerName || 'Unknown User'}</span>
+                    {isFreelancer ? tx('common.client', undefined, 'Client') : tx('common.freelancer', undefined, 'Freelancer')}: <span className="text-zinc-300 font-semibold">{partnerName || tx('wallet.unknownUser', undefined, 'Unknown User')}</span>
                   </p>
                   <div className="flex items-center gap-1.5 mt-2">
                     <span className={`px-2 py-0.5 text-[9px] rounded-full font-medium ${badgeStyle}`}>
@@ -586,6 +586,7 @@ function WithdrawPanel({
   tx: (key: string, params?: Record<string, string | number>, fallback?: string) => string;
 }) {
   const { user } = useAuth();
+  const { dir } = useTranslation();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -676,11 +677,11 @@ function WithdrawPanel({
         <div className="px-6 py-5 border-b" style={{ borderColor: 'var(--color-border-subtle)', background: 'color-mix(in srgb, var(--workspace-primary) 5%, transparent)' }}>
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-foreground">Request Withdrawal</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Transfer earnings to your payment method</p>
+              <h2 className="text-base font-bold text-foreground">{tx('wallet.requestWithdrawal', undefined, 'Request Withdrawal')}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{tx('wallet.transferEarningsDesc', undefined, 'Transfer earnings to your payment method')}</p>
             </div>
             <div className="text-end">
-              <p className="text-xs text-muted-foreground font-medium">Available</p>
+              <p className="text-xs text-muted-foreground font-medium">{tx('wallet.available', undefined, 'Available')}</p>
               <p className="text-lg font-black" style={{ color: 'var(--color-status-success)' }}>{formatCurrency(wallet.balance, true, language)}</p>
             </div>
           </div>
@@ -691,7 +692,7 @@ function WithdrawPanel({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-semibold text-foreground">
-                {t.wallet?.amount || 'Withdrawal Amount'} <span className="text-rose-500">*</span>
+                {tx('wallet.withdrawalAmount', undefined, 'Withdrawal Amount')} <span className="text-rose-500">*</span>
               </label>
               <button
                 type="button"
@@ -708,7 +709,7 @@ function WithdrawPanel({
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder={`Min ${MIN_WITHDRAWAL_AMOUNT}`}
                 min={MIN_WITHDRAWAL_AMOUNT} max={wallet.balance} step="0.001" dir="ltr"
-                className={`${fieldClass(amount ? !validation.valid : null)} text-lg font-bold pe-16`}
+                className={`${fieldClass(amount ? !validation.valid : null)} text-lg font-bold ${dir === 'rtl' ? 'ps-16' : 'pe-16'}`}
               />
               <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">TND</span>
             </div>
@@ -739,7 +740,7 @@ function WithdrawPanel({
             <div className="space-y-2">
               <PaymentMethodCard
                 id="bank"
-                name="Bank Transfer"
+                name={tx('wallet.bankTransfer', undefined, 'Bank Transfer')}
                 description={tx('wallet.bankTransferDesc', undefined, 'Withdraw directly to your local bank account')}
                 status="live"
                 selected={method === 'bank_transfer'}
@@ -748,7 +749,7 @@ function WithdrawPanel({
               />
               <PaymentMethodCard
                 id="d17"
-                name="D17 (La Poste)"
+                name={tx('wallet.d17', undefined, 'D17 (La Poste)')}
                 description={tx('wallet.d17Desc', undefined, 'Withdraw via e-Dinar. Coming soon.')}
                 status="soon"
                 selected={method === 'd17'}
@@ -756,7 +757,7 @@ function WithdrawPanel({
               />
               <PaymentMethodCard
                 id="flouci"
-                name="Flouci"
+                name={tx('wallet.flouci', undefined, 'Flouci')}
                 description={tx('wallet.flouciDesc', undefined, 'Withdraw via Flouci mobile wallet. Coming soon.')}
                 status="soon"
                 selected={method === 'flouci'}
@@ -769,17 +770,17 @@ function WithdrawPanel({
           {method === 'bank_transfer' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">Bank Name</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">{tx('wallet.bankName', undefined, 'Bank Name')}</label>
                 <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. BNA, STB, Attijari…" className={fieldClass(!!bankNameError)} />
                 {bankNameError && <p className="text-rose-500 text-sm mt-1">{bankNameError}</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">Account Holder Name</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">{tx('wallet.accountHolder', undefined, 'Account Holder Name')}</label>
                 <input type="text" value={bankAccountName} onChange={(e) => setBankAccountName(e.target.value)} placeholder="Full name as on your account" className={fieldClass(!!bankAccountNameError)} />
                 {bankAccountNameError && <p className="text-rose-500 text-sm mt-1">{bankAccountNameError}</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">IBAN</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">{tx('wallet.iban', undefined, 'IBAN')}</label>
                 <input type="text" value={bankIban} onChange={(e) => setBankIban(e.target.value.toUpperCase())} placeholder="TN59 XXXX XXXX XXXX XXXX XXXX" aria-label="IBAN" className={`${fieldClass(!!bankIbanError)} font-mono tracking-wider`} dir="ltr" />
                 {bankIbanError && <p className="text-rose-500 text-sm mt-1">{bankIbanError}</p>}
               </div>
@@ -790,7 +791,7 @@ function WithdrawPanel({
           {(method === 'd17' || method === 'flouci') && (
             <div>
               <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
-                {method === 'd17' ? 'D17 Phone Number' : 'Flouci Phone Number'}
+                {method === 'd17' ? `${tx('wallet.d17', undefined, 'D17')} ${tx('wallet.phone', undefined, 'Phone Number')}` : `${tx('wallet.flouci', undefined, 'Flouci')} ${tx('wallet.phone', undefined, 'Phone Number')}`}
               </label>
               <div className="relative" dir="ltr">
                 <span className="absolute start-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">+216</span>
@@ -801,7 +802,7 @@ function WithdrawPanel({
           )}
 
           <Button type="submit" variant="primary" className="w-full justify-center min-h-[52px] text-base font-bold" disabled={loading || amountValue < MIN_WITHDRAWAL_AMOUNT || amountValue > wallet.balance || !amountValue}>
-            {loading ? <><Loader2 className="me-2 h-5 w-5 animate-spin" />{t.wallet?.submitting || 'Submitting...'}</> : <><ArrowUpRight className="me-2 h-5 w-5" />{t.wallet?.requestWithdrawal || 'Request Withdrawal'}</>}
+            {loading ? <><Loader2 className="me-2 h-5 w-5 animate-spin" />{tx('wallet.submitting', undefined, 'Submitting...')}</> : <><ArrowUpRight className="me-2 h-5 w-5" />{tx('wallet.requestWithdrawal', undefined, 'Request Withdrawal')}</>}
           </Button>
         </form>
       </div>
@@ -810,19 +811,19 @@ function WithdrawPanel({
       <div className="space-y-4">
         {/* Live summary card */}
         <div className="rounded-2xl p-5 space-y-4" style={{ border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-elevated)' }}>
-          <h3 className="text-sm font-bold text-foreground">Summary</h3>
+          <h3 className="text-sm font-bold text-foreground">{tx('wallet.summary', undefined, 'Summary')}</h3>
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">You withdraw</span>
+              <span className="text-muted-foreground">{tx('wallet.youWithdraw', undefined, 'You withdraw')}</span>
               <span className="font-bold text-foreground">{amountValue > 0 ? formatCurrency(amountValue, true, language) : '—'}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Platform fee (~1%)</span>
+              <span className="text-muted-foreground">{tx('wallet.platformFeeNotice', undefined, 'Platform fee (~1%)')}</span>
               <span className="font-medium text-foreground">{amountValue > 0 ? `− ${formatCurrency(fee, true, language)}` : '—'}</span>
             </div>
             <div className="border-t pt-3" style={{ borderColor: 'var(--color-border-subtle)' }}>
               <div className="flex justify-between">
-                <span className="text-sm font-semibold text-foreground">You receive</span>
+                <span className="text-sm font-semibold text-foreground">{tx('wallet.youReceive', undefined, 'You receive')}</span>
                 <span className="text-lg font-black" style={{ color: 'var(--color-status-success)' }}>{amountValue > 0 ? formatCurrency(netAmount, true, language) : '—'}</span>
               </div>
             </div>
@@ -831,12 +832,12 @@ function WithdrawPanel({
 
         {/* Timeline */}
         <div className="rounded-2xl p-5" style={{ border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-elevated)' }}>
-          <h3 className="text-sm font-bold text-foreground mb-4">How it works</h3>
+          <h3 className="text-sm font-bold text-foreground mb-4">{tx('wallet.howItWorksTitle', undefined, 'How it works')}</h3>
           <div className="space-y-4">
             {[
-              { step: '1', title: 'Submit request', desc: 'Fill and submit your withdrawal details' },
-              { step: '2', title: 'Review (2–5 days)', desc: 'Our team verifies your request' },
-              { step: '3', title: 'Transfer sent', desc: 'Funds hit your account' },
+              { step: '1', title: tx('wallet.steps.submitRequest', undefined, 'Submit request'), desc: tx('wallet.steps.submitRequestDesc', undefined, 'Fill and submit your withdrawal details') },
+              { step: '2', title: tx('wallet.steps.review', undefined, 'Review (2–5 days)'), desc: tx('wallet.steps.reviewDesc', undefined, 'Our team verifies your request') },
+              { step: '3', title: tx('wallet.steps.transferSent', undefined, 'Transfer sent'), desc: tx('wallet.steps.transferSentDesc', undefined, 'Funds hit your account') },
             ].map(({ step, title, desc }) => (
               <div key={step} className="flex gap-3">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-black" style={{ background: 'var(--workspace-primary-dim)', color: 'var(--workspace-primary)' }}>{step}</div>
@@ -852,7 +853,9 @@ function WithdrawPanel({
         {/* Warning */}
         <div className="flex items-start gap-3 p-4 rounded-2xl" style={{ background: 'color-mix(in srgb, var(--color-status-warning) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--color-status-warning) 25%, transparent)' }}>
           <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--color-status-warning)' }} />
-          <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Minimum withdrawal is <strong>{MIN_WITHDRAWAL_AMOUNT} TND</strong>. Requests are reviewed manually before processing.</p>
+          <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+            {tx('wallet.minWithdrawalNotice', { min: MIN_WITHDRAWAL_AMOUNT }, `Minimum withdrawal is ${MIN_WITHDRAWAL_AMOUNT} TND. Requests are reviewed manually before processing.`)}
+          </p>
         </div>
       </div>
     </div>
@@ -872,6 +875,7 @@ function DepositPanel({
   t: Record<string, any>;
   tx: (key: string, params?: Record<string, string | number>, fallback?: string) => string;
 }) {
+  const { dir } = useTranslation();
   const [depositAmount, setDepositAmount] = useState('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('dhmad');
   const [isDepositing, setIsDepositing] = useState(false);
@@ -908,8 +912,8 @@ function DepositPanel({
       <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-elevated)' }}>
         {/* Header stripe */}
         <div className="px-6 py-5 border-b" style={{ borderColor: 'var(--color-border-subtle)', background: 'color-mix(in srgb, var(--workspace-primary) 5%, transparent)' }}>
-          <h2 className="text-base font-bold text-foreground">Deposit Funds</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Top up your wallet securely via escrow</p>
+          <h2 className="text-base font-bold text-foreground">{tx('wallet.deposit', undefined, 'Deposit Funds')}</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">{tx('wallet.topUpWalletDesc', undefined, 'Top up your wallet securely via escrow')}</p>
         </div>
 
         <div className="p-6 space-y-6">
@@ -931,7 +935,7 @@ function DepositPanel({
                 value={depositAmount}
                 onChange={(e) => { setDepositAmount(e.target.value); setDepositError(null); }}
                 placeholder="0.000"
-                className="w-full px-4 py-3.5 min-h-[56px] rounded-xl border border-border bg-[var(--color-bg-subtle)] text-2xl font-black text-foreground outline-none focus:ring-2 focus:ring-[color:var(--workspace-primary)]/30 focus:border-[color:var(--workspace-primary)] transition-all pe-16"
+                className={`w-full px-4 py-3.5 min-h-[56px] rounded-xl border border-border bg-[var(--color-bg-subtle)] text-2xl font-black text-foreground outline-none focus:ring-2 focus:ring-[color:var(--workspace-primary)]/30 focus:border-[color:var(--workspace-primary)] transition-all ${dir === 'rtl' ? 'ps-16' : 'pe-16'}`}
               />
               <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">TND</span>
             </div>
@@ -945,7 +949,7 @@ function DepositPanel({
 
           {/* Quick presets */}
           <div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Quick Amounts</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{tx('wallet.quickAmounts', undefined, 'Quick Amounts')}</p>
             <div className="grid grid-cols-4 gap-2">
               {[50, 100, 250, 500].map((amt) => (
                 <button
@@ -981,19 +985,19 @@ function DepositPanel({
       <div className="space-y-4">
         {/* Live preview */}
         <div className="rounded-2xl p-5" style={{ border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-elevated)' }}>
-          <h3 className="text-sm font-bold text-foreground mb-4">Deposit Preview</h3>
+          <h3 className="text-sm font-bold text-foreground mb-4">{tx('wallet.depositPreview', undefined, 'Deposit Preview')}</h3>
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">You pay</span>
+              <span className="text-muted-foreground">{tx('wallet.youPay', undefined, 'You pay')}</span>
               <span className="font-bold text-foreground">{depositAmountNum > 0 ? formatCurrency(depositAmountNum, true, language) : '—'}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Processing fee</span>
-              <span className="font-medium" style={{ color: 'var(--color-status-success)' }}>Free</span>
+              <span className="text-muted-foreground">{tx('wallet.processingFee', undefined, 'Processing fee')}</span>
+              <span className="font-medium" style={{ color: 'var(--color-status-success)' }}>{tx('wallet.free', undefined, 'Free')}</span>
             </div>
             <div className="border-t pt-3" style={{ borderColor: 'var(--color-border-subtle)' }}>
               <div className="flex justify-between">
-                <span className="text-sm font-semibold text-foreground">Added to wallet</span>
+                <span className="text-sm font-semibold text-foreground">{tx('wallet.addedToWallet', undefined, 'Added to wallet')}</span>
                 <span className="text-lg font-black" style={{ color: 'var(--workspace-primary)' }}>{depositAmountNum > 0 ? formatCurrency(depositAmountNum, true, language) : '—'}</span>
               </div>
             </div>
@@ -1002,12 +1006,12 @@ function DepositPanel({
 
         {/* Why escrow */}
         <div className="rounded-2xl p-5" style={{ border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-elevated)' }}>
-          <h3 className="text-sm font-bold text-foreground mb-4">Why Dhmad Escrow?</h3>
+          <h3 className="text-sm font-bold text-foreground mb-4">{tx('wallet.whyEscrow', undefined, 'Why Dhmad Escrow?')}</h3>
           <div className="space-y-3">
             {[
-              { icon: <BadgeCheck className="w-4 h-4" />, text: 'Funds held securely until work approved' },
-              { icon: <CheckCircle className="w-4 h-4" />, text: 'Dispute resolution built in' },
-              { icon: <Info className="w-4 h-4" />, text: 'Zero deposit fees — pay only what you deposit' },
+              { icon: <BadgeCheck className="w-4 h-4" />, text: tx('wallet.whyEscrow1', undefined, 'Funds held securely until work approved') },
+              { icon: <CheckCircle className="w-4 h-4" />, text: tx('wallet.whyEscrow2', undefined, 'Dispute resolution built in') },
+              { icon: <Info className="w-4 h-4" />, text: tx('wallet.whyEscrow3', undefined, 'Zero deposit fees — pay only what you deposit') },
             ].map(({ icon, text }, i) => (
               <div key={i} className="flex items-start gap-3">
                 <span style={{ color: 'var(--workspace-primary)' }} className="shrink-0 mt-0.5">{icon}</span>
@@ -1237,10 +1241,10 @@ export default function Wallet() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-base font-bold text-white">
-                      {isFreelancer ? 'Earnings Growth' : 'Spending History'}
+                      {isFreelancer ? tx('wallet.earningsGrowth', undefined, 'Earnings Growth') : tx('wallet.spendingHistory', undefined, 'Spending History')}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {isFreelancer ? 'Monthly billing volume generated' : 'Monthly platform funding volume spent'} (last 6 months)
+                      {isFreelancer ? tx('wallet.monthlyBillingVolume', undefined, 'Monthly billing volume generated (last 6 months)') : tx('wallet.monthlyFundingVolume', undefined, 'Monthly platform funding volume spent (last 6 months)')}
                     </p>
                   </div>
                 </div>
@@ -1298,7 +1302,7 @@ export default function Wallet() {
                           </div>
                           <div className="text-start">
                             <p className="font-bold text-foreground text-sm">{t.wallet?.requestWithdrawal || 'Request Withdrawal'}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">Move earnings to bank</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{tx('wallet.moveEarnings', undefined, 'Move earnings to bank')}</p>
                           </div>
                         </div>
                         <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" />
@@ -1315,7 +1319,7 @@ export default function Wallet() {
                           </div>
                           <div className="text-start">
                             <p className="font-bold text-foreground text-sm">{tx('wallet.deposit', undefined, 'Deposit Funds')}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">Top up your wallet</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{tx('wallet.topUpWallet', undefined, 'Top up your wallet')}</p>
                           </div>
                         </div>
                         <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" />
@@ -1332,7 +1336,7 @@ export default function Wallet() {
                         </div>
                         <div className="text-start">
                           <p className="font-bold text-foreground text-sm">{tx('wallet.tabs.transactions', undefined, 'Transactions')}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">Full payment history</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{tx('wallet.fullPaymentHistory', undefined, 'Full payment history')}</p>
                         </div>
                       </div>
                       <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" />
@@ -1343,9 +1347,9 @@ export default function Wallet() {
                   {transactions.length > 0 && (
                     <div className="rounded-2xl border p-5" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-elevated)' }}>
                       <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-sm font-bold text-foreground">Recent Transactions</h2>
+                        <h2 className="text-sm font-bold text-foreground">{tx('wallet.recentTransactions', undefined, 'Recent Transactions')}</h2>
                         <button onClick={() => setActiveTab('transactions')} className="text-xs font-semibold transition-colors" style={{ color: 'var(--workspace-primary)' }}>
-                          View all →
+                          {tx('wallet.viewAllArrow', undefined, 'View all →')}
                         </button>
                       </div>
                       <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--color-border-subtle)', background: 'var(--color-bg-subtle)' }}>

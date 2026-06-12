@@ -163,7 +163,7 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
             <div className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-white/[0.04]">
                     <Shield className="w-4 h-4 text-emerald-500" />
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Account Verification & Trust</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('settings.accountVerificationTitle', undefined, 'Account Verification & Trust')}</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -221,7 +221,7 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
             <div className="space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-white/[0.04]">
                     <User className="w-4 h-4 text-purple-500" />
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Profile Details</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('settings.profileDetailsTitle', undefined, 'Profile Details')}</h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

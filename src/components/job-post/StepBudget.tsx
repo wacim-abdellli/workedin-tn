@@ -101,19 +101,19 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
         {
             value: 'beginner',
             title: tx('jobs.new.stepBudget.beginner', undefined, 'Entry Level'),
-            subtitle: 'Simple tasks or budget-friendly options',
+            subtitle: tx('jobs.new.stepBudget.beginnerSubtitle', undefined, 'Simple tasks or budget-friendly options'),
             Icon: Star,
         },
         {
             value: 'intermediate',
             title: tx('jobs.new.stepBudget.intermediate', undefined, 'Intermediate'),
-            subtitle: 'Solid experience for standard goals',
+            subtitle: tx('jobs.new.stepBudget.intermediateSubtitle', undefined, 'Solid experience for standard goals'),
             Icon: Shield,
         },
         {
             value: 'expert',
             title: tx('jobs.new.stepBudget.expert', undefined, 'Expert'),
-            subtitle: 'High-tier specialists for complex needs',
+            subtitle: tx('jobs.new.stepBudget.expertSubtitle', undefined, 'High-tier specialists for complex needs'),
             Icon: Award,
         },
     ] as const;
@@ -122,21 +122,21 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
         {
             value: 'fixed_exact',
             title: tx('jobs.new.stepBudget.fixedExact', undefined, 'Fixed Price (Exact)'),
-            subtitle: 'Single fixed budget',
+            subtitle: tx('jobs.new.stepBudget.fixedExactSubtitle', undefined, 'Single fixed budget'),
             description: tx('jobs.new.stepBudget.fixedExactDescription', undefined, 'Specify a set budget for the entire scope of work. Best for well-defined tasks.'),
             Icon: DollarSign,
         },
         {
             value: 'fixed_range',
             title: tx('jobs.new.stepBudget.fixedRange', undefined, 'Fixed Price (Range)'),
-            subtitle: 'Budget min-max range',
+            subtitle: tx('jobs.new.stepBudget.fixedRangeSubtitle', undefined, 'Budget min-max range'),
             description: tx('jobs.new.stepBudget.fixedRangeDescription', undefined, 'Define a budget window to invite proposals matching your expected bracket.'),
             Icon: Sliders,
         },
         {
             value: 'hourly',
             title: tx('jobs.new.stepBudget.hourly', undefined, 'Hourly Rate'),
-            subtitle: 'Time-logged billing',
+            subtitle: tx('jobs.new.stepBudget.hourlySubtitle', undefined, 'Time-logged billing'),
             description: tx('jobs.new.stepBudget.hourlyDescription', undefined, 'Pay by the hour based on tracked logs. Best for ongoing or evolving work.'),
             Icon: Clock,
         },
@@ -212,7 +212,9 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                             <p className="text-xs font-semibold uppercase tracking-wider text-workspace-primary-light/80">
                                 {tx('jobs.new.stepBudget.estimatedBudget', undefined, 'Estimated Project Budget')}
                             </p>
-                            <p className="text-[11px] text-gray-500 mt-1">Specify the exact fixed price for this project.</p>
+                            <p className="text-[11px] text-gray-500 mt-1">
+                            {tx('jobs.new.stepBudget.fixedExactHint', undefined, 'Specify the exact fixed price for this project.')}
+                        </p>
                         </div>
                         <div className="space-y-1.5 max-w-md">
                             <label className="text-xs font-medium text-gray-400/95">
@@ -245,7 +247,9 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                             <p className="text-xs font-semibold uppercase tracking-wider text-workspace-primary-light/80">
                                 {tx('jobs.new.stepBudget.estimatedBudget', undefined, 'Estimated Project Budget')}
                             </p>
-                            <p className="text-[11px] text-gray-500 mt-1">Specify a range to attract bids within your target cost.</p>
+                            <p className="text-[11px] text-gray-500 mt-1">
+                            {tx('jobs.new.stepBudget.fixedRangeHint', undefined, 'Specify a range to attract bids within your target cost.')}
+                        </p>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-1.5">
@@ -292,7 +296,9 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                             <p className="text-xs font-semibold uppercase tracking-wider text-workspace-primary-light/80">
                                 {tx('jobs.new.stepBudget.hourlySetup', undefined, 'Hourly Pricing Details')}
                             </p>
-                            <p className="text-[11px] text-gray-500 mt-1">Determine the hourly rate and weekly time commitment limit.</p>
+                            <p className="text-[11px] text-gray-500 mt-1">
+                            {tx('jobs.new.stepBudget.hourlyHint', undefined, 'Determine the hourly rate and weekly time commitment limit.')}
+                        </p>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-1.5">
@@ -322,10 +328,10 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                                         onChange={(e) => setValue('estimated_hours', Number(e.target.value))}
                                         defaultValue={watch('estimated_hours') || 20}
                                     >
-                                        <option value={10}>Part-time (up to 10 hrs/week)</option>
-                                        <option value={20}>Part-time (up to 20 hrs/week)</option>
-                                        <option value={30}>Full-time (up to 30 hrs/week)</option>
-                                        <option value={40}>Full-time (up to 40 hrs/week)</option>
+                                        <option value={10}>{tx('jobs.new.stepBudget.partTime10', undefined, 'Part-time (up to 10 hrs/week)')}</option>
+                                        <option value={20}>{tx('jobs.new.stepBudget.partTime20', undefined, 'Part-time (up to 20 hrs/week)')}</option>
+                                        <option value={30}>{tx('jobs.new.stepBudget.fullTime30', undefined, 'Full-time (up to 30 hrs/week)')}</option>
+                                        <option value={40}>{tx('jobs.new.stepBudget.fullTime40', undefined, 'Full-time (up to 40 hrs/week)')}</option>
                                     </select>
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 text-xs">
                                         ▼
@@ -345,7 +351,9 @@ export default function StepBudget({ allowPastDeadline = false }: StepBudgetProp
                         <TrendingUp className="h-4 w-4 text-workspace-primary" />
                         {tx('jobs.new.stepBudget.experienceLevel', undefined, 'Required Experience Level')}
                     </h3>
-                    <p className="text-[11px] text-gray-500 mt-0.5">Select the expertise level needed to ensure relevant applications.</p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                        {tx('jobs.new.stepBudget.experienceLevelHint', undefined, 'Select the expertise level needed to ensure relevant applications.')}
+                    </p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-3">

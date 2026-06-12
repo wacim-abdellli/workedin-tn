@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -110,23 +110,27 @@ function formatCurrency(value: number): string {
   return value.toLocaleString("en-TN");
 }
 
-function formatHiredDate(value: string): string {
+function formatHiredDate(value: string, language: string): string {
   const date = new Date(value);
-  return date.toLocaleDateString("en-US", {
+  const locale = language === 'ar' ? 'ar-TN' : language === 'fr' ? 'fr-TN' : 'en-US';
+  return date.toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 }
 
-function getRateLabel(contract: ContractRow): { typeLabel: string; amountLabel: string } {
+function getRateLabel(
+  contract: ContractRow,
+  tx: (key: string, params?: Record<string, string | number>, fallback?: string) => string
+): { typeLabel: string; amountLabel: string } {
   const jobType = contract.job?.job_type ?? "";
 
   if (jobType === "hourly") {
     const hourly = contract.job?.hourly_rate ?? contract.amount ?? contract.totalAmount;
     return {
-      typeLabel: "Hourly",
-      amountLabel: `${formatCurrency(hourly)} TND/hr`,
+      typeLabel: tx("contracts.rateType.hourly", undefined, "Hourly"),
+      amountLabel: tx("contracts.rateType.hourlyLabel", { amount: formatCurrency(hourly) }, `${formatCurrency(hourly)} TND/hr`),
     };
   }
 
@@ -138,8 +142,8 @@ function getRateLabel(contract: ContractRow): { typeLabel: string; amountLabel: 
     0;
 
   return {
-    typeLabel: "Fixed-price",
-    amountLabel: `${formatCurrency(fixedAmount)} TND`,
+    typeLabel: tx("contracts.rateType.fixed", undefined, "Fixed-price"),
+    amountLabel: tx("contracts.rateType.fixedLabel", { amount: formatCurrency(fixedAmount) }, `${formatCurrency(fixedAmount)} TND`),
   };
 }
 
@@ -176,7 +180,7 @@ function getStatusBadge(status: ContractStatus) {
 export default function ContractsList() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { tx } = useTranslation();
+  const { tx, language } = useTranslation();
   const { activeWorkspace } = useWorkspaceStore();
   const isFreelancerWorkspace = activeWorkspace !== "client";
 
@@ -389,8 +393,11 @@ export default function ContractsList() {
               {tx("contracts.paymentProtectionTitle", undefined, "Payment Protection")}
             </p>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-              Always communicate and request payments through WorkedIn. Contracts paid outside
-              the platform are not protected by our secure escrow system.
+              {tx(
+                "contracts.paymentProtectionDesc",
+                undefined,
+                "Always communicate and request payments through WorkedIn. Contracts paid outside the platform are not protected by our secure escrow system."
+              )}
             </p>
           </div>
         </section>
@@ -470,7 +477,7 @@ export default function ContractsList() {
                 const partner = isFreelancerWorkspace ? contract.client : contract.freelancer;
                 const partnerName = partner?.full_name || tx("contracts.unknownUser", undefined, "Unknown User");
                 const badge = getStatusBadge(contract.status);
-                const rate = getRateLabel(contract);
+                const rate = getRateLabel(contract, tx);
 
                 return (
                   <article
@@ -487,7 +494,8 @@ export default function ContractsList() {
                           {rate.typeLabel}: <span className="text-white font-semibold">{rate.amountLabel}</span>
                         </span>
                         <span>
-                          Started <span className="text-white font-medium">{formatHiredDate(contract.createdAt)}</span>
+                          {tx("contracts.startedDate", undefined, "Started")}{" "}
+                          <span className="text-white font-medium">{formatHiredDate(contract.createdAt, language)}</span>
                         </span>
                       </div>
 

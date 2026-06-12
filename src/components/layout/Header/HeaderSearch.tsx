@@ -27,7 +27,7 @@ const DEBOUNCE_MS = 320;
 
 export function HeaderSearch() {
   const { activeMode } = useAuth();
-  const { tx } = useTranslation();
+  const { tx, language, dir } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlQuery = searchParams.get('q');
@@ -351,7 +351,7 @@ export function HeaderSearch() {
         }}
       >
         {/* Search icon */}
-        <span className="ml-3.5 shrink-0">
+        <span className="ms-3.5 shrink-0">
           <Search
             className="w-4 h-4 transition-colors duration-200"
             style={{ color: dropdownOpen ? `rgba(${accentRgb},0.7)` : 'rgba(255,255,255,0.3)' }}
@@ -391,7 +391,7 @@ export function HeaderSearch() {
           <button
             type="button"
             onClick={() => { setQuery(''); setResults([]); setSearchState('idle'); inputRef.current?.focus(); }}
-            className="mr-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-all duration-150"
+            className="me-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-all duration-150"
           >
             <X className="w-3 h-3" />
           </button>
@@ -405,7 +405,7 @@ export function HeaderSearch() {
             setFilterMenuOpen(next);
             if (next) setDropdownOpen(false);
           }}
-          className="flex items-center gap-1 px-3 py-2.5 shrink-0 text-[11px] font-semibold transition-all duration-150 border-l"
+          className={`flex items-center gap-1 px-3 py-2.5 shrink-0 text-[11px] font-semibold transition-all duration-150 ${dir === 'rtl' ? 'border-r' : 'border-l'}`}
           style={{
             borderColor: 'rgba(255,255,255,0.08)',
             color: filterMenuOpen ? accent : 'rgba(255,255,255,0.45)',
@@ -422,7 +422,7 @@ export function HeaderSearch() {
       {/* ── Filter selector dropdown ────────────────────────── */}
       {filterMenuOpen && (
         <div
-          className="absolute right-0 top-[calc(100%+8px)] w-64 rounded-2xl overflow-hidden z-[200]"
+          className={`absolute top-[calc(100%+8px)] w-64 rounded-2xl overflow-hidden z-[200] ${dir === 'rtl' ? 'left-0' : 'right-0'}`}
           style={{
             background: 'linear-gradient(145deg, #161616, #111111)',
             border: '1px solid rgba(255,255,255,0.09)',
@@ -440,7 +440,7 @@ export function HeaderSearch() {
                 key={opt.key}
                 type="button"
                 onClick={() => { setActiveFilter(opt.key); setFilterMenuOpen(false); setTimeout(() => inputRef.current?.focus(), 50); }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left transition-colors duration-100"
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-start transition-colors duration-100"
                 style={{ background: active ? `rgba(${accentRgb},0.10)` : 'transparent' }}
                 onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
                 onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
@@ -537,7 +537,7 @@ export function HeaderSearch() {
                     <div
                       key={item.key}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      className="w-full flex items-center justify-between rounded-xl transition-all duration-100 text-left group/item"
+                      className="w-full flex items-center justify-between rounded-xl transition-all duration-100 text-start group/item"
                       style={{
                         background: sel ? `rgba(${accentRgb},0.12)` : 'transparent',
                       }}
@@ -548,7 +548,7 @@ export function HeaderSearch() {
                           if (item.onSelect) item.onSelect();
                           else if (item.href) go(item.href);
                         }}
-                        className="flex-1 flex items-center gap-3 px-2.5 py-2 text-left"
+                        className="flex-1 flex items-center gap-3 px-2.5 py-2 text-start"
                       >
                         {/* Icon */}
                         <span
@@ -590,7 +590,7 @@ export function HeaderSearch() {
                               return next;
                             });
                           }}
-                          className="mr-3 p-1 rounded-md text-white/30 hover:text-rose-400 hover:bg-white/10 opacity-0 group-hover/item:opacity-100 focus:opacity-100 transition-all duration-150"
+                          className="me-3 p-1 rounded-md text-white/30 hover:text-rose-400 hover:bg-white/10 opacity-0 group-hover/item:opacity-100 focus:opacity-100 transition-all duration-150"
                           title={tx('pages.searchModal.removeSearch', undefined, 'Remove search')}
                         >
                           <X className="w-3.5 h-3.5" />
@@ -600,7 +600,7 @@ export function HeaderSearch() {
                       {/* Shortcut badge */}
                       {item.shortcut && (
                         <kbd
-                          className="hidden sm:inline-flex items-center justify-center shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-mono mr-3"
+                          className="hidden sm:inline-flex items-center justify-center shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-mono me-3"
                           style={{
                             background: 'rgba(255,255,255,0.06)',
                             border: '1px solid rgba(255,255,255,0.1)',

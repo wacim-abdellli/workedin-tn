@@ -40,53 +40,12 @@ import { getStorageConfigErrorMessage, supabase, uploadFile } from '../lib/supab
 import { supabaseWithRetry } from '../lib/supabaseWithRetry';
 import { PREDEFINED_SKILLS, type Skill } from '../types';
 
-const STEP_ITEMS = [
-  {
-    id: 1,
-    label: 'Job details',
-    description: 'Define the brief, category, and required skills.',
-  },
-  {
-    id: 2,
-    label: 'Budget/Timeline',
-    description: 'Set pricing model, expected duration, and experience level.',
-  },
-  {
-    id: 3,
-    label: 'Visibility',
-    description: 'Choose whether the brief is public or invite-only.',
-  },
-  {
-    id: 4,
-    label: 'Review',
-    description: 'Validate the brief before publishing.',
-  },
-] as const;
+// STEP_ITEMS will be defined inside the component using translations
 
 const DRAFT_PROMPT_DISMISS_KEY = 'workedin_job_restore_dismissed_at';
 const DRAFT_PROMPT_COOLDOWN_MS = 2 * 60 * 1000;
 
-const TITLE_TEMPLATES = [
-  'Logo design for a food company',
-  'Landing page redesign for SaaS product',
-  'Short-form video editor for social ads',
-  'React dashboard with analytics widgets',
-] as const;
-
-const DESCRIPTION_SNIPPETS = [
-  {
-    label: 'Scope',
-    text: 'Scope: Build a responsive experience aligned with our brand guidelines.',
-  },
-  {
-    label: 'Deliverables',
-    text: 'Deliverables: Source files, deployment-ready build, and concise documentation.',
-  },
-  {
-    label: 'Success',
-    text: 'Success criteria: Pixel-perfect UI, strong performance, and clean handoff.',
-  },
-] as const;
+// TITLE_TEMPLATES and DESCRIPTION_SNIPPETS are defined inside the component using translations
 
 const FIELD_CLASS =
   'w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-sm text-white outline-none transition-all duration-300 placeholder:text-gray-500 hover:border-white/20 hover:bg-white/[0.05] focus:bg-white/[0.05] focus:border-workspace-primary focus:ring-4 focus:ring-workspace-primary/10 shadow-inner backdrop-blur-sm';
@@ -267,6 +226,27 @@ export default function JobPost() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { tx, language } = useTranslation();
+
+  const STEP_ITEMS = [
+    { id: 1, label: tx('jobs.new.steps.basics', undefined, 'Job details'), description: tx('jobs.new.steps.basicsDescription', undefined, 'Define the brief, category, and required skills.') },
+    { id: 2, label: tx('jobs.new.steps.budget', undefined, 'Budget/Timeline'), description: tx('jobs.new.steps.budgetDescription', undefined, 'Set pricing model, expected duration, and experience level.') },
+    { id: 3, label: tx('jobs.new.steps.visibility', undefined, 'Visibility'), description: tx('jobs.new.steps.visibilityDescription', undefined, 'Choose whether the brief is public or invite-only.') },
+    { id: 4, label: tx('jobs.new.steps.review', undefined, 'Review'), description: tx('jobs.new.steps.reviewDescription', undefined, 'Validate the brief before publishing.') },
+  ];
+
+  const TITLE_TEMPLATES: string[] = [
+    tx('jobs.new.titleTemplateLogo', undefined, 'Logo design for a food company'),
+    tx('jobs.new.titleTemplateLanding', undefined, 'Landing page redesign for SaaS product'),
+    tx('jobs.new.titleTemplateVideo', undefined, 'Short-form video editor for social ads'),
+    tx('jobs.new.titleTemplateDash', undefined, 'React dashboard with analytics widgets'),
+  ];
+
+  const DESCRIPTION_SNIPPETS: { label: string; text: string }[] = [
+    { label: tx('jobs.new.snippetScope', undefined, 'Scope'), text: tx('jobs.new.snippetScopeText', undefined, 'Scope: Build a responsive experience aligned with our brand guidelines.') },
+    { label: tx('jobs.new.snippetDeliverables', undefined, 'Deliverables'), text: tx('jobs.new.snippetDeliverablesText', undefined, 'Deliverables: Source files, deployment-ready build, and concise documentation.') },
+    { label: tx('jobs.new.snippetSuccess', undefined, 'Success'), text: tx('jobs.new.snippetSuccessText', undefined, 'Success criteria: Pixel-perfect UI, strong performance, and clean handoff.') },
+  ];
+
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -403,12 +383,12 @@ export default function JobPost() {
 
   const qualityChecks = useMemo(
     () => [
-      { id: 'title', label: 'Clear title', pass: title.trim().length >= 12 },
-      { id: 'category', label: 'Category selected', pass: Boolean(selectedCategory && selectedSubcategory) },
-      { id: 'description', label: 'Strong description', pass: description.trim().length >= 120 },
-      { id: 'skills', label: 'Relevant skills', pass: selectedSkills.length >= 3 },
+      { id: 'title', label: tx('jobs.new.quality.clearTitle', undefined, 'Clear title'), pass: title.trim().length >= 12 },
+      { id: 'category', label: tx('jobs.new.quality.categorySelected', undefined, 'Category selected'), pass: Boolean(selectedCategory && selectedSubcategory) },
+      { id: 'description', label: tx('jobs.new.quality.strongDescription', undefined, 'Strong description'), pass: description.trim().length >= 120 },
+      { id: 'skills', label: tx('jobs.new.quality.relevantSkills', undefined, 'Relevant skills'), pass: selectedSkills.length >= 3 },
     ],
-    [title, selectedCategory, selectedSubcategory, description, selectedSkills.length]
+    [tx, title, selectedCategory, selectedSubcategory, description, selectedSkills.length]
   );
 
   const qualityScore = useMemo(() => {
@@ -937,30 +917,30 @@ export default function JobPost() {
                 <div className="surface-card border border-white/10 rounded-2xl p-5 w-full flex flex-col gap-3.5 bg-gradient-to-br from-white/[0.01] to-transparent">
                   <div className="flex items-center gap-2 text-workspace-primary text-xs font-bold tracking-wider uppercase">
                     <Lightbulb className="w-4 h-4 shrink-0" />
-                    <span>{tx('jobs.new.expertTips', undefined, 'Expert Tips')}</span>
+                    <span>{tx('jobs.new.expertTipsTitle', undefined, 'Expert Tips')}</span>
                   </div>
                   <div className="text-[11px] text-gray-400 leading-relaxed space-y-2.5">
                     {currentStep === 1 && (
                       <>
-                        <p><strong>Specific Title:</strong> Describe exactly what you need. A clear title attracts matching specialists immediately.</p>
-                        <p><strong>Rich Context:</strong> Provide clear parameters on scope, final deliverables, and success criteria.</p>
+                        <p><strong>{tx('jobs.new.expertTips.specificTitleLabel', undefined, 'Specific Title:')}</strong> {tx('jobs.new.expertTips.specificTitleText', undefined, 'Describe exactly what you need. A clear title attracts matching specialists immediately.')}</p>
+                        <p><strong>{tx('jobs.new.expertTips.richContextLabel', undefined, 'Rich Context:')}</strong> {tx('jobs.new.expertTips.richContextText', undefined, 'Provide clear parameters on scope, final deliverables, and success criteria.')}</p>
                       </>
                     )}
                     {currentStep === 2 && (
                       <>
-                        <p><strong>Budget Model:</strong> Choose Fixed Price for well-defined outcomes, and Hourly for ongoing development or dynamic briefs.</p>
-                        <p><strong>Deadline Buffer:</strong> Setting a realistic date encourages high-quality, professional applications.</p>
+                        <p><strong>{tx('jobs.new.expertTips.budgetModelLabel', undefined, 'Budget Model:')}</strong> {tx('jobs.new.expertTips.budgetModelText', undefined, 'Choose Fixed Price for well-defined outcomes, and Hourly for ongoing or dynamic briefs.')}</p>
+                        <p><strong>{tx('jobs.new.expertTips.deadlineBufferLabel', undefined, 'Deadline Buffer:')}</strong> {tx('jobs.new.expertTips.deadlineBufferText', undefined, 'Setting a realistic date encourages high-quality, professional applications.')}</p>
                       </>
                     )}
                     {currentStep === 3 && (
                       <>
-                        <p><strong>Public Briefs:</strong> Great for maximum proposals and competitive price bidding.</p>
-                        <p><strong>Invite-only:</strong> Best for private/sensitive IP or when you personally select top freelancers.</p>
+                        <p><strong>{tx('jobs.new.expertTips.publicBriefsLabel', undefined, 'Public Briefs:')}</strong> {tx('jobs.new.expertTips.publicBriefsText', undefined, 'Great for maximum proposals and competitive price bidding.')}</p>
+                        <p><strong>{tx('jobs.new.expertTips.inviteOnlyLabel', undefined, 'Invite-only:')}</strong> {tx('jobs.new.expertTips.inviteOnlyText', undefined, 'Best for private/sensitive IP or when you personally select top freelancers.')}</p>
                       </>
                     )}
                     {currentStep === 4 && (
                       <>
-                        <p><strong>Lock Structure:</strong> Verify all specs. The core structure is finalized upon publishing to ensure bid consistency.</p>
+                        <p><strong>{tx('jobs.new.expertTips.lockStructureLabel', undefined, 'Lock Structure:')}</strong> {tx('jobs.new.expertTips.lockStructureText', undefined, 'Verify all specs. The core structure is finalized upon publishing to ensure bid consistency.')}</p>
                       </>
                     )}
                   </div>
@@ -991,7 +971,9 @@ export default function JobPost() {
                           {tx('jobs.new.fields.title', undefined, 'Project title')}
                           <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
                         </label>
-                        <p className="text-[11px] text-gray-500">Use specific technical terms to help the right freelancers find you.</p>
+                        <p className="text-[11px] text-gray-500">
+                          {tx('jobs.new.fields.titleHint', undefined, 'Use specific technical terms to help the right freelancers find you.')}
+                        </p>
                         <input
                           type="text"
                           {...methods.register('title')}
@@ -1031,7 +1013,9 @@ export default function JobPost() {
                             {tx('jobs.new.fields.mainCategory', undefined, 'Main category')}
                             <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
                           </label>
-                          <p className="text-[11px] text-gray-500">Choose the best fit category to enable automated expert match alerts.</p>
+                          <p className="text-[11px] text-gray-500">
+                            {tx('jobs.new.fields.categoryHint', undefined, 'Choose the best fit category to enable automated expert match alerts.')}
+                          </p>
                           <div className="relative">
                             <select
                               name="category"
@@ -1073,7 +1057,9 @@ export default function JobPost() {
                             {tx('jobs.new.fields.subcategory', undefined, 'Subcategory')}
                             <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
                           </label>
-                          <p className="text-[11px] text-gray-500">Pick the exact specialty to filter bids and ensure precise skills matching.</p>
+                          <p className="text-[11px] text-gray-500">
+                            {tx('jobs.new.fields.subcategoryHint', undefined, 'Pick the exact specialty to filter bids and ensure precise skills matching.')}
+                          </p>
                           <div className="relative">
                             <select
                               name="subcategory"
@@ -1119,7 +1105,9 @@ export default function JobPost() {
                           {tx('jobs.new.fields.description', undefined, 'Project description')}
                           <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
                         </label>
-                        <p className="text-[11px] text-gray-500">Explain the scope, expected parameters, and what successful deliverables look like.</p>
+                        <p className="text-[11px] text-gray-500">
+                          {tx('jobs.new.fields.descriptionHint', undefined, 'Explain the scope, expected parameters, and what successful deliverables look like.')}
+                        </p>
                         <textarea
                           rows={7}
                           maxLength={2000}
@@ -1134,7 +1122,9 @@ export default function JobPost() {
                         />
 
                         <div className="flex items-center justify-between text-xs pt-1">
-                          <span className="text-gray-500">{description.length} / 2000 characters</span>
+                          <span className="text-gray-500">
+                            {tx('jobs.new.fields.charCount', { current: description.length, max: 2000 }, `${description.length} / 2000 characters`)}
+                          </span>
                           {methods.formState.errors.description ? (
                             <span className="text-red-400 text-xs">
                               {methods.formState.errors.description.message as string}
@@ -1207,7 +1197,9 @@ export default function JobPost() {
                           {tx('jobs.new.fields.requiredSkills', undefined, 'Required skills (max 5)')}
                           <span className="text-workspace-primary font-bold" aria-hidden="true">*</span>
                         </label>
-                        <p className="text-[11px] text-gray-500">Tag precise skills to target specialized freelancers for direct application invitations.</p>
+                        <p className="text-[11px] text-gray-500">
+                          {tx('jobs.new.fields.skillsHint', undefined, 'Tag precise skills to target specialized freelancers for direct application invitations.')}
+                        </p>
 
                         <div className="relative">
                           <Search className="w-4 h-4 text-gray-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -1318,7 +1310,9 @@ export default function JobPost() {
                         <label className={LABEL_CLASS}>
                           {tx('jobs.new.fields.attachments', undefined, 'Attachments (optional)')}
                         </label>
-                        <p className="text-[11px] text-gray-500">Provide assets, mockups, or detailed specs to clarify work deliverables.</p>
+                        <p className="text-[11px] text-gray-500">
+                          {tx('jobs.new.fields.attachmentsHint2', undefined, 'Provide assets, mockups, or detailed specs to clarify work deliverables.')}
+                        </p>
 
                         <label
                           htmlFor="attachments"
