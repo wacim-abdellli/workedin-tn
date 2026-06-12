@@ -168,8 +168,8 @@ export const MessageModals: React.FC<MessageModalsProps> = ({
                     files={deliveryFiles}
                     isSubmitting={isDeliveringContractWork}
                     actionError={deliveryActionError}
-                    submitLabel={selectedContractStatus === 'revision_requested' ? 'Resubmit delivery' : 'Submit delivery'}
-                    submittingLabel="Submitting delivery..."
+                    submitLabel={selectedContractStatus === 'revision_requested' ? tx('pages.messages.delivery.resubmitLabel', undefined, 'Resubmit delivery') : tx('pages.messages.delivery.submitLabel', undefined, 'Submit delivery')}
+                    submittingLabel={tx('pages.messages.delivery.submittingLabel', undefined, 'Submitting delivery...')}
                     onNoteChange={(value) => {
                         if (deliveryActionError) {
                             setDeliveryActionError(null);

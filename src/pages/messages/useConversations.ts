@@ -98,7 +98,7 @@ const hydrateConversationRow = async (
         inbox_participant_2: row.inbox_participant_2 ?? undefined,
         otherUser: {
             id: profile?.id || otherUserId || '',
-            full_name: profile?.full_name || 'Unknown User',
+            full_name: profile?.full_name || tx('contracts.unknownUser', undefined, 'Unknown User'),
             avatar_url: profile?.avatar_url || null,
             username: profile?.username || null,
         },

@@ -498,21 +498,21 @@ export function useMessageThread({
 
         if (selectedConversationPolicy && !selectedConversationPolicy.canSend) {
             const blockedMessage = selectedConversationPolicy.blockedReasonFallback
-                || 'This conversation is read-only right now.';
+                || tx('contract.blockedReasons.readOnly', undefined, 'This conversation is read-only right now.');
             showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage), 'warning');
             return;
         }
 
         if (selectedFile && selectedConversationPolicy && !selectedConversationPolicy.canAttachFiles) {
             const blockedMessage = selectedConversationPolicy.blockedReasonFallback
-                || 'Attachments are disabled for this conversation.';
+                || tx('contract.blockedReasons.noAttachments', undefined, 'Attachments are disabled for this conversation.');
             showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage), 'warning');
             return;
         }
 
         if (audioBlob && selectedConversationPolicy && !selectedConversationPolicy.canSendVoiceNotes) {
             const blockedMessage = selectedConversationPolicy.blockedReasonFallback
-                || 'Voice notes are disabled for this conversation.';
+                || tx('contract.blockedReasons.noVoiceNotes', undefined, 'Voice notes are disabled for this conversation.');
             showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage), 'warning');
             return;
         }

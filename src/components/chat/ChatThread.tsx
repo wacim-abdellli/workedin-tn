@@ -3,6 +3,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { MessageBubble } from './MessageBubble';
 import { MessageSquare } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';
+import { useTranslation } from '../../i18n';
 
 export interface ChatThreadMessage {
     id: string;
@@ -30,6 +31,7 @@ export const ChatThread: React.FC<ChatThreadProps> = ({
     onDownloadAttachment
 }) => {
     const bottomRef = useRef<HTMLDivElement>(null);
+    const { tx } = useTranslation();
 
     // Auto-scroll to bottom when messages change
     useEffect(() => {
@@ -60,8 +62,8 @@ export const ChatThread: React.FC<ChatThreadProps> = ({
                 <div className="flex h-full items-center justify-center p-4">
                     <EmptyState
                         icon={MessageSquare}
-                        title="No messages yet"
-                        description="Start the conversation by sending a message or file below."
+                        title={tx('pages.messages.startConversationTitle', undefined, 'No messages yet')}
+                        description={tx('pages.messages.startConversationDesc', undefined, 'Start the conversation by sending a message or file below.')}
                         className="w-full max-w-md border-0 bg-transparent shadow-none"
                     />
                 </div>

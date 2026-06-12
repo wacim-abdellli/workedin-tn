@@ -1091,7 +1091,64 @@ export const ar = {
         "disputeError": "حدث خطأ في فتح النزاع",
         "reviewSent": "تم إرسال تقييمك بنجاح",
         "statusUnavailable": "الحالة غير متاحة",
-        "statusUnavailableHint": "بيانات الحالة غير متاحة مؤقتاً. تظل هذه المحادثة متاحة."
+        "statusUnavailableHint": "بيانات الحالة غير متاحة مؤقتاً. تظل هذه المحادثة متاحة.",
+        "hideWorkspace": "إخفاء مساحة العمل",
+        "noDueDate": "لا يوجد تاريخ استحقاق",
+        "lifecycle": {
+            "uploadFailed": "فشل تحميل {{stage}} للملف {{name}}: {{message}}",
+            "workDeliveredMessage": "[[contract_completed]] تم قبول العمل وإطلاق الدفع",
+            "noComment": "لم يتم تقديم تعليق",
+            "provideBothError": "يرجى تقديم التسليمات لكل من مرحلتي المراجعة والتسليم النهائي."
+        },
+        "blockedReasons": {
+            "readOnly": "هذه المحادثة للقراءة فقط حالياً.",
+            "noAttachments": "المرفقات معطلة لهذه المحادثة.",
+            "noVoiceNotes": "الرسائل الصوتية معطلة لهذه المحادثة.",
+            "safetyBlocked": "هذه الرسالة محظورة بموجب قواعد سلامة العقد."
+        },
+        "contextBar": {
+            "statusAwaitingPayment": "بانتظار الدفع",
+            "statusInProgress": "قيد التنفيذ",
+            "statusActive": "نشط",
+            "statusUnderReview": "قيد المراجعة",
+            "statusRevisionRequested": "طلب تعديلات",
+            "statusDisputed": "متنازع عليه",
+            "statusCompleted": "مكتمل",
+            "statusCancelled": "ملغي",
+            "statusContract": "عقد",
+            "btnFundEscrow": "تمويل الضمان",
+            "btnDeliverWork": "تسليم العمل",
+            "btnAcceptPay": "قبول وإتمام الدفع",
+            "btnLeaveReview": "اترك تقييماً",
+            "btnRequestRevision": "طلب تعديل ({{remaining}} متبقية)",
+            "btnFullWorkspace": "مساحة العمل الكاملة",
+            "infoDeadline": "الموعد النهائي",
+            "infoReviewPeriod": "فترة المراجعة",
+            "infoReviewBy": "المراجعة بحلول {{date}}",
+            "infoDeliveredOn": "تم التسليم في",
+            "infoRevisionsUsed": "التعديلات المستخدمة",
+            "infoEscrowStatus": "حالة الضمان",
+            "infoEscrowNotFunded": "الضمان غير ممول",
+            "infoEscrowSecured": "الضمان مؤمن"
+        },
+        "completionBanner": {
+            "title": "تم إكمال العقد!",
+            "readOnly": "هذه المحادثة للقراءة فقط الآن.",
+            "leaveReview": "ساعد {{name}} في تعزيز سمعته — اترك تقييماً.",
+            "dismiss": "تجاهل",
+            "reviewAction": "تقييم"
+        },
+        "escrowBanner": {
+            "freelancerWaiting": "بانتظار أن يقوم العميل بتأمين الضمان قبل بدء العمل.",
+            "freelancerNotified": "سيتم إعلامك بمجرد تأكيد الأموال.",
+            "clientSecureTitle": "قم بتأمين عقدك",
+            "clientFundDetail": "قم بتمويل {{amount}} د.ت في الضمان لبدء العمل مع {{name}}.",
+            "clientFundSafe": "الأموال محفوظة بأمان حتى توافق على التسليم.",
+            "walletBalance": "رصيد المحفظة: {{balance}} د.ت",
+            "topUpNeeded": "تحتاج إلى تعبئة رصيد",
+            "fundAmount": "تمويل {{amount}} د.ت",
+            "dismiss": "تجاهل"
+        }
     },
     "jobMatches": {
         "searchError": "حدث خطأ في البحث عن تطابقات",
@@ -2154,6 +2211,63 @@ export const ar = {
             "a11y": {
                 "openImageAttachment": "فتح الصورة المرفقة",
                 "openAttachment": "فتح المرفق"
+            },
+            "inboxLabel": "صندوق الوارد",
+            "senderAlt": "المرسل",
+            "systemEventTitle": "تحديث النظام",
+            "placeholder": "اكتب رسالة...",
+            "startConversationDesc": "ابدأ المحادثة بإرسال رسالة أو ملف أدناه.",
+            "escrowNotFunded": "الضمان غير ممول بعد",
+            "noDueDate": "لا يوجد تاريخ استحقاق",
+            "hideWorkspace": "إخفاء مساحة العمل",
+            "archiveAriaUnarchive": "إلغاء أرشفة المحادثة",
+            "archiveAriaArchive": "أرشفة المحادثة",
+            "lightbox": {
+                "downloadAria": "تحميل الصورة",
+                "downloadTitle": "تحميل",
+                "closeAria": "إغلاق معاينة الصورة",
+                "closeTitle": "إغلاق",
+                "previewAlt": "معاينة",
+                "imagePreviewAria": "معاينة الصورة"
+            },
+            "delivery": {
+                "submitLabel": "تسليم العمل",
+                "resubmitLabel": "إعادة تسليم العمل",
+                "submitting": "جارٍ تسليم العمل...",
+                "workDeliveredReview": "تم تسليم العمل وجاهز للمراجعة",
+                "provideBothError": "يرجى تقديم التسليمات لكل من مرحلتي المراجعة والتسليم النهائي.",
+                "uploadFailed": "فشل تحميل {{stage}} للملف {{file}}: {{message}}"
+            },
+            "contract": {
+                "status": {
+                    "inProgress": "قيد التنفيذ",
+                    "underReview": "قيد المراجعة",
+                    "revisionRequested": "طلب تعديلات",
+                    "completed": "مكتمل",
+                    "disputed": "متنازع عليه",
+                    "paymentPending": "دفع معلق",
+                    "cancelled": "ملغي",
+                    "syncing": "مزامنة"
+                },
+                "nextStep": {
+                    "clientReviewDelivery": "راجع التسليم، ثم اقبل أو اطلب تعديلات أو افتح نزاعاً.",
+                    "freelancerWaitingForReview": "بانتظار مراجعة العميل. الملفات النهائية تبقى محمية.",
+                    "freelancerSubmitReviewFiles": "قدم ملفات المراجعة والملفات النهائية المقفلة عندما تكون جاهزاً.",
+                    "clientWaitingDelivery": "المستقل يعمل على المشروع. سيظهر التسليم هنا.",
+                    "completedDefault": "تم إكمال العقد.",
+                    "completedLeaveReview": "اترك تقييماً لإغلاق حلقة الثقة.",
+                    "paymentPending": "يجب تأكيد الدفع قبل بدء العمل.",
+                    "disputed": "النزاع مفتوح. الأدلة محفوظة.",
+                    "syncing": "حافظ على المحادثة مفتوحة أثناء مزامنة العقد."
+                }
+            },
+            "system": {
+                "eventTitle": "تحديث النظام",
+                "deliveryTitle": "تم تسليم العمل",
+                "revisionTitle": "طلب تعديلات",
+                "completedTitle": "تم إكمال العقد",
+                "disputeTitle": "تم فتح نزاع",
+                "reviewTitle": "تم إرسال التقييم"
             }
         },
         "freelancerProfile": {

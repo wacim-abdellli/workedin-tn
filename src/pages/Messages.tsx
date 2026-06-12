@@ -1432,24 +1432,24 @@ function MessagesComponent() {
         const dueLabel = formatContractDate(contractSidebarData.job?.deadline ?? null);
         const reviewDueLabel = formatContractDate(contractSidebarData.reviewDueAt ?? null);
         const statusLabel = (() => {
-            if (status === 'active') return 'In progress';
-            if (status === 'delivery_submitted') return 'Under review';
-            if (status === 'revision_requested') return 'Revision requested';
-            if (status === 'completed') return 'Completed';
-            if (status === 'disputed') return 'Disputed';
-            if (status === 'pending_payment') return 'Payment pending';
-            if (status === 'cancelled' || status === 'canceled') return 'Cancelled';
-            return 'Syncing';
+            if (status === 'active') return tx('pages.messages.contract.status.inProgress', undefined, 'In progress');
+            if (status === 'delivery_submitted') return tx('pages.messages.contract.status.underReview', undefined, 'Under review');
+            if (status === 'revision_requested') return tx('pages.messages.contract.status.revisionRequested', undefined, 'Revision requested');
+            if (status === 'completed') return tx('pages.messages.contract.status.completed', undefined, 'Completed');
+            if (status === 'disputed') return tx('pages.messages.contract.status.disputed', undefined, 'Disputed');
+            if (status === 'pending_payment') return tx('pages.messages.contract.status.paymentPending', undefined, 'Payment pending');
+            if (status === 'cancelled' || status === 'canceled') return tx('pages.messages.contract.status.cancelled', undefined, 'Cancelled');
+            return tx('pages.messages.contract.status.syncing', undefined, 'Syncing');
         })();
         const nextStep = (() => {
-            if (selectedContractUserRole === 'client' && status === 'delivery_submitted') return 'Review delivery, then accept, request changes, or dispute.';
-            if (selectedContractUserRole === 'freelancer' && status === 'delivery_submitted') return 'Waiting for client review. Final files stay protected.';
-            if (selectedContractUserRole === 'freelancer' && (status === 'active' || status === 'revision_requested')) return 'Submit review files and locked final files when ready.';
-            if (selectedContractUserRole === 'client' && status === 'active') return 'Freelancer is working. Delivery will appear here.';
-            if (status === 'completed') return selectedContractHasReview ? 'Contract is complete.' : 'Leave a review to close the trust loop.';
-            if (status === 'pending_payment') return 'Payment must be confirmed before work begins.';
-            if (status === 'disputed') return 'Dispute is open. Evidence is preserved.';
-            return 'Keep the conversation open while the contract syncs.';
+            if (selectedContractUserRole === 'client' && status === 'delivery_submitted') return tx('pages.messages.contract.nextStep.clientReviewDelivery', undefined, 'Review delivery, then accept, request changes, or dispute.');
+            if (selectedContractUserRole === 'freelancer' && status === 'delivery_submitted') return tx('pages.messages.contract.nextStep.freelancerWaitingForReview', undefined, 'Waiting for client review. Final files stay protected.');
+            if (selectedContractUserRole === 'freelancer' && (status === 'active' || status === 'revision_requested')) return tx('pages.messages.contract.nextStep.freelancerSubmitReviewFiles', undefined, 'Submit review files and locked final files when ready.');
+            if (selectedContractUserRole === 'client' && status === 'active') return tx('pages.messages.contract.nextStep.clientWaitingDelivery', undefined, 'Freelancer is working. Delivery will appear here.');
+            if (status === 'completed') return selectedContractHasReview ? tx('pages.messages.contract.nextStep.completedDefault', undefined, 'Contract is complete.') : tx('pages.messages.contract.nextStep.completedLeaveReview', undefined, 'Leave a review to close the trust loop.');
+            if (status === 'pending_payment') return tx('pages.messages.contract.nextStep.paymentPending', undefined, 'Payment must be confirmed before work begins.');
+            if (status === 'disputed') return tx('pages.messages.contract.nextStep.disputed', undefined, 'Dispute is open. Evidence is preserved.');
+            return tx('pages.messages.contract.nextStep.syncing', undefined, 'Keep the conversation open while the contract syncs.');
         })();
         const theme = selectedContractUserRole === 'client'
             ? {
@@ -3487,7 +3487,7 @@ function MessagesComponent() {
                 const path = `${user.id}/${contractId}/submissions/${stage}/${Date.now()}_${safeName}`;
                 
                 const { error } = await supabase.storage.from('contract-files').upload(path, file, { upsert: false });
-                if (error) throw new Error(`${stage === 'review' ? 'Review' : 'Final'} upload failed for ${file.name}: ${error.message}`);
+                if (error) throw new Error(tx('contract.lifecycle.uploadFailed', { stage: stage === 'review' ? 'Review' : 'Final', name: file.name, message: error.message }, `${stage === 'review' ? 'Review' : 'Final'} upload failed for ${file.name}: ${error.message}`));
 
                 return {
                     name: file.name,
@@ -4379,7 +4379,7 @@ function MessagesComponent() {
                     text,
                     timestamp: message.created_at,
                     actorName: actorRole === 'system'
-                        ? 'System'
+                        ? tx('pages.messages.systemEventTitle', undefined, 'System')
                         : isOwnMessage
                         ? currentUserDisplayName
                         : selectedConversation.otherUser.full_name,
@@ -5023,7 +5023,7 @@ function MessagesComponent() {
                                             }`}
                                         >
                                             <FileText className="w-3.5 h-3.5" />
-                                            <span>{showContractPanel ? 'Hide Workspace' : 'Workspace'}</span>
+                                            <span>{showContractPanel ? tx('pages.messages.hideWorkspace', undefined, 'Hide Workspace') : tx('common.workspace', undefined, 'Workspace')}</span>
                                         </button>
                                     )}
 
@@ -5944,11 +5944,11 @@ function MessagesComponent() {
                     </p>
                     <div className="space-y-2">
                         {[
-                            { value: 'spam', label: 'Spam or misleading' },
-                            { value: 'inappropriate', label: 'Inappropriate behavior or content' },
-                            { value: 'fraud', label: 'Fraud or scam attempt' },
-                            { value: 'harassment', label: 'Harassment or abuse' },
-                            { value: 'other', label: 'Other' }
+                            { value: 'spam', label: tx('pages.messages.reportReason.spam', undefined, 'Spam or misleading') },
+                            { value: 'inappropriate', label: tx('pages.messages.reportReason.inappropriate', undefined, 'Inappropriate behavior or content') },
+                            { value: 'fraud', label: tx('pages.messages.reportReason.fraud', undefined, 'Fraud or scam attempt') },
+                            { value: 'harassment', label: tx('pages.messages.reportReason.harassment', undefined, 'Harassment or abuse') },
+                            { value: 'other', label: tx('pages.messages.reportReason.other', undefined, 'Other') }
                         ].map((r) => (
                             <label
                                 key={r.value}
@@ -6027,48 +6027,48 @@ function MessagesComponent() {
                     onClick={() => setLightboxImageUrl(null)}
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Image preview"
-                >
-                    <div className="relative max-w-4xl max-h-[90vh] flex items-center justify-center" onClick={e => e.stopPropagation()}>
-                        {/* Control buttons */}
-                        <div className="absolute -top-12 -right-12 sm:top-0 sm:right-0 flex items-center gap-2 p-2 z-10">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const link = document.createElement('a');
-                                    link.href = lightboxImageUrl;
-                                    link.download = 'image';
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                }}
-                                className="p-2 rounded-full hover:bg-white/10 transition-colors"
-                                aria-label="Download image"
-                                title="Download"
-                            >
-                                <Download className="h-6 w-6 text-white" />
-                            </button>
-                            
-                            <button
-                                type="button"
-                                onClick={() => setLightboxImageUrl(null)}
-                                className="p-2 rounded-full hover:bg-white/10 transition-colors"
-                                aria-label="Close image preview"
-                                title="Close"
-                            >
-                                <X className="h-6 w-6 text-white" />
-                            </button>
-                        </div>
-
-                        {/* Image */}
-                        <img
-                            src={lightboxImageUrl}
-                            alt="Preview"
-                            className="max-w-full max-h-[90vh] rounded-xl object-contain"
-                            onError={e => {
-                                e.currentTarget.style.display = 'none';
-                            }}
-                        />
+                                                    aria-label={tx('pages.messages.lightbox.ariaLabel', undefined, 'Image preview')}
+                                                >
+                                                    <div className="relative max-w-4xl max-h-[90vh] flex items-center justify-center" onClick={e => e.stopPropagation()}>
+                                                        {/* Control buttons */}
+                                                        <div className="absolute -top-12 -right-12 sm:top-0 sm:right-0 flex items-center gap-2 p-2 z-10">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const link = document.createElement('a');
+                                                                    link.href = lightboxImageUrl;
+                                                                    link.download = 'image';
+                                                                    document.body.appendChild(link);
+                                                                    link.click();
+                                                                    document.body.removeChild(link);
+                                                                }}
+                                                                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                                                                aria-label={tx('pages.messages.lightbox.downloadAria', undefined, 'Download image')}
+                                                                title={tx('pages.messages.lightbox.downloadTitle', undefined, 'Download')}
+                                                            >
+                                                                <Download className="h-6 w-6 text-white" />
+                                                            </button>
+                                                            
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setLightboxImageUrl(null)}
+                                                                className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                                                                aria-label={tx('pages.messages.lightbox.closeAria', undefined, 'Close image preview')}
+                                                                title={tx('pages.messages.lightbox.closeTitle', undefined, 'Close')}
+                                                            >
+                                                                <X className="h-6 w-6 text-white" />
+                                                            </button>
+                                                        </div>
+    
+                                                        {/* Image */}
+                                                        <img
+                                                            src={lightboxImageUrl}
+                                                            alt={tx('pages.messages.lightbox.altText', undefined, 'Preview')}
+                                                            className="max-w-full max-h-[90vh] rounded-xl object-contain"
+                                                            onError={e => {
+                                                                e.currentTarget.style.display = 'none';
+                                                            }}
+                                                        />
                     </div>
                 </div>
             )}

@@ -4,6 +4,7 @@ import {
     Send, RotateCcw, ExternalLink, Star, Lock, Zap,
 } from 'lucide-react';
 import type { ContractMessagingStatus } from '@/lib/messagingLifecycle';
+import { useTranslation } from '../../i18n';
 
 export interface ContractContextBarProps {
     /** Job / contract title */
@@ -60,60 +61,61 @@ interface StatusConfig {
 function getStatusConfig(
     status: ContractMessagingStatus | null,
     role: 'client' | 'freelancer',
+    tx: any,
 ): StatusConfig {
     switch (status) {
         case 'pending_payment':
             return {
-                label: 'Awaiting Payment',
+                label: tx('contract.contextBar.statusAwaitingPayment', undefined, 'Awaiting Payment'),
                 chipStyle: 'border-amber-400/30 bg-amber-500/10 text-amber-300',
                 glowColor: 'bg-amber-500/10',
                 icon: <Lock className="w-3 h-3 text-amber-400" />,
             };
         case 'active':
             return {
-                label: role === 'client' ? 'In Progress' : 'Active',
+                label: role === 'client' ? tx('contract.contextBar.statusInProgress', undefined, 'In Progress') : tx('contract.contextBar.statusActive', undefined, 'Active'),
                 chipStyle: 'border-emerald-400/30 bg-emerald-500/10 text-emerald-300',
                 glowColor: 'bg-emerald-500/10',
                 icon: <Zap className="w-3 h-3 text-emerald-400 animate-pulse" />,
             };
         case 'delivery_submitted':
             return {
-                label: 'Under Review',
+                label: tx('contract.contextBar.statusUnderReview', undefined, 'Under Review'),
                 chipStyle: 'border-sky-400/30 bg-sky-500/10 text-sky-300',
                 glowColor: 'bg-sky-500/10',
                 icon: <Clock className="w-3 h-3 text-sky-400" />,
             };
         case 'revision_requested':
             return {
-                label: 'Revision Requested',
+                label: tx('contract.contextBar.statusRevisionRequested', undefined, 'Revision Requested'),
                 chipStyle: 'border-orange-400/30 bg-orange-500/10 text-orange-300',
                 glowColor: 'bg-orange-500/10',
                 icon: <RotateCcw className="w-3 h-3 text-orange-400" />,
             };
         case 'disputed':
             return {
-                label: 'Disputed',
+                label: tx('contract.contextBar.statusDisputed', undefined, 'Disputed'),
                 chipStyle: 'border-red-400/30 bg-red-500/10 text-red-300',
                 glowColor: 'bg-red-500/10',
                 icon: <AlertTriangle className="w-3 h-3 text-red-400 animate-bounce" />,
             };
         case 'completed':
             return {
-                label: 'Completed',
+                label: tx('contract.contextBar.statusCompleted', undefined, 'Completed'),
                 chipStyle: 'border-teal-400/30 bg-teal-500/10 text-teal-300',
                 glowColor: 'bg-teal-500/10',
                 icon: <CheckCircle2 className="w-3 h-3 text-teal-400" />,
             };
         case 'cancelled':
             return {
-                label: 'Cancelled',
+                label: tx('contract.contextBar.statusCancelled', undefined, 'Cancelled'),
                 chipStyle: 'border-white/10 bg-white/5 text-zinc-400',
                 glowColor: 'bg-white/5',
                 icon: null,
             };
         default:
             return {
-                label: 'Contract',
+                label: tx('contract.contextBar.statusContract', undefined, 'Contract'),
                 chipStyle: 'border-white/10 bg-white/5 text-zinc-400',
                 glowColor: 'bg-white/5',
                 icon: null,
@@ -142,8 +144,9 @@ export function ContractContextBar({
     onFundEscrow,
 }: ContractContextBarProps) {
     const [expanded, setExpanded] = useState(false);
+    const { tx } = useTranslation();
 
-    const cfg = getStatusConfig(status, userRole);
+    const cfg = getStatusConfig(status, userRole, tx);
     const revisionRemaining = Math.max(maxRevisions - revisionCount, 0);
     const isTerminal = status === 'completed' || status === 'cancelled' || status === 'disputed';
 
@@ -158,7 +161,7 @@ export function ContractContextBar({
                     className="inline-flex items-center gap-1.5 rounded-lg bg-[#E8A020] px-3.5 py-1.5 text-[11px] font-bold text-black transition hover:bg-[#f0aa28] active:scale-95 disabled:opacity-50"
                 >
                     <Shield className="w-3.5 h-3.5" />
-                    Fund Escrow
+                    {tx('contract.contextBar.btnFundEscrow', undefined, 'Fund Escrow')}
                 </button>
             );
         }
@@ -171,7 +174,7 @@ export function ContractContextBar({
                     className="inline-flex items-center gap-1.5 rounded-lg bg-[#9B8FF0] px-3.5 py-1.5 text-[11px] font-bold text-black transition hover:bg-[#a99cf5] active:scale-95 disabled:opacity-50"
                 >
                     <Send className="w-3.5 h-3.5" />
-                    Deliver Work
+                    {tx('contract.contextBar.btnDeliverWork', undefined, 'Deliver Work')}
                 </button>
             );
         }
@@ -184,7 +187,7 @@ export function ContractContextBar({
                     className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-[11px] font-bold text-white transition hover:bg-emerald-500 active:scale-95 disabled:opacity-50"
                 >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Accept & Pay
+                    {tx('contract.contextBar.btnAcceptPay', undefined, 'Accept & Pay')}
                 </button>
             );
         }
@@ -196,7 +199,7 @@ export function ContractContextBar({
                     className="inline-flex items-center gap-1.5 rounded-lg bg-[#E8A020] px-3.5 py-1.5 text-[11px] font-bold text-black transition hover:bg-[#f0aa28] active:scale-95"
                 >
                     <Star className="w-3.5 h-3.5" />
-                    Leave Review
+                    {tx('contract.contextBar.btnLeaveReview', undefined, 'Leave Review')}
                 </button>
             );
         }
@@ -213,7 +216,7 @@ export function ContractContextBar({
                     className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-white/70 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
                 >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    Request Revision ({revisionRemaining} left)
+                    {tx('contract.contextBar.btnRequestRevision', { remaining: revisionRemaining }, `Request Revision (${revisionRemaining} left)`)}
                 </button>
             );
         }
@@ -263,7 +266,7 @@ export function ContractContextBar({
                             <div className="flex items-center gap-2 rounded-xl border border-white/[0.04] bg-white/[0.01] p-2.5">
                                 <Clock className="w-4 h-4 text-zinc-400" />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 leading-none">Deadline</p>
+                                    <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 leading-none">{tx('contract.contextBar.infoDeadline', undefined, 'Deadline')}</p>
                                     <p className="mt-1 text-[12px] font-semibold text-white/80 leading-none">{fmt(deadline)}</p>
                                 </div>
                             </div>
@@ -272,8 +275,8 @@ export function ContractContextBar({
                             <div className="flex items-center gap-2 rounded-xl border border-sky-500/20 bg-sky-500/5 p-2.5">
                                 <Clock className="w-4 h-4 text-sky-400 animate-pulse" />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] uppercase font-bold tracking-wider text-sky-400/70 leading-none">Review Period</p>
-                                    <p className="mt-1 text-[12px] font-semibold text-sky-200 leading-none">Review by {fmt(reviewDueAt)}</p>
+                                    <p className="text-[10px] uppercase font-bold tracking-wider text-sky-400/70 leading-none">{tx('contract.contextBar.infoReviewPeriod', undefined, 'Review Period')}</p>
+                                    <p className="mt-1 text-[12px] font-semibold text-sky-200 leading-none">{tx('contract.contextBar.infoReviewBy', { date: fmt(reviewDueAt) }, `Review by ${fmt(reviewDueAt)}`)}</p>
                                 </div>
                             </div>
                         )}
@@ -281,7 +284,7 @@ export function ContractContextBar({
                             <div className="flex items-center gap-2 rounded-xl border border-white/[0.04] bg-white/[0.01] p-2.5">
                                 <Clock className="w-4 h-4 text-zinc-400" />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 leading-none">Delivered On</p>
+                                    <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 leading-none">{tx('contract.contextBar.infoDeliveredOn', undefined, 'Delivered On')}</p>
                                     <p className="mt-1 text-[12px] font-semibold text-white/80 leading-none">{fmt(deliverySubmittedAt)}</p>
                                 </div>
                             </div>
@@ -290,7 +293,7 @@ export function ContractContextBar({
                             <div className={`flex items-center gap-2 rounded-xl border p-2.5 ${revisionRemaining === 0 ? 'border-red-500/20 bg-red-500/5' : 'border-white/[0.04] bg-white/[0.01]'}`}>
                                 <RotateCcw className={`w-4 h-4 ${revisionRemaining === 0 ? 'text-red-400' : 'text-zinc-400'}`} />
                                 <div className="min-w-0">
-                                    <p className={`text-[10px] uppercase font-bold tracking-wider leading-none ${revisionRemaining === 0 ? 'text-red-400/70' : 'text-zinc-500'}`}>Revisions Used</p>
+                                    <p className={`text-[10px] uppercase font-bold tracking-wider leading-none ${revisionRemaining === 0 ? 'text-red-400/70' : 'text-zinc-500'}`}>{tx('contract.contextBar.infoRevisionsUsed', undefined, 'Revisions Used')}</p>
                                     <p className={`mt-1 text-[12px] font-semibold leading-none ${revisionRemaining === 0 ? 'text-red-300' : 'text-white/80'}`}>{revisionCount} / {maxRevisions}</p>
                                 </div>
                             </div>
@@ -299,8 +302,8 @@ export function ContractContextBar({
                             <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-2.5">
                                 <Lock className="w-4 h-4 text-amber-400" />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] uppercase font-bold tracking-wider text-amber-400/70 leading-none">Escrow Status</p>
-                                    <p className="mt-1 text-[12px] font-semibold text-amber-200 leading-none">Escrow not funded</p>
+                                    <p className="text-[10px] uppercase font-bold tracking-wider text-amber-400/70 leading-none">{tx('contract.contextBar.infoEscrowStatus', undefined, 'Escrow Status')}</p>
+                                    <p className="mt-1 text-[12px] font-semibold text-amber-200 leading-none">{tx('contract.contextBar.infoEscrowNotFunded', undefined, 'Escrow not funded')}</p>
                                 </div>
                             </div>
                         )}
@@ -308,8 +311,8 @@ export function ContractContextBar({
                             <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-2.5">
                                 <Shield className="w-4 h-4 text-emerald-400" />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] uppercase font-bold tracking-wider text-emerald-400/70 leading-none">Escrow Status</p>
-                                    <p className="mt-1 text-[12px] font-semibold text-emerald-300 leading-none">Escrow secured</p>
+                                    <p className="text-[10px] uppercase font-bold tracking-wider text-emerald-400/70 leading-none">{tx('contract.contextBar.infoEscrowStatus', undefined, 'Escrow Status')}</p>
+                                    <p className="mt-1 text-[12px] font-semibold text-emerald-300 leading-none">{tx('contract.contextBar.infoEscrowSecured', undefined, 'Escrow secured')}</p>
                                 </div>
                             </div>
                         )}
@@ -325,7 +328,7 @@ export function ContractContextBar({
                             className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-bold text-white/80 transition hover:bg-white/10 hover:text-white ml-auto"
                         >
                             <ExternalLink className="w-3.5 h-3.5" />
-                            Full Workspace
+                            {tx('contract.contextBar.btnFullWorkspace', undefined, 'Full Workspace')}
                         </button>
                     </div>
                 </div>

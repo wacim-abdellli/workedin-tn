@@ -209,7 +209,7 @@ export const ConversationListPanel = ({
                                             else onArchive(conversation.id);
                                         }}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] items-center justify-center text-on-surface-subtle hover:text-on-surface transition-all opacity-0 group-hover/item:opacity-100 hidden md:flex"
-                                        aria-label={isArchived ? 'Unarchive conversation' : 'Archive conversation'}
+                                        aria-label={isArchived ? tx('pages.messages.archiveAriaUnarchive', undefined, 'Unarchive conversation') : tx('pages.messages.archiveAriaArchive', undefined, 'Archive conversation')}
                                     >
                                         <Archive className="h-3 w-3" />
                                     </button>
@@ -301,9 +301,9 @@ export const ConversationListPanel = ({
                                                         const needsEscrowFunding = conversation.contract_id && !isEscrowFunded && (contractStatus === 'pending_payment' || contractStatus === 'active');
                                                         if (needsEscrowFunding) {
                                                             items.push(
-                                                                <span key="unfunded" className="shrink-0 text-amber-500 font-semibold" title="Escrow not funded yet">
-                                                                    Unfunded
-                                                                </span>
+                                                                 <span key="unfunded" className="shrink-0 text-amber-500 font-semibold" title={tx('pages.messages.escrowNotFunded', undefined, 'Escrow not funded yet')}>
+                                                                     {tx('pages.messages.escrowNotFunded', undefined, 'Unfunded')}
+                                                                 </span>
                                                             );
                                                         }
                                                         if (workDesc) {

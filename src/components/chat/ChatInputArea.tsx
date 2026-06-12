@@ -31,7 +31,7 @@ export const ChatInputArea: React.FC<ChatInputAreaProps> = ({
     onFileSelect,
     selectedFiles,
     onRemoveFile,
-    placeholder = 'Type a message...',
+    placeholder = tx('pages.messages.placeholder', undefined, 'Type a message...'),
     disabled = false,
     onTypingStart,
     onTypingStop,

@@ -1093,7 +1093,64 @@ export const en: Translations = {
         "disputeError": "Error opening dispute",
         "reviewSent": "Review submitted successfully",
         "statusUnavailable": "Status unavailable",
-        "statusUnavailableHint": "Status is temporarily unavailable. This chat is still available."
+        "statusUnavailableHint": "Status is temporarily unavailable. This chat is still available.",
+        "hideWorkspace": "Hide Workspace",
+        "noDueDate": "No due date",
+        "lifecycle": {
+            "uploadFailed": "{{stage}} upload failed for {{name}}: {{message}}",
+            "workDeliveredMessage": "[[contract_completed]] Work has been accepted and payment released",
+            "noComment": "No comment provided",
+            "provideBothError": "Please provide deliverables for both review and final hand-off phases."
+        },
+        "blockedReasons": {
+            "readOnly": "This conversation is read-only right now.",
+            "noAttachments": "Attachments are disabled for this conversation.",
+            "noVoiceNotes": "Voice notes are disabled for this conversation.",
+            "safetyBlocked": "This message is blocked by contract safety rules."
+        },
+        "contextBar": {
+            "statusAwaitingPayment": "Awaiting Payment",
+            "statusInProgress": "In Progress",
+            "statusActive": "Active",
+            "statusUnderReview": "Under Review",
+            "statusRevisionRequested": "Revision Requested",
+            "statusDisputed": "Disputed",
+            "statusCompleted": "Completed",
+            "statusCancelled": "Cancelled",
+            "statusContract": "Contract",
+            "btnFundEscrow": "Fund Escrow",
+            "btnDeliverWork": "Deliver Work",
+            "btnAcceptPay": "Accept & Pay",
+            "btnLeaveReview": "Leave Review",
+            "btnRequestRevision": "Request Revision ({{remaining}} left)",
+            "btnFullWorkspace": "Full Workspace",
+            "infoDeadline": "Deadline",
+            "infoReviewPeriod": "Review Period",
+            "infoReviewBy": "Review by {{date}}",
+            "infoDeliveredOn": "Delivered On",
+            "infoRevisionsUsed": "Revisions Used",
+            "infoEscrowStatus": "Escrow Status",
+            "infoEscrowNotFunded": "Escrow not funded",
+            "infoEscrowSecured": "Escrow secured"
+        },
+        "completionBanner": {
+            "title": "Contract completed!",
+            "readOnly": "This thread is now read-only.",
+            "leaveReview": "Help {{name}} grow their reputation — leave a review.",
+            "dismiss": "Dismiss",
+            "reviewAction": "Review"
+        },
+        "escrowBanner": {
+            "freelancerWaiting": "Waiting for the client to secure the escrow before work begins.",
+            "freelancerNotified": "You'll be notified once funds are confirmed.",
+            "clientSecureTitle": "Secure your contract",
+            "clientFundDetail": "Fund {{amount}} TND into escrow to start working with {{name}}.",
+            "clientFundSafe": "Funds are held safely until you approve delivery.",
+            "walletBalance": "Wallet balance: {{balance}} TND",
+            "topUpNeeded": "Top up needed",
+            "fundAmount": "Fund {{amount}} TND",
+            "dismiss": "Dismiss"
+        }
     },
     "jobMatches": {
         "searchError": "Error searching for matches",
@@ -2158,6 +2215,63 @@ export const en: Translations = {
             "a11y": {
                 "openImageAttachment": "Open image attachment",
                 "openAttachment": "Open attachment"
+            },
+            "inboxLabel": "Inbox",
+            "senderAlt": "Sender",
+            "systemEventTitle": "System Update",
+            "placeholder": "Type a message...",
+            "startConversationDesc": "Start the conversation by sending a message or file below.",
+            "escrowNotFunded": "Escrow not funded yet",
+            "noDueDate": "No due date",
+            "hideWorkspace": "Hide Workspace",
+            "archiveAriaUnarchive": "Unarchive conversation",
+            "archiveAriaArchive": "Archive conversation",
+            "lightbox": {
+                "downloadAria": "Download image",
+                "downloadTitle": "Download",
+                "closeAria": "Close image preview",
+                "closeTitle": "Close",
+                "previewAlt": "Preview",
+                "imagePreviewAria": "Image preview"
+            },
+            "delivery": {
+                "submitLabel": "Submit delivery",
+                "resubmitLabel": "Resubmit delivery",
+                "submitting": "Submitting delivery...",
+                "workDeliveredReview": "Work delivered and ready for review",
+                "provideBothError": "Please provide deliverables for both review and final hand-off phases.",
+                "uploadFailed": "{{stage}} upload failed for {{file}}: {{message}}"
+            },
+            "contract": {
+                "status": {
+                    "inProgress": "In progress",
+                    "underReview": "Under review",
+                    "revisionRequested": "Revision requested",
+                    "completed": "Completed",
+                    "disputed": "Disputed",
+                    "paymentPending": "Payment pending",
+                    "cancelled": "Cancelled",
+                    "syncing": "Syncing"
+                },
+                "nextStep": {
+                    "clientReviewDelivery": "Review delivery, then accept, request changes, or dispute.",
+                    "freelancerWaitingForReview": "Waiting for client review. Final files stay protected.",
+                    "freelancerSubmitReviewFiles": "Submit review files and locked final files when ready.",
+                    "clientWaitingDelivery": "Freelancer is working. Delivery will appear here.",
+                    "completedDefault": "Contract is complete.",
+                    "completedLeaveReview": "Leave a review to close the trust loop.",
+                    "paymentPending": "Payment must be confirmed before work begins.",
+                    "disputed": "Dispute is open. Evidence is preserved.",
+                    "syncing": "Keep the conversation open while the contract syncs."
+                }
+            },
+            "system": {
+                "eventTitle": "System Update",
+                "deliveryTitle": "Work Delivered",
+                "revisionTitle": "Revision Requested",
+                "completedTitle": "Contract Completed",
+                "disputeTitle": "Dispute Opened",
+                "reviewTitle": "Review Submitted"
             }
         },
         "freelancerProfile": {

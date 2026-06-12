@@ -1093,7 +1093,64 @@ export const fr: Translations = {
         "disputeError": "Erreur lors de l'ouverture du litige",
         "reviewSent": "Avis envoyé avec succès",
         "statusUnavailable": "Statut indisponible",
-        "statusUnavailableHint": "Les données du statut sont temporairement indisponibles. Cette discussion reste disponible."
+        "statusUnavailableHint": "Les données du statut sont temporairement indisponibles. Cette discussion reste disponible.",
+        "hideWorkspace": "Masquer l'espace",
+        "noDueDate": "Pas de date d'échéance",
+        "lifecycle": {
+            "uploadFailed": "Échec du téléchargement {{stage}} pour {{name}} : {{message}}",
+            "workDeliveredMessage": "[[contract_completed]] Le travail a été accepté et le paiement libéré",
+            "noComment": "Aucun commentaire fourni",
+            "provideBothError": "Veuillez fournir des livrables pour les phases de révision et de remise finale."
+        },
+        "blockedReasons": {
+            "readOnly": "Cette conversation est en lecture seule pour le moment.",
+            "noAttachments": "Les pièces jointes sont désactivées pour cette conversation.",
+            "noVoiceNotes": "Les notes vocales sont désactivées pour cette conversation.",
+            "safetyBlocked": "Ce message est bloqué par les règles de sécurité du contrat."
+        },
+        "contextBar": {
+            "statusAwaitingPayment": "En attente de paiement",
+            "statusInProgress": "En cours",
+            "statusActive": "Actif",
+            "statusUnderReview": "En révision",
+            "statusRevisionRequested": "Révision demandée",
+            "statusDisputed": "En litige",
+            "statusCompleted": "Terminé",
+            "statusCancelled": "Annulé",
+            "statusContract": "Contrat",
+            "btnFundEscrow": "Financer la garantie",
+            "btnDeliverWork": "Livrer le travail",
+            "btnAcceptPay": "Accepter et payer",
+            "btnLeaveReview": "Laisser un avis",
+            "btnRequestRevision": "Demander une révision ({{remaining}} restantes)",
+            "btnFullWorkspace": "Espace complet",
+            "infoDeadline": "Date limite",
+            "infoReviewPeriod": "Période de révision",
+            "infoReviewBy": "Révision avant le {{date}}",
+            "infoDeliveredOn": "Livré le",
+            "infoRevisionsUsed": "Révisions utilisées",
+            "infoEscrowStatus": "Statut de la garantie",
+            "infoEscrowNotFunded": "Garantie non financée",
+            "infoEscrowSecured": "Garantie sécurisée"
+        },
+        "completionBanner": {
+            "title": "Contrat terminé !",
+            "readOnly": "Cette conversation est désormais en lecture seule.",
+            "leaveReview": "Aidez {{name}} à développer sa réputation — laissez un avis.",
+            "dismiss": "Ignorer",
+            "reviewAction": "Avis"
+        },
+        "escrowBanner": {
+            "freelancerWaiting": "En attente que le client sécurise la garantie avant le début du travail.",
+            "freelancerNotified": "Vous serez notifié une fois les fonds confirmés.",
+            "clientSecureTitle": "Sécurisez votre contrat",
+            "clientFundDetail": "Financez {{amount}} TND dans la garantie pour commencer à travailler avec {{name}}.",
+            "clientFundSafe": "Les fonds sont conservés en toute sécurité jusqu'à ce que vous approuviez la livraison.",
+            "walletBalance": "Solde du portefeuille : {{balance}} TND",
+            "topUpNeeded": "Rechargement nécessaire",
+            "fundAmount": "Financer {{amount}} TND",
+            "dismiss": "Ignorer"
+        }
     },
     "jobMatches": {
         "searchError": "Erreur lors de la recherche de correspondances",
@@ -2156,6 +2213,63 @@ export const fr: Translations = {
             "a11y": {
                 "openImageAttachment": "Ouvrir la pièce jointe image",
                 "openAttachment": "Ouvrir la pièce jointe"
+            },
+            "inboxLabel": "Boîte de réception",
+            "senderAlt": "Expéditeur",
+            "systemEventTitle": "Mise à jour système",
+            "placeholder": "Tapez un message...",
+            "startConversationDesc": "Commencez la conversation en envoyant un message ou un fichier ci-dessous.",
+            "escrowNotFunded": "Garantie non financée",
+            "noDueDate": "Pas de date d'échéance",
+            "hideWorkspace": "Masquer l'espace",
+            "archiveAriaUnarchive": "Désarchiver la conversation",
+            "archiveAriaArchive": "Archiver la conversation",
+            "lightbox": {
+                "downloadAria": "Télécharger l'image",
+                "downloadTitle": "Télécharger",
+                "closeAria": "Fermer l'aperçu de l'image",
+                "closeTitle": "Fermer",
+                "previewAlt": "Aperçu",
+                "imagePreviewAria": "Aperçu de l'image"
+            },
+            "delivery": {
+                "submitLabel": "Soumettre la livraison",
+                "resubmitLabel": "Soumettre à nouveau",
+                "submitting": "Soumission en cours...",
+                "workDeliveredReview": "Travail livré et prêt pour révision",
+                "provideBothError": "Veuillez fournir des livrables pour les phases de révision et de remise finale.",
+                "uploadFailed": "Échec du téléchargement {{stage}} pour {{file}} : {{message}}"
+            },
+            "contract": {
+                "status": {
+                    "inProgress": "En cours",
+                    "underReview": "En révision",
+                    "revisionRequested": "Révision demandée",
+                    "completed": "Terminé",
+                    "disputed": "En litige",
+                    "paymentPending": "Paiement en attente",
+                    "cancelled": "Annulé",
+                    "syncing": "Synchronisation"
+                },
+                "nextStep": {
+                    "clientReviewDelivery": "Révisez la livraison, puis acceptez, demandez des modifications ou ouvrez un litige.",
+                    "freelancerWaitingForReview": "En attente de révision par le client. Les fichiers finaux restent protégés.",
+                    "freelancerSubmitReviewFiles": "Soumettez les fichiers de révision et les fichiers finaux verrouillés quand vous êtes prêt.",
+                    "clientWaitingDelivery": "Le freelance travaille. La livraison apparaîtra ici.",
+                    "completedDefault": "Le contrat est terminé.",
+                    "completedLeaveReview": "Laissez un avis pour boucler la boucle de confiance.",
+                    "paymentPending": "Le paiement doit être confirmé avant le début du travail.",
+                    "disputed": "Le litige est ouvert. Les preuves sont conservées.",
+                    "syncing": "Gardez la conversation ouverte pendant la synchronisation du contrat."
+                }
+            },
+            "system": {
+                "eventTitle": "Mise à jour système",
+                "deliveryTitle": "Travail livré",
+                "revisionTitle": "Révision demandée",
+                "completedTitle": "Contrat terminé",
+                "disputeTitle": "Litige ouvert",
+                "reviewTitle": "Avis soumis"
             }
         },
         "freelancerProfile": {

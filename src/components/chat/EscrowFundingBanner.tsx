@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Shield, Wallet, Lock, ArrowRight, Clock, X } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 interface EscrowFundingBannerProps {
     amount: number;
@@ -23,6 +24,7 @@ export function EscrowFundingBanner({
 }: EscrowFundingBannerProps) {
     const [dismissed, setDismissed] = useState(false);
     if (dismissed) return null;
+    const { tx } = useTranslation();
 
     const canPayFromWallet = walletBalance !== null && walletBalance >= amount;
 
@@ -31,8 +33,8 @@ export function EscrowFundingBanner({
             <div className="mx-4 md:mx-6 mt-3 flex items-center gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
                 <Clock className="w-4 h-4 text-amber-400 shrink-0" />
                 <p className="text-[12px] text-amber-200/80 flex-1">
-                    Waiting for the client to secure the escrow before work begins.
-                    You'll be notified once funds are confirmed.
+                    {tx('contract.escrowBanner.freelancerWaiting', undefined, "Waiting for the client to secure the escrow before work begins.")}
+                    {' '}{tx('contract.escrowBanner.freelancerNotified', undefined, "You'll be notified once funds are confirmed.")}
                 </p>
             </div>
         );
@@ -52,25 +54,21 @@ export function EscrowFundingBanner({
                     </div>
                     <div className="min-w-0">
                         <p className="text-sm font-bold text-white mb-0.5">
-                            Secure your contract
+                            {tx('contract.escrowBanner.clientSecureTitle', undefined, 'Secure your contract')}
                         </p>
                         <p className="text-[12px] text-white/60 leading-relaxed">
-                            Fund{' '}
-                            <span className="font-semibold text-amber-300">{fmtAmount(amount)} TND</span>
-                            {' '}into escrow to start working with{' '}
-                            <span className="text-white/80">{freelancerName}</span>.
-                            Funds are held safely until you approve delivery.
+                            {tx('contract.escrowBanner.clientFundDetail', { amount: fmtAmount(amount), name: freelancerName }, `Fund ${fmtAmount(amount)} TND into escrow to start working with ${freelancerName}.`)}
+                        </p>
+                        <p className="text-[12px] text-white/60 leading-relaxed">
+                            {tx('contract.escrowBanner.clientFundSafe', undefined, 'Funds are held safely until you approve delivery.')}
                         </p>
                         {walletBalance !== null && (
                             <div className="mt-1.5 flex items-center gap-1.5">
                                 <Wallet className="w-3 h-3 text-white/40" />
                                 <span className="text-[11px] text-white/40">
-                                    Wallet balance:{' '}
-                                    <span className={canPayFromWallet ? 'text-emerald-400 font-semibold' : 'text-red-400 font-semibold'}>
-                                        {fmtAmount(walletBalance)} TND
-                                    </span>
+                                    {tx('contract.escrowBanner.walletBalance', { balance: fmtAmount(walletBalance) }, `Wallet balance: ${fmtAmount(walletBalance)} TND`)}
                                     {!canPayFromWallet && (
-                                        <span className="ml-1 text-white/30">· Top up needed</span>
+                                        <span className="ml-1 text-white/30">· {tx('contract.escrowBanner.topUpNeeded', undefined, 'Top up needed')}</span>
                                     )}
                                 </span>
                             </div>
@@ -94,14 +92,14 @@ export function EscrowFundingBanner({
                         ) : (
                             <Lock className="w-4 h-4" />
                         )}
-                        Fund {fmtAmount(amount)} TND
+                        Fund {tx('contract.escrowBanner.fundAmount', { amount: fmtAmount(amount) }, `${fmtAmount(amount)} TND`)}
                         {!isLoading && <ArrowRight className="w-3.5 h-3.5" />}
                     </button>
                     <button
                         type="button"
                         onClick={() => setDismissed(true)}
                         className="rounded-lg p-2 text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors"
-                        aria-label="Dismiss"
+                        aria-label={tx('contract.escrowBanner.dismiss', undefined, 'Dismiss')}
                     >
                         <X className="w-4 h-4" />
                     </button>

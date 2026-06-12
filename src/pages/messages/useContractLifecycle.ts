@@ -988,7 +988,7 @@ export function useContractLifecycle({
             const hasReview = selectedDeliveryFiles.some((_, idx) => fileStages[idx] === 'review') || links.some(l => l.link_kind === 'review_link');
             const hasFinal = selectedDeliveryFiles.some((_, idx) => fileStages[idx] === 'final') || links.some(l => l.link_kind === 'final_link');
             if (!hasReview || !hasFinal) {
-                setDeliveryActionError('Please provide deliverables for both review and final hand-off phases.');
+                setDeliveryActionError(tx('contract.lifecycle.provideBothError', undefined, 'Please provide deliverables for both review and final hand-off phases.'));
                 setIsDeliveringContractWork(false);
                 return;
             }
@@ -1015,7 +1015,7 @@ export function useContractLifecycle({
                 const path = `${user.id}/${contractId}/submissions/${stage}/${Date.now()}_${safeName}`;
                 
                 const { error } = await supabase.storage.from('contract-files').upload(path, file, { upsert: false });
-                if (error) throw new Error(`${stage === 'review' ? 'Review' : 'Final'} upload failed for ${file.name}: ${error.message}`);
+                if (error) throw new Error(tx('contract.lifecycle.uploadFailed', { stage: stage === 'review' ? 'Review' : 'Final', name: file.name, message: error.message }, `${stage === 'review' ? 'Review' : 'Final'} upload failed for ${file.name}: ${error.message}`));
 
                 return {
                     name: file.name,
@@ -1484,7 +1484,7 @@ export function useContractLifecycle({
                     id: msg.id,
                     text: sysMsg.text,
                     timestamp: msg.created_at,
-                    actorName: msg.sender?.full_name || 'System',
+                    actorName: msg.sender?.full_name || tx('pages.messages.systemEventTitle', undefined, 'System'),
                     actorRole: msg.sender_id === user?.id ? (selectedContractUserRole === 'client' ? 'client' : 'freelancer') : (selectedContractUserRole === 'client' ? 'freelancer' : 'client'),
                     actorAvatarUrl: msg.sender?.avatar_url || null,
                     kind: sysMsg.kind,

@@ -200,7 +200,7 @@ export const MessageBubbleItem = ({
                                         iconColorClass = 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20';
                                     }
 
-                                    let eventTitle = 'System Update';
+                                    let eventTitle = tx('pages.messages.systemEventTitle', undefined, 'System Update');
                                     let eventDescription = messageText;
                                     if (kind === 'delivery') {
                                         eventTitle = tx('pages.messages.system.deliveryTitle', undefined, 'Work Delivered');

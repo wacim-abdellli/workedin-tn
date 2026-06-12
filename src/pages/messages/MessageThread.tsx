@@ -998,7 +998,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
 
                         <img
                             src={lightboxImageUrl}
-                            alt="Preview"
+                            alt={tx('pages.messages.lightbox.altText', undefined, 'Preview')}
                             className="max-w-full max-h-[90vh] rounded-xl object-contain"
                             onError={e => {
                                 e.currentTarget.style.display = 'none';

@@ -1,6 +1,7 @@
 import React from 'react';
 import { m } from 'framer-motion';
 import { Check, CheckCheck, Clock, FileText, Download } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 interface Attachment {
     id?: string;
@@ -31,6 +32,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     senderAvatar,
     onDownloadAttachment
 }) => {
+    const { tx } = useTranslation();
     // Determine colors based on design tokens
     const bubbleBg = isOwnMessage 
         ? 'var(--color-bg-elevated)' 
@@ -56,7 +58,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                 {!isOwnMessage && (
                     <div className="flex-shrink-0 mt-auto mb-1">
                         {senderAvatar ? (
-                            <img src={senderAvatar} alt="Sender" className="h-8 w-8 rounded-full object-cover border" style={{ borderColor: 'var(--color-border-subtle)' }} />
+                            <img src={senderAvatar} alt={tx('pages.messages.senderAlt', undefined, 'Sender')} className="h-8 w-8 rounded-full object-cover border" style={{ borderColor: 'var(--color-border-subtle)' }} />
                         ) : (
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-subtle)] border border-[var(--color-border-subtle)]">
                                 <span className="text-xs font-medium text-[var(--color-text-tertiary)]">U</span>
@@ -74,7 +76,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                         style={{ backgroundColor: bubbleBg, color: textColor }}
                     >
                         {isDeleted ? (
-                            <p className="italic opacity-70 text-sm">This message was deleted</p>
+                            <p className="italic opacity-70 text-sm">{tx('pages.messages.deletedMessage', undefined, 'This message was deleted')}</p>
                         ) : (
                             <>
                                 <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">
@@ -93,7 +95,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                                             >
                                                 <FileText className="h-5 w-5 opacity-80" />
                                                 <div className="flex-1 overflow-hidden">
-                                                    <p className="truncate text-sm font-medium">{att.name || 'Attachment'}</p>
+                                                    <p className="truncate text-sm font-medium">{att.name || tx('pages.messages.attachmentLabel', undefined, 'Attachment')}</p>
                                                 </div>
                                                 <Download className="h-4 w-4 opacity-70" />
                                             </div>

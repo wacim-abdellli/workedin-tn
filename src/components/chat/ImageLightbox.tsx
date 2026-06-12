@@ -4,6 +4,7 @@
  * Extracted from Messages.tsx.
  */
 import { X, Download } from 'lucide-react';
+import { useTranslation } from '../../i18n';
 
 interface ImageLightboxProps {
     imageUrl: string | null;
@@ -12,6 +13,7 @@ interface ImageLightboxProps {
 
 export const ImageLightbox = ({ imageUrl, onClose }: ImageLightboxProps) => {
     if (!imageUrl) return null;
+    const { tx } = useTranslation();
 
     const handleDownload = () => {
         const link = document.createElement('a');
@@ -28,7 +30,7 @@ export const ImageLightbox = ({ imageUrl, onClose }: ImageLightboxProps) => {
             onClick={onClose}
             role="dialog"
             aria-modal="true"
-            aria-label="Image preview"
+            aria-label={tx('pages.messages.lightbox.ariaLabel', undefined, 'Image preview')}
         >
             <div
                 className="relative max-w-4xl max-h-[90vh] flex items-center justify-center"
@@ -39,8 +41,8 @@ export const ImageLightbox = ({ imageUrl, onClose }: ImageLightboxProps) => {
                         type="button"
                         onClick={handleDownload}
                         className="p-2 rounded-full hover:bg-white/10 transition-colors"
-                        aria-label="Download image"
-                        title="Download"
+                        aria-label={tx('pages.messages.lightbox.downloadAria', undefined, 'Download image')}
+                        title={tx('pages.messages.lightbox.downloadTitle', undefined, 'Download')}
                     >
                         <Download className="h-6 w-6 text-white" />
                     </button>
@@ -48,8 +50,8 @@ export const ImageLightbox = ({ imageUrl, onClose }: ImageLightboxProps) => {
                         type="button"
                         onClick={onClose}
                         className="p-2 rounded-full hover:bg-white/10 transition-colors"
-                        aria-label="Close image preview"
-                        title="Close"
+                        aria-label={tx('pages.messages.lightbox.closeAria', undefined, 'Close image preview')}
+                        title={tx('pages.messages.lightbox.closeTitle', undefined, 'Close')}
                     >
                         <X className="h-6 w-6 text-white" />
                     </button>
@@ -57,7 +59,7 @@ export const ImageLightbox = ({ imageUrl, onClose }: ImageLightboxProps) => {
 
                 <img
                     src={imageUrl}
-                    alt="Preview"
+                    alt={tx('pages.messages.lightbox.altText', undefined, 'Preview')}
                     className="max-w-full max-h-[90vh] rounded-xl object-contain"
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 />

@@ -199,7 +199,7 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                 </div>
             ) : (
                 <div className="h-[68px] border-b border-white/[0.04] flex items-center justify-center shrink-0">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">Inbox</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-600">{tx('pages.messages.inboxLabel', undefined, 'Inbox')}</span>
                 </div>
             )}
 
@@ -262,7 +262,7 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                                                 }
                                             }}
                                             className="absolute end-3 top-1/2 -translate-y-1/2 z-10 h-6 w-6 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] items-center justify-center text-on-surface-subtle hover:text-on-surface transition-all opacity-0 group-hover/item:opacity-100 hidden md:flex"
-                                            aria-label={isArchived ? 'Unarchive conversation' : 'Archive conversation'}
+                                            aria-label={isArchived ? tx('pages.messages.archiveAriaUnarchive', undefined, 'Unarchive conversation') : tx('pages.messages.archiveAriaArchive', undefined, 'Archive conversation')}
                                         >
                                             <Archive className="h-3 w-3" />
                                         </button>
