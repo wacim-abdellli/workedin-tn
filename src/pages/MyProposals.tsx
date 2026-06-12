@@ -9,7 +9,7 @@ import { Header } from "@/components/layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useTranslation } from "@/i18n";
-import SEO, { SEO_CONFIG } from "@/components/common/SEO";
+import SEO from "@/components/common/SEO";
 
 type ProposalTab = "all" | "pending" | "accepted" | "rejected";
 
@@ -57,7 +57,7 @@ type Tx = (key: string, params?: Record<string, string | number>, fallback?: str
 
 const buildContractThreadPath = (contractId: string, otherUserId?: string | null) => {
   const encodedContractId = encodeURIComponent(contractId);
-  const encodedOtherUserId = otherUserId ? encodeURIComponent(otherUserId) : null;
+  const _encodedOtherUserId = otherUserId ? encodeURIComponent(otherUserId) : null;
   return `/workspace/${encodedContractId}`;
 };
 

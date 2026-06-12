@@ -18,7 +18,7 @@ const POST_AUTH_ROUTE = '/login?oauth=resume';
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 const AuthCallback = () => {
-    const { dir, tx } = useTranslation();
+    const { dir: _dir, tx } = useTranslation();
     const [status, setStatus] = useState<CallbackState>('loading');
     const [errorDetails, setErrorDetails] = useState<{ code?: string; message?: string } | null>(null);
 

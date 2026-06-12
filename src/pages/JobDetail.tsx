@@ -49,7 +49,7 @@ import type { ProposalFormData } from "../components/proposals/ProposalModal";
 import { sendNewProposalEmail } from "../lib/email";
 import SimilarJobCard from "../components/jobs/SimilarJobCard";
 import ClientInfoSidebar from "../components/jobs/ClientInfoSidebar";
-import OptimizedImage from "../components/common/OptimizedImage";
+
 import {
   canApplyToJob,
   canSaveJob,
@@ -162,7 +162,7 @@ function timeAgo(date: string, tx: any): string {
   );
 }
 
-function formatDate(date: string, language: string): string {
+function _formatDate(date: string, language: string): string {
   const locale =
     language === "ar" ? "ar-TN" : language === "fr" ? "fr-FR" : "en-GB";
 
@@ -396,7 +396,7 @@ function JobDetail() {
     resetAt: null,
   };
   const canSubmitToday = dailyProposalUsage.remaining > 0;
-  const dailyUsagePercent =
+  const _dailyUsagePercent =
     dailyProposalUsage.limit > 0
       ? Math.min(
           100,

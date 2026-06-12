@@ -98,7 +98,7 @@ export async function switchWorkspace({
           freelancerProfile,
         })
       );
-    } catch (e) {
+    } catch (_e) {
       // ignore
     }
   }

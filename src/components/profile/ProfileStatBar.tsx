@@ -3,7 +3,7 @@
  * The reference design doesn't show a stat bar, so this component is minimal
  */
 
-import type { ReactNode } from 'react';
+
 import type { ProfileHeroVariant } from './ProfileHero';
 
 export interface ProfileStat {
@@ -17,7 +17,7 @@ interface ProfileStatBarProps {
     variant: ProfileHeroVariant;
 }
 
-export function ProfileStatBar({ stats, variant }: ProfileStatBarProps) {
+export function ProfileStatBar({ stats: _stats, variant: _variant }: ProfileStatBarProps) {
     // Hidden by default to match Upwork reference design
     return null;
 }

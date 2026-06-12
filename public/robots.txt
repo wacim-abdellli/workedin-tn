@@ -1,4 +1,4 @@
-﻿User-agent: *
+User-agent: *
 Disallow: /admin
 Disallow: /admin/
 Disallow: /dashboard
@@ -19,5 +19,5 @@ Allow: /how-it-works
 Allow: /for-clients
 Allow: /faq
 
-Sitemap: https://khedmetna.tn/sitemap.xml
+Sitemap: https://workedin.tn/sitemap.xml
 

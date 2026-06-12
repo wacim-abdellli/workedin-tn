@@ -36,7 +36,7 @@ export default function ProfileHeader({ freelancer, onContact, onMessage, onPlay
     const { user } = useAuth();
     const navigate = useNavigate();
     const isOwnProfile = user?.id === freelancer.id || user?.id === (freelancer as any).profile?.id;
-    const accent = isOwnProfile ? '#8B5CF6' : '#F59E0B';
+    const _accent = isOwnProfile ? '#8B5CF6' : '#F59E0B';
     const profileStrength = Math.max(0, Math.min(100, freelancer.stats.success_rate || 0));
 
     const strengthColor = profileStrength <= 30

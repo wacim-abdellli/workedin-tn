@@ -42,7 +42,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         ? 'var(--color-text-primary)' 
         : 'var(--color-text-primary)';
         
-    const timeColor = isOwnMessage 
+    const _timeColor = isOwnMessage 
         ? 'var(--color-text-tertiary)' 
         : 'var(--color-text-tertiary)';
 

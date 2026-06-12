@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { X, GitPullRequest, ShieldAlert, XCircle } from 'lucide-react';
+import { GitPullRequest, ShieldAlert, XCircle } from 'lucide-react';
 import Button from '../ui/Button';
 
 // Reusable animated modal backdrop and container

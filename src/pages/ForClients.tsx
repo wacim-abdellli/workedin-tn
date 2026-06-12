@@ -9,7 +9,18 @@ import { useTranslation } from '../i18n';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 function ForClients() {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
+
+    const categories = [
+        tx('forClients.categories.items.dev', {}, 'Development & IT'),
+        tx('forClients.categories.items.design', {}, 'Design & Creative'),
+        tx('forClients.categories.items.writing', {}, 'Writing & Translation'),
+        tx('forClients.categories.items.marketing', {}, 'Sales & Marketing'),
+        tx('forClients.categories.items.admin', {}, 'Admin & Customer Support'),
+        tx('forClients.categories.items.finance', {}, 'Finance & Accounting'),
+        tx('forClients.categories.items.video', {}, 'Video & Animation'),
+        tx('forClients.categories.items.data', {}, 'Data Science & Analytics'),
+    ];
 
     // Mock top freelancers (In real app, fetch from DB)
     const topFreelancers = [
@@ -137,7 +148,7 @@ function ForClients() {
                 <div className="container-custom">
                     <h2 className="mb-12 text-center text-3xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{t.forClients.categories.title}</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {t.forClients.categories.items.map((cat, i) => (
+                        {categories.map((cat, i) => (
                             <div 
                                 key={i} 
                                 className="cursor-pointer rounded-xl p-6 text-center transition-all hover:shadow-md"

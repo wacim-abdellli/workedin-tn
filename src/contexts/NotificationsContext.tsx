@@ -26,7 +26,7 @@ const NotificationsContext = createContext<NotificationsContextType>({
 export function NotificationsProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth();
     const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
-    const { notifications, unreadCount, ...rest } = useRealtimeNotifications(user?.id);
+    const { notifications, unreadCount: _unreadCount, ...rest } = useRealtimeNotifications(user?.id);
 
     const filteredNotifications = useMemo(() => {
         return notifications.filter(n => {

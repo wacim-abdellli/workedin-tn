@@ -15,7 +15,7 @@ const TestimonialsSection = lazy(() => import('../components/home/TestimonialsSe
 const CTASection = lazy(() => import('../components/home/CTASection'));
 
 function Home() {
-    const { language } = useTranslation();
+    const { language: _language } = useTranslation();
     const [stats, setStats] = useState({
         earnings: 0,
         jobs: 0,

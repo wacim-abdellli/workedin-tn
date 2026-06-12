@@ -348,7 +348,7 @@ function JobBoard() {
       }
       return { search: q, categories: cat, jobType: type, budgetRange: budget, sortBy: sort };
     });
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams]);  
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -446,7 +446,7 @@ function JobBoard() {
 
   const listedJobIdsKey = useMemo(() => listedJobIds.join('|'), [listedJobIds]);
 
-  const { data: jobEngagementState, isFetching: isEngagementFetching } = useQuery({
+  const { data: jobEngagementState, isFetching: _isEngagementFetching } = useQuery({
     queryKey: ['job-board-engagement-state', user?.id, listedJobIdsKey],
     enabled: isFreelancerViewer && listedJobIds.length > 0,
     staleTime: 0,
@@ -554,7 +554,7 @@ function JobBoard() {
   // Show skeleton while the primary jobs query is running OR engagement state is not ready yet.
   const showSkeleton = (isFetching && !isFetchingNextPage) || !isEngagementReady;
   // Legacy alias used in a few conditions below
-  const isLoading = showSkeleton;
+  const _isLoading = showSkeleton;
   const selectedSortOption =
     SORT_OPTIONS.find((option) => option.value === filters.sortBy) || SORT_OPTIONS[0];
 
@@ -623,7 +623,7 @@ function JobBoard() {
     [navigate, saveDecision, savedJobIds, showToast, toggleSaveMutation],
   );
 
-  const renderFilterItem = (
+  const _renderFilterItem = (
     id: string,
     label: string,
     checked: boolean,

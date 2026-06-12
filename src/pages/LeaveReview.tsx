@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import SEO, { SEO_CONFIG } from "@/components/common/SEO";
 import OptimizedImage from "@/components/common/OptimizedImage";
 import { Header } from "@/components/layout";
-import Button from "@/components/ui/Button";
+
 import { useToast } from "@/components/ui/Toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "@/i18n";

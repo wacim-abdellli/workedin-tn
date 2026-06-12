@@ -144,7 +144,7 @@ export function useContractState({
         [contract]
     );
 
-    const updateStatus = useCallback(
+    const _updateStatus = useCallback(
         async (
             newStatus: ContractStatus,
             additionalData: Partial<ContractData> = {}
@@ -204,7 +204,7 @@ export function useContractState({
                 const trimmedNote = note.trim();
                 const deliveryMessage = trimmedNote
                     ? `[[delivery]] ${trimmedNote}`
-                    : '[[delivery]] Work delivered and ready for review';
+                    : '[[delivery]]';
 
                 const nextDeliveryNote = trimmedNote || 'submitted';
 

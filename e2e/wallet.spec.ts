@@ -50,7 +50,7 @@ test.describe('Wallet Flow (Freelancer)', () => {
     } else {
       // If button is disabled, verify it's due to insufficient balance
       const insufficientBalanceMessage = page.locator('text=/insufficient|رصيد.*غير.*كافي|insuffisant/i');
-      const messageVisible = await insufficientBalanceMessage.isVisible().catch(() => false);
+      const _messageVisible = await insufficientBalanceMessage.isVisible().catch(() => false);
       
       // Button should be disabled when balance is below minimum
       expect(isDisabled).toBeTruthy();

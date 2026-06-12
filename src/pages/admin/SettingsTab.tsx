@@ -15,7 +15,7 @@ export default function SettingsTab() {
     useEffect(() => { localStorage.setItem('admin_refresh_interval', String(refreshIntervalSec)); }, [refreshIntervalSec]);
 
     const panelClass = adminPanelClass;
-    const selectClass = adminSelectClass;
+    const _selectClass = adminSelectClass;
 
     return (
         <div className="space-y-6">

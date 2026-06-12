@@ -180,7 +180,7 @@ export function I18nProvider({ children, defaultLanguage = 'ar' }: I18nProviderP
         } else {
             try {
                 category = new Intl.PluralRules(language).select(count);
-            } catch (e) {
+            } catch (_e) {
                 category = count === 1 ? 'one' : 'other';
             }
         }

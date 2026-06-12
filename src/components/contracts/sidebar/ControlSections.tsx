@@ -58,7 +58,7 @@ export function ContractPulse({ model, userRole, onGoToMessages }: { model: Work
                     <PartyAvatar party={model.otherParty} size="md" />
                     <div className="min-w-0 flex-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            {userRole === 'client' ? tx('auth.accountPanel.freelancer') : tx('auth.accountPanel.client')}
+                            {userRole === 'client' ? tx('auth.accountPanel.freelancerLabel') : tx('auth.accountPanel.clientLabel')}
                         </p>
                         <h4 className="mt-0.5 truncate text-[14px] font-semibold text-zinc-100">
                             {model.otherParty.full_name || tx('messages.userFallback')}
@@ -290,7 +290,7 @@ function ReviewCountdown({ targetIso }: { targetIso: string }) {
     if (!tick || tick.expired) return (
         <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-red-950/20 bg-red-950/5 px-2.5 py-1">
             <Timer className="h-3.5 w-3.5 text-[var(--color-status-error)]" />
-            <span className="text-[12px] font-medium text-[var(--color-status-error)]">{tx('pages.resetPassword.expiredLink')}</span>
+            <span className="text-[12px] font-medium text-[var(--color-status-error)]">{tx('contract.reviewExpired', {}, 'Review period expired')}</span>
         </div>
     );
     return (

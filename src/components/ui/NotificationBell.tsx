@@ -115,7 +115,7 @@ function badgeStyleForCategory(category?: AppNotification['category'], isUnread?
 
 export function NotificationBell({
     className = '',
-    workspace = 'client',
+    _workspace = 'client',
     isDark = false,
     variant = 'capsule',
 }: {
@@ -141,7 +141,7 @@ export function NotificationBell({
                 markAllRead();
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [isOpen]);
 
     useEffect(() => {

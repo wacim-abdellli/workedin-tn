@@ -41,7 +41,7 @@ function processMessageUpdates(
     currentUserId: string
 ): ChatMessage[] {
     const incomingList = Array.isArray(incoming) ? incoming : [incoming];
-    let updated = [...prev];
+    const updated = [...prev];
 
     for (const msg of incomingList) {
         const isTemp = msg.id.startsWith('temp-');

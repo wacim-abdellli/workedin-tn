@@ -22,12 +22,12 @@ interface SearchItem {
   onSelect?: () => void;
 }
 
-const RECENT_KEY = 'WorkedIn-recent-searches';
+const _RECENT_KEY = 'WorkedIn-recent-searches';
 const DEBOUNCE_MS = 320;
 
 export function HeaderSearch() {
   const { activeMode } = useAuth();
-  const { tx, language, dir } = useTranslation();
+  const { tx, language: _language, dir } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlQuery = searchParams.get('q');
@@ -270,7 +270,7 @@ export function HeaderSearch() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       if (abortRef.current) abortRef.current.abort();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [trimmedQuery, activeFilter, role]);
 
   /* ── Visible items ───────────────────────────────────────────── */

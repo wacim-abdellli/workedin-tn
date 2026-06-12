@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { MessageBubble } from './MessageBubble';
 import { MessageSquare } from 'lucide-react';
 import EmptyState from '../ui/EmptyState';

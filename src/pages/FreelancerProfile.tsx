@@ -1,19 +1,19 @@
 import {
     MapPin,
     Star,
-    Target,
+    _Target,
     Briefcase,
     CalendarDays,
     Camera,
     ChevronLeft,
     ChevronRight,
-    Eye,
+    _Eye,
     ExternalLink,
-    ShieldCheck,
+    _ShieldCheck,
     TrendingUp,
-    Wallet,
+    _Wallet,
     Clock,
-    Coins,
+    _Coins,
     Check,
     CheckCircle,
     Circle,
@@ -21,18 +21,18 @@ import {
     Plus,
     Edit2,
     Trash2,
-    Settings,
+    _Settings,
     MessageSquare,
     ArrowLeft,
     X,
-    Save,
-    Loader2,
-    DollarSign,
+    _Save,
+    _Loader2,
+    _DollarSign,
     Globe,
     Share2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Header } from '../components/layout';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '@/components/ui/Toast';
@@ -48,18 +48,18 @@ import { uploadAvatar } from '@/services/profiles';
 import { getPortfolioImageUrl, resolvePortfolioMediaUrl } from '@/lib/portfolioMedia';
 import { splitPortfolioSkillsAndTools } from '@/lib/portfolioTools';
 import {
-    ProfileAvatar,
-    ProfileEmptyState,
-    ProfileInfoHeader,
-    ProfileInfoRow,
-    ProfileSectionCard,
-    ProfileSectionHeader,
-    ProfileStatCard,
+    _ProfileAvatar,
+    _ProfileEmptyState,
+    _ProfileInfoHeader,
+    _ProfileInfoRow,
+    _ProfileSectionCard,
+    _ProfileSectionHeader,
+    _ProfileStatCard,
 } from '@/components/profile/ProfilePrimitives';
-import { ProfileHero } from "@/components/profile/ProfileHero";
-import { ProfileStatBar } from "@/components/profile/ProfileStatBar";
-import { ProfileSection, ProfileTag, ProfileEmptySlot } from "@/components/profile/ProfileSection";
-import { ProfileActionSidebar } from "@/components/profile/ProfileActionSidebar";
+
+
+
+
 import OptimizedImage from '@/components/common/OptimizedImage';
 import type {
     FreelancerData,
@@ -69,7 +69,7 @@ import type {
     FreelancerUsernameLookupRow,
     PortfolioItemRow,
 } from '../types/freelancer';
-import { PREDEFINED_SKILLS, PREDEFINED_TOOLS, type Skill } from '@/types';
+import { PREDEFINED_SKILLS, type Skill } from '@/types';
 
 interface ProfilePageProps {
     // 'owner': The freelancer viewing their own profile
@@ -134,13 +134,13 @@ function getReviewJobTitle(contract: FreelancerReviewRow['contract']): string | 
     return jobRow?.title || null;
 }
 
-interface PickerOption {
+interface _PickerOption {
     id: string;
     name: string;
     category: string;
 }
 
-function toCategoryLabel(value: string): string {
+function _toCategoryLabel(value: string): string {
     return value
         .replace(/_/g, ' ')
         .replace(/\b\w/g, (char) => char.toUpperCase());
@@ -364,7 +364,7 @@ function ProfileView({
         userId: user?.id,
         isOnlineForMessages: profile?.is_online_for_messages !== false,
     });
-    const avatarInputRef = useRef<HTMLInputElement | null>(null);
+    const _avatarInputRef = useRef<HTMLInputElement | null>(null);
 
     const [savingAvatar, setSavingAvatar] = useState(false);
     const [activeWorkSampleId, setActiveWorkSampleId] = useState<string | null>(null);
@@ -572,11 +572,11 @@ function ProfileView({
         showPreviousWorkSample,
     ]);
 
-    const strengths = freelancer.skills.length > 0
+    const _strengths = freelancer.skills.length > 0
         ? freelancer.skills.map((skill) => resolveFreelancerSkillLabel(skill)).filter(Boolean)
         : ['Web Development', 'Web Research'];
 
-    const tools = freelancer.tools.length > 0
+    const _tools = freelancer.tools.length > 0
         ? freelancer.tools
         : ['Figma', 'Canva', 'VS Code', 'Docker', 'Vercel', 'MongoDB'];
 
@@ -588,9 +588,9 @@ function ProfileView({
         return { score, pct };
     });
 
-    const accentColor = 'var(--workspace-primary)';
+    const _accentColor = 'var(--workspace-primary)';
 
-    const isSavingAnySection = savingAvatar;
+    const _isSavingAnySection = savingAvatar;
 
     const handleAvatarUploadSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -655,18 +655,18 @@ function ProfileView({
                 border: 'rgba(107,114,128,0.3)',
             };
 
-  const heroBadges = [
+  const _heroBadges = [
     { label: tx('settings.profileTabs.freelancer', undefined, 'Freelancer'), style: "filled" as const },
     { label: availabilityBadge.label, style: "filled" as const },
   ];
 
-  const heroMeta = [
+  const _heroMeta = [
     { icon: <MapPin className="w-3.5 h-3.5" />, label: localizeGovernorate(freelancer.location, language) || localizeGovernorate('Ariana', language) },
     { icon: <Star className="w-3.5 h-3.5" />, label: `${freelancer.stats.rating.toFixed(1)} - ${txPlural('pages.freelancerProfile.main.reviewsCount', freelancer.stats.reviews_count, undefined, `${freelancer.stats.reviews_count} reviews`)}` },
     { icon: <TrendingUp className="w-3.5 h-3.5" />, label: `${freelancer.stats.success_rate}% ${tx('pages.freelancerCard.success', undefined, 'success')}` },
   ];
 
-  const heroActions = isOwner ? (
+  const _heroActions = isOwner ? (
       <button
         type="button"
         onClick={() => navigate('/settings?tab=profile')}
@@ -1808,7 +1808,7 @@ export default function FreelancerProfile() {
     const [showContactModal, setShowContactModal] = useState(false);
     const [showInviteModal, setShowInviteModal] = useState(false);
 
-    const saveBio = useCallback(async (bio: string) => {
+    const _saveBio = useCallback(async (bio: string) => {
         if (!user?.id) {
             return;
         }
@@ -1853,7 +1853,7 @@ export default function FreelancerProfile() {
         });
     }, [freelancer?.project_preferences, user?.id]);
 
-    const saveProfileBasics = useCallback(async (payload: {
+    const _saveProfileBasics = useCallback(async (payload: {
         fullName: string;
         title: string;
         hourlyRate: number;
@@ -1945,7 +1945,7 @@ export default function FreelancerProfile() {
         });
     }, [updateProfile, user?.id]);
 
-    const saveSkills = useCallback(async (skillNames: string[]) => {
+    const _saveSkills = useCallback(async (skillNames: string[]) => {
         if (!user?.id) {
             return;
         }
@@ -1996,7 +1996,7 @@ export default function FreelancerProfile() {
         });
     }, [user?.id]);
 
-    const saveTools = useCallback(async (toolNames: string[]) => {
+    const _saveTools = useCallback(async (toolNames: string[]) => {
         if (!user?.id) {
             return;
         }

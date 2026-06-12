@@ -170,7 +170,7 @@ export default function ContractWorkspacePage() {
     const [uploadingFileName, setUploadingFileName] = useState<string | null>(null);
     // Use a ref for the mutable accumulator and state only for rendering
     const uploadedAssetsRef = useRef<any[]>([]);
-    const [uploadedAssets, setUploadedAssets] = useState<any[]>([]);
+    const [_uploadedAssets, setUploadedAssets] = useState<any[]>([]);
     const isUploadPausedRef = useRef(false);
 
     const {
@@ -178,7 +178,7 @@ export default function ContractWorkspacePage() {
         progress: tusProgress,
         isUploading: isTusUploading,
         pause: pauseTus,
-        resume: resumeTus,
+        resume: _resumeTus,
     } = useTusUpload();
 
     const handlePauseUpload = () => {
@@ -234,7 +234,7 @@ export default function ContractWorkspacePage() {
     );
 
     // Role-aware accent colors for the breadcrumb bar
-    const roleAccent = userRole === 'client'
+    const _roleAccent = userRole === 'client'
         ? { badge: 'border-[#E8A020]/60 bg-[#E8A020]/10 text-[#E8A020]', stripe: 'from-[#E8A020]/15', label: tx('contractWorkspace.clientView', {}, 'Client view') }
         : { badge: 'border-[#9B8FF0]/60 bg-[#9B8FF0]/10 text-[#9B8FF0]', stripe: 'from-[#9B8FF0]/12', label: tx('contractWorkspace.freelancerView', {}, 'Freelancer view') };
 
@@ -539,7 +539,7 @@ export default function ContractWorkspacePage() {
         isAccepting,
         isDisputing,
         isCancelling,
-        canCancel,
+        _canCancel,
     } = useContractState({
         contractId: resolvedContractId,
         userId: user?.id ?? '',
@@ -791,7 +791,7 @@ export default function ContractWorkspacePage() {
         }
     };
 
-    const jobTitle_ = contractSidebarData?.job?.title;
+    const _jobTitle_ = contractSidebarData?.job?.title;
 
     return (
         <div className="flex h-[100dvh] flex-col bg-[var(--color-bg-base)] overflow-hidden">

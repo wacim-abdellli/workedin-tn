@@ -4,15 +4,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Briefcase, Mail, Eye, EyeOff, ArrowRight, ArrowLeft, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
+import { User, Briefcase, Mail, Eye, EyeOff, ArrowRight, ArrowLeft, Lock, CheckCircle2 } from 'lucide-react';
 
 import { useTranslation } from '../../i18n';
 import { useAuth } from '../../contexts/AuthContext';
 import type { UserType } from '../../types';
 import { useToast } from '../ui/Toast';
 import { getWorkspaceOnboardingPath } from '@/lib/workspaceRoutes';
-import Button from '../ui/Button';
-import Input from '../ui/Input';
+
+
 
 interface SignupFormProps {
     onComplete?: () => void;

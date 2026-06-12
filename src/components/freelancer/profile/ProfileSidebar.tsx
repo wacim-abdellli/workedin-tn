@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, Calendar, Clock, Globe, GraduationCap, ShieldCheck, Check } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Globe, GraduationCap, ShieldCheck, Check } from 'lucide-react';
 import type { FreelancerData } from '@/types/freelancer';
 import { useTranslation } from '../../../i18n';
 import { useAuth } from '@/contexts/AuthContext';

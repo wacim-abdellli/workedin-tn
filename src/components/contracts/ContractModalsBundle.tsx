@@ -17,7 +17,7 @@ import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import { ReviewForm } from '../../components/ui/Reviews';
 import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
-import type { Conversation, Message } from '../../services/messages';
+import type { Message } from '../../services/messages';
 import { useTranslation } from '../../i18n';
 import type { ContractMessagingStatus } from '../../lib/messagingLifecycle';
 

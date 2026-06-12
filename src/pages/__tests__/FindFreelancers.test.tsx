@@ -23,6 +23,7 @@ vi.mock('@/components/ui/Toast', () => ({
 
 vi.mock('@/i18n', () => ({
     useTranslation: () => ({
+        language: 'en',
         t: {
             findFreelancers: {
                 searchPlaceholder: 'Search freelancers',

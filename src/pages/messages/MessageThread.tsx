@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
     ArrowLeft,
     ChevronLeft,
@@ -30,7 +30,7 @@ import {
     getAttachmentExtensionLabel,
     resolveMessageAttachmentUrl,
     openBlobAsPreviewOrDownload,
-    truncateText,
+    _truncateText,
     isDeletedMessage,
     shouldHideAttachmentUrlText,
     getMessageDisplayText,
@@ -39,6 +39,7 @@ import {
     getLifecycleBannerClassName,
     extractMessageAttachmentPath,
     resolveContractSystemMessage,
+    resolveSystemMessageText,
 } from '../../lib/messageUtils';
 import { parseReplyMetadataFromContent } from '../../lib/messageReplies';
 import { CollapsibleMessageText } from '../../components/chat/CollapsibleMessageText';
@@ -212,6 +213,47 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     const canSendVoiceInSelectedConversation = selectedConversationPolicy?.canSendVoiceNotes ?? true;
     const canReplyInSelectedConversation = selectedConversationPolicy?.canReply ?? false;
 
+    const translatedLifecycleBanner = useMemo(() => {
+        if (selectedContractReviewBanner) return selectedContractReviewBanner;
+        if (!selectedConversationPolicy) return '';
+        const status = selectedConversationPolicy.contractStatus;
+        if (!status || status === 'active') return '';
+
+        const statusKeys: Record<string, string> = {
+            completed: 'pages.messages.lifecycle.completed',
+            cancelled: 'pages.messages.lifecycle.cancelled',
+            disputed: 'pages.messages.lifecycle.disputed',
+            pending_payment: 'pages.messages.lifecycle.pendingPayment',
+            delivery_submitted: 'pages.messages.lifecycle.deliverySubmitted',
+            revision_requested: 'pages.messages.lifecycle.revisionRequested',
+            unknown: 'pages.messages.lifecycle.unknown',
+        };
+
+        const key = statusKeys[status];
+        if (key) {
+            return tx(key, undefined, selectedConversationPolicy.bannerFallback || '');
+        }
+        return selectedConversationPolicy.bannerFallback || '';
+    }, [selectedContractReviewBanner, selectedConversationPolicy, tx]);
+
+    const translatedBlockedReason = useMemo(() => {
+        if (!selectedConversationPolicy) return null;
+        const status = selectedConversationPolicy.contractStatus;
+        if (!status || !selectedConversationPolicy.blockedReasonFallback) return null;
+
+        const statusKeys: Record<string, string> = {
+            completed: 'pages.messages.lifecycle.completed',
+            cancelled: 'pages.messages.lifecycle.cancelled',
+            disputed: 'pages.messages.lifecycle.disputed',
+        };
+
+        const key = statusKeys[status];
+        if (key) {
+            return tx(key, undefined, selectedConversationPolicy.blockedReasonFallback);
+        }
+        return selectedConversationPolicy.blockedReasonFallback;
+    }, [selectedConversationPolicy, tx]);
+
     // Reset banner dismissed state when conversation changes
     useEffect(() => {
         setIsBannerDismissed(false);
@@ -294,8 +336,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
         const file = e.target.files?.[0];
         if (file) {
             if (!canAttachInSelectedConversation) {
-                const blockedMessage = selectedConversationPolicy?.blockedReasonFallback
-                    || tx('pages.messages.readOnlyPlaceholder');
+                const blockedMessage = translatedBlockedReason
+                    || tx('pages.messages.readOnlyPlaceholder', undefined, 'This conversation is right now read-only.');
                 showToast(
                     tx(
                         'messages.readOnlyThread',
@@ -427,8 +469,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                                                 {roleMeta.label}
                                                             </span>
                                                         ) : null}
-                                                        <span className="inline-flex max-w-[160px] items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-0.5 text-[10px] font-semibold text-zinc-400 shrink-0">
-                                                            <span className="truncate">{truncateText(getConversationWorkDescriptor(selectedConversation), 28)}</span>
+                                                        <span className="inline-flex items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-0.5 text-[10px] font-semibold text-zinc-400">
+                                                            <span>{getConversationWorkDescriptor(selectedConversation)}</span>
                                                         </span>
                                                         {statusMeta ? (
                                                             <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0 ${statusMeta.className}`}>
@@ -535,7 +577,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                         </div>
 
                         {/* Compact premium dismissible alert banner */}
-                        {(selectedContractReviewBanner || selectedConversationPolicy?.bannerFallback)
+                        {translatedLifecycleBanner
                             && selectedConversationPolicy
                             && selectedConversationPolicy.bannerTone !== 'none'
                             && (selectedConversationPolicy.contractStatus !== 'unknown' || showUnknownContractBanner)
@@ -549,7 +591,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                         </span>
                                         {tx(
                                             'messages.lifecycleBanner',
-                                            { message: String(selectedContractReviewBanner || selectedConversationPolicy.bannerFallback || '') }
+                                            { message: String(translatedLifecycleBanner) }
                                         )}
                                     </p>
                                 </div>
@@ -602,8 +644,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                                 && !getMessageContractSystemKind(prevMessage);
                                                 
                                             const messageText = getMessageDisplayText(message, deletedMessageLabel);
-                                            const replyMetadata = getMessageReplyMetadata(message);
-                                            const shouldRenderMessageText = Boolean(messageText) && !shouldHideAttachmentUrlText(message);
+const replyMetadata = getMessageReplyMetadata(message, tx);
+const shouldRenderMessageText = Boolean(messageText) && !shouldHideAttachmentUrlText(message);
                                             const attachments = message.attachments ?? [];
                                             const hasAttachments = attachments.length > 0;
                                             const imageAttachmentCount = attachments.filter((attachment) => isImageAttachment(attachment)).length;
@@ -675,14 +717,15 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                                                     isContractSystemMessage
                                                                         ? 'border-transparent bg-transparent py-1.5 text-center text-zinc-500 text-[11px] font-medium leading-relaxed max-w-full'
                                                                         : isOwnMessage
-                                                                        ? `${accentClasses.ownBubbleBg} text-white border-transparent px-3 py-2 rounded-ee-sm text-[13px]`
-                                                                        : 'surface-card text-zinc-100 border-white/[0.04] bg-white/[0.015] px-3 py-2 rounded-ss-sm text-[13px]'
+                                                                        ? `relative ${accentClasses.ownBubbleBg} text-white border-transparent pt-2.5 pb-3.5 pr-4 pl-4 rounded-xl min-w-[95px] rounded-ee-sm text-[13px]`
+                                                                        : `relative border border-white/[0.05] bg-white/[0.015] backdrop-blur-md text-zinc-100 pt-2.5 pb-3.5 pr-4 pl-4 rounded-xl min-w-[95px] rounded-ss-sm text-[13px]`
                                                                 }`}
                                                             >
                                                                 {isContractSystemMessage ? (
                                                                     (() => {
-                                                                        const systemMessage = resolveContractSystemMessage(messageText || '');
-                                                                        const eventDescription = systemMessage ? systemMessage.text : (messageText || '');
+                                                                        const parsed = resolveContractSystemMessage(messageText || '');
+                                                                        const systemMessage = parsed ? resolveSystemMessageText(parsed.text, parsed.kind, tx) : undefined;
+                                                                        const eventDescription = systemMessage || (messageText || '');
                                                                         const milestoneIdMatch = (messageText || '').match(/milestone:([a-f0-9-]+)/i);
                                                                         const milestoneId = milestoneIdMatch ? milestoneIdMatch[1] : null;
 
@@ -690,7 +733,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                                                             <div className="flex flex-col items-center gap-1.5 max-w-full">
                                                                                 <div className="flex items-center gap-1.5 text-zinc-500 select-none text-[10.5px]">
                                                                                     <AlertCircle className="h-3 w-3 shrink-0" />
-                                                                                    <span>{tx('contract.systemUpdate')}</span>
+                                                                                    <span>{tx('contract.actions.systemUpdate')}</span>
                                                                                 </div>
                                                                                 {milestoneId ? (
                                                                                     <div className="flex flex-wrap items-center justify-center gap-2 max-w-full text-zinc-300">
@@ -716,8 +759,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                                                             const attachmentUrl = resolveMessageAttachmentUrl(att.url);
                                                                             const isImage = isImageAttachment(att);
                                                                             const isAudio = isAudioAttachment(att);
-                                                                            const extensionLabel = getAttachmentExtensionLabel(att.name, att.type);
-                                                                            const fileSizeLabel = formatAttachmentSize(att.size);
+                                                                            const extensionLabel = getAttachmentExtensionLabel(att.name, att.type, tx);
+                                                                            const fileSizeLabel = formatAttachmentSize(att.size, tx);
                                                                             const fileMetaLabel = fileSizeLabel ? `${extensionLabel} • ${fileSizeLabel}` : extensionLabel;
 
                                                                             if (isImage) {
@@ -862,7 +905,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                         <div className="shrink-0 border-t border-white/[0.04] bg-[#070709]/80 px-4 py-2.5 backdrop-blur-md">
                             {contractActionBar ? (
                                 <div className="mb-2 flex items-center gap-2 px-1 text-[11px] select-none">
-                                    <span className="font-semibold uppercase tracking-[0.08em] text-zinc-500 shrink-0">{tx('contract.systemUpdate')}:</span>
+                                    <span className="font-semibold uppercase tracking-[0.08em] text-zinc-500 shrink-0">{tx('contract.actions.systemUpdate')}:</span>
                                     <span className="truncate text-zinc-400 font-normal">{contractActionBar.text}</span>
                                 </div>
                             ) : null}
@@ -893,7 +936,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-[13px] font-medium text-[#8A8880]">
-                                            {selectedConversationPolicy?.blockedReasonFallback || tx('pages.messages.readOnlyPlaceholder')}
+                                            {translatedBlockedReason || tx('pages.messages.readOnlyRightNow', undefined, 'This conversation is read-only right now.')}
                                         </p>
                                     </div>
                                     {selectedWorkspaceContractId && !contractActionBar ? (
@@ -902,7 +945,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                             onClick={() => navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
                                             className="shrink-0 rounded-[10px] border border-white/[0.07] bg-[#161719] px-3 py-1.5 text-[13px] font-medium text-[#8A8880] transition-colors hover:border-white/[0.12] hover:bg-[#1a1b1e] hover:text-[#F0EFE8]"
                                         >
-                                            {tx('contract.workspaceTitle')} ↗
+                                            {tx('pages.messages.viewWorkspace', undefined, 'View workspace')} ↗
                                         </button>
                                     ) : null}
                                 </div>
@@ -926,8 +969,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                     isRecording={isRecording}
                                     onToggleRecord={() => {
                                         if (!canSendVoiceInSelectedConversation) {
-                                            const blockedMessage = selectedConversationPolicy?.blockedReasonFallback || tx('pages.messages.readOnlyPlaceholder');
-                                            showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }), 'warning');
+                                            const blockedMessage = translatedBlockedReason || tx('pages.messages.voiceNotesDisabled', undefined, 'Voice notes are disabled for this conversation.');
+                                            showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage), 'warning');
                                             return;
                                         }
                                         if (isRecording) stopRecording();
@@ -980,7 +1023,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                 }}
                                 className="p-2 rounded-full hover:bg-white/10 transition-colors"
                                 aria-label={tx('contract.files.copy')}
-                                title="Download"
+                                title={tx('common.download', undefined, 'Download')}
                             >
                                 <Download className="h-6 w-6 text-white" />
                             </button>
@@ -990,7 +1033,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                 onClick={() => setLightboxImageUrl(null)}
                                 className="p-2 rounded-full hover:bg-white/10 transition-colors"
                                 aria-label={tx('common.close')}
-                                title="Close"
+                                title={tx('common.close')}
                             >
                                 <X className="h-6 w-6 text-white" />
                             </button>

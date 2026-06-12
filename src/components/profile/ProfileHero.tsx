@@ -49,19 +49,19 @@ function getInitials(name: string): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ProfileHero({
-    variant,
+    _variant,
     name,
     subtitle,
-    rate,
+    _rate,
     avatarUrl,
-    badges = [],
+    _badges = [],
     meta = [],
     actions,
     isOwner = false,
     isUploadingAvatar = false,
     onAvatarUpload,
     verificationStatus,
-    onVerify,
+    _onVerify,
     extraRow,
     availabilityStatus,
 }: ProfileHeroProps) {

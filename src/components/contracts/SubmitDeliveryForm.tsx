@@ -8,7 +8,7 @@ import {
     Upload, 
     Link as LinkIcon, 
     Globe, 
-    Lock, 
+    _Lock, 
     ExternalLink,
     PlusCircle,
     Info,

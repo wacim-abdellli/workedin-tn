@@ -18,7 +18,7 @@ export const TEST_USERS = {
 };
 
 // Helper to sign up a new user
-export async function signUp(page: Page, email: string, password: string, userType: 'freelancer' | 'client') {
+export async function signUp(page: Page, email: string, password: string, _userType: 'freelancer' | 'client') {
   await page.goto('/signup');
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', password);

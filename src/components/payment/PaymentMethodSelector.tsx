@@ -1,5 +1,5 @@
 import { Info } from 'lucide-react';
-import type { PaymentMethodConfig } from '@/config/paymentMethods';
+
 import { PAYMENT_METHODS } from '@/config/paymentMethods';
 import { useTranslation } from '@/i18n';
 import { PaymentMethodCard } from './PaymentMethodCard';

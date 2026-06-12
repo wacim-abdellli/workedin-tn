@@ -2,8 +2,8 @@
  * Proposals Service - All proposal-related Supabase queries
  */
 import { supabase, uploadFile } from '@/lib/supabase';
-import { canApplyToJob, getAccessMessage } from '@/lib/marketplaceAccess';
-import type { FreelancerProfile, Profile } from '@/types';
+
+
 
 export const DAILY_PROPOSAL_LIMIT = 6;
 

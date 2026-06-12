@@ -15,12 +15,12 @@ export const labelClass = 'text-[9px] font-bold uppercase tracking-[0.12em] text
 export const monoClass = 'font-mono text-[10px] uppercase tracking-wider text-zinc-500';
 export const focusRing = 'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/50';
 
-export const fmtDate = (iso: string | null | undefined, fallback: string = 'N/A') => {
-    if (!iso) return fallback;
+export const fmtDate = (iso: string | null | undefined, fallback?: string) => {
+    if (!iso) return fallback || '';
     try {
         return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     } catch {
-        return fallback;
+        return fallback || '';
     }
 };
 
@@ -33,16 +33,18 @@ export const fmtTime = (iso: string | null | undefined) => {
     }
 };
 
-export const fmtAmount = (amount: number | null | undefined) => {
-    if (amount == null) return '0.000 TND';
+export const fmtAmount = (amount: number | null | undefined, tx?: (key: string, params?: Record<string, string | number>, fallback?: string) => string) => {
+    if (amount == null) return tx ? tx('common.amountZero', undefined, '0.000 TND') : '0.000 TND';
     return `${amount.toFixed(3)} TND`;
 };
 
-export const fmtSize = (bytes: number | null | undefined) => {
+export const fmtSize = (bytes: number | null | undefined, tx?: (key: string, params?: Record<string, string | number>, fallback?: string) => string) => {
     if (!bytes) return '';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes < 1024) return tx ? tx('common.fileSize.bytes', { size: bytes }, `${bytes} B`) : `${bytes} B`;
+    const kb = (bytes / 1024).toFixed(1);
+    if (bytes < 1024 * 1024) return tx ? tx('common.fileSize.kilobytes', { size: kb }, `${kb} KB`) : `${kb} KB`;
+    const mb = (bytes / (1024 * 1024)).toFixed(1);
+    return tx ? tx('common.fileSize.megabytes', { size: mb }, `${mb} MB`) : `${mb} MB`;
 };
 
 // --- Shared UI Components ---

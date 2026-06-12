@@ -139,7 +139,7 @@ export default function UsersTab() {
     const tableRowClass = adminTableRowClass;
     const iconActionClass = adminIconButtonClass;
     const inputClass = `pe-11 ps-4 ${adminInputClass}`;
-    const selectClass = adminSelectClass;
+    const _selectClass = adminSelectClass;
 
     const closeConfirm = () => setConfirmAction((prev) => ({ ...prev, isOpen: false }));
 
@@ -459,7 +459,7 @@ export default function UsersTab() {
         }) => {
             // For soft delete (archive), use the new archive_user_account RPC function
             if (mode === 'soft') {
-                const { data: archiveResult, error: archiveError } = await supabase.rpc('archive_user_account', {
+                const { data: _archiveResult, error: archiveError } = await supabase.rpc('archive_user_account', {
                     p_user_id: user.id,
                     p_reason: reason ?? 'Archived by admin from admin dashboard',
                 });
@@ -564,7 +564,7 @@ export default function UsersTab() {
     });
 
     const filteredUsers = useMemo(() => {
-        let filtered = users.filter((user) => {
+        const filtered = users.filter((user) => {
             if (userFilter !== 'all' && user.type !== userFilter) return false;
             if (searchQuery && !user.name.toLowerCase().includes(searchQuery.toLowerCase()) && !user.email.toLowerCase().includes(searchQuery.toLowerCase())) return false;
             return true;

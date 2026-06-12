@@ -5,7 +5,7 @@ import {
     AlertTriangle, 
     ArrowRight, 
     Lock, 
-    Shield, 
+    _Shield, 
     Timer, 
     PackageCheck,
     AlertCircle

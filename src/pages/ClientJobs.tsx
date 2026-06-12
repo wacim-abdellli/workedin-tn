@@ -7,7 +7,7 @@ import {
   LayoutGrid, 
   List, 
   Table, 
-  Plus, 
+  _Plus, 
   Trash2, 
   Edit, 
   Clock, 
@@ -15,7 +15,7 @@ import {
   MessageSquare, 
   AlertCircle, 
   CheckCircle2, 
-  ExternalLink,
+  _ExternalLink,
   ChevronDown,
   Briefcase,
   X
@@ -25,7 +25,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from '@/i18n'
-import EmptyState from '@/components/ui/EmptyState'
+
 import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
 

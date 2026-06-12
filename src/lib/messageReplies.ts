@@ -12,7 +12,9 @@ const truncateText = (value: string, maxLength: number) => (
     value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value
 );
 
-export const parseReplyMetadataFromContent = (content: string | null | undefined) => {
+type TxFn = (key: string, params?: Record<string, string | number>, fallback?: string) => string;
+
+export const parseReplyMetadataFromContent = (content: string | null | undefined, tx?: TxFn) => {
     const rawContent = String(content || '');
 
     if (!rawContent.startsWith(REPLY_TOKEN_PREFIX)) {
@@ -40,8 +42,8 @@ export const parseReplyMetadataFromContent = (content: string | null | undefined
 
         const replyMetadata: ReplyMetadata = {
             messageId: parsedPayload.messageId,
-            senderName: truncateText(parsedPayload.senderName.trim() || 'User', 60),
-            previewText: truncateText(parsedPayload.previewText.trim() || 'Attachment', MAX_REPLY_PREVIEW_LENGTH),
+            senderName: truncateText(parsedPayload.senderName.trim() || (tx ? tx('pages.messages.unknownSender', undefined, 'User') : 'User'), 60),
+            previewText: truncateText(parsedPayload.previewText.trim() || (tx ? tx('pages.messages.attachmentFallback', undefined, 'Attachment') : 'Attachment'), MAX_REPLY_PREVIEW_LENGTH),
         };
 
         return { replyMetadata, bodyText };
@@ -50,14 +52,14 @@ export const parseReplyMetadataFromContent = (content: string | null | undefined
     }
 };
 
-export const serializeReplyMetadataIntoContent = (bodyText: string, replyMetadata: ReplyMetadata | null) => {
+export const serializeReplyMetadataIntoContent = (bodyText: string, replyMetadata: ReplyMetadata | null, tx?: TxFn) => {
     const normalizedBody = bodyText.trim();
     if (!replyMetadata) return normalizedBody;
 
     const payload = encodeURIComponent(JSON.stringify({
         messageId: replyMetadata.messageId,
-        senderName: truncateText(replyMetadata.senderName.trim() || 'User', 60),
-        previewText: truncateText(replyMetadata.previewText.trim() || 'Attachment', MAX_REPLY_PREVIEW_LENGTH),
+        senderName: truncateText(replyMetadata.senderName.trim() || (tx ? tx('pages.messages.unknownSender', undefined, 'User') : 'User'), 60),
+        previewText: truncateText(replyMetadata.previewText.trim() || (tx ? tx('pages.messages.attachmentFallback', undefined, 'Attachment') : 'Attachment'), MAX_REPLY_PREVIEW_LENGTH),
     }));
 
     return `${REPLY_TOKEN_PREFIX}${payload}${REPLY_TOKEN_SUFFIX}${normalizedBody ? ` ${normalizedBody}` : ''}`;

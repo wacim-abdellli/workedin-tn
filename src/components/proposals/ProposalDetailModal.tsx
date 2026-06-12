@@ -5,7 +5,7 @@ import {
     MessageSquare, Star, Bookmark, MapPin, Clock, Briefcase,
     Archive, CheckCircle, Loader2, User,
     DollarSign, TrendingUp, Shield, FileText, Download,
-    ChevronDown, X,
+    _ChevronDown, X,
 } from 'lucide-react';
 import type { ProposalAttachment } from '../../types/proposal';
 import { useTranslation } from '../../i18n';
@@ -129,7 +129,7 @@ export default function ProposalDetailPane({
     const [activeTab, setActiveTab] = useState<Tab>('proposal');
     const [hireConfirm, setHireConfirm] = useState(false);
     const [rejectConfirm, setRejectConfirm] = useState(false);
-    const [archiveOpen, setArchiveOpen] = useState(false);
+    const [_archiveOpen, setArchiveOpen] = useState(false);
     const [isLoadingInsights, setIsLoadingInsights] = useState(false);
     const [resolvedBio, setResolvedBio] = useState('');
     const [resolvedRating, setResolvedRating] = useState(0);

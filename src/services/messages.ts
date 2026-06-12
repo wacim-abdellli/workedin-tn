@@ -4,7 +4,7 @@
 import { supabase, uploadFile } from '@/lib/supabase';
 import { validateUploadPayload } from '@/lib/uploadPolicy';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
-import { canAccessMessage, canSendMessage, canDeleteMessage } from '@/lib/permissionEngine';
+import { canSendMessage, canDeleteMessage } from '@/lib/permissionEngine';
 import type { MessageAttachment } from '@/types';
 import type {
     RealtimeChannel,
@@ -51,7 +51,7 @@ function getConversationCacheKey(
     return [user1, user2].sort().join(':') + `:${contractId ?? 'none'}:${scope ?? 'auto'}`;
 }
 
-function extractConversationIdFromRpcPayload(payload: unknown) {
+function _extractConversationIdFromRpcPayload(payload: unknown) {
     if (typeof payload === 'string' && payload.trim().length > 0) {
         return payload;
     }
@@ -205,7 +205,7 @@ function normalizeMessageError(error: unknown) {
     return error instanceof Error ? error : new Error(message);
 }
 
-function isMissingSchemaColumn(error: unknown, tableName: string, columnName: string): boolean {
+function _isMissingSchemaColumn(error: unknown, tableName: string, columnName: string): boolean {
     if (!error || typeof error !== 'object') return false;
     const message = 'message' in error && typeof error.message === 'string' ? error.message.toLowerCase() : '';
     return message.includes('could not find')

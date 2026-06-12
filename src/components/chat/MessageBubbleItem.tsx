@@ -4,7 +4,7 @@
  * contract system messages, reply metadata, and all bubble styling.
  * Extracted from the Messages.tsx God Component.
  */
-import { Loader2, Trash2, CheckCheck, Clock, CornerUpLeft, FileText, Download, Image as ImageIcon, RefreshCw, CheckCircle, AlertTriangle, Star } from 'lucide-react';
+import { Loader2, Trash2, CheckCheck, Clock, FileText, Download, Image as ImageIcon, RefreshCw, CheckCircle, AlertTriangle, Star } from 'lucide-react';
 import { MessageAudioPlayer } from './MessageAudioPlayer';
 import { CollapsibleMessageText } from './CollapsibleMessageText';
 import type { Message } from '../../services/messages';
@@ -20,6 +20,8 @@ import {
     resolveMessageAttachmentUrl,
     formatAttachmentSize,
     getAttachmentExtensionLabel,
+    resolveSystemMessageText,
+    _SYSTEM_MESSAGE_FALLBACKS,
 } from '../../lib/messageUtils';
 import type { ReplyMetadata } from '../../lib/messageReplies';
 
@@ -61,13 +63,13 @@ export const MessageBubbleItem = ({
     deletedMessageLabel,
     deletingMessageId,
     highlightedMessageId,
-    canReplyInSelectedConversation,
+    _canReplyInSelectedConversation,
     isFreelancerWorkspace,
     otherUserAvatarUrl,
     otherUserName,
     accentClasses,
     onDelete,
-    onReply,
+    _onReply,
     onScrollToMessage,
     onOpenImage,
     onOpenAttachment,
@@ -78,8 +80,8 @@ export const MessageBubbleItem = ({
     const contractSystemMessageKind = getMessageContractSystemKind(message);
     const isContractSystemMessage = Boolean(contractSystemMessageKind);
     const messageText = getMessageDisplayText(message, deletedMessageLabel);
-    const replyMetadata: ReplyMetadata | null = getMessageReplyMetadata(message) as ReplyMetadata | null;
-    const shouldRenderMessageText = Boolean(messageText) && !shouldHideAttachmentUrlText(message);
+const replyMetadata: ReplyMetadata | null = getMessageReplyMetadata(message, tx) as ReplyMetadata | null;
+const shouldRenderMessageText = Boolean(messageText) && !shouldHideAttachmentUrlText(message);
     const attachments = message.attachments ?? [];
     const hasAttachments = attachments.length > 0;
     const imageAttachmentCount = attachments.filter(isImageAttachment).length;
@@ -201,7 +203,7 @@ export const MessageBubbleItem = ({
                                     }
 
                                     let eventTitle = tx('pages.messages.systemEventTitle', undefined, 'System Update');
-                                    let eventDescription = messageText;
+                                    const eventDescription = resolveSystemMessageText(messageText, kind, tx);
                                     if (kind === 'delivery') {
                                         eventTitle = tx('pages.messages.system.deliveryTitle', undefined, 'Work Delivered');
                                     } else if (kind === 'revision_requested') {
@@ -245,16 +247,16 @@ export const MessageBubbleItem = ({
                                         const attachmentUrl = resolveMessageAttachmentUrl(att.url);
                                         const isImage = isImageAttachment(att);
                                         const isAudio = isAudioAttachment(att);
-                                        const extensionLabel = getAttachmentExtensionLabel(att.name, att.type);
-                                        const fileSizeLabel = formatAttachmentSize(att.size);
-                                        const fileMetaLabel = fileSizeLabel ? `${extensionLabel} • ${fileSizeLabel}` : extensionLabel;
+const extensionLabel = getAttachmentExtensionLabel(att.name, att.type, tx);
+const fileSizeLabel = formatAttachmentSize(att.size, tx);
+const fileMetaLabel = fileSizeLabel ? `${extensionLabel} • ${fileSizeLabel}` : extensionLabel;
 
-                                        if (isImage) {
-                                            return (
-                                                <button
-                                                    key={index}
-                                                    type="button"
-                                                    onClick={() => onOpenImage(attachmentUrl)}
+if (isImage) {
+    return (
+        <button
+            key={index}
+            type="button"
+            onClick={() => onOpenImage(attachmentUrl)}
                                                     aria-label={tx('pages.messages.a11y.openImageAttachment', undefined, 'Open image attachment')}
                                                     className="block w-full max-w-sm rounded-xl overflow-hidden"
                                                 >

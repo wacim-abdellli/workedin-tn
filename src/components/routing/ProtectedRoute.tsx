@@ -8,7 +8,7 @@ import { useTranslation } from "../../i18n";
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
     const { tx } = useTranslation();
-  const { isAuthenticated, isFullyReady, profile, freelancerProfile } = useAuth();
+  const { isAuthenticated, isFullyReady, profile, freelancerProfile: _freelancerProfile } = useAuth();
   const location = useLocation();
   useSessionTimeout();
 

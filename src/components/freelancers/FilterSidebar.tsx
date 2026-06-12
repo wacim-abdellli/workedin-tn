@@ -436,7 +436,7 @@ export default function FilterSidebar({
                                     onChange={(e) => setRateRange([Number(e.target.value), rateRange[1]])}
                                     className="w-full rounded-xl bg-white/4 border border-white/10 ps-7 pe-3 py-2 text-xs text-white outline-none focus:border-[var(--workspace-primary,#8b5cf6)] focus:bg-white/[0.06] transition-all"
                                 />
-                                <span className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/25 pointer-events-none">DT</span>
+                                <span className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/25 pointer-events-none">DT</span>
                             </div>
                             <span className="text-white/20 text-xs">{tx('findFreelancers.to', undefined, 'to')}</span>
                             <div className="relative flex-1">
@@ -447,7 +447,7 @@ export default function FilterSidebar({
                                     onChange={(e) => setRateRange([rateRange[0], Number(e.target.value)])}
                                     className="w-full rounded-xl bg-white/4 border border-white/10 ps-7 pe-3 py-2 text-xs text-white outline-none focus:border-[var(--workspace-primary,#8b5cf6)] focus:bg-white/[0.06] transition-all"
                                 />
-                                <span className="absolute inset-inline-start-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/25 pointer-events-none">DT</span>
+                                <span className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/25 pointer-events-none">DT</span>
                             </div>
                         </div>
 

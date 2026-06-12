@@ -11,7 +11,7 @@ import { useTranslation } from '../i18n';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 
 function HowItWorks() {
-    const { t } = useTranslation();
+    const { t, tx } = useTranslation();
     const [activeTab, setActiveTab] = useState<'freelancer' | 'client'>('freelancer');
     const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -34,15 +34,70 @@ function HowItWorks() {
     ];
 
     const steps = {
-        freelancer: t.howItWorks.freelancerSteps.map((step, i) => ({
-            ...step,
-            icon: freelancerIcons[i]
-        })),
-        client: t.howItWorks.clientSteps.map((step, i) => ({
-            ...step,
-            icon: clientIcons[i]
-        }))
+        freelancer: [
+            {
+                title: tx('howItWorks.freelancerSteps.step1.title', {}, 'Create your profile once'),
+                description: tx('howItWorks.freelancerSteps.step1.description', {}, 'Add your skills, portfolio, and rate. Clients find you — no bidding.'),
+                icon: freelancerIcons[0]
+            },
+            {
+                title: tx('howItWorks.freelancerSteps.step2.title', {}, 'Receive real invitations'),
+                description: tx('howItWorks.freelancerSteps.step2.description', {}, 'Our matching system highlights your profile to clients looking for your specific expertise.'),
+                icon: freelancerIcons[1]
+            },
+            {
+                title: tx('howItWorks.freelancerSteps.step3.title', {}, 'Agree on terms & start'),
+                description: tx('howItWorks.freelancerSteps.step3.description', {}, 'Chat, negotiate milestones, and define the scope of work before any funds move.'),
+                icon: freelancerIcons[2]
+            },
+            {
+                title: tx('howItWorks.freelancerSteps.step4.title', {}, 'Get paid securely'),
+                description: tx('howItWorks.freelancerSteps.step4.description', {}, 'Funds are locked in escrow before you start. Released instantly to your wallet upon approval.'),
+                icon: freelancerIcons[3]
+            }
+        ],
+        client: [
+            {
+                title: tx('howItWorks.clientSteps.step1.title', {}, 'Post a brief in minutes'),
+                description: tx('howItWorks.clientSteps.step1.description', {}, 'Describe your project, budget, and required skills. It is free to post and matches instantly.'),
+                icon: clientIcons[0]
+            },
+            {
+                title: tx('howItWorks.clientSteps.step2.title', {}, 'Review verified proposals'),
+                description: tx('howItWorks.clientSteps.step2.description', {}, 'Compare bids, portfolios, and reviews. Every freelancer is identity-verified for safety.'),
+                icon: clientIcons[1]
+            },
+            {
+                title: tx('howItWorks.clientSteps.step3.title', {}, 'Deposit to escrow'),
+                description: tx('howItWorks.clientSteps.step3.description', {}, 'Secure the project budget in our protected escrow. Funds are only released when you approve the work.'),
+                icon: clientIcons[2]
+            },
+            {
+                title: tx('howItWorks.clientSteps.step4.title', {}, 'Approve deliverables'),
+                description: tx('howItWorks.clientSteps.step4.description', {}, 'Inspect drafts, review revisions, and release payouts. Download final files once happy.'),
+                icon: clientIcons[3]
+            }
+        ]
     };
+
+    const faqItems = [
+        {
+            q: tx('howItWorks.faq.item1.q', {}, 'Is registration free?'),
+            a: tx('howItWorks.faq.item1.a', {}, 'Yes, registration is completely free for both freelancers and clients. We only charge a small commission on successful projects.')
+        },
+        {
+            q: tx('howItWorks.faq.item2.q', {}, 'How is my money secured?'),
+            a: tx('howItWorks.faq.item2.a', {}, 'WorkedIn acts as a trusted intermediary. Clients pay us, we hold funds until delivery is approved, then release to the freelancer.')
+        },
+        {
+            q: tx('howItWorks.faq.item3.q', {}, 'What payment methods?'),
+            a: tx('howItWorks.faq.item3.a', {}, "We support all local Tunisian methods: local/int'l cards, D17, bank transfer, and even cash for small amounts.")
+        },
+        {
+            q: tx('howItWorks.faq.item4.q', {}, 'Can I register as a company?'),
+            a: tx('howItWorks.faq.item4.a', {}, 'Yes, you can register a company account to hire staff or offer services as a team.')
+        }
+    ];
 
     return (
         <div className="min-h-screen" style={{ background: 'var(--color-bg-subtle)' }}>
@@ -212,7 +267,7 @@ function HowItWorks() {
                     <h2 className="text-3xl font-bold text-center mb-12" style={{ color: 'var(--color-text-primary)' }}>{t.howItWorks.faq.title}</h2>
 
                     <div className="space-y-4">
-                        {t.howItWorks.faq.items.map((faq, index) => (
+                        {faqItems.map((faq, index) => (
                             <div 
                                 key={index} 
                                 className="overflow-hidden rounded-2xl"

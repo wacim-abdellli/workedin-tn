@@ -83,7 +83,7 @@ export function ProfileSection({
 /** Skill/Tool tag - Upwork style */
 export function ProfileTag({
     label,
-    accentColor = '#8B5CF6',
+    _accentColor = '#8B5CF6',
     size = 'sm',
 }: {
     label: string;

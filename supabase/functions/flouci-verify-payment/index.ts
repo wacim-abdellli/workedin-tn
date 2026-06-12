@@ -71,7 +71,7 @@ serve(async (req: Request) => {
         }
 
         // --- INPUT VALIDATION ---
-        const { payment_id, complete_payment, transaction_id, contract_id, freelancer_id, amount } = await req.json()
+        const { payment_id, complete_payment, transaction_id, contract_id, freelancer_id, amount: _amount } = await req.json()
 
         if (!payment_id || typeof payment_id !== 'string') {
             return new Response(

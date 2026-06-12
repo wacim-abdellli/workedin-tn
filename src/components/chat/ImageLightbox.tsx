@@ -12,13 +12,13 @@ interface ImageLightboxProps {
 }
 
 export const ImageLightbox = ({ imageUrl, onClose }: ImageLightboxProps) => {
-    if (!imageUrl) return null;
     const { tx } = useTranslation();
+    if (!imageUrl) return null;
 
     const handleDownload = () => {
         const link = document.createElement('a');
         link.href = imageUrl;
-        link.download = 'image';
+        link.download = tx('pages.messages.lightbox.downloadFilename', undefined, 'image');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

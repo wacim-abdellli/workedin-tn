@@ -68,7 +68,7 @@ export default defineConfig(({ command, mode }) => ({
             return 'router-vendor';
           }
 
-          if (id.includes('react') || id.includes('scheduler')) {
+          if (id.includes('react') || id.includes('scheduler') || id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
             return 'react-vendor';
           }
 
@@ -86,10 +86,6 @@ export default defineConfig(({ command, mode }) => ({
 
           if (id.includes('date-fns') || id.includes('dayjs')) {
             return 'date-vendor';
-          }
-
-          if (id.includes('react-hook-form') || id.includes('@hookform/resolvers') || id.includes('zod')) {
-            return 'form-vendor';
           }
 
           if (id.includes('i18next') || id.includes('react-i18next')) {

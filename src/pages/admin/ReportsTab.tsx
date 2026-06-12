@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { getReports, updateReportStatus } from '@/services/reports';
 import type { Report, ReportStatus } from '@/services/reports';
-import { adminPanelClass, adminPillClass, adminSelectClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass } from './adminTheme';
+import { adminPanelClass, adminPillClass, adminTableHeadClass, adminTableRowClass, adminTableShellClass } from './adminTheme';
 import AdminSelect from './AdminSelect';
 import { supabase } from '@/lib/supabase';
 

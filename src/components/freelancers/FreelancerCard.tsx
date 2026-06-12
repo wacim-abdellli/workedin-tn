@@ -51,7 +51,7 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
         {onToggleSave && (
           <button
             onClick={(e) => { e.stopPropagation(); onToggleSave(freelancer.id); }}
-            className="absolute top-5 inset-inline-end-5 h-9 w-9 flex items-center justify-center rounded-xl border border-white/8 bg-white/4 hover:border-rose-500/40 hover:bg-rose-500/10 transition-all shrink-0 z-10"
+            className="absolute top-5 end-5 h-9 w-9 flex items-center justify-center rounded-xl border border-white/8 bg-white/4 hover:border-rose-500/40 hover:bg-rose-500/10 transition-all shrink-0 z-10"
           >
             <Heart className={cn('w-4 h-4 transition-colors', isSaved ? 'fill-rose-400 text-rose-400' : 'text-white/40')} />
           </button>
@@ -66,7 +66,7 @@ function FreelancerCard({ freelancer, viewMode = 'grid', isSaved = false, onTogg
             }
           </div>
           {isOnline && (
-            <span className="absolute bottom-0 inset-inline-end-0 h-4.5 w-4.5 rounded-full bg-emerald-400 ring-2 ring-[#0f0f15]" />
+            <span className="absolute bottom-0 end-0 h-4.5 w-4.5 rounded-full bg-emerald-400 ring-2 ring-[#0f0f15]" />
           )}
         </div>
 

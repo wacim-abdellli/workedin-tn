@@ -4,7 +4,7 @@ import {
   ArrowLeft,
   Check,
   ChevronRight,
-  Clock,
+  _Clock,
   Lightbulb,
   Loader2,
   Save,
@@ -730,7 +730,7 @@ export default function JobPost() {
       let insertResult = await supabaseWithRetry(() => supabase.from('jobs').insert(jobData).select('id').single());
 
       if (insertResult.error && isMissingJobReferenceLinksColumnError(insertResult.error)) {
-        const { reference_links, ...legacyJobData } = jobData;
+        const { reference_links: _reference_links, ...legacyJobData } = jobData;
         insertResult = await supabaseWithRetry(() => supabase.from('jobs').insert(legacyJobData).select('id').single());
 
         if (!insertResult.error && (data.reference_links?.length || 0) > 0) {

@@ -1,5 +1,5 @@
 import { useFormContext } from 'react-hook-form';
-import { Eye, Lock, Globe, Users, Check } from 'lucide-react';
+import { Lock, Globe, Users, Check } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 
 export default function StepVisibility() {

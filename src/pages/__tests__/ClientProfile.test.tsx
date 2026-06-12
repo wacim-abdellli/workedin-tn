@@ -33,6 +33,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 vi.mock('@/i18n', () => ({
     useTranslation: () => ({
         tx: (_key: string, _params?: Record<string, string>, fallback?: string) => fallback ?? _key,
+        txPlural: (_key: string, _count: number, _params?: Record<string, any>, fallback?: string) => fallback ?? _key,
     }),
 }));
 

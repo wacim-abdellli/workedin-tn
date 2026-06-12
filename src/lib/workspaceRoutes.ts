@@ -137,7 +137,7 @@ export function resolveActiveWorkspace(
         if (typeof window !== 'undefined') {
           try {
             window.sessionStorage.removeItem('workspace_switched');
-          } catch (e) {
+          } catch (_e) {
             // ignore
           }
         }
@@ -152,7 +152,7 @@ export function resolveActiveWorkspace(
         if (switched === requestedWorkspace) {
           return requestedWorkspace;
         }
-      } catch (e) {
+      } catch (_e) {
         // ignore
       }
     }
@@ -208,7 +208,7 @@ export function isClientWorkspaceReady(profile: ProfileLike): boolean {
 
 export function isFreelancerWorkspaceReady(
   profile: ProfileLike,
-  freelancerProfile?: FreelancerProfile | null
+  _freelancerProfile?: FreelancerProfile | null
 ): boolean {
   if (!profile) {
     return false;

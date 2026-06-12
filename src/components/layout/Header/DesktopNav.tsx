@@ -6,12 +6,12 @@ import {
   ChevronDown,
   Clock3,
   CreditCard,
-  FileText,
+  _FileText,
   FolderOpen,
-  PlusCircle,
+  _PlusCircle,
   ReceiptText,
   Search,
-  Send,
+  _Send,
   Star,
   Users,
   Wallet,
@@ -38,11 +38,11 @@ interface NavItem {
   children?: DropdownItem[];
 }
 
-function accentClass(workspace: Workspace) {
+function _accentClass(workspace: Workspace) {
   return workspace === "freelancer" ? "text-purple-400" : "text-amber-400";
 }
 
-function SimpleNavItem({ item, workspace }: { item: NavItem; workspace: Workspace }) {
+function SimpleNavItem({ item, workspace: _workspace }: { item: NavItem; workspace: Workspace }) {
   if (!item.href) return null;
 
   return (
@@ -109,7 +109,7 @@ function DropdownMenu({ items }: { items: DropdownItem[] }) {
 function DropdownNavItem({
   item,
   pathname,
-  workspace,
+  _workspace,
 }: {
   item: NavItem;
   pathname: string;

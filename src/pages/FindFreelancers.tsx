@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bookmark, ChevronDown, Filter, Grid, List, Search, SlidersHorizontal, Sparkles, UserCircle2, X } from 'lucide-react';
+import { Bookmark, ChevronDown, Filter, Grid, List, Search, SlidersHorizontal, UserCircle2, X } from 'lucide-react';
 
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
 import EmptyState from '../components/ui/EmptyState';
-import { SkeletonList, SkeletonProfile } from '../components/common';
+
 import FreelancerCard from '../components/freelancers/FreelancerCard';
 import FilterSidebar from '../components/freelancers/FilterSidebar';
 import { Header } from '../components/layout';

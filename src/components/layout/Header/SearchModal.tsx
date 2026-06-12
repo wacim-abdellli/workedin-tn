@@ -33,7 +33,7 @@ export default function SearchModal({ onClose }: SearchModalProps) {
   const [searchParams] = useSearchParams()
   const urlQuery = searchParams.get('q')
 
-  const containerRef = useRef<HTMLDivElement>(null)
+  const _containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortRef = useRef<AbortController | null>(null)

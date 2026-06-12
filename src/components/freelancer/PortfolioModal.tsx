@@ -246,6 +246,7 @@ export default function PortfolioModal({
         }
     });
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const mediaUrl = watch('media_url');
     const selectedSkills = watch('skills_used') ?? [];
     const selectedTools = watch('tools_used') ?? [];

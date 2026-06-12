@@ -66,17 +66,23 @@ export const isImageAttachment = (attachment: MessageAttachment): boolean =>
 export const isAudioAttachment = (attachment: MessageAttachment): boolean =>
     Boolean(attachment.type?.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|webm)$/i.test(attachment.name || ''));
 
-export const formatAttachmentSize = (size: string | number | null | undefined): string | null => {
+export const formatAttachmentSize = (
+    size: string | number | null | undefined,
+    tx?: (key: string, params?: Record<string, string | number>, fallback?: string) => string
+): string | null => {
     const parsedSize = typeof size === 'string' ? Number(size) : size;
     if (!Number.isFinite(parsedSize) || !parsedSize || parsedSize <= 0) return null;
-    if (parsedSize < 1024) return `${parsedSize} B`;
-    if (parsedSize < 1024 * 1024) return `${(parsedSize / 1024).toFixed(1)} KB`;
-    return `${(parsedSize / (1024 * 1024)).toFixed(1)} MB`;
+    if (parsedSize < 1024) return tx ? tx('common.fileSize.bytes', { size: parsedSize }, `${parsedSize} B`) : `${parsedSize} B`;
+    const kb = (parsedSize / 1024).toFixed(1);
+    if (parsedSize < 1024 * 1024) return tx ? tx('common.fileSize.kilobytes', { size: kb }, `${kb} KB`) : `${kb} KB`;
+    const mb = (parsedSize / (1024 * 1024)).toFixed(1);
+    return tx ? tx('common.fileSize.megabytes', { size: mb }, `${mb} MB`) : `${mb} MB`;
 };
 
 export const getAttachmentExtensionLabel = (
     name: string | null | undefined,
-    mimeType: string | null | undefined
+    mimeType: string | null | undefined,
+    tx?: (key: string, params?: Record<string, string | number>, fallback?: string) => string
 ): string => {
     const rawName = String(name || '').trim();
     if (rawName.includes('.')) {
@@ -86,10 +92,11 @@ export const getAttachmentExtensionLabel = (
 
     const normalizedMimeType = normalizeMimeType(mimeType);
     if (normalizedMimeType.includes('/')) {
-        return normalizedMimeType.split('/')[1]?.toUpperCase() || 'FILE';
+        return normalizedMimeType.split('/')[1]?.toUpperCase()
+            || (tx ? tx('pages.messages.unknownFileType', undefined, 'FILE') : 'FILE');
     }
 
-    return 'FILE';
+    return tx ? tx('pages.messages.unknownFileType', undefined, 'FILE') : 'FILE';
 };
 
 export const extractMessageAttachmentPath = (value: string | null | undefined): string | null => {
@@ -152,9 +159,26 @@ export const sanitizeContractTitle = (value: string | null | undefined): string 
 
 // ─── System Message Parsing ────────────────────────────────────────────────────
 
+export const SYSTEM_MESSAGE_FALLBACKS: Record<string, string> = {
+    'Work delivered and ready for review': 'delivery',
+    'Revision requested by client': 'revisionRequested',
+    'Contract completed and payment released': 'contractCompleted',
+    'Work has been accepted and payment released': 'contractCompleted',
+    'Dispute opened for this contract': 'disputeOpened',
+    'Review submitted': 'reviewLeft',
+};
+
+const SYSTEM_FALLBACK_KEY: Record<string, string> = {
+    delivery: 'pages.messages.system.fallback.delivery',
+    revision_requested: 'pages.messages.system.fallback.revisionRequested',
+    contract_completed: 'pages.messages.system.fallback.contractCompleted',
+    dispute_opened: 'pages.messages.system.fallback.disputeOpened',
+    review_left: 'pages.messages.system.fallback.reviewLeft',
+};
+
 export const resolveContractSystemMessage = (
     rawBodyText: string
-): { kind: ContractSystemMessageKind; text: string } | null => {
+): { kind: ContractSystemMessageKind; text: string; isFallback: boolean } | null => {
     const trimmed = rawBodyText.trim();
     if (!trimmed) return null;
 
@@ -164,18 +188,51 @@ export const resolveContractSystemMessage = (
     const marker = markerMatch[1].toLowerCase();
     const details = markerMatch[2]?.trim() || '';
 
-    const kindMap: Record<string, { kind: ContractSystemMessageKind; fallback: string }> = {
-        delivery: { kind: 'delivery', fallback: 'Work delivered and ready for review' },
-        revision_requested: { kind: 'revision_requested', fallback: 'Revision requested by client' },
-        contract_completed: { kind: 'contract_completed', fallback: 'Contract completed and payment released' },
-        dispute_opened: { kind: 'dispute_opened', fallback: 'Dispute opened for this contract' },
-        review_left: { kind: 'review_left', fallback: 'Review submitted' },
+    const kindMap: Record<string, { kind: ContractSystemMessageKind }> = {
+        delivery: { kind: 'delivery' },
+        revision_requested: { kind: 'revision_requested' },
+        contract_completed: { kind: 'contract_completed' },
+        dispute_opened: { kind: 'dispute_opened' },
+        review_left: { kind: 'review_left' },
     };
 
     const entry = kindMap[marker];
     if (!entry) return null;
 
-    return { kind: entry.kind, text: details || entry.fallback };
+    const isFallback = !details || Boolean(SYSTEM_MESSAGE_FALLBACKS[details]);
+    return { kind: entry.kind, text: details || '', isFallback };
+};
+
+export const getSystemFallbackText = (kind: string, tx: (key: string, params?: any, fallback?: string) => string): string => {
+    const key = SYSTEM_FALLBACK_KEY[kind];
+    if (key) return tx(key);
+    return '';
+};
+
+export const resolveSystemMessageText = (
+    text: string,
+    kind: string,
+    tx: (key: string, params?: Record<string, string | number>, fallback?: string) => string
+): string => {
+    if (!text || SYSTEM_MESSAGE_FALLBACKS[text]) {
+        return getSystemFallbackText(kind, tx);
+    }
+    if (kind === 'dispute_opened') {
+        const prefix = 'Dispute opened: ';
+        if (text.startsWith(prefix)) {
+            const reason = text.slice(prefix.length);
+            return tx('pages.messages.system.disputePrefix', undefined, prefix) + reason;
+        }
+    }
+    if (kind === 'review_left') {
+        const match = text.match(/^(\d+)\s*stars?:\s*(.*)$/i);
+        if (match) {
+            const rating = match[1];
+            const comment = match[2] || '';
+            return tx('pages.messages.system.reviewFormat', { rating, comment }, `${rating} stars: ${comment}`);
+        }
+    }
+    return text;
 };
 
 export const isDeletedMessage = (message: ThreadMessage | null | undefined): boolean =>
@@ -193,6 +250,25 @@ export const getMessageDisplayText = (
     return contractSystemMessage?.text || bodyText;
 };
 
+export const getMessageDisplayTextWithKind = (
+    message: ThreadMessage | null | undefined,
+    deletedLabel: string
+): { text: string | null; kind: string | null; isFallback: boolean } => {
+    if (!message) return { text: null, kind: null, isFallback: false };
+    if (isDeletedMessage(message)) return { text: deletedLabel, kind: null, isFallback: false };
+
+    const bodyText = parseReplyMetadataFromContent(message.content).bodyText;
+    const contractSystemMessage = resolveContractSystemMessage(bodyText);
+    if (contractSystemMessage) {
+        return {
+            text: contractSystemMessage.text || bodyText,
+            kind: contractSystemMessage.kind,
+            isFallback: contractSystemMessage.isFallback,
+        };
+    }
+    return { text: bodyText, kind: null, isFallback: false };
+};
+
 export const getMessageContractSystemKind = (
     message: ThreadMessage | null | undefined
 ): ContractSystemMessageKind | null => {
@@ -200,9 +276,12 @@ export const getMessageContractSystemKind = (
     return resolveContractSystemMessage(parseReplyMetadataFromContent(message.content).bodyText)?.kind || null;
 };
 
-export const getMessageReplyMetadata = (message: ThreadMessage | null | undefined) => {
+export const getMessageReplyMetadata = (
+    message: ThreadMessage | null | undefined,
+    tx?: (key: string, params?: Record<string, string | number>, fallback?: string) => string
+) => {
     if (!message || isDeletedMessage(message)) return null;
-    return parseReplyMetadataFromContent(message.content).replyMetadata;
+    return parseReplyMetadataFromContent(message.content, tx).replyMetadata;
 };
 
 // ─── URL / Download Helpers ────────────────────────────────────────────────────
@@ -238,7 +317,7 @@ export const openBlobAsPreviewOrDownload = (blob: Blob, fileName: string, canPre
 
 export const sortConversationsByActivity = (
     items: import('../services/messages').Conversation[],
-    contractStatusById: Record<string, string> = {}
+    _contractStatusById: Record<string, string> = {}
 ): import('../services/messages').Conversation[] => {
     return [...items].sort((a, b) => {
         return new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime();
@@ -270,21 +349,31 @@ export const shouldHideAttachmentUrlText = (message: ThreadMessage | null | unde
 
 export const getThreadPreview = (
     threadMessages: ThreadMessage[],
-    deletedLabel: string
+    deletedLabel: string,
+    tx?: (key: string, params?: Record<string, string | number>, fallback?: string) => string
 ): { last_message_text: string | null; last_message_at: string | null } => {
     const lastMessage = threadMessages[threadMessages.length - 1] ?? null;
     const rawPreviewText = getMessageDisplayText(lastMessage, deletedLabel)?.trim() || '';
 
     let resolvedPreviewText: string | null = rawPreviewText;
 
+    if (resolvedPreviewText && lastMessage && !isDeletedMessage(lastMessage)) {
+        const sysMsg = resolveContractSystemMessage(parseReplyMetadataFromContent(lastMessage.content).bodyText);
+        if (sysMsg?.isFallback) {
+            resolvedPreviewText = tx
+                ? resolveSystemMessageText(sysMsg.text, sysMsg.kind, tx)
+                : sysMsg.text || resolvedPreviewText;
+        }
+    }
+
     if (!resolvedPreviewText && lastMessage && !isDeletedMessage(lastMessage)) {
         const lastMessageAttachments = lastMessage.attachments ?? [];
         if (lastMessageAttachments.some((attachment) => isAudioAttachment(attachment))) {
-            resolvedPreviewText = 'Audio note';
+            resolvedPreviewText = tx ? tx('pages.messages.audioNote', undefined, 'Audio note') : 'Audio note';
         } else if (lastMessageAttachments.some((attachment) => isImageAttachment(attachment))) {
-            resolvedPreviewText = 'Image';
+            resolvedPreviewText = tx ? tx('pages.messages.imageLabel', undefined, 'Image') : 'Image';
         } else if (lastMessageAttachments.length > 0) {
-            resolvedPreviewText = 'Attachment';
+            resolvedPreviewText = tx ? tx('pages.messages.attachmentLabel', undefined, 'Attachment') : 'Attachment';
         }
     }
 

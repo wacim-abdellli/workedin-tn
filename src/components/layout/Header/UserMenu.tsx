@@ -150,7 +150,7 @@ export function UserMenu({ isDark, toggleTheme }: UserMenuProps) {
   const workspaceBadgeClass = isFreelancer
     ? "border-purple-500/25 text-purple-400 bg-purple-500/[0.07]"
     : "border-amber-500/25 text-amber-400 bg-amber-500/[0.07]";
-  const onlineDotClass = "bg-green-500"; // Semantic green for online status
+  const _onlineDotClass = "bg-green-500"; // Semantic green for online status
   
   const menuItemClass = `w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-sm font-medium text-start transition-all duration-150 ${
     isDark

@@ -8,13 +8,13 @@ import {
     ArrowLeft,
     FileText,
     Loader2,
-    Mic,
-    Square,
+    _Mic,
+    _Square,
     X,
-    FileAudio,
+    _FileAudio,
     Clock,
-    Play,
-    Pause,
+    _Play,
+    _Pause,
     AlertCircle,
     MoreVertical,
     CheckCheck,
@@ -28,7 +28,7 @@ import {
     AlertTriangle,
     Archive,
     ChevronLeft,
-    ChevronRight,
+    _ChevronRight,
     Menu,
     RefreshCw,
     Star,
@@ -38,7 +38,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { ReviewForm } from '../components/ui/Reviews';
 import SEO, { SEO_CONFIG } from '../components/common/SEO';
-import { supabase, uploadFileWithMetadata } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/Toast';
@@ -74,7 +74,7 @@ import {
     normalizeContractStatus,
     resolveMessagingLifecyclePolicy,
     type ContractMessagingStatus,
-    type MessagingPolicyTone,
+    type _MessagingPolicyTone,
 } from '../lib/messagingLifecycle';
 import {
     canClientAcceptForStatus,
@@ -89,29 +89,30 @@ import { getErrorMessage } from '../lib/errorMessage';
 import { getContractWorkspaceRoute } from '@/lib/routes';
 import { extractMessageAttachmentPath } from '../lib/messageUtils';
 
+
 import {
   fileToBase64,
   base64ToFile,
   blobToBase64,
   normalizeMimeType,
-  canonicalizeVoiceMimeType,
-  getAudioExtensionFromMimeType,
+  _canonicalizeVoiceMimeType,
+  _getAudioExtensionFromMimeType,
   buildVoiceMemoFile,
-  hasSignature,
-  detectAudioMimeTypeFromBuffer,
-  inferAudioMimeType,
-  formatAudioTime
+  _hasSignature,
+  _detectAudioMimeTypeFromBuffer,
+  _inferAudioMimeType,
+  _formatAudioTime
 } from '../lib/audioProcessing';
 
 import {
-    MESSAGE_ATTACHMENT_ACCEPT,
+    _MESSAGE_ATTACHMENT_ACCEPT,
     isImageAttachment,
     isAudioAttachment,
     formatAttachmentSize,
     getAttachmentExtensionLabel,
     resolveMessageAttachmentUrl,
     openBlobAsPreviewOrDownload,
-    truncateText,
+    _truncateText,
     sanitizeContractTitle,
     TERMINAL_STATUSES,
     sortConversationsByActivity,
@@ -127,15 +128,16 @@ import {
     isEnumValueUnsupportedError,
     extractRpcConversationId,
     isUuidLike,
+    resolveSystemMessageText,
     type ThreadMessage,
-    type MessageAttachment,
-    type ContractSystemMessageKind,
+    type _MessageAttachment,
+    type _ContractSystemMessageKind,
 } from '../lib/messageUtils';
 import { CollapsibleMessageText } from '../components/chat/CollapsibleMessageText';
-import { ImageLightbox } from '../components/chat/ImageLightbox';
-import { ContractContextBar } from '../components/chat/ContractContextBar';
-import { EscrowFundingBanner } from '../components/chat/EscrowFundingBanner';
-import { ContractCompletionBanner } from '../components/chat/ContractCompletionBanner';
+
+
+
+
 import FundEscrow from '../components/payments/FundEscrow';
 
 import {
@@ -146,11 +148,11 @@ import {
 import { MessageAudioPlayer } from '../components/chat/MessageAudioPlayer';
 
 // ─── Local-only session / cache constants ────────────────────────────────────
-const MAX_CACHED_CONVERSATIONS = 50;
+const _MAX_CACHED_CONVERSATIONS = 50;
 const MAX_CACHED_MESSAGES = 200;
 const ENABLE_MESSAGES_SESSION_CACHE = false;
 
-const getConversationsCacheKey = (userId: string, modeKey: string) => `messages:conversations:${userId}:${modeKey}`;
+const _getConversationsCacheKey = (userId: string, modeKey: string) => `messages:conversations:${userId}:${modeKey}`;
 const getMessagesCacheKey = (conversationId: string) => `messages:thread:${conversationId}`;
 
 const resolveConversationScopes = (activeMode: string | null | undefined): ConversationScope[] => {
@@ -654,7 +656,7 @@ function MessagesComponent() {
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
-    const [uploadProgress, setUploadProgress] = useState(0);
+    const [_uploadProgress, setUploadProgress] = useState(0);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [pendingQueue, setPendingQueue] = useState<any[]>([]);
     const [contractStatusById, setContractStatusById] = useState<Record<string, ContractMessagingStatus>>(() => {
@@ -742,7 +744,7 @@ function MessagesComponent() {
     const [page, setPage] = useState(0);
     const [hasMoreConversations, setHasMoreConversations] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
+    const [_audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [replyTarget, setReplyTarget] = useState<ReplyMetadata | null>(null);
     const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
@@ -757,7 +759,7 @@ function MessagesComponent() {
     const [reportTouched, setReportTouched] = useState(false);
     const [showUnknownContractBanner, setShowUnknownContractBanner] = useState(false);
     const [isFundEscrowOpen, setIsFundEscrowOpen] = useState(false);
-    const [walletBalance, setWalletBalance] = useState<number | null>(null);
+    const [_walletBalance, setWalletBalance] = useState<number | null>(null);
     const [showConversationsList, setShowConversationsList] = useState(() => {
         const params = new URLSearchParams(window.location.search);
         const hasContract = params.has('contract') || params.has('with');
@@ -815,7 +817,7 @@ function MessagesComponent() {
     const [loadingMilestonesContractId, setLoadingMilestonesContractId] = useState<string | null>(null);
     const [loadingReviewContractId, setLoadingReviewContractId] = useState<string | null>(null);
     const [isContractWorkspaceOpen, setIsContractWorkspaceOpen] = useState(false);
-    const [isBannerExpanded, setIsBannerExpanded] = useState(false);
+    const [_isBannerExpanded, _setIsBannerExpanded] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const replyHighlightTimeoutRef = useRef<number | null>(null);
@@ -890,24 +892,6 @@ function MessagesComponent() {
         return getConversationLifecyclePolicy(selectedConversation);
     }, [getConversationLifecyclePolicy, selectedConversation]);
 
-    const canSendInSelectedConversation = selectedConversationPolicy?.canSend ?? false;
-    const canAttachInSelectedConversation = selectedConversationPolicy?.canAttachFiles ?? false;
-    const canSendVoiceInSelectedConversation = selectedConversationPolicy?.canSendVoiceNotes ?? false;
-    const canReplyInSelectedConversation = selectedConversationPolicy?.canReply ?? false;
-
-
-
-    useEffect(() => {
-        if (!isContractSession) {
-            setIsContractWorkspaceOpen(false);
-            setIsReviewModalOpen(false);
-            return;
-        }
-
-        setIsReviewModalOpen(false);
-    }, [isContractSession, selectedContractId]);
-
-
     const selectedContractReviewBanner = useMemo(() => {
         if (selectedContractStatus !== 'delivery_submitted') return null;
 
@@ -927,6 +911,64 @@ function MessagesComponent() {
             ? `Client review is overdue. The platform will follow the contract protection policy next if the client stays inactive.`
             : `Your delivery is under review until ${dueLabel ?? 'the deadline'}. The client must accept, request changes, or open a dispute. If they do nothing, the platform may escalate or auto-resolve the next step based on policy.`;
     }, [language, selectedContractReviewDueAt, selectedContractStatus, selectedContractUserRole]);
+
+    const translatedLifecycleBanner = useMemo(() => {
+        if (selectedContractReviewBanner) return selectedContractReviewBanner;
+        if (!selectedConversationPolicy) return '';
+        const status = selectedConversationPolicy.contractStatus;
+        if (!status || status === 'active') return '';
+
+        const statusKeys: Record<string, string> = {
+            completed: 'pages.messages.lifecycle.completed',
+            cancelled: 'pages.messages.lifecycle.cancelled',
+            disputed: 'pages.messages.lifecycle.disputed',
+            pending_payment: 'pages.messages.lifecycle.pendingPayment',
+            delivery_submitted: 'pages.messages.lifecycle.deliverySubmitted',
+            revision_requested: 'pages.messages.lifecycle.revisionRequested',
+            unknown: 'pages.messages.lifecycle.unknown',
+        };
+
+        const key = statusKeys[status];
+        if (key) {
+            return tx(key, undefined, selectedConversationPolicy.bannerFallback || '');
+        }
+        return selectedConversationPolicy.bannerFallback || '';
+    }, [selectedContractReviewBanner, selectedConversationPolicy, tx]);
+
+    const translatedBlockedReason = useMemo(() => {
+        if (!selectedConversationPolicy) return null;
+        const status = selectedConversationPolicy.contractStatus;
+        if (!status || !selectedConversationPolicy.blockedReasonFallback) return null;
+
+        const statusKeys: Record<string, string> = {
+            completed: 'pages.messages.lifecycle.completed',
+            cancelled: 'pages.messages.lifecycle.cancelled',
+            disputed: 'pages.messages.lifecycle.disputed',
+        };
+
+        const key = statusKeys[status];
+        if (key) {
+            return tx(key, undefined, selectedConversationPolicy.blockedReasonFallback);
+        }
+        return selectedConversationPolicy.blockedReasonFallback;
+    }, [selectedConversationPolicy, tx]);
+
+    const canSendInSelectedConversation = selectedConversationPolicy?.canSend ?? false;
+    const canAttachInSelectedConversation = selectedConversationPolicy?.canAttachFiles ?? false;
+    const canSendVoiceInSelectedConversation = selectedConversationPolicy?.canSendVoiceNotes ?? false;
+    const canReplyInSelectedConversation = selectedConversationPolicy?.canReply ?? false;
+
+
+
+    useEffect(() => {
+        if (!isContractSession) {
+            setIsContractWorkspaceOpen(false);
+            setIsReviewModalOpen(false);
+            return;
+        }
+
+        setIsReviewModalOpen(false);
+    }, [isContractSession, selectedContractId]);
 
     useEffect(() => {
         if (!selectedContractId || selectedConversationPolicy?.contractStatus !== 'unknown') {
@@ -1416,7 +1458,7 @@ function MessagesComponent() {
         user?.id,
     ]);
 
-    const contractCockpit = useMemo(() => {
+    const _contractCockpit = useMemo(() => {
         if (!isContractSession || !contractSidebarData) return null;
 
         const status = String(selectedContractStatus || 'unknown').trim().toLowerCase();
@@ -1491,7 +1533,7 @@ function MessagesComponent() {
         } as CSSProperties;
     }, []);
 
-    const getConversationIdentityLabel = useCallback((conversation: Conversation) => {
+    const _getConversationIdentityLabel = useCallback((conversation: Conversation) => {
         const username = conversation.otherUser.username?.trim();
         return username ? `@${username}` : null;
     }, []);
@@ -1566,31 +1608,31 @@ function MessagesComponent() {
         switch (lifecyclePolicy.contractStatus) {
             case 'active':
                 return {
-                    label: tx('contract.inProgress', undefined, 'In progress'),
+                    label: tx('pages.messages.contract.status.inProgress', undefined, 'In progress'),
                     className: 'border-emerald-500/10 bg-emerald-500/[0.06] text-emerald-300',
                     textColor: 'text-emerald-400',
                 };
             case 'pending_payment':
                 return {
-                    label: tx('contract.pendingPayment', undefined, 'Pending payment'),
+                    label: tx('pages.messages.contract.status.paymentPending', undefined, 'Pending payment'),
                     className: 'border-sky-500/10 bg-sky-500/[0.06] text-sky-300',
                     textColor: 'text-sky-400',
                 };
             case 'completed':
                 return {
-                    label: tx('contract.completed', undefined, 'Completed'),
+                    label: tx('pages.messages.contract.status.completed', undefined, 'Completed'),
                     className: 'border-cyan-500/10 bg-cyan-500/[0.06] text-cyan-300',
                     textColor: 'text-cyan-400',
                 };
             case 'cancelled':
                 return {
-                    label: tx('contract.cancelled', undefined, 'Cancelled'),
+                    label: tx('pages.messages.contract.status.cancelled', undefined, 'Cancelled'),
                     className: 'border-red-500/10 bg-red-500/[0.06] text-red-300',
                     textColor: 'text-red-400',
                 };
             case 'disputed':
                 return {
-                    label: tx('contract.disputeOpened', undefined, 'Disputed'),
+                    label: tx('pages.messages.contract.status.disputed', undefined, 'Disputed'),
                     className: 'border-amber-500/10 bg-amber-500/[0.06] text-amber-300',
                     textColor: 'text-amber-400',
                 };
@@ -2009,7 +2051,7 @@ function MessagesComponent() {
         if (user && conversation.unread_count > 0) {
             await markConversationRead(conversation.id, user.id);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     }, [selectedConversation?.id, user?.id]);
 
     const updateConversationPreview = (
@@ -3806,8 +3848,8 @@ function MessagesComponent() {
         if ((!messageContent && !selectedFile && !audioBlob) || !selectedConversation || !user) return;
 
         if (selectedConversationPolicy && !selectedConversationPolicy.canSend) {
-            const blockedMessage = selectedConversationPolicy.blockedReasonFallback
-                || 'This conversation is read-only right now.';
+            const blockedMessage = translatedBlockedReason
+                || tx('pages.messages.readOnlyRightNow', undefined, 'This conversation is read-only right now.');
             showToast(
                 tx(
                     'pages.messages.readOnlyThread',
@@ -3820,20 +3862,28 @@ function MessagesComponent() {
         }
 
         if (selectedFile && selectedConversationPolicy && !selectedConversationPolicy.canAttachFiles) {
-            const blockedMessage = selectedConversationPolicy.blockedReasonFallback
-                || 'Attachments are disabled for this conversation.';
+            const blockedMessage = translatedBlockedReason
+                || tx('pages.messages.attachmentsDisabled', undefined, 'Attachments are disabled for this conversation.');
             showToast(
-                tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage),
+                tx(
+                    'pages.messages.readOnlyThread',
+                    { message: blockedMessage },
+                    blockedMessage,
+                ),
                 'warning'
             );
             return;
         }
 
         if (audioBlob && selectedConversationPolicy && !selectedConversationPolicy.canSendVoiceNotes) {
-            const blockedMessage = selectedConversationPolicy.blockedReasonFallback
-                || 'Voice notes are disabled for this conversation.';
+            const blockedMessage = translatedBlockedReason
+                || tx('pages.messages.voiceNotesDisabled', undefined, 'Voice notes are disabled for this conversation.');
             showToast(
-                tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage),
+                tx(
+                    'pages.messages.readOnlyThread',
+                    { message: blockedMessage },
+                    blockedMessage,
+                ),
                 'warning'
             );
             return;
@@ -4117,8 +4167,8 @@ function MessagesComponent() {
         const file = e.target.files?.[0];
         if (file) {
             if (!canAttachInSelectedConversation) {
-                const blockedMessage = selectedConversationPolicy?.blockedReasonFallback
-                    || 'Attachments are disabled for this conversation.';
+                const blockedMessage = translatedBlockedReason
+                    || tx('pages.messages.attachmentsDisabled', undefined, 'Attachments are disabled for this conversation.');
                 showToast(
                     tx(
                         'pages.messages.readOnlyThread',
@@ -4168,7 +4218,7 @@ function MessagesComponent() {
         }
     };
 
-    const getConversationSidebarTitle = useCallback((conversation: Conversation) => {
+    const _getConversationSidebarTitle = useCallback((conversation: Conversation) => {
         return conversation.otherUser.full_name;
     }, []);
     const archiveConversation = useCallback((conversationId: string) => {
@@ -4983,8 +5033,8 @@ function MessagesComponent() {
                                                                 {roleMeta.label}
                                                             </span>
                                                         ) : null}
-                                                        <span className="inline-flex max-w-[160px] items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-0.5 text-[10px] font-semibold text-zinc-400 shrink-0">
-                                                            <span className="truncate">{truncateText(getConversationWorkDescriptor(selectedConversation), 28)}</span>
+                                                        <span className="inline-flex items-center rounded-full border border-white/[0.06] bg-white/[0.02] px-2.5 py-0.5 text-[10px] font-semibold text-zinc-400">
+                                                            <span>{getConversationWorkDescriptor(selectedConversation)}</span>
                                                         </span>
                                                         {statusMeta ? (
                                                             <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0 ${statusMeta.className}`}>
@@ -5023,7 +5073,7 @@ function MessagesComponent() {
                                             }`}
                                         >
                                             <FileText className="w-3.5 h-3.5" />
-                                            <span>{showContractPanel ? tx('pages.messages.hideWorkspace', undefined, 'Hide Workspace') : tx('common.workspace', undefined, 'Workspace')}</span>
+                                            <span>{showContractPanel ? tx('pages.messages.hideWorkspace', undefined, 'Hide Workspace') : tx('contract.workspaceTitle', undefined, 'Workspace')}</span>
                                         </button>
                                     )}
 
@@ -5092,7 +5142,7 @@ function MessagesComponent() {
                         </div>
 
                         {/* Compact premium dismissible alert banner */}
-                        {(selectedContractReviewBanner || selectedConversationPolicy?.bannerFallback)
+                        {(selectedContractReviewBanner || translatedLifecycleBanner)
                             && selectedConversationPolicy
                             && selectedConversationPolicy.bannerTone !== 'none'
                             && (selectedConversationPolicy.contractStatus !== 'unknown' || showUnknownContractBanner)
@@ -5102,12 +5152,12 @@ function MessagesComponent() {
                                     <AlertCircle className="h-3.5 w-3.5 shrink-0 text-current opacity-95" />
                                     <p className="text-zinc-300 leading-normal truncate">
                                         <span className="font-semibold text-white mr-1">
-                                            {selectedContractStatus === 'revision_requested' ? 'Revision Requested:' : 'Action Required:'}
-                                        </span>
+                                             {selectedContractStatus === 'revision_requested' ? tx('contract.requestRevision') + ':' : tx('common.warning') + ':'}
+                                         </span>
                                         {tx(
                                             'pages.messages.lifecycleBanner',
-                                            { message: String(selectedContractReviewBanner || selectedConversationPolicy.bannerFallback || '') },
-                                            selectedContractReviewBanner || selectedConversationPolicy.bannerFallback || '',
+                                            { message: String(translatedLifecycleBanner) },
+                                            translatedLifecycleBanner,
                                         )}
                                     </p>
                                 </div>
@@ -5252,8 +5302,8 @@ function MessagesComponent() {
                                                                             ? `relative ${accentClasses.ownBubbleBg} p-1 overflow-hidden rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-br-sm'} text-white ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-85' : ''}`
                                                                             : `relative border border-white/[0.05] bg-white/[0.025] backdrop-blur-md p-1 overflow-hidden rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-bl-sm'} text-zinc-100`)
                                                                         : isOwnMessage
-                                                                        ? `relative ${accentClasses.ownBubbleBg} text-white pt-2.5 pr-4 pb-1.5 pl-4 rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-br-sm'} text-[13px] font-normal leading-relaxed ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-85' : ''}`
-                                                                        : `relative border border-white/[0.05] bg-white/[0.025] backdrop-blur-md text-zinc-100 pt-2.5 pr-4 pb-1.5 pl-4 rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-bl-sm'} text-[13px] font-normal leading-relaxed`
+                                                                        ? `relative ${accentClasses.ownBubbleBg} text-white pt-2.5 pr-4 pb-3.5 pl-4 rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-br-sm'} text-[13px] font-normal leading-relaxed ${message.status === 'failed' ? 'ring-1 ring-red-500/70' : ''} ${message.status === 'sending' ? 'opacity-85' : ''}`
+                                                                        : `relative border border-white/[0.05] bg-white/[0.025] backdrop-blur-md text-zinc-100 pt-2.5 pr-4 pb-3.5 pl-4 rounded-xl min-w-[95px] ${isConsecutiveNext ? '' : 'rounded-bl-sm'} text-[13px] font-normal leading-relaxed`
                                                                 } ${highlightedMessageId === message.id ? `ring-1 ${accentClasses.highlightRing}` : ''}`}
                                                             >
                                                                 {replyMetadata ? (
@@ -5303,7 +5353,7 @@ function MessagesComponent() {
                                                                         }
 
                                                                         let eventTitle = 'System Update';
-                                                                        const eventDescription = messageText;
+                                                                        const eventDescription = resolveSystemMessageText(messageText ?? '', kind, tx);
                                                                         if (kind === 'delivery') {
                                                                             eventTitle = tx('pages.messages.system.deliveryTitle', undefined, 'Work Delivered');
                                                                         } else if (kind === 'revision_requested') {
@@ -5344,8 +5394,8 @@ function MessagesComponent() {
                                                                             const attachmentUrl = resolveMessageAttachmentUrl(att.url);
                                                                             const isImage = isImageAttachment(att);
                                                                             const isAudio = isAudioAttachment(att);
-                                                                            const extensionLabel = getAttachmentExtensionLabel(att.name, att.type);
-                                                                            const fileSizeLabel = formatAttachmentSize(att.size);
+                                                                            const extensionLabel = getAttachmentExtensionLabel(att.name, att.type, tx);
+                                                                            const fileSizeLabel = formatAttachmentSize(att.size, tx);
                                                                             const fileMetaLabel = fileSizeLabel ? `${extensionLabel} • ${fileSizeLabel}` : extensionLabel;
 
                                                                             if (isImage) {
@@ -5515,8 +5565,6 @@ function MessagesComponent() {
                             </div>
                         ) : null}
 
-                                 {(selectedFile || audioBlob || isRecording) ? null : null} {/* Removed old file preview block, ChatInputArea handles it */}
-
                         {!canSendInSelectedConversation ? (
                             /* ── Premium Read-Only Lock Panel ── */
                             <div className="flex items-center gap-3 rounded-[20px] border border-white/[0.07] bg-[var(--color-bg-elevated)] px-4 py-3.5">
@@ -5525,7 +5573,7 @@ function MessagesComponent() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-[13px] font-medium text-[#8A8880]">
-                                        {selectedConversationPolicy?.blockedReasonFallback || 'This conversation is read-only.'}
+                                        {translatedBlockedReason || tx('pages.messages.readOnlyFallback', undefined, 'This conversation is read-only.')}
                                     </p>
                                 </div>
                                 {selectedWorkspaceContractId && !contractActionBar ? (
@@ -5534,7 +5582,7 @@ function MessagesComponent() {
                                         onClick={() => navigate(getContractWorkspaceRoute(selectedWorkspaceContractId))}
                                         className="shrink-0 rounded-[10px] border border-white/[0.07] bg-[#161719] px-3 py-1.5 text-[13px] font-medium text-[#8A8880] transition-colors hover:border-white/[0.12] hover:bg-[#1a1b1e] hover:text-[#F0EFE8]"
                                     >
-                                        View workspace ↗
+                                        {tx('pages.messages.viewWorkspace', undefined, 'View workspace')} ↗
                                     </button>
                                 ) : null}
                             </div>
@@ -5559,7 +5607,7 @@ function MessagesComponent() {
                                 isRecording={isRecording}
                                 onToggleRecord={() => {
                                     if (!canSendVoiceInSelectedConversation) {
-                                        const blockedMessage = selectedConversationPolicy?.blockedReasonFallback || 'Voice notes are disabled for this conversation.';
+                                        const blockedMessage = translatedBlockedReason || tx('pages.messages.voiceNotesDisabled', undefined, 'Voice notes are disabled for this conversation.');
                                         showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage), 'warning');
                                         return;
                                     }

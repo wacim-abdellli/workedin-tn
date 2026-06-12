@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 import {
     getMessages,
@@ -63,6 +63,24 @@ export function useMessageThread({
     isOnline
 }: UseMessageThreadProps) {
     const deletedMessageLabel = tx('pages.messages.deletedMessage', undefined, 'Message deleted');
+
+    const translatedBlockedReason = useMemo(() => {
+        if (!selectedConversationPolicy) return null;
+        const status = selectedConversationPolicy.contractStatus;
+        if (!status || !selectedConversationPolicy.blockedReasonFallback) return null;
+
+        const statusKeys: Record<string, string> = {
+            completed: 'pages.messages.lifecycle.completed',
+            cancelled: 'pages.messages.lifecycle.cancelled',
+            disputed: 'pages.messages.lifecycle.disputed',
+        };
+
+        const key = statusKeys[status];
+        if (key) {
+            return tx(key, undefined, selectedConversationPolicy.blockedReasonFallback);
+        }
+        return selectedConversationPolicy.blockedReasonFallback;
+    }, [selectedConversationPolicy, tx]);
 
     const [messages, setMessages] = useState<ThreadMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
@@ -318,7 +336,7 @@ export function useMessageThread({
 
                         updateConversationPreview(selectedConversation.id, (conversation) => ({
                             ...conversation,
-                            ...getThreadPreview(nextMessages, deletedMessageLabel),
+                            ...getThreadPreview(nextMessages, deletedMessageLabel, tx),
                         }));
 
                         return nextMessages;
@@ -332,7 +350,7 @@ export function useMessageThread({
                         const nextMessages = prev.filter((message) => message.id !== deletedMessage.id);
                         updateConversationPreview(selectedConversation.id, (conversation) => ({
                             ...conversation,
-                            ...getThreadPreview(nextMessages, deletedMessageLabel),
+                            ...getThreadPreview(nextMessages, deletedMessageLabel, tx),
                         }));
                         return nextMessages;
                     });
@@ -497,21 +515,21 @@ export function useMessageThread({
         if ((!messageContent && !selectedFile && !audioBlob) || !selectedConversation || !user) return;
 
         if (selectedConversationPolicy && !selectedConversationPolicy.canSend) {
-            const blockedMessage = selectedConversationPolicy.blockedReasonFallback
+            const blockedMessage = translatedBlockedReason
                 || tx('contract.blockedReasons.readOnly', undefined, 'This conversation is read-only right now.');
             showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage), 'warning');
             return;
         }
 
         if (selectedFile && selectedConversationPolicy && !selectedConversationPolicy.canAttachFiles) {
-            const blockedMessage = selectedConversationPolicy.blockedReasonFallback
+            const blockedMessage = translatedBlockedReason
                 || tx('contract.blockedReasons.noAttachments', undefined, 'Attachments are disabled for this conversation.');
             showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage), 'warning');
             return;
         }
 
         if (audioBlob && selectedConversationPolicy && !selectedConversationPolicy.canSendVoiceNotes) {
-            const blockedMessage = selectedConversationPolicy.blockedReasonFallback
+            const blockedMessage = translatedBlockedReason
                 || tx('contract.blockedReasons.noVoiceNotes', undefined, 'Voice notes are disabled for this conversation.');
             showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage), 'warning');
             return;
@@ -797,7 +815,7 @@ export function useMessageThread({
             setDeletedForMeMessageIds(newDeletedForMe);
         }
 
-        const nextPreview = getThreadPreview(nextMessages, deletedMessageLabel);
+        const nextPreview = getThreadPreview(nextMessages, deletedMessageLabel, tx);
 
         setDeletingMessageId(message.id);
         setMessages(nextMessages);
@@ -813,7 +831,7 @@ export function useMessageThread({
                 setMessages(previousMessages);
                 updateConversationPreview(selectedConversation.id, (conversation) => ({
                     ...conversation,
-                    ...getThreadPreview(previousMessages, deletedMessageLabel),
+                    ...getThreadPreview(previousMessages, deletedMessageLabel, tx),
                 }));
                 showToast(error.message, 'error');
             }

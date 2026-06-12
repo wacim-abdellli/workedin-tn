@@ -423,7 +423,7 @@ export default function AccountPanel({
                       const isActive = activeWorkspace === item.mode;
                       const isAvailable = availableModes.includes(item.mode);
                       const isSwitchingThis = isSwitching && pendingWorkspace === item.mode;
-                      const accentClasses =
+                      const _accentClasses =
                         item.accent === 'purple'
                           ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30'
                           : 'border-amber-500 bg-amber-50 dark:bg-amber-950/30';

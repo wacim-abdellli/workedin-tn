@@ -145,7 +145,7 @@ export default function ContractWorkspace({ contract = {}, currentUser = { role:
                             >
                                 <span className="sm:hidden"><Icon /></span>
                                 <span className="hidden sm:inline">{tab.label}</span>
-                                {selected ? <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-[var(--cw-action)]" /> : null}
+                                {selected ? <span className="absolute bottom-0 start-0 h-0.5 w-full rounded-full bg-[var(--cw-action)]" /> : null}
                             </button>
                         );
                     })}
@@ -389,7 +389,7 @@ function MilestonesTab({ vm, currentUser }) {
             ) : (
                 <div className="mt-5 overflow-x-auto pb-2">
                     <div className="relative flex min-w-max gap-5 px-1">
-                        <div className="absolute left-5 right-5 top-5 h-px bg-[var(--cw-border)]" />
+                        <div className="absolute inset-x-5 top-5 h-px bg-[var(--cw-border)]" />
                         <div className="absolute left-5 top-5 h-px bg-[var(--cw-action)]" style={{ width: `calc(${vm.progress}% - 2.5rem)` }} />
                         {vm.milestones.map((milestone, index) => <MilestoneDot key={milestone.id || index} milestone={milestone} index={index} />)}
                     </div>

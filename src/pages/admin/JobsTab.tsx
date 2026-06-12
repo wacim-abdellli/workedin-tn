@@ -193,7 +193,7 @@ export default function JobsTab() {
     const tableHeadClass = adminTableHeadClass;
     const tableRowClass = adminTableRowClass;
     const inputClass = `pe-11 ps-4 ${adminInputClass}`;
-    const selectClass = adminSelectClass;
+    const _selectClass = adminSelectClass;
 
     const closeConfirm = () => setConfirmAction((prev) => ({ ...prev, isOpen: false }));
 

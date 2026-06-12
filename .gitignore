@@ -57,3 +57,6 @@ workedin-logos/*.zip
 # Generated audit reports
 i18n-audit-report.txt
 .aider*
+
+# Scratch files
+scratch/

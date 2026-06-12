@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { createPortal } from 'react-dom';
+
 import {
   Wallet as WalletIcon,
   TrendingUp,
   Clock,
   ArrowUpRight,
   ArrowDownLeft,
-  Building,
-  Phone,
-  X,
+  _Building,
+  _Phone,
+  _X,
   Info,
   CheckCircle,
   Plus,
@@ -61,7 +61,7 @@ import type {
   Wallet as WalletType,
   Withdrawal,
   WithdrawalMethod,
-  WithdrawalStatus,
+  _WithdrawalStatus,
 } from '@/types/payment';
 
 type WalletTab = 'overview' | 'withdraw' | 'deposit' | 'transactions';
@@ -125,16 +125,16 @@ function LockedFundsSection({
     <div className="rounded-2xl border p-5 flex flex-col h-full" style={{ borderColor: 'color-mix(in srgb, var(--workspace-primary) 15%, var(--color-border-subtle))', background: 'var(--color-bg-elevated)' }}>
       <div className="flex items-center gap-2 mb-4">
         <Clock className="w-5 h-5 text-zinc-400" />
-        <h3 className="text-sm font-bold text-foreground">{tx('wallet.lockedFundsTitle', undefined, 'Locked Funds Schedule')}</h3>
+        <h3 className="text-sm font-bold text-foreground">{tx('wallet.lockedFunds')}</h3>
       </div>
 
       {lockedContracts.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 py-8 text-center">
           <BadgeCheck className="w-10 h-10 text-muted-foreground/30 mb-2" />
-          <p className="text-xs text-muted-foreground">{tx('wallet.noLockedFunds', undefined, 'No funds currently locked in escrow')}</p>
+          <p className="text-xs text-muted-foreground">{tx('wallet.noLockedFunds')}</p>
         </div>
       ) : (
-        <div className="space-y-3 overflow-y-auto max-h-[320px] pr-1">
+        <div className="space-y-3 overflow-y-auto max-h-[320px] pe-1">
           {lockedContracts.map((c: any) => {
             const hasClearanceHold = c.escrow_pending_clearance_until && new Date(c.escrow_pending_clearance_until) > new Date();
             const partnerName = isFreelancer ? c.client?.full_name : c.freelancer?.full_name;
@@ -221,7 +221,7 @@ function BalanceHero({
     { id: 'transactions', label: tx('wallet.tabs.transactions', undefined, 'Transactions'), icon: <ReceiptText className="w-4 h-4" /> },
   ];
 
-  const accentColor = isFreelancer ? 'var(--color-purple-500, #a855f7)' : 'var(--workspace-primary)';
+  const _accentColor = isFreelancer ? 'var(--color-purple-500, #a855f7)' : 'var(--workspace-primary)';
 
   return (
     <div
@@ -770,12 +770,12 @@ function WithdrawPanel({
           {method === 'bank_transfer' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">{tx('wallet.bankName', undefined, 'Bank Name')}</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">{tx('wallet.bankName')}</label>
                 <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. BNA, STB, Attijari…" className={fieldClass(!!bankNameError)} />
                 {bankNameError && <p className="text-rose-500 text-sm mt-1">{bankNameError}</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">{tx('wallet.accountHolder', undefined, 'Account Holder Name')}</label>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">{tx('wallet.accHolderName')}</label>
                 <input type="text" value={bankAccountName} onChange={(e) => setBankAccountName(e.target.value)} placeholder="Full name as on your account" className={fieldClass(!!bankAccountNameError)} />
                 {bankAccountNameError && <p className="text-rose-500 text-sm mt-1">{bankAccountNameError}</p>}
               </div>
@@ -865,9 +865,9 @@ function WithdrawPanel({
 // ─── Sub-component: Deposit Panel ─────────────────────────────────────────────
 
 function DepositPanel({
-  onSuccess,
+  _onSuccess,
   language,
-  t,
+  _t,
   tx,
 }: {
   onSuccess: () => void;
@@ -1030,7 +1030,7 @@ function DepositPanel({
 export default function Wallet() {
   const { user } = useAuth();
   const { t, tx, language } = useTranslation();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const { activeWorkspace } = useWorkspaceStore();
   const isFreelancer = activeWorkspace !== 'client';
 
@@ -1102,7 +1102,7 @@ export default function Wallet() {
   });
 
   // Fetch contracts for locked funds tracker
-  const { data: contracts = [], isLoading: contractsLoading } = useQuery({
+  const { data: contracts = [] } = useQuery({
     queryKey: ['wallet-contracts', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];

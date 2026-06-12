@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import SEO, { SEO_CONFIG } from "@/components/common/SEO";
 import {
@@ -6,21 +6,21 @@ import {
   Calendar,
   Briefcase,
   Star,
-  DollarSign,
+  _DollarSign,
   MessageSquare,
   ArrowLeft,
   CheckCircle,
   UserX,
   Users,
-  FileText,
+  _FileText,
   Edit2,
-  Save,
-  ShieldCheck,
-  X,
-  Target,
+  _Save,
+  _ShieldCheck,
+  _X,
+  _Target,
   Settings,
   Plus,
-  Eye,
+  _Eye,
   Globe,
   Loader2,
   Camera,
@@ -38,11 +38,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { logger } from "@/lib/logger";
 import { ROUTES } from "@/lib/routes";
 import Button from "@/components/ui/Button";
-import CustomSelect from "@/components/ui/CustomSelect";
+
 import { localizeGovernorate, getLocalizedGovernorateOptions } from "@/lib/governorates";
 import { useToast } from "@/components/ui/Toast";
-import { GOVERNORATES } from "@/types";
-import { Skeleton } from "@/components/common/SkeletonCard";
+
+
 import { uploadAvatar } from "@/services/profiles";
 import { usePresence } from "@/hooks/usePresence";
 
@@ -253,7 +253,7 @@ export default function ClientProfile() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
 
   const [isStartingConversation, setIsStartingConversation] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -294,7 +294,7 @@ export default function ClientProfile() {
     return params.get("preview") === "public";
   }, [location.search]);
 
-  const governorateOptions = useMemo(
+  const _governorateOptions = useMemo(
     () => getLocalizedGovernorateOptions(language),
     [language],
   );
@@ -391,7 +391,7 @@ export default function ClientProfile() {
   });
 
   // ── Fetch client reviews ──
-  const { data: clientReviews = [], refetch: refetchReviews } = useQuery({
+  const { data: clientReviews = [] } = useQuery({
     queryKey: ["client-reviews", clientId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -672,7 +672,7 @@ export default function ClientProfile() {
 
   // === Main Render ===
   // === Computed values for new layout ===
-  const accentColor = "#F59E0B";
+  const _accentColor = "#F59E0B";
   const clientIntro = getClientIntro(client);
   const communicationSummary = getSummary(client.communication_preferences);
   const screeningSummary = getSummary(client.screening_preferences);

@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Bookmark,
   Briefcase,
-  ChevronDown,
+  _ChevronDown,
   FileText,
   FolderOpen,
   Menu,
@@ -65,7 +65,7 @@ export default function Header() {
 
   const isFreelancer = Boolean(user) && resolvedWorkspace === "freelancer";
   const isAuthPage = AUTH_ROUTES.includes(pathname);
-  const unreadDotClass = isFreelancer ? "bg-purple-400" : "bg-amber-400";
+  const _unreadDotClass = isFreelancer ? "bg-purple-400" : "bg-amber-400";
 
   const mobileFreelancerNav = [
     { label: t.nav?.findWork || "Find Work", Icon: Briefcase, href: "/jobs" },

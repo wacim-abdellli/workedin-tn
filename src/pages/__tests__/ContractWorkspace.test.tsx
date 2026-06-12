@@ -53,28 +53,38 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
-vi.mock('@/i18n', () => ({
-    useTranslation: () => ({
-        language: 'ar',
-        dir: 'rtl',
-        setLanguage: vi.fn(),
-        t: {
-            common: {
-                back: 'الرجوع للخلف',
-                viewJob: 'عرض المهمة',
-            },
-            contract: {
-                workspaceTitle: 'مساحة العمل',
-                seoDescription: 'Track conversation, files, and payment status for your contract from the workspace.',
-                status: 'Status',
-                inProgress: 'In progress',
-                deliverWork: 'Deliver work',
-                openDispute: 'Open dispute',
-            },
+vi.mock('@/i18n', () => {
+    const mockT = {
+        common: {
+            back: 'الرجوع للخلف',
+            viewJob: 'عرض المهمة',
         },
-        tx: (_key: string, _params?: Record<string, string>, fallback?: string) => fallback ?? _key,
-    }),
-}));
+        contract: {
+            workspaceTitle: 'مساحة العمل',
+            seoDescription: 'Track conversation, files, and payment status for your contract from the workspace.',
+            status: 'Status',
+            inProgress: 'In progress',
+            deliverWork: 'Deliver work',
+            openDispute: 'Open dispute',
+        },
+    };
+    return {
+        useTranslation: () => ({
+            language: 'ar',
+            dir: 'rtl',
+            setLanguage: vi.fn(),
+            t: mockT,
+            tx: (key: string, _params?: Record<string, string>, fallback?: string) => {
+                const parts = key.split('.');
+                let val: any = mockT;
+                for (const part of parts) {
+                    val = val?.[part];
+                }
+                return typeof val === 'string' ? val : (fallback ?? key);
+            },
+        }),
+    };
+});
 
 vi.mock('@/contexts/AuthContext', () => ({
     useAuth: () => ({

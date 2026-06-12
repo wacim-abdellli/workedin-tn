@@ -8,7 +8,7 @@ const AUTHENTICATED_PATH_RE = /^(?:\/|\/dashboard(?:\/.*)?|\/onboarding(?:\/.*)?
 setup('authenticate as freelancer', async ({ page }) => {
   try {
     await login(page, TEST_USERS.freelancer.email, TEST_USERS.freelancer.password);
-  } catch (error) {
+  } catch (_error) {
     console.log('Initial login failed, waiting for page to load and retrying...');
     await page.waitForTimeout(2000);
     await page.reload();
@@ -29,7 +29,7 @@ setup('authenticate as freelancer', async ({ page }) => {
 setup('authenticate as client', async ({ page }) => {
   try {
     await login(page, TEST_USERS.client.email, TEST_USERS.client.password);
-  } catch (error) {
+  } catch (_error) {
     console.log('Initial login failed, waiting for page to load and retrying...');
     await page.waitForTimeout(2000);
     await page.reload();

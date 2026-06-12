@@ -1008,7 +1008,7 @@ export function useContractLifecycle({
 
             const messageContent = trimmedNote
                 ? `[[delivery]] ${trimmedNote}`
-                : '[[delivery]] Work delivered and ready for review';
+                : '[[delivery]]';
 
             const uploadFile = async (file: File, stage: 'review' | 'final') => {
                 const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -1206,7 +1206,7 @@ export function useContractLifecycle({
                 contract_id: selectedConversation.contract_id,
                 sender_id: user.id,
                 receiver_id: selectedConversation.otherUser.id,
-                content: '[[contract_completed]] Work has been accepted and payment released',
+                content: '[[contract_completed]]',
                 message_type: 'system',
             });
 
@@ -1305,7 +1305,7 @@ export function useContractLifecycle({
             contract_id: selectedContractId,
             sender_id: user.id,
             receiver_id: selectedConversation.otherUser.id,
-            content: `[[review_left]] ${rating} stars: ${comment || 'No comment provided'}`,
+            content: `[[review_left]] ${rating} stars: ${comment || tx('pages.messages.noCommentPlaceholder', undefined, 'No comment provided')}`,
             message_type: 'system',
         });
 
@@ -1585,14 +1585,14 @@ export function useContractLifecycle({
 
         if (selectedContractUserRole === 'client') {
             return overdue
-                ? `Review is overdue. Please accept, request changes, or open a dispute now. If you stay inactive, the platform may escalate or auto-resolve this contract based on policy.`
-                : `This delivery is under review. Review it by ${dueLabel ?? 'the deadline'} and choose Accept and Pay, Request Changes, or Open Dispute. If you do nothing, the platform may escalate or auto-resolve the next step based on policy.`;
+                ? tx('pages.messages.reviewBanners.overdueClient', undefined, 'Review is overdue. Please accept, request changes, or open a dispute now. If you stay inactive, the platform may escalate or auto-resolve this contract based on policy.')
+                : tx('pages.messages.reviewBanners.underReviewClient', { deadline: dueLabel ?? tx('pages.messages.reviewBanners.theDeadline', undefined, 'the deadline') }, `This delivery is under review. Review it by ${dueLabel ?? 'the deadline'} and choose Accept and Pay, Request Changes, or Open Dispute. If you do nothing, the platform may escalate or auto-resolve the next step based on policy.`);
         }
 
         return overdue
-            ? `Client review is overdue. The platform will follow the contract protection policy next if the client stays inactive.`
-            : `Your delivery is under review until ${dueLabel ?? 'the deadline'}. The client must accept, request changes, or open a dispute. If they do nothing, the platform may escalate or auto-resolve the next step based on policy.`;
-    }, [profile?.language, selectedContractReviewDueAt, selectedContractStatus, selectedContractUserRole]);
+            ? tx('pages.messages.reviewBanners.overdueFreelancer', undefined, 'Client review is overdue. The platform will follow the contract protection policy next if the client stays inactive.')
+            : tx('pages.messages.reviewBanners.underReviewFreelancer', { deadline: dueLabel ?? tx('pages.messages.reviewBanners.theDeadline', undefined, 'the deadline') }, `Your delivery is under review until ${dueLabel ?? 'the deadline'}. The client must accept, request changes, or open a dispute. If they do nothing, the platform may escalate or auto-resolve the next step based on policy.`);
+    }, [profile?.language, selectedContractReviewDueAt, selectedContractStatus, selectedContractUserRole, tx]);
 
     return {
         contractStatusById,

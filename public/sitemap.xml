@@ -1,12 +1,12 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://khedmetna.tn/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://khedmetna.tn/how-it-works</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://khedmetna.tn/for-clients</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://khedmetna.tn/faq</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://khedmetna.tn/jobs</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://khedmetna.tn/find-freelancers</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://khedmetna.tn/login</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://khedmetna.tn/signup</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://workedin.tn/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://workedin.tn/how-it-works</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://workedin.tn/for-clients</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://workedin.tn/faq</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://workedin.tn/jobs</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://workedin.tn/find-freelancers</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://workedin.tn/login</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://workedin.tn/signup</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
 </urlset>
 

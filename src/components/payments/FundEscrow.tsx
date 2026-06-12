@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, CreditCard, Shield, AlertCircle, ArrowLeft, Check } from 'lucide-react';
+import { Loader2, CreditCard, Shield, AlertCircle, ArrowLeft } from 'lucide-react';
 import { createEscrow } from '@/services/dhmad';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../ui/Toast';

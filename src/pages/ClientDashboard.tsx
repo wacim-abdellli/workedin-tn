@@ -76,7 +76,7 @@ type ActiveContract = {
     freelancer: { id: string; full_name: string | null; avatar_url: string | null } | null;
 };
 
-function getTimeGreeting(tx: (key: string, params?: any, fallback?: string) => string): string {
+function _getTimeGreeting(tx: (key: string, params?: any, fallback?: string) => string): string {
     const hour = new Date().getHours();
     if (hour < 12) return tx('dashboard.greeting.morning', undefined, 'Good morning');
     if (hour < 18) return tx('dashboard.greeting.afternoon', undefined, 'Good afternoon');

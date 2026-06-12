@@ -23,8 +23,8 @@ export function EscrowFundingBanner({
     onFund,
 }: EscrowFundingBannerProps) {
     const [dismissed, setDismissed] = useState(false);
-    if (dismissed) return null;
     const { tx } = useTranslation();
+    if (dismissed) return null;
 
     const canPayFromWallet = walletBalance !== null && walletBalance >= amount;
 

@@ -38,7 +38,7 @@ import ContractDetailsSidebar from '@/components/contracts/ContractDetailsSideba
 
 function ContractWorkspaceComponent() {
     const { contractId } = useParams<{ contractId: string }>();
-    const { t, tx } = useTranslation() as any;
+    const { tx } = useTranslation() as any;
     const { user } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
@@ -166,7 +166,7 @@ function ContractWorkspaceComponent() {
         if (!contractData || !user) return;
 
         if (!lifecyclePolicy.canSend) {
-            const blockedMessage = lifecyclePolicy.blockedReasonFallback || 'This conversation is read-only right now.';
+            const blockedMessage = disabledReasonText || tx('pages.messages.readOnlyRightNow', undefined, 'This conversation is read-only right now.');
             showToast(
                 tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage),
                 'warning'
@@ -180,7 +180,7 @@ function ContractWorkspaceComponent() {
             await sendMessage(content, receiverId);
             setTyping(false);
         } catch (error) {
-            showToast(error instanceof Error ? error.message : t.contract.sendMessageError, 'error');
+            showToast(error instanceof Error ? error.message : tx('contract.sendMessageError', undefined, 'Error sending message'), 'error');
         }
     };
 
@@ -188,7 +188,7 @@ function ContractWorkspaceComponent() {
         if (!contractData || !user) return;
 
         if (!lifecyclePolicy.canSend || !lifecyclePolicy.canAttachFiles) {
-            const blockedMessage = lifecyclePolicy.blockedReasonFallback || 'Attachments are disabled for this conversation.';
+            const blockedMessage = disabledReasonText || tx('pages.messages.attachmentsDisabled', undefined, 'Attachments are disabled for this conversation.');
             showToast(
                 tx('pages.messages.readOnlyThread', { message: blockedMessage }, blockedMessage),
                 'warning'
@@ -205,7 +205,7 @@ function ContractWorkspaceComponent() {
             ]);
             showToast(`${tx('contract.fileUploaded', undefined, 'File uploaded:')} ${file.name}`, 'success');
         } catch (error) {
-            showToast(error instanceof Error ? error.message : t.contract.fileUploadError, 'error');
+            showToast(error instanceof Error ? error.message : tx('contract.fileUploadError', undefined, 'Error uploading file'), 'error');
         }
     };
 
@@ -217,12 +217,12 @@ function ContractWorkspaceComponent() {
         retry: 2,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
         onSuccess: () => {
-            showToast(t.contract.workDelivered, 'success');
+            showToast(tx('contract.workDelivered', undefined, 'Work delivered successfully!'), 'success');
             setIsDeliverModalOpen(false);
             setDeliveryNote('');
         },
         onError: () => {
-            showToast(t.contract.deliverError, 'error');
+            showToast(tx('contract.deliverError', undefined, 'Error delivering work'), 'error');
         }
     });
 
@@ -233,12 +233,12 @@ function ContractWorkspaceComponent() {
         retry: 2,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
         onSuccess: () => {
-            showToast(t.contract.workAccepted, 'success');
+            showToast(tx('contract.workAccepted', undefined, 'Work accepted and payment completed!'), 'success');
             setIsPaymentModalOpen(false);
             navigate('/client/dashboard');
         },
         onError: () => {
-            showToast(t.contract.acceptError, 'error');
+            showToast(tx('contract.acceptError', undefined, 'Error accepting work'), 'error');
         }
     });
 
@@ -249,10 +249,10 @@ function ContractWorkspaceComponent() {
         retry: 2,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
         onSuccess: () => {
-            showToast(t.contract.revisionSent, 'info');
+            showToast(tx('contract.revisionSent', undefined, 'Revision request sent'), 'info');
         },
         onError: () => {
-            showToast(t.contract.error, 'error');
+            showToast(tx('contract.error', undefined, 'An error occurred'), 'error');
         }
     });
 
@@ -268,12 +268,12 @@ function ContractWorkspaceComponent() {
         retry: 2,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
         onSuccess: () => {
-            showToast(t.contract.disputeOpened, 'warning');
+            showToast(tx('contract.disputeOpened', undefined, 'Dispute Opened'), 'warning');
             setIsDisputeModalOpen(false);
             setDisputeReason('');
         },
         onError: () => {
-            showToast(t.contract.disputeError, 'error');
+            showToast(tx('contract.disputeError', undefined, 'Error opening dispute'), 'error');
         }
     });
 
@@ -295,7 +295,7 @@ function ContractWorkspaceComponent() {
     };
 
     const handleRequestChanges = async () => {
-        requestChangesMutation.mutate(t.contract.requestRevision);
+        requestChangesMutation.mutate(tx('contract.requestRevision', undefined, 'Request revisions'));
     };
 
     const handleOpenDispute = async () => {
@@ -315,10 +315,10 @@ function ContractWorkspaceComponent() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['review', contractId, user?.id] });
             setIsReviewModalOpen(false);
-            showToast(t.contract.reviewSent, 'success');
+            showToast(tx('contract.reviewSent', undefined, 'Review submitted successfully'), 'success');
         },
         onError: () => {
-            showToast(t.contract.error, 'error');
+            showToast(tx('contract.error', undefined, 'An error occurred'), 'error');
         }
     });
 
@@ -332,7 +332,7 @@ function ContractWorkspaceComponent() {
             return {
                 dot: 'bg-emerald-400',
                 chip: 'border-emerald-400/35 bg-emerald-400/12 text-emerald-300',
-                label: t.contract.inProgress,
+                label: tx('contract.inProgress', undefined, 'In Progress'),
             };
         }
 
@@ -348,7 +348,7 @@ function ContractWorkspaceComponent() {
             return {
                 dot: 'bg-amber-400',
                 chip: 'border-amber-400/35 bg-amber-400/12 text-amber-300',
-                label: t.contract.disputeOpened,
+                label: tx('contract.disputeOpened', undefined, 'Dispute Opened'),
             };
         }
 
@@ -357,7 +357,7 @@ function ContractWorkspaceComponent() {
             chip: 'border-border bg-surface text-muted-foreground',
             label: currentStatus,
         };
-    }, [currentStatus, t.contract.disputeOpened, t.contract.inProgress, tx]);
+    }, [currentStatus, tx]);
 
     const startedAtLabel = useMemo(() => {
         const source = contractData?.started_at;
@@ -368,7 +368,7 @@ function ContractWorkspaceComponent() {
         return date.toLocaleDateString();
     }, [contractData?.started_at]);
 
-    const amountLabel = `${contractData?.amount ?? 0} ${tx('dynamic_key_1524267')}`;
+    const amountLabel = `${contractData?.amount ?? 0} ${tx('contract.tnd', undefined, 'TND')}`;
 
     const lifecyclePolicy = useMemo(() => {
         return resolveMessagingLifecyclePolicy({
@@ -376,6 +376,15 @@ function ContractWorkspaceComponent() {
             contractStatus: currentStatus,
         });
     }, [currentStatus]);
+
+    const disabledReasonText = useMemo(() => {
+        if (!lifecyclePolicy.blockedReasonFallback) return null;
+        const status = lifecyclePolicy.contractStatus;
+        if (status === 'completed') return tx('pages.messages.lifecycle.completed', undefined, lifecyclePolicy.blockedReasonFallback);
+        if (status === 'cancelled') return tx('pages.messages.lifecycle.cancelled', undefined, lifecyclePolicy.blockedReasonFallback);
+        if (status === 'disputed') return tx('pages.messages.lifecycle.disputed', undefined, lifecyclePolicy.blockedReasonFallback);
+        return tx('pages.messages.lifecycle.unknown', undefined, lifecyclePolicy.blockedReasonFallback || '');
+    }, [lifecyclePolicy, tx]);
 
     const deliverySubmitted = useMemo(() => {
         if (currentStatus === 'completed') return true;
@@ -487,8 +496,8 @@ function ContractWorkspaceComponent() {
     return (
         <div className="flex min-h-screen flex-col bg-gradient-to-b from-card via-card to-surface/70">
             <SEO
-                title={contractData ? `${contractData.job.title} | ${t.contract.workspaceTitle}` : t.contract.workspaceTitle}
-                description={t.contract.seoDescription || "Track conversation, files, and payment status for your contract from the workspace."}
+                title={contractData ? `${contractData.job.title} | ${tx('contract.workspaceTitle', undefined, 'Workspace')}` : tx('contract.workspaceTitle', undefined, 'Workspace')}
+                description={tx('contract.seoDescription', undefined, 'Track conversation, files, and payment status for your contract from the workspace.')}
                 noIndex
             />
             <Header />
@@ -500,7 +509,7 @@ function ContractWorkspaceComponent() {
                             type="button"
                             onClick={() => navigate(-1)}
                             className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface/60 text-muted-foreground transition-colors hover:bg-surface"
-                            aria-label={t.common.back}
+                            aria-label={tx('common.back', undefined, 'Back')}
                         >
                             <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
                         </button>
@@ -541,7 +550,7 @@ function ContractWorkspaceComponent() {
                     </div>
                     <div className="flex items-center gap-2 rounded-xl border border-border bg-surface/70 px-3 py-2 text-xs text-muted-foreground">
                         <span className={`h-2.5 w-2.5 rounded-full ${statusMeta.dot}`} />
-                        <span>{t.contract.status}: {statusMeta.label}</span>
+                        <span>{tx('contract.statusLabel', undefined, 'Status:')} {statusMeta.label}</span>
                     </div>
                 </div>
             </div>
@@ -610,7 +619,7 @@ function ContractWorkspaceComponent() {
                         onTyping={() => setTyping(true)}
                         isLoadingHistory={messagesLoading}
                         isComposerDisabled={!lifecyclePolicy.canSend}
-                        disabledReason={lifecyclePolicy.blockedReasonFallback}
+                        disabledReason={disabledReasonText}
                         canAttachFiles={lifecyclePolicy.canAttachFiles}
                     />
                 </div>
@@ -661,7 +670,7 @@ function ContractWorkspaceComponent() {
             <Modal
                 isOpen={isDeliverModalOpen}
                 onClose={() => setIsDeliverModalOpen(false)}
-                title={t.contract.deliverWork}
+                title={tx('contract.deliverWork', undefined, 'Deliver Work')}
             >
                 <div className="space-y-4">
                     <p className="text-muted">{tx('contract.deliverNoteLabel', undefined, 'Add a note for the client')}</p>
@@ -674,7 +683,7 @@ function ContractWorkspaceComponent() {
                         aria-label={tx('contract.deliverNoteAria', undefined, 'Delivery notes')}
                     />
                     <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => setIsDeliverModalOpen(false)}>{t.common?.cancel || 'Cancel'}</Button>
+                        <Button variant="outline" onClick={() => setIsDeliverModalOpen(false)}>{tx('common.cancel', undefined, 'Cancel')}</Button>
                         <Button
                             variant="primary"
                             onClick={handleDeliverWork}
@@ -702,7 +711,7 @@ function ContractWorkspaceComponent() {
             <Modal
                 isOpen={isDisputeModalOpen}
                 onClose={() => setIsDisputeModalOpen(false)}
-                title={t.contract.openDispute}
+                title={tx('contract.openDispute', undefined, 'Open Dispute')}
             >
                 <div className="space-y-4">
                     <div className="p-4 bg-yellow-50 rounded-xl">
@@ -720,7 +729,7 @@ function ContractWorkspaceComponent() {
                         aria-label={tx('contract.disputeReasonAria', undefined, 'Dispute reason')}
                     />
                     <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => setIsDisputeModalOpen(false)}>{t.common?.cancel || 'Cancel'}</Button>
+                        <Button variant="outline" onClick={() => setIsDisputeModalOpen(false)}>{tx('common.cancel', undefined, 'Cancel')}</Button>
                         <Button
                             variant="secondary"
                             onClick={handleOpenDispute}

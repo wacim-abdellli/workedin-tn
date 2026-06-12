@@ -35,7 +35,7 @@ type EmailPayload = {
     recipientId: string;
 };
 
-type DispatchStatus = 'pending' | 'sent' | 'failed';
+type _DispatchStatus = 'pending' | 'sent' | 'failed';
 
 type DispatchClaimResult =
     | { mode: 'send'; dispatchId: string }

@@ -121,7 +121,7 @@ function SidebarCard({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ProfileActionSidebar({
-    variant,
+    _variant,
     primaryCta,
     workspaceInfo = [],
     availability = [],

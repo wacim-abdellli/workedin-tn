@@ -90,7 +90,7 @@ class ErrorBoundaryInner extends Component<Props & {
             }
 
             const workspaceMode = this.getWorkspaceMode();
-            const workspaceClass = this.getWorkspaceClass();
+            const _workspaceClass = this.getWorkspaceClass();
             const workspaceLabel = workspaceMode === 'client' ? 'Client workspace' : 'Freelancer workspace';
 
             const { dir } = this.props;

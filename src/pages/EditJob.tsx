@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/i18n';
 import { getStorageConfigErrorMessage, supabase, uploadFile } from '@/lib/supabase';
 import { useToast } from '@/components/ui/Toast';
@@ -478,7 +478,7 @@ export default function EditJob() {
       let updateResult = await supabase.from('jobs').update(updatePayload).eq('id', jobId);
 
       if (updateResult.error && isMissingJobReferenceLinksColumnError(updateResult.error)) {
-        const { reference_links, ...legacyPayload } = updatePayload;
+        const { reference_links: _reference_links, ...legacyPayload } = updatePayload;
         updateResult = await supabase.from('jobs').update(legacyPayload).eq('id', jobId);
 
         if (!updateResult.error && (data.reference_links?.length || 0) > 0) {

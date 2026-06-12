@@ -509,6 +509,9 @@ async function renderSelectedScenario({
 }
 
 describe('Messages lifecycle', () => {
+    const getMessageInput = () => screen.queryByPlaceholderText('Type a message...') || screen.getByPlaceholderText('Write your message...');
+    const queryMessageInput = () => screen.queryByPlaceholderText('Type a message...') || screen.queryByPlaceholderText('Write your message...');
+
     beforeEach(() => {
         vi.clearAllMocks();
         localStorage.clear();
@@ -608,10 +611,10 @@ describe('Messages lifecycle', () => {
 
         expect(screen.queryByRole('button', { name: /View workspace/i })).not.toBeInTheDocument();
         expect(screen.queryByText('This contract is completed. The thread is now read-only.')).not.toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Type a message...')).toBeEnabled();
+        expect(getMessageInput()).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Reply to message' })).toBeInTheDocument();
 
-        fireEvent.change(screen.getByPlaceholderText('Type a message...'), {
+        fireEvent.change(getMessageInput(), {
             target: { value: 'Hello direct lifecycle' },
         });
 
@@ -669,11 +672,11 @@ describe('Messages lifecycle', () => {
         // The Workspace toggle button is rendered in the header
         expect(screen.getByRole('button', { name: /Workspace/i })).toBeInTheDocument();
         expect(screen.queryByText('Payment is still being confirmed for this contract. Messaging remains open.')).not.toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Type a message...')).toBeEnabled();
+        expect(getMessageInput()).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Attach file' })).toBeEnabled();
-        expect(screen.getByRole('button', { name: 'Start recording' })).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Record voice message' })).toBeEnabled();
 
-        fireEvent.click(screen.getByRole('button', { name: 'Start recording' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Record voice message' }));
         expect(audioRecorderMocks.startRecording).toHaveBeenCalledTimes(1);
     });
 
@@ -909,7 +912,7 @@ describe('Messages lifecycle', () => {
         label,
         contractRows,
         banner,
-        classToken,
+        _classToken,
     }) => {
         const contractId = `contract-${label.replace(/\s+/g, '-')}`;
         const conversation = createConversation({
@@ -936,9 +939,9 @@ describe('Messages lifecycle', () => {
         const bannerContainer = bannerText.closest('.rounded-xl');
 
         expect(bannerContainer).not.toBeNull();
-        expect(screen.getByPlaceholderText('Type a message...')).toBeEnabled();
+        expect(getMessageInput()).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Attach file' })).toBeEnabled();
-        expect(screen.getByRole('button', { name: 'Start recording' })).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Record voice message' })).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Reply to message' })).toBeInTheDocument();
     });
 
@@ -970,7 +973,7 @@ describe('Messages lifecycle', () => {
             expect(screen.getByText('Contract status unavailable.')).toBeInTheDocument();
         }, { timeout: 2500 });
 
-        expect(screen.getByPlaceholderText('Type a message...')).toBeEnabled();
+        expect(getMessageInput()).toBeEnabled();
     });
 
     it.each([
@@ -996,7 +999,7 @@ describe('Messages lifecycle', () => {
         label,
         contractId,
         banner,
-        classToken,
+        _classToken,
     }) => {
         const conversation = createConversation({
             id: `conv-${label}`,
@@ -1012,7 +1015,7 @@ describe('Messages lifecycle', () => {
             }),
         ];
 
-        const { container } = await renderSelectedScenario({
+        const { container: _container } = await renderSelectedScenario({
             conversation,
             threadMessages,
             contractRows: [{ id: contractId, status: label }],
@@ -1022,9 +1025,9 @@ describe('Messages lifecycle', () => {
         const bannerContainer = bannerText.closest('.rounded-xl');
 
         expect(bannerContainer).not.toBeNull();
-        expect(screen.queryByPlaceholderText('Type a message...')).not.toBeInTheDocument();
+        expect(queryMessageInput()).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Attach file' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Start recording' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Record voice message' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Send message' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Reply to message' })).not.toBeInTheDocument();
     });

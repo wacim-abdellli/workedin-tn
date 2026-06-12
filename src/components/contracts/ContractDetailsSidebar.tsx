@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 import {
     AlertCircle,
     ArrowLeft,
-    CalendarDays,
+    _CalendarDays,
     Check,
     CheckCircle,
     ChevronRight,
-    CircleCheck,
+
     Clock,
     FileArchive,
     FileCheck2,
@@ -17,7 +18,7 @@ import {
     Image,
     Lock,
     MessageSquare,
-    MoreHorizontal,
+    _MoreHorizontal,
     PackageCheck,
     ShieldAlert,
     Shield,
@@ -27,7 +28,7 @@ import {
     Timer,
     LayoutGrid,
     List,
-    Download,
+    _Download,
     Eye,
     Github,
     Video,
@@ -154,7 +155,7 @@ interface ContractDetailsSidebarProps {
     onHoldMilestoneClearance?: (milestoneId: string) => void;
 }
 
-type WorkspaceTab = 'overview' | 'files' | 'milestones' | 'activity';
+type _WorkspaceTab = 'overview' | 'files' | 'milestones' | 'activity';
 type FileFilter = 'all' | 'delivery' | 'shared';
 
 interface WorkspaceModel {
@@ -190,10 +191,11 @@ interface WorkspaceModel {
 
 const ns = (s: string | null | undefined) => String(s || '').trim().toLowerCase();
 
-const fmtDate = (v: string | null | undefined, fallback = 'No due date') => {
-    if (!v) return fallback;
+const fmtDate = (v: string | null | undefined, fallback?: string) => {
+    const fb = fallback ?? 'No due date';
+    if (!v) return fb;
     const d = new Date(v);
-    return Number.isNaN(d.getTime()) ? fallback : d.toLocaleDateString();
+    return Number.isNaN(d.getTime()) ? fb : d.toLocaleDateString();
 };
 
 const fmtTime = (v: string | null | undefined) => {
@@ -215,22 +217,22 @@ const fmtAmount = (amount: number | null | undefined) => {
     return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number.isFinite(n) ? n : 0)} TND`;
 };
 
-const surface = 'border border-white/[0.06] bg-white/[0.018] rounded-[10px] relative overflow-hidden';
-const surfaceHover = 'transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.025]';
+const _surface = 'border border-white/[0.06] bg-white/[0.018] rounded-[10px] relative overflow-hidden';
+const _surfaceHover = 'transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.025]';
 const labelClass = 'text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500';
-const bodyClass = 'text-[13px] font-normal leading-[1.45] text-zinc-300';
+const _bodyClass = 'text-[13px] font-normal leading-[1.45] text-zinc-300';
 const monoClass = 'font-mono text-[11px] text-zinc-500';
 const focusRing = 'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:ring-offset-[#09090b]';
 
 // Role-aware theme — amber = client (paying), violet = freelancer (delivering)
-const roleTheme = (role: 'client' | 'freelancer') => role === 'client'
+const roleTheme = (role: 'client' | 'freelancer', roleLabel?: string) => role === 'client'
     ? {
         accent: '#E8A020',        // warm amber
         accentBg: 'bg-[#E8A020]',
         accentText: 'text-[#E8A020]',
         accentBorder: 'border-[#E8A020]',
         accentFill: 'bg-[#3D2A00]/60',
-        roleLabel: 'Client',
+        roleLabel: roleLabel || 'Client',
         roleBadge: 'border-[#E8A020]/20 bg-[#E8A020]/10 text-[#E8A020]',
         headerStripe: 'from-[#E8A020]/12 to-transparent',
         primaryBtn: 'bg-zinc-100 hover:bg-white text-[#0A0A0B]',
@@ -244,7 +246,7 @@ const roleTheme = (role: 'client' | 'freelancer') => role === 'client'
         accentText: 'text-[#9B8FF0]',
         accentBorder: 'border-[#9B8FF0]',
         accentFill: 'bg-[#2D2660]/60',
-        roleLabel: 'Freelancer',
+        roleLabel: roleLabel || 'Freelancer',
         roleBadge: 'border-[#9B8FF0]/20 bg-[#9B8FF0]/10 text-[#9B8FF0]',
         headerStripe: 'from-[#9B8FF0]/10 to-transparent',
         primaryBtn: 'bg-zinc-100 hover:bg-white text-[#0A0A0B]',
@@ -252,17 +254,6 @@ const roleTheme = (role: 'client' | 'freelancer') => role === 'client'
         tabAccent: 'bg-[#9B8FF0]',
         tabActiveBg: 'bg-[#9B8FF0]/15',
     };
-
-const resolveStatus = (status: string) => {
-    const st = ns(status);
-    if (st === 'active') return { label: 'Active', tone: 'border-[#1D9E75]/30 bg-[#0F6E56]/20 text-white', accent: 'bg-[#1D9E75]', icon: <Clock className="h-3 w-3" /> };
-    if (st === 'delivery_submitted') return { label: 'Review', tone: 'border-[#BA7517]/30 bg-[#633806]/35 text-white', accent: 'bg-[#BA7517]', icon: <FileCheck2 className="h-3 w-3" /> };
-    if (st === 'revision_requested') return { label: 'Revision', tone: 'border-[#BA7517]/30 bg-[#633806]/35 text-white', accent: 'bg-[#BA7517]', icon: <GitPullRequest className="h-3 w-3" /> };
-    if (st === 'completed') return { label: 'Completed', tone: 'border-[#7F77DD]/30 bg-[#3C3489]/40 text-white', accent: 'bg-[#7F77DD]', icon: <CheckCircle className="h-3 w-3" /> };
-    if (st === 'disputed') return { label: 'Disputed', tone: 'border-[#A32D2D]/30 bg-[#501313]/40 text-white', accent: 'bg-[#A32D2D]', icon: <ShieldAlert className="h-3 w-3" /> };
-    if (st === 'pending_payment') return { label: 'Pending', tone: 'border-[#185FA5]/30 bg-[#042C53]/45 text-white', accent: 'bg-[#185FA5]', icon: <Wallet className="h-3 w-3" /> };
-    return { label: 'Syncing', tone: 'border-white/10 bg-white/5 text-zinc-400', accent: 'bg-zinc-500', icon: <AlertCircle className="h-3 w-3" /> };
-};
 
 export default function ContractDetailsSidebar({
     contract,
@@ -288,6 +279,17 @@ export default function ContractDetailsSidebar({
     onAcceptMilestone,
     onHoldMilestoneClearance,
 }: ContractDetailsSidebarProps) {
+    const { tx } = useTranslation();
+    const resolveStatus = (status: string) => {
+        const st = ns(status);
+        if (st === 'active') return { label: tx('pages.messages.contractDetails.statusActive'), tone: 'border-[#1D9E75]/30 bg-[#0F6E56]/20 text-white', accent: 'bg-[#1D9E75]', icon: <Clock className="h-3 w-3" /> };
+        if (st === 'delivery_submitted') return { label: tx('pages.messages.contractDetails.statusReview'), tone: 'border-[#BA7517]/30 bg-[#633806]/35 text-white', accent: 'bg-[#BA7517]', icon: <FileCheck2 className="h-3 w-3" /> };
+        if (st === 'revision_requested') return { label: tx('pages.messages.contractDetails.statusRevision'), tone: 'border-[#BA7517]/30 bg-[#633806]/35 text-white', accent: 'bg-[#BA7517]', icon: <GitPullRequest className="h-3 w-3" /> };
+        if (st === 'completed') return { label: tx('pages.messages.contractDetails.statusCompleted'), tone: 'border-[#7F77DD]/30 bg-[#3C3489]/40 text-white', accent: 'bg-[#7F77DD]', icon: <CheckCircle className="h-3 w-3" /> };
+        if (st === 'disputed') return { label: tx('pages.messages.contractDetails.statusDisputed'), tone: 'border-[#A32D2D]/30 bg-[#501313]/40 text-white', accent: 'bg-[#A32D2D]', icon: <ShieldAlert className="h-3 w-3" /> };
+        if (st === 'pending_payment') return { label: tx('pages.messages.contractDetails.statusPending'), tone: 'border-[#185FA5]/30 bg-[#042C53]/45 text-white', accent: 'bg-[#185FA5]', icon: <Wallet className="h-3 w-3" /> };
+        return { label: tx('pages.messages.contractDetails.statusSyncing'), tone: 'border-white/10 bg-white/5 text-zinc-400', accent: 'bg-zinc-500', icon: <AlertCircle className="h-3 w-3" /> };
+    };
     const [fileFilter, setFileFilter] = useState<FileFilter>('all');
     const [previewFile, setPreviewFile] = useState<ContractSharedFile | null>(null);
     const previewCloseRef = useRef<HTMLButtonElement | null>(null);
@@ -348,9 +350,9 @@ export default function ContractDetailsSidebar({
                 if (userRole === 'client' && !isEscrowFunded) {
                     return {
                         icon: <Wallet className="h-5 w-5" />,
-                        title: 'Fund escrow to start',
-                        body: `Secure ${fmtAmount(contract.amount)} in escrow. The freelancer will begin work immediately. Funds are released only after you approve the delivery.`,
-                        primaryLabel: 'Fund escrow',
+                        title: tx('pages.messages.contractDetails.fundEscrowTitle'),
+                        body: tx('pages.messages.contractDetails.fundEscrowBody', { amount: fmtAmount(contract.amount), name: otherParty?.full_name || '' }),
+                        primaryLabel: tx('pages.messages.contractDetails.fundEscrowLabel'),
                         accentColor: 'text-[#E8A020]',
                         iconColor: 'text-[#E8A020] bg-[#E8A020]/10 ring-[#E8A020]/20',
                     };
@@ -358,8 +360,8 @@ export default function ContractDetailsSidebar({
                 if (userRole === 'freelancer' && !isEscrowFunded) {
                     return {
                         icon: <Lock className="h-5 w-5" />,
-                        title: 'Waiting for escrow',
-                        body: 'The client must secure funds before you begin. You will be notified the moment work can start.',
+                        title: tx('pages.messages.contractDetails.waitingEscrowTitle'),
+                        body: tx('pages.messages.contractDetails.waitingEscrowBody'),
                         primaryLabel: null,
                         accentColor: 'text-zinc-500',
                         iconColor: 'text-zinc-400 bg-white/5 ring-white/10',
@@ -367,11 +369,11 @@ export default function ContractDetailsSidebar({
                 }
                 return {
                     icon: <CheckCircle className="h-5 w-5" />,
-                    title: userRole === 'freelancer' ? 'Escrow funded — start working' : 'Escrow funded',
+                    title: userRole === 'freelancer' ? tx('pages.messages.contractDetails.escrowFundedTitle') : tx('pages.messages.contractDetails.escrowFundedTitle'),
                     body: userRole === 'freelancer'
-                        ? `${fmtAmount(contract.amount)} is secured. Deliver your work when ready and submit for payment.`
-                        : 'Funds are secured. The freelancer has been notified and work is underway.',
-                    primaryLabel: userRole === 'freelancer' ? 'Submit delivery' : null,
+                        ? tx('pages.messages.contractDetails.escrowFundedBody')
+                        : tx('pages.messages.contractDetails.escrowFundedBody'),
+                    primaryLabel: userRole === 'freelancer' ? tx('pages.messages.contractDetails.submitDeliveryLabel') : null,
                     accentColor: 'text-[#1D9E75]',
                     iconColor: 'text-[#1D9E75] bg-[#1D9E75]/10 ring-[#1D9E75]/20',
                 };
@@ -379,11 +381,11 @@ export default function ContractDetailsSidebar({
             if (showFreelancerDeliver) {
                 return {
                     icon: <PackageCheck className="h-5 w-5" />,
-                    title: isRevision ? 'Submit revised delivery' : 'Submit delivery',
+                    title: isRevision ? tx('pages.messages.contractDetails.resubmitDeliveryTitle') : tx('pages.messages.contractDetails.submitDeliveryTitle'),
                     body: isRevision
-                        ? 'The client requested changes. Review their feedback and resubmit your updated delivery files.'
-                        : 'Attach the completed work files for the client to review. Payment remains in escrow until the client accepts.',
-                    primaryLabel: isRevision ? 'Resubmit delivery' : 'Submit delivery',
+                        ? tx('pages.messages.contractDetails.resubmitDeliveryBody')
+                        : tx('pages.messages.contractDetails.submitDeliveryBody'),
+                    primaryLabel: isRevision ? tx('pages.messages.contractDetails.resubmitDeliveryLabel') : tx('pages.messages.contractDetails.submitDeliveryLabel'),
                     accentColor: 'text-[#1D9E75]',
                     iconColor: 'text-[#1D9E75] bg-[#1D9E75]/10 ring-[#1D9E75]/20',
                 };
@@ -391,11 +393,11 @@ export default function ContractDetailsSidebar({
             if (showClientReview) {
                 return {
                     icon: <FileCheck2 className="h-5 w-5" />,
-                    title: 'Awaiting your review',
+                    title: tx('pages.messages.contractDetails.awaitingReviewTitle'),
                     body: contract.reviewDueAt
-                        ? `Review submitted work before ${fmtDate(contract.reviewDueAt)}. Payment stays in escrow until you accept.`
-                        : 'Review submitted work. Payment stays in escrow until you accept.',
-                    primaryLabel: 'Accept & release payment',
+                        ? `${tx('pages.messages.contractDetails.awaitingReviewBody')} ${fmtDate(contract.reviewDueAt)}`
+                        : tx('pages.messages.contractDetails.awaitingReviewBody'),
+                    primaryLabel: tx('pages.messages.contractDetails.acceptReleaseLabel'),
                     accentColor: 'text-[#E8A020]',
                     iconColor: 'text-[#E8A020] bg-[#E8A020]/10 ring-[#E8A020]/20',
                 };
@@ -403,10 +405,10 @@ export default function ContractDetailsSidebar({
             if (userRole === 'freelancer' && isUnderReview) {
                 return {
                     icon: <Timer className="h-5 w-5" />,
-                    title: 'Awaiting client review',
+                    title: tx('pages.messages.contractDetails.awaitingClientReviewTitle'),
                     body: contract.reviewDueAt
-                        ? `Your funds are protected. If the client takes no action, payment auto-releases on ${fmtDate(contract.reviewDueAt)}.`
-                        : 'Payment remains in escrow until the client approves or requests changes.',
+                        ? `${tx('pages.messages.contractDetails.awaitingClientReviewBody')} ${fmtDate(contract.reviewDueAt)}`
+                        : tx('pages.messages.contractDetails.awaitingClientReviewBody'),
                     primaryLabel: null,
                     accentColor: 'text-[#BA7517]',
                     iconColor: 'text-[#E8A020] bg-[#E8A020]/10 ring-[#E8A020]/20',
@@ -415,8 +417,8 @@ export default function ContractDetailsSidebar({
             if (userRole === 'client' && isRevision) {
                 return {
                     icon: <GitPullRequest className="h-5 w-5" />,
-                    title: 'Revision requested',
-                    body: 'Waiting for the freelancer to submit an updated delivery. Payment remains in escrow while work continues.',
+                    title: tx('pages.messages.contractDetails.revisionRequestedTitle'),
+                    body: tx('pages.messages.contractDetails.revisionRequestedBody'),
                     primaryLabel: null,
                     accentColor: 'text-[#BA7517]',
                     iconColor: 'text-[#E8A020] bg-[#E8A020]/10 ring-[#E8A020]/20',
@@ -425,9 +427,9 @@ export default function ContractDetailsSidebar({
             if (showLeaveReview) {
                 return {
                     icon: <Star className="h-5 w-5" />,
-                    title: 'Leave a review',
-                    body: 'The contract is complete. Add a rating to build trust and close the loop.',
-                    primaryLabel: 'Leave review',
+                    title: tx('pages.messages.contractDetails.leaveReviewTitle'),
+                    body: tx('pages.messages.contractDetails.leaveReviewBody'),
+                    primaryLabel: tx('pages.messages.contractDetails.leaveReviewLabel'),
                     accentColor: 'text-[#1D9E75]',
                     iconColor: 'text-[#1D9E75] bg-[#1D9E75]/10 ring-[#1D9E75]/20',
                 };
@@ -435,8 +437,8 @@ export default function ContractDetailsSidebar({
             if (isCompleted) {
                 return {
                     icon: <CheckCircle className="h-5 w-5" />,
-                    title: 'Contract closed',
-                    body: 'Payment was released. Delivery files and activity remain available as the contract record.',
+                    title: tx('pages.messages.contractDetails.contractClosedTitle'),
+                    body: tx('pages.messages.contractDetails.paymentReleasedBody'),
                     primaryLabel: null,
                     accentColor: 'text-[#7F77DD]',
                     iconColor: 'text-[#9B8FF0] bg-[#9B8FF0]/10 ring-[#9B8FF0]/20',
@@ -444,8 +446,8 @@ export default function ContractDetailsSidebar({
             }
             return {
                 icon: <Clock className="h-5 w-5" />,
-                title: 'Work in progress',
-                body: 'Keep the conversation open while work continues.',
+                title: tx('pages.messages.contractDetails.workInProgressTitle'),
+                body: tx('pages.messages.contractDetails.workInProgressBody'),
                 primaryLabel: null,
                 accentColor: 'text-zinc-400',
                 iconColor: 'text-zinc-400 bg-white/5 ring-white/10',
@@ -507,8 +509,8 @@ export default function ContractDetailsSidebar({
     );
     const isClearanceDisputed = Boolean(contract.escrowHoldDisputed);
 
-    const rt = roleTheme(userRole);
-    const otherPartyRt = roleTheme(userRole === 'client' ? 'freelancer' : 'client');
+    const rt = roleTheme(userRole, userRole === 'client' ? tx('pages.messages.contractDetails.clientFallback') : tx('pages.messages.contractDetails.freelancerFallback'));
+    const _otherPartyRt = roleTheme(userRole === 'client' ? 'freelancer' : 'client', userRole === 'client' ? tx('pages.messages.contractDetails.freelancerFallback') : tx('pages.messages.contractDetails.clientFallback'));
 
     return (
         <div className="flex w-full flex-col bg-[#070709] text-[var(--color-text-primary)]">
@@ -554,14 +556,14 @@ export default function ContractDetailsSidebar({
                             <PartyAvatar party={model.otherParty} size="md" />
                             <div className="flex min-w-0 flex-col">
                                 <h2 className="line-clamp-2 text-[14px] font-semibold leading-snug text-zinc-100">
-                                    {contract.job?.title || 'Untitled contract'}
+                                    {contract.job?.title || tx('pages.messages.contractDetails.untitledContract')}
                                 </h2>
                                 <div className="mt-1 flex items-center gap-1.5 text-[11px] text-zinc-500">
                                     <span className="font-semibold uppercase tracking-wider text-zinc-400">
-                                        {userRole === 'client' ? 'Freelancer' : 'Client'}
+                                        {userRole === 'client' ? tx('auth.accountPanel.freelancerLabel') : tx('auth.accountPanel.clientLabel')}
                                     </span>
                                     <span>•</span>
-                                    <span className="truncate">{model.otherParty?.full_name || 'counterparty'}</span>
+                                    <span className="truncate">{model.otherParty?.full_name || tx('pages.messages.contractDetails.counterparty')}</span>
                                 </div>
                             </div>
                         </div>
@@ -573,7 +575,7 @@ export default function ContractDetailsSidebar({
                             </span>
                             <div className="mt-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 leading-none">
                                 <Shield className="h-3 w-3 text-emerald-400" />
-                                <span>{model.isEscrowFunded ? 'In escrow' : 'Pending escrow'}</span>
+                                <span>{model.isEscrowFunded ? tx('pages.messages.contractDetails.inEscrow') : tx('pages.messages.contractDetails.pendingEscrow')}</span>
                             </div>
                         </div>
                     </div>
@@ -586,7 +588,7 @@ export default function ContractDetailsSidebar({
                             </span>
                             {contract.job?.deadline && (
                                 <span className="text-[11px] text-zinc-500">
-                                    Due {fmtDate(contract.job.deadline)}
+                                    {tx('pages.messages.contractDetails.due')} {fmtDate(contract.job.deadline)}
                                 </span>
                             )}
                         </div>
@@ -598,10 +600,10 @@ export default function ContractDetailsSidebar({
                                     <button
                                         type="button"
                                         onClick={onOpenWorkspace}
-                                        aria-label="Open contract page"
+                                        aria-label={tx('pages.messages.contractDetails.openContractPage')}
                                         className="flex h-7 items-center gap-1 rounded-full px-2.5 text-[11px] font-bold border border-zinc-700 bg-zinc-900/30 text-zinc-350 transition-all hover:bg-zinc-800 hover:text-white cursor-pointer"
                                     >
-                                        Workspace ↗
+                                        {tx('pages.messages.contractDetails.workspaceLink')}
                                     </button>
                                 )}
                                 {onGoBack && (
@@ -612,7 +614,7 @@ export default function ContractDetailsSidebar({
                                 {onGoToMessages && (
                                     <button type="button" onClick={onGoToMessages} className="flex h-7 items-center gap-1.5 rounded-full px-3 bg-zinc-900/30 text-[11px] font-semibold text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors border border-zinc-750">
                                         <MessageSquare className="h-3 w-3" />
-                                        Messages
+                                        {tx('pages.messages.contractDetails.goToMessages')}
                                     </button>
                                 )}
                             </div>
@@ -632,18 +634,10 @@ export default function ContractDetailsSidebar({
                                         <Timer className="h-5 w-5 animate-pulse" />
                                     </div>
                                     <div>
-                                        <h4 className="text-[13px] font-bold text-zinc-100">🛡️ 48-Hour Escrow Safety Hold Active</h4>
+                                        <h4 className="text-[13px] font-bold text-zinc-100">{tx('pages.messages.contractDetails.safetyHoldTitle')}</h4>
                                         <p className="text-[11px] text-zinc-400 mt-0.5 leading-relaxed animate-in fade-in duration-300">
-                                            Payment is in transit security check. Funds will be automatically released to the freelancer in{' '}
-                                            <CountdownTimer targetDate={contract.escrowPendingClearanceUntil!} className="text-amber-400 font-bold" />{' '}
-                                            (on{' '}
-                                            <strong className="text-zinc-200 font-semibold">
-                                                {new Date(contract.escrowPendingClearanceUntil!).toLocaleDateString()}
-                                            </strong>{' '}
-                                            at{' '}
-                                            <strong className="text-zinc-200 font-semibold">
-                                                {new Date(contract.escrowPendingClearanceUntil!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </strong>{')'} unless a delivery issue is reported.
+                                            {tx('pages.messages.contractDetails.safetyHoldBody')}{' '}
+                                            <CountdownTimer targetDate={contract.escrowPendingClearanceUntil!} className="text-amber-400 font-bold" />
                                         </p>
 
                                     </div>
@@ -654,7 +648,7 @@ export default function ContractDetailsSidebar({
                                         onClick={onHoldClearance}
                                         className="shrink-0 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 px-4 py-2 text-[11px] font-bold shadow-md transition-all active:scale-95 cursor-pointer"
                                     >
-                                        Hold Payment & Report Issue
+                                        {tx('pages.messages.contractDetails.holdPaymentReport')}
                                     </button>
                                 )}
                             </div>
@@ -668,9 +662,9 @@ export default function ContractDetailsSidebar({
                                     <ShieldAlert className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h4 className="text-[13px] font-bold text-zinc-100">⚠️ Escrow Clearance Suspended</h4>
+                                    <h4 className="text-[13px] font-bold text-zinc-100">{tx('pages.messages.contractDetails.clearanceSuspendedTitle')}</h4>
                                     <p className="text-[11px] text-zinc-400 mt-0.5 leading-relaxed">
-                                        Clearance has been frozen by the client due to a reported hand-off or delivery quality dispute. WorkedIn support team is reviewing the submission snapshot. Funds will remain safely held in escrow.
+                                        {tx('pages.messages.contractDetails.clearanceSuspendedBody')}
                                     </p>
                                 </div>
                             </div>
@@ -723,18 +717,18 @@ export default function ContractDetailsSidebar({
                                 <section className="border border-zinc-800 bg-zinc-900/30 rounded-xl p-4 flex flex-col gap-3">
                                     <div className="flex items-center justify-between border-b border-zinc-805/50 pb-2">
                                         <div>
-                                            <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-500">Delivered Work</p>
-                                            <h3 className="text-[14px] font-bold text-zinc-100 mt-0.5">Freelancer Submissions</h3>
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-zinc-500">{tx('pages.messages.contractDetails.deliveredWork')}</p>
+                                            <h3 className="text-[14px] font-bold text-zinc-100 mt-0.5">{tx('pages.messages.contractDetails.freelancerSubmissions')}</h3>
                                         </div>
                                         {model.st === 'delivery_submitted' && (
-                                            <span className="rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-zinc-350">Awaiting Approval</span>
+                                            <span className="rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-zinc-350">{tx('pages.messages.contractDetails.awaitingApproval')}</span>
                                         )}
                                     </div>
                                     
                                     {/* Review Phase */}
                                     {(model.reviewFiles.length > 0 || model.reviewLinks.length > 0) && (
                                         <div className="space-y-2">
-                                            <p className="text-[10px] font-semibold text-zinc-400">For Review:</p>
+                                            <p className="text-[10px] font-semibold text-zinc-400">{tx('pages.messages.contractDetails.forReview')}</p>
                                             <div className="grid grid-cols-1 gap-3">
                                                 {model.reviewFiles.map(file => (
                                                     <DeliveryFileHeroCard key={file.id} file={file} onPreviewFile={openPreview} />
@@ -749,7 +743,7 @@ export default function ContractDetailsSidebar({
                                     {/* Final Phase */}
                                     {(model.finalFiles.length > 0 || model.finalLinks.length > 0) && (
                                         <div className="space-y-3 border-t border-zinc-805/50 pt-2 flex flex-col gap-1">
-                                            <p className="text-[10px] font-semibold text-zinc-400">Final Deliverables (Locked until payment release):</p>
+                                            <p className="text-[10px] font-semibold text-zinc-400">{tx('pages.messages.contractDetails.finalDeliverablesLocked')}</p>
                                             <EscrowVaultVisualizer isLocked={model.st !== 'completed'} />
                                             <div className="grid grid-cols-1 gap-3">
                                                 {model.finalFiles.map(file => (
@@ -776,7 +770,7 @@ export default function ContractDetailsSidebar({
                                                 className="w-full rounded-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 text-[12px] font-semibold shadow-md transition-all flex items-center justify-center gap-1.5"
                                             >
                                                 <PackageCheck className="h-4 w-4" />
-                                                Approve & Release Payment
+                                                {tx('pages.messages.contractDetails.approveReleasePayment')}
                                             </button>
                                             <button 
                                                 type="button" 
@@ -785,7 +779,7 @@ export default function ContractDetailsSidebar({
                                                 className="w-full rounded-full border border-zinc-750 bg-transparent hover:bg-zinc-850 text-zinc-300 hover:text-white py-2 text-[12px] font-semibold shadow-md transition-all flex items-center justify-center gap-1.5"
                                             >
                                                 <GitPullRequest className="h-4 w-4" />
-                                                Request Revision ({model.revLeft} left)
+                                                {model.revLeft <= 0 ? tx('pages.messages.contractDetails.limitReached') : tx('pages.messages.contractDetails.requestRevisionLeft', { count: model.revLeft })}
                                             </button>
                                         </div>
                                     )}
@@ -879,18 +873,18 @@ export default function ContractDetailsSidebar({
                                     <section className="border border-zinc-800 bg-zinc-900/30 rounded-xl p-5 flex flex-col gap-4">
                                         <div className="flex items-center justify-between border-b border-zinc-805/50 pb-3">
                                             <div>
-                                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Delivered Work</p>
-                                                <h3 className="text-[15px] font-bold text-zinc-100 mt-0.5">Freelancer Submissions</h3>
+                                                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{tx('pages.messages.contractDetails.deliveredWork')}</p>
+                                                <h3 className="text-[15px] font-bold text-zinc-100 mt-0.5">{tx('pages.messages.contractDetails.freelancerSubmissions')}</h3>
                                             </div>
                                             {model.st === 'delivery_submitted' && (
-                                                <span className="rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-350">Awaiting Approval</span>
+                                                <span className="rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-350">{tx('pages.messages.contractDetails.awaitingApproval')}</span>
                                             )}
                                         </div>
                                         
                                         {/* Review Phase */}
                                         {(model.reviewFiles.length > 0 || model.reviewLinks.length > 0) && (
                                             <div className="space-y-2">
-                                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">For Client Review (Staging/Preview)</h4>
+                                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">{tx('pages.messages.contractDetails.forClientReview')}</h4>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                     {model.reviewFiles.map(file => (
                                                         <DeliveryFileHeroCard key={file.id} file={file} onPreviewFile={openPreview} />
@@ -905,7 +899,7 @@ export default function ContractDetailsSidebar({
                                         {/* Final Phase */}
                                         {(model.finalFiles.length > 0 || model.finalLinks.length > 0) && (
                                             <div className="space-y-3 border-t border-zinc-805/50 pt-3 flex flex-col gap-1">
-                                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Final Hand-off (Locked until payment release)</h4>
+                                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">{tx('pages.messages.contractDetails.finalHandoffLocked')}</h4>
                                                 <EscrowVaultVisualizer isLocked={model.st !== 'completed'} />
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
                                                     {model.finalFiles.map(file => (
@@ -933,7 +927,7 @@ export default function ContractDetailsSidebar({
                                                     className="rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 text-[12px] font-semibold shadow-md transition-all flex items-center gap-1.5"
                                                 >
                                                     <PackageCheck className="h-4 w-4" />
-                                                    Approve & Release Payment
+                                                    {tx('pages.messages.contractDetails.approveReleasePayment')}
                                                 </button>
                                                 <button 
                                                     type="button" 
@@ -942,7 +936,7 @@ export default function ContractDetailsSidebar({
                                                     className="rounded-full border border-zinc-750 bg-transparent hover:bg-zinc-850 text-zinc-300 hover:text-white px-5 py-2 text-[12px] font-semibold shadow-md transition-all flex items-center gap-1.5"
                                                 >
                                                     <GitPullRequest className="h-4 w-4" />
-                                                    Request Revision ({model.revLeft} left)
+                                                    {model.revLeft <= 0 ? tx('pages.messages.contractDetails.limitReached') : tx('pages.messages.contractDetails.requestRevisionLeft', { count: model.revLeft })}
                                                 </button>
                                             </div>
                                         )}
@@ -974,25 +968,25 @@ export default function ContractDetailsSidebar({
 
             {/* File Preview Overlay Modal */}
             {previewFile ? (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="File preview">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={tx('pages.messages.contractDetails.filePreviewAria')}>
                     <div className="w-full max-w-lg rounded-[14px] bg-[#111214] border border-white/[0.08] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
                         <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                                <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-zinc-500">File Preview</p>
+                                <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-zinc-500">{tx('pages.messages.contractDetails.filePreview')}</p>
                                 <h2 className="mt-1 truncate text-[18px] font-medium tracking-[-0.01em] text-white">{previewFile.name}</h2>
                                 <p className="font-mono text-[13px] text-zinc-400">
-                                    {[previewFile.senderName || 'Client', previewFile.uploadedAt ? new Date(previewFile.uploadedAt).toLocaleDateString() : 'Unknown', fmtSize(previewFile.size)].filter(Boolean).join(' · ')}
+                                    {[previewFile.senderName || tx('pages.messages.contractDetails.clientFallback'), previewFile.uploadedAt ? new Date(previewFile.uploadedAt).toLocaleDateString() : tx('pages.messages.contractDetails.unknownDate'), fmtSize(previewFile.size)].filter(Boolean).join(' · ')}
                                 </p>
                             </div>
-                            <button type="button" ref={previewCloseRef} onClick={() => setPreviewFile(null)} className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] font-medium text-zinc-400 transition-colors hover:border-white/[0.12] hover:text-white">Close</button>
+                            <button type="button" ref={previewCloseRef} onClick={() => setPreviewFile(null)} className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] font-medium text-zinc-400 transition-colors hover:border-white/[0.12] hover:text-white">{tx('pages.messages.contractDetails.close')}</button>
                         </div>
                         <div className="mt-4 rounded-[10px] border border-white/[0.07] bg-[#0c0c0e] px-4 py-[14px]">
                             <p className="text-[14px] leading-[1.6] text-zinc-400">
-                                This focused overlay prevents accidental opens. Press ESC to close, or continue to open according to contract access rules.
+                                {tx('pages.messages.contractDetails.previewOverlayDesc')}
                             </p>
                         </div>
                         <div className="mt-4 flex justify-end gap-2">
-                            <button type="button" onClick={() => setPreviewFile(null)} className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] font-medium text-zinc-400 transition-colors hover:border-white/[0.12] hover:text-white">Cancel</button>
+                            <button type="button" onClick={() => setPreviewFile(null)} className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] font-medium text-zinc-400 transition-colors hover:border-white/[0.12] hover:text-white">{tx('pages.messages.contractDetails.cancel')}</button>
                             <button type="button" onClick={() => {
                                 if (onOpenSharedFile) {
                                     onOpenSharedFile(previewFile);
@@ -1000,7 +994,7 @@ export default function ContractDetailsSidebar({
                                     if (previewFile.url) window.open(previewFile.url, '_blank', 'noopener');
                                 }
                                 setPreviewFile(null);
-                            }} className="rounded-lg bg-emerald-500 hover:bg-emerald-400 px-3 py-2 text-[14px] font-medium text-[#0A0A0B] transition-colors">Open file</button>
+                            }} className="rounded-lg bg-emerald-500 hover:bg-emerald-400 px-3 py-2 text-[14px] font-medium text-[#0A0A0B] transition-colors">{tx('pages.messages.contractDetails.openFile')}</button>
                         </div>
                     </div>
                 </div>
@@ -1035,21 +1029,21 @@ export default function ContractDetailsSidebar({
                                     onClick={() => setSandboxViewport('desktop')}
                                     className={`rounded px-2.5 py-1 text-[10px] font-semibold transition-all ${sandboxViewport === 'desktop' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
                                 >
-                                    Desktop
+                                    {tx('pages.messages.contractDetails.desktop')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setSandboxViewport('tablet')}
                                     className={`rounded px-2.5 py-1 text-[10px] font-semibold transition-all ${sandboxViewport === 'tablet' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
                                 >
-                                    Tablet
+                                    {tx('pages.messages.contractDetails.tablet')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setSandboxViewport('mobile')}
                                     className={`rounded px-2.5 py-1 text-[10px] font-semibold transition-all ${sandboxViewport === 'mobile' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
                                 >
-                                    Mobile
+                                    {tx('pages.messages.contractDetails.mobile')}
                                 </button>
                             </div>
 
@@ -1059,7 +1053,7 @@ export default function ContractDetailsSidebar({
                                 onClick={() => setSandboxUrl(null)}
                                 className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1 text-[11px] font-semibold text-zinc-305 hover:bg-white/[0.06] hover:text-white transition-all"
                             >
-                                Close
+                                {tx('pages.messages.contractDetails.close')}
                             </button>
                         </div>
 
@@ -1086,7 +1080,7 @@ export default function ContractDetailsSidebar({
                                     </div>
                                     <iframe 
                                         src={sandboxUrl}
-                                        title="Staging Sandbox Preview"
+                                        title={tx('pages.messages.contractDetails.stagingSandboxPreview')}
                                         className="w-full flex-grow border-none bg-white"
                                     />
                                 </div>
@@ -1104,7 +1098,7 @@ export default function ContractDetailsSidebar({
                                     
                                     <iframe 
                                         src={sandboxUrl}
-                                        title="Staging Sandbox Preview"
+                                        title={tx('pages.messages.contractDetails.stagingSandboxPreview')}
                                         className="w-full flex-grow border-none bg-white"
                                     />
                                     
@@ -1132,7 +1126,7 @@ export default function ContractDetailsSidebar({
                                     
                                     <iframe 
                                         src={sandboxUrl}
-                                        title="Staging Sandbox Preview"
+                                        title={tx('pages.messages.contractDetails.stagingSandboxPreview')}
                                         className="w-full flex-grow border-none bg-white"
                                     />
                                     
@@ -1165,7 +1159,8 @@ type ActionProps = {
     onReview: () => void;
 };
 
-function CompletedSummary({ model, rt, onReview }: { model: WorkspaceModel; rt: RoleTheme; onReview: () => void }) {
+function CompletedSummary({ model, rt: _rt, onReview }: { model: WorkspaceModel; rt: RoleTheme; onReview: () => void }) {
+    const { tx } = useTranslation();
     return (
         <section className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">
             <div className="flex items-start gap-3">
@@ -1173,23 +1168,23 @@ function CompletedSummary({ model, rt, onReview }: { model: WorkspaceModel; rt: 
                     <CheckCircle className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className={labelClass}>Contract Status</p>
+                    <p className={labelClass}>{tx('pages.messages.contractDetails.contractStatus')}</p>
                     <h3 className="mt-1 text-[15px] font-bold text-white">
-                        {fmtAmount(model.amount)} released to freelancer
+                        {tx('pages.messages.contractDetails.amountReleased', { amount: fmtAmount(model.amount) })}
                     </h3>
                     <div className="mt-1.5 flex flex-col gap-1 text-[12px] text-zinc-400">
-                        {model.fundedAt && <p>• Escrow funded: {fmtDate(model.fundedAt)}</p>}
-                        {model.deliverySubmittedAt && <p>• Delivery submitted: {fmtDate(model.deliverySubmittedAt)}</p>}
+                        {model.fundedAt && <p>{tx('pages.messages.contractDetails.escrowFunded')} {fmtDate(model.fundedAt)}</p>}
+                        {model.deliverySubmittedAt && <p>{tx('pages.messages.contractDetails.deliverySubmitted')} {fmtDate(model.deliverySubmittedAt)}</p>}
                     </div>
                 </div>
                 <span className="rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[10px] font-mono text-zinc-350">
-                    {model.revUsed}/{model.revMax} rev used
+                    {tx('pages.messages.contractDetails.revUsed', { used: model.revUsed, max: model.revMax })}
                 </span>
             </div>
             {model.showLeaveReview ? (
                 <div className="mt-3 flex justify-end">
                     <button type="button" onClick={onReview} className="text-[12px] font-semibold text-zinc-400 hover:text-white underline transition-colors">
-                        Leave a review
+                        {tx('pages.messages.contractDetails.leaveReviewLink')}
                     </button>
                 </div>
             ) : null}
@@ -1197,7 +1192,8 @@ function CompletedSummary({ model, rt, onReview }: { model: WorkspaceModel; rt: 
     );
 }
 
-function ContractPulse({ model, rt, userRole, onGoToMessages, isSidebar = false }: { model: WorkspaceModel; rt: RoleTheme; userRole: 'client' | 'freelancer'; onGoToMessages?: () => void; isSidebar?: boolean }) {
+function ContractPulse({ model, rt: _rt, userRole, onGoToMessages, _isSidebar = false }: { model: WorkspaceModel; rt: RoleTheme; userRole: 'client' | 'freelancer'; onGoToMessages?: () => void; _isSidebar?: boolean }) {
+    const { tx } = useTranslation();
     if (!model.otherParty) return null;
     return (
         <section className="flex flex-col gap-3">
@@ -1206,10 +1202,10 @@ function ContractPulse({ model, rt, userRole, onGoToMessages, isSidebar = false 
                     <PartyAvatar party={model.otherParty} size="md" />
                     <div className="min-w-0 flex-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            {userRole === 'client' ? 'Freelancer' : 'Client'}
+                            {userRole === 'client' ? tx('auth.accountPanel.freelancerLabel') : tx('auth.accountPanel.clientLabel')}
                         </p>
                         <h4 className="mt-0.5 truncate text-[14px] font-semibold text-zinc-100">
-                            {model.otherParty.full_name || 'Counterparty'}
+                            {model.otherParty.full_name || tx('pages.messages.contractDetails.counterparty')}
                         </h4>
                     </div>
                 </div>
@@ -1220,7 +1216,7 @@ function ContractPulse({ model, rt, userRole, onGoToMessages, isSidebar = false 
                         className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-zinc-700 bg-transparent py-2 text-[12px] font-medium text-zinc-350 transition-all hover:bg-zinc-800 hover:text-white ${focusRing}`}
                     >
                         <MessageSquare className="h-3.5 w-3.5" />
-                        Send message
+                        {tx('pages.messages.contractDetails.sendMessage')}
                     </button>
                 )}
             </div>
@@ -1229,24 +1225,26 @@ function ContractPulse({ model, rt, userRole, onGoToMessages, isSidebar = false 
 }
 
 function ReviewCountdown({ targetIso }: { targetIso: string }) {
+    const { tx } = useTranslation();
     const tick = useCountdown(targetIso);
     if (!tick || tick.expired) return (
         <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-red-950/20 bg-red-950/5 px-2.5 py-1">
             <Timer className="h-3.5 w-3.5 text-red-400" />
-            <span className="text-[12px] font-medium text-red-400">Review period expired</span>
+            <span className="text-[12px] font-medium text-red-400">{tx('pages.messages.contractDetails.reviewPeriodExpired')}</span>
         </div>
     );
     return (
         <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-amber-950/20 bg-amber-950/5 px-2.5 py-1">
             <Timer className="h-3.5 w-3.5 text-amber-500" />
             <span className="text-[12px] font-medium text-amber-500">
-                Review due: {tick.days}d {tick.hours}h {tick.minutes}m
+                {tx('pages.messages.contractDetails.reviewDue', { days: tick.days, hours: tick.hours, minutes: tick.minutes })}
             </span>
         </div>
     );
 }
 
 function EscrowLifecycleStepper({ model, paymentStatus }: { model: WorkspaceModel; paymentStatus: string }) {
+    const { tx } = useTranslation();
     const isFunded = model.isEscrowFunded;
     const isSubmitted = model.st === 'delivery_submitted' || model.st === 'revision_requested' || model.st === 'completed' || model.st === 'disputed';
     const isReleased = paymentStatus === 'released';
@@ -1285,7 +1283,7 @@ function EscrowLifecycleStepper({ model, paymentStatus }: { model: WorkspaceMode
 
     return (
         <section className="border border-zinc-805 bg-zinc-900/30 rounded-xl p-5 flex flex-col gap-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Escrow Protection Progress</h3>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{tx('pages.messages.contractDetails.escrowProtection')}</h3>
             
             <div className="flex flex-col gap-4 relative pl-7">
                 {/* Connecting Line */}
@@ -1300,7 +1298,7 @@ function EscrowLifecycleStepper({ model, paymentStatus }: { model: WorkspaceMode
                     <div className={`absolute -left-7 w-6 h-6 rounded-full border flex items-center justify-center ${s1.bg}`}>
                         {s1.icon}
                     </div>
-                    <span className={`text-[12px] ${s1.text}`}>1. Contract Hired & Signed</span>
+                    <span className={`text-[12px] ${s1.text}`}>{tx('pages.messages.contractDetails.stepHired')}</span>
                 </div>
 
                 {/* Step 2 */}
@@ -1308,7 +1306,7 @@ function EscrowLifecycleStepper({ model, paymentStatus }: { model: WorkspaceMode
                     <div className={`absolute -left-7 w-6 h-6 rounded-full border flex items-center justify-center ${s2.bg}`}>
                         {s2.icon}
                     </div>
-                    <span className={`text-[12px] ${s2.text}`}>2. Escrow Funded</span>
+                    <span className={`text-[12px] ${s2.text}`}>{tx('pages.messages.contractDetails.stepFunded')}</span>
                 </div>
 
                 {/* Step 3 */}
@@ -1316,7 +1314,7 @@ function EscrowLifecycleStepper({ model, paymentStatus }: { model: WorkspaceMode
                     <div className={`absolute -left-7 w-6 h-6 rounded-full border flex items-center justify-center ${s3.bg}`}>
                         {s3.icon}
                     </div>
-                    <span className={`text-[12px] ${s3.text}`}>3. Work Delivered & Under Review</span>
+                    <span className={`text-[12px] ${s3.text}`}>{tx('pages.messages.contractDetails.stepDelivered')}</span>
                 </div>
 
                 {/* Step 4 */}
@@ -1325,7 +1323,7 @@ function EscrowLifecycleStepper({ model, paymentStatus }: { model: WorkspaceMode
                         {s4.icon}
                     </div>
                     <span className={`text-[12px] ${s4.text}`}>
-                        {isReleased ? '4. Payment Cleared & Released' : '4. Payment Approved & Cleared'}
+                        {isReleased ? tx('pages.messages.contractDetails.stepPaymentCleared') : tx('pages.messages.contractDetails.stepPaymentApproved')}
                     </span>
                 </div>
             </div>
@@ -1333,8 +1331,9 @@ function EscrowLifecycleStepper({ model, paymentStatus }: { model: WorkspaceMode
     );
 }
 
-function NextMoveCard({ model, rt, userRole, isActionLoading, onDeliver, onAcceptAndPay, onRequestChanges, onDispute, onCancel, onFundEscrow, onReview }: ActionProps & { userRole: 'client' | 'freelancer' }) {
-    const isPendingEscrow = model.st === 'pending_payment' && !model.isEscrowFunded && model.nextMove.primaryLabel === 'Fund escrow';
+function NextMoveCard({ model, rt: _rt, userRole: _userRole, isActionLoading, onDeliver, onAcceptAndPay, onRequestChanges, onDispute, onCancel, onFundEscrow, onReview }: ActionProps & { userRole: 'client' | 'freelancer' }) {
+    const { tx } = useTranslation();
+    const isPendingEscrow = model.st === 'pending_payment' && !model.isEscrowFunded && model.nextMove.primaryLabel === tx('pages.messages.contractDetails.fundEscrowLabel');
     const action = isPendingEscrow ? undefined
         : model.showFreelancerDeliver || (model.st === 'pending_payment' && model.isEscrowFunded && model.nextMove.primaryLabel) ? onDeliver
         : (model.showClientReview && model.reviewFiles.length === 0 && model.reviewLinks.length === 0) ? onAcceptAndPay
@@ -1348,7 +1347,7 @@ function NextMoveCard({ model, rt, userRole, isActionLoading, onDeliver, onAccep
             <div className="flex flex-col gap-3 p-5">
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-                        Workspace Control Center
+                        {tx('pages.messages.contractDetails.workspaceControl')}
                     </span>
                 </div>
                 
@@ -1365,7 +1364,7 @@ function NextMoveCard({ model, rt, userRole, isActionLoading, onDeliver, onAccep
                 {model.st === 'revision_requested' && model.lastRevisionNote && (
                     <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3.5 pl-4 relative overflow-hidden">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
-                        <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-amber-500">Revision Feedback</p>
+                        <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-amber-500">{tx('pages.messages.contractDetails.revisionFeedback')}</p>
                         <p className="text-[13px] text-zinc-300 whitespace-pre-wrap leading-relaxed">{model.lastRevisionNote}</p>
                     </div>
                 )}
@@ -1379,14 +1378,14 @@ function NextMoveCard({ model, rt, userRole, isActionLoading, onDeliver, onAccep
                 {model.st === 'pending_payment' && model.isEscrowFunded && (
                     <div className="mt-2 flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5">
                         <CheckCircle className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                        <span className="text-[12px] font-medium text-emerald-500">Escrow funded — payment secured</span>
+                        <span className="text-[12px] font-medium text-emerald-500">{tx('pages.messages.contractDetails.escrowSecured')}</span>
                     </div>
                 )}
 
                 {isPendingEscrow && (
                     <div className="mt-2 flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/5 px-3 py-1.5">
                         <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                        <span className="text-[12px] font-medium text-amber-500">Escrow unfunded</span>
+                        <span className="text-[12px] font-medium text-amber-500">{tx('pages.messages.contractDetails.escrowUnfunded')}</span>
                     </div>
                 )}
             </div>
@@ -1395,12 +1394,12 @@ function NextMoveCard({ model, rt, userRole, isActionLoading, onDeliver, onAccep
                 {action && model.nextMove.primaryLabel ? (
                     <button type="button" onClick={action} disabled={Boolean(isActionLoading)}
                         className={`rounded-full px-5 py-2 text-[12px] font-semibold transition-all duration-150 disabled:opacity-60 shadow-md bg-emerald-600 hover:bg-emerald-500 text-white ${focusRing}`}>
-                        {isActionLoading ? 'Processing…' : model.nextMove.primaryLabel}
+                        {isActionLoading ? tx('pages.messages.contractDetails.processing') : model.nextMove.primaryLabel}
                     </button>
                 ) : isPendingEscrow ? (
                     <button type="button" onClick={() => onFundEscrow?.()}
                         className={`rounded-full px-5 py-2 text-[12px] font-semibold transition-all duration-150 shadow-md bg-emerald-600 hover:bg-emerald-500 text-white ${focusRing}`}>
-                        Fund escrow now
+                        {tx('pages.messages.contractDetails.fundEscrowNow')}
                     </button>
                 ) : null}
 
@@ -1409,12 +1408,12 @@ function NextMoveCard({ model, rt, userRole, isActionLoading, onDeliver, onAccep
                         onClick={onRequestChanges}
                         disabled={isActionLoading || model.revLeft <= 0}
                         icon={<GitPullRequest className="h-3.5 w-3.5" />}
-                        label={model.revLeft <= 0 ? 'Limit reached' : `Request revision (${model.revLeft} left)`}
+                        label={model.revLeft <= 0 ? tx('pages.messages.contractDetails.limitReached') : tx('pages.messages.contractDetails.requestRevisionLeft', { count: model.revLeft })}
                     />
                 )}
 
                 {model.canDispute && (
-                    <DangerButton onClick={onDispute} disabled={Boolean(isActionLoading)} icon={<ShieldAlert className="h-3.5 w-3.5" />} label="Dispute" />
+                    <DangerButton onClick={onDispute} disabled={Boolean(isActionLoading)} icon={<ShieldAlert className="h-3.5 w-3.5" />} label={tx('pages.messages.contractDetails.dispute')} />
                 )}
 
                 {(model.st === 'pending_payment' || model.st === 'active') && onCancel && (
@@ -1422,43 +1421,23 @@ function NextMoveCard({ model, rt, userRole, isActionLoading, onDeliver, onAccep
                         onClick={onCancel}
                         disabled={Boolean(isActionLoading)}
                         icon={<AlertCircle className="h-3.5 w-3.5" />}
-                        label="Cancel"
+                        label={tx('common.cancel')}
                     />
                 )}
 
                 <button type="button" onClick={() => document.getElementById('workspace-activity-log')?.scrollIntoView({ behavior: 'smooth' })}
                     className={`ml-auto rounded-full px-3 py-1.5 text-[12px] font-medium text-zinc-400 transition-colors hover:text-zinc-200 ${focusRing}`}>
-                    History →
+                    {tx('pages.messages.contractDetails.historyLink')}
                 </button>
             </div>
         </section>
     );
 }
 
-function ActionDeck({ model, rt, isActionLoading, onDeliver, onRequestChanges, onAcceptAndPay, onDispute, onReview }: ActionProps) {
-    if (model.showReviewConfirmation) return null;
 
-    const hasActions = model.showFreelancerDeliver || model.showClientReview || model.showLeaveReview || model.canDispute;
-    if (!hasActions) return null;
-
-    return (
-        <section className="rounded-xl border border-white/[0.06] bg-[#0d0d11] p-4 flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3 pb-2 border-b border-white/[0.04]">
-                <p className={labelClass}>Quick actions</p>
-                <span className="rounded-full border border-white/[0.06] bg-[#161719] px-2 py-0.5 font-mono text-[10px] text-zinc-300">{model.revLeft} rev left</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-                {model.showFreelancerDeliver ? <PrimaryButton rt={rt} onClick={onDeliver} disabled={isActionLoading} icon={<PackageCheck className="h-3.5 w-3.5" />} label="Submit delivery" /> : null}
-                {model.showClientReview ? <PrimaryButton rt={rt} onClick={onAcceptAndPay} disabled={isActionLoading} icon={<CircleCheck className="h-3.5 w-3.5" />} label="Approve & release" /> : null}
-                {model.showClientReview ? <GhostButton onClick={onRequestChanges} disabled={isActionLoading || model.revLeft <= 0} icon={<GitPullRequest className="h-3.5 w-3.5" />} label={model.revLeft <= 0 ? 'Limit reached' : 'Request revision'} /> : null}
-                {model.showLeaveReview ? <PrimaryButton rt={rt} onClick={onReview} disabled={isActionLoading} icon={<Star className="h-3.5 w-3.5" />} label="Leave review" /> : null}
-                {model.canDispute ? <DangerButton onClick={onDispute} disabled={isActionLoading} icon={<ShieldAlert className="h-3.5 w-3.5" />} label="Open dispute" /> : null}
-            </div>
-        </section>
-    );
-}
 
 function DeliveryFileCard({ file, onPreviewFile }: { file: ContractDeliveryAsset; onPreviewFile: (file: ContractSharedFile) => void }) {
+    const { tx } = useTranslation();
     const contractFile = { id: file.id, name: file.name, url: '', type: file.mimeType ?? null, size: file.sizeBytes ?? null, storageBucket: file.storageBucket ?? 'contract-files', storagePath: file.storagePath };
 
     return (
@@ -1466,7 +1445,7 @@ function DeliveryFileCard({ file, onPreviewFile }: { file: ContractDeliveryAsset
             <div className="flex items-start justify-between gap-3">
                 <FileIcon name={file.name} mimeType={file.mimeType} />
                 <span className="rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-350">
-                    {file.assetKind === 'final_asset' ? 'Final Source' : 'Delivery'}
+                    {file.assetKind === 'final_asset' ? tx('pages.messages.contractDetails.finalSource') : tx('pages.messages.contractDetails.delivery')}
                 </span>
             </div>
             
@@ -1475,7 +1454,7 @@ function DeliveryFileCard({ file, onPreviewFile }: { file: ContractDeliveryAsset
                     {file.name}
                 </h4>
                 <p className="text-[11px] text-zinc-500 mt-1 font-mono">
-                    {fmtSize(file.sizeBytes) || 'Size unknown'}
+                    {fmtSize(file.sizeBytes) || tx('pages.messages.contractDetails.sizeUnknown')}
                 </p>
             </div>
 
@@ -1487,7 +1466,7 @@ function DeliveryFileCard({ file, onPreviewFile }: { file: ContractDeliveryAsset
                     className="flex items-center gap-1 rounded-full bg-zinc-100 hover:bg-white text-[#0A0A0B] px-3.5 py-1.5 text-[11px] font-bold shadow-md transition-all"
                 >
                     <Eye className="h-3.5 w-3.5" />
-                    Open file
+                    {tx('pages.messages.contractDetails.openFile')}
                 </button>
             </div>
         </div>
@@ -1495,11 +1474,12 @@ function DeliveryFileCard({ file, onPreviewFile }: { file: ContractDeliveryAsset
 }
 
 function SharedFileCard({ file, onPreviewFile }: { file: ContractSharedFile; onPreviewFile: (file: ContractSharedFile) => void }) {
+    const { tx } = useTranslation();
     return (
         <div className="group relative border border-zinc-800 bg-zinc-900/30 rounded-xl p-4 flex flex-col justify-between h-[150px] transition-all duration-200 hover:border-zinc-700">
             <div className="flex items-start justify-between gap-3">
                 <FileIcon name={file.name} mimeType={file.type} />
-                <span className="rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-350">Shared</span>
+                <span className="rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-350">{tx('pages.messages.contractDetails.shared')}</span>
             </div>
             
             <div className="mt-3 min-w-0">
@@ -1507,7 +1487,7 @@ function SharedFileCard({ file, onPreviewFile }: { file: ContractSharedFile; onP
                     {file.name}
                 </h4>
                 <p className="text-[11px] text-zinc-500 mt-1 font-mono">
-                    {[file.senderName || 'Client', fmtSize(file.size)].filter(Boolean).join(' · ')}
+                    {[file.senderName || tx('pages.messages.contractDetails.clientFallback'), fmtSize(file.size)].filter(Boolean).join(' · ')}
                 </p>
             </div>
 
@@ -1519,20 +1499,21 @@ function SharedFileCard({ file, onPreviewFile }: { file: ContractSharedFile; onP
                     className="flex items-center gap-1 rounded-full bg-zinc-100 hover:bg-white text-[#0A0A0B] px-3.5 py-1.5 text-[11px] font-bold shadow-md transition-all"
                 >
                     <Eye className="h-3.5 w-3.5" />
-                    Open file
+                    {tx('pages.messages.contractDetails.openFile')}
                 </button>
             </div>
         </div>
     );
 }
 
-function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFile, onDeliver, isSidebar = false }: { model: WorkspaceModel; rt: RoleTheme; fileFilter: FileFilter; setFileFilter: (filter: FileFilter) => void; userRole: 'client' | 'freelancer'; onPreviewFile: (file: ContractSharedFile) => void; onDeliver: () => void; isSidebar?: boolean }) {
+function FilesTab({ model, rt: _rt, fileFilter, setFileFilter, userRole, onPreviewFile, onDeliver, isSidebar = false }: { model: WorkspaceModel; rt: RoleTheme; fileFilter: FileFilter; setFileFilter: (filter: FileFilter) => void; userRole: 'client' | 'freelancer'; onPreviewFile: (file: ContractSharedFile) => void; onDeliver: () => void; isSidebar?: boolean }) {
+    const { tx } = useTranslation();
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     
     const filters: Array<{ id: FileFilter; label: string }> = [
-        { id: 'all', label: 'All files' },
-        { id: 'delivery', label: 'Deliveries' },
-        { id: 'shared', label: 'Shared' },
+        { id: 'all', label: tx('pages.messages.contractDetails.allFiles') },
+        { id: 'delivery', label: tx('pages.messages.contractDetails.deliveries') },
+        { id: 'shared', label: tx('pages.messages.contractDetails.sharedFiles') },
     ];
     const showShared = fileFilter === 'all' || fileFilter === 'shared';
     const showDelivery = fileFilter === 'all' || fileFilter === 'delivery';
@@ -1545,8 +1526,8 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
         <section className="border border-zinc-800 bg-zinc-900/30 rounded-xl p-5 flex flex-col gap-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-805/50 pb-4">
                 <div>
-                    <p className={labelClass}>File Manager</p>
-                    <h3 className="text-[16px] font-bold text-zinc-100 mt-0.5">Workspace Assets</h3>
+                    <p className={labelClass}>{tx('pages.messages.contractDetails.fileManager')}</p>
+                    <h3 className="text-[16px] font-bold text-zinc-100 mt-0.5">{tx('pages.messages.contractDetails.workspaceAssets')}</h3>
                 </div>
                 
                 <div className="flex items-center gap-3">
@@ -1570,7 +1551,7 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
                             type="button" 
                             onClick={() => setViewMode('grid')}
                             className={`p-1 rounded-full transition-all ${viewMode === 'grid' ? 'bg-zinc-800 text-emerald-500' : 'text-zinc-500 hover:text-zinc-300'}`}
-                            title="Grid View"
+                            title={tx('pages.messages.contractDetails.gridView')}
                         >
                             <LayoutGrid className="h-3.5 w-3.5" />
                         </button>
@@ -1578,7 +1559,7 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
                             type="button" 
                             onClick={() => setViewMode('list')}
                             className={`p-1 rounded-full transition-all ${viewMode === 'list' ? 'bg-zinc-800 text-emerald-500' : 'text-zinc-500 hover:text-zinc-300'}`}
-                            title="List View"
+                            title={tx('pages.messages.contractDetails.listView')}
                         >
                             <List className="h-3.5 w-3.5" />
                         </button>
@@ -1621,7 +1602,7 @@ function FilesTab({ model, rt, fileFilter, setFileFilter, userRole, onPreviewFil
 
 function MilestonesTab({ 
     model, 
-    rt, 
+    _rt, 
     userRole,
     onAcceptMilestone,
     onHoldMilestoneClearance,
@@ -1632,36 +1613,37 @@ function MilestonesTab({
     onAcceptMilestone?: (milestoneId: string) => Promise<void>;
     onHoldMilestoneClearance?: (milestoneId: string) => void;
 }) {
+    const { tx } = useTranslation();
     // Escrow lifecycle phases
     const escrowPhases = [
         {
             key: 'funded',
-            label: 'Escrow Funded',
-            sub: 'Client secures contract budget',
+            label: tx('pages.messages.contractDetails.escrowFundedPhase'),
+            sub: tx('pages.messages.contractDetails.escrowFundedSub'),
             done: model.isEscrowFunded || ['active', 'delivery_submitted', 'revision_requested', 'completed'].includes(model.st),
         },
         {
             key: 'active',
-            label: 'Work in Progress',
-            sub: 'Freelancer works on deliverables',
+            label: tx('pages.messages.contractDetails.workInProgressPhase'),
+            sub: tx('pages.messages.contractDetails.workInProgressSub'),
             done: ['active', 'delivery_submitted', 'revision_requested', 'completed'].includes(model.st),
         },
         {
             key: 'submitted',
-            label: 'Delivery Submitted',
-            sub: 'Files submitted for review',
+            label: tx('pages.messages.contractDetails.deliverySubmittedPhase'),
+            sub: tx('pages.messages.contractDetails.deliverySubmittedSub'),
             done: ['delivery_submitted', 'revision_requested', 'completed'].includes(model.st) || model.st === 'revision_requested',
         },
         {
             key: 'approved',
-            label: 'Client Approved',
-            sub: 'Delivery approved by client',
+            label: tx('pages.messages.contractDetails.clientApprovedPhase'),
+            sub: tx('pages.messages.contractDetails.clientApprovedSub'),
             done: model.st === 'completed',
         },
         {
             key: 'released',
-            label: 'Payment Released',
-            sub: 'Escrow budget sent to freelancer',
+            label: tx('pages.messages.contractDetails.paymentReleasedPhase'),
+            sub: tx('pages.messages.contractDetails.paymentReleasedSub'),
             done: model.st === 'completed',
         },
     ];
@@ -1671,8 +1653,8 @@ function MilestonesTab({
     return (
         <section className="border border-zinc-800 bg-zinc-900/30 rounded-xl p-5 flex flex-col gap-4">
             <div className="border-b border-zinc-805/50 pb-3">
-                <p className={labelClass}>Milestones</p>
-                <h3 className="text-[15px] font-bold text-white mt-0.5">Escrow Lifecycle</h3>
+                <p className={labelClass}>{tx('pages.messages.contractDetails.milestones')}</p>
+                <h3 className="text-[15px] font-bold text-white mt-0.5">{tx('pages.messages.contractDetails.escrowLifecycle')}</h3>
             </div>
 
             {/* Vertical timeline */}
@@ -1694,7 +1676,7 @@ function MilestonesTab({
                     return (
                         <div key={phase.key} className="relative flex items-start gap-4">
                             {/* Dot node */}
-                            <div className={`absolute -left-[30px] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 ${
+                            <div className={`absolute -start-[30px] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 ${
                                 done
                                     ? "bg-emerald-600 border-transparent text-white"
                                     : isCurrent
@@ -1710,7 +1692,7 @@ function MilestonesTab({
                                     </p>
                                     {done && (
                                         <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500">
-                                            Completed
+                                            {tx('pages.messages.contractDetails.completed')}
                                         </span>
                                     )}
                                 </div>
@@ -1725,13 +1707,13 @@ function MilestonesTab({
             {model.milestones.length > 0 ? (
                 <div className="border-t border-zinc-805/50 pt-4 mt-2">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-3">
-                        Contract Milestones ({model.completedMilestones} / {model.milestones.length} completed)
+                        {tx('pages.messages.contractDetails.contractMilestones', { done: model.completedMilestones, total: model.milestones.length })}
                     </p>
                     <div className="relative flex flex-col gap-4 pl-6">
                         <div className="absolute left-1.5 top-1.5 bottom-1.5 w-px bg-zinc-800" />
                         {model.milestones.map((milestone, index) => {
                             const done = ['completed', 'approved', 'paid'].includes(ns(milestone.status));
-                            const title = milestone.title || milestone.description || `Milestone ${index + 1}`;
+                            const title = milestone.title || milestone.description || tx('pages.messages.contractDetails.milestoneDefaultTitle', { index: index + 1 });
                             return (
                                 <div key={milestone.id || index} className="relative flex items-start gap-3">
                                     <div className={`absolute -left-[24px] top-1.5 flex h-2 w-2 rounded-full border ${
@@ -1745,7 +1727,7 @@ function MilestonesTab({
                                                 {title}
                                             </p>
                                             <p className="text-[11px] text-zinc-400 mt-0.5">
-                                                {milestone.due_date ? `Due ${fmtDate(milestone.due_date)}` : 'No due date'}
+                                                {milestone.due_date ? `${tx('pages.messages.contractDetails.due')} ${fmtDate(milestone.due_date)}` : tx('pages.messages.contractDetails.noDueDate')}
                                             </p>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2">
@@ -1760,12 +1742,12 @@ function MilestonesTab({
                                                     onClick={() => onAcceptMilestone(milestone.id!)}
                                                     className="rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 text-[10px] font-bold transition-all shadow active:scale-95 cursor-pointer border-none"
                                                 >
-                                                    Approve
+                                                    {tx('pages.messages.contractDetails.approve')}
                                                 </button>
                                             ) : milestone.escrow_pending_clearance_until && new Date(milestone.escrow_pending_clearance_until).getTime() > Date.now() && !milestone.escrow_hold_disputed ? (
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="border border-amber-500/20 bg-amber-500/5 text-amber-300 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider leading-none flex items-center gap-1">
-                                                        Hold (<CountdownTimer targetDate={milestone.escrow_pending_clearance_until} className="text-amber-300 font-bold" /> left)
+                                                        {tx('pages.messages.contractDetails.holdPayout')} (<CountdownTimer targetDate={milestone.escrow_pending_clearance_until} className="text-amber-300 font-bold" /> {tx('common.time.left')})
                                                     </span>
 
                                                     {userRole === 'client' && onHoldMilestoneClearance && (
@@ -1774,19 +1756,19 @@ function MilestonesTab({
                                                             onClick={() => onHoldMilestoneClearance(milestone.id!)}
                                                             className="rounded-full bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-[10px] font-bold transition-all shadow active:scale-95 cursor-pointer border-none"
                                                         >
-                                                            Hold Payout
+                                                            {tx('pages.messages.contractDetails.holdPayout')}
                                                         </button>
                                                     )}
                                                 </div>
                                             ) : milestone.escrow_hold_disputed ? (
                                                 <span className="border border-red-500/20 bg-red-500/10 text-red-400 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider">
-                                                    Frozen
+                                                    {tx('pages.messages.contractDetails.frozen')}
                                                 </span>
                                             ) : (
                                                 <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
                                                     done ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400' : 'border-zinc-750 bg-zinc-850 text-zinc-400'
                                                 }`}>
-                                                    {done ? 'Paid' : milestone.status ? milestone.status : 'Pending'}
+                                                    {done ? tx('pages.messages.contractDetails.paid') : milestone.status ? milestone.status : tx('pages.messages.contractDetails.pending')}
                                                 </span>
                                             )}
                                         </div>
@@ -1798,7 +1780,7 @@ function MilestonesTab({
                 </div>
             ) : (
                 <div className="border-t border-zinc-805/50 pt-4 mt-2">
-                    <CompactEmpty icon={<GitPullRequest className="h-3.5 w-3.5" />} title="No Custom Milestones" text="This contract uses the standard escrow lifecycle above." />
+                    <CompactEmpty icon={<GitPullRequest className="h-3.5 w-3.5" />} title={tx('pages.messages.contractDetails.noCustomMilestones')} text={tx('pages.messages.contractDetails.noCustomMilestonesDesc')} />
                 </div>
             )}
         </section>
@@ -1806,22 +1788,23 @@ function MilestonesTab({
 }
 
 function FilesEmptyState({ userRole, canDeliver, onDeliver }: { userRole: 'client' | 'freelancer'; canDeliver: boolean; onDeliver: () => void }) {
+    const { tx } = useTranslation();
     return (
         <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/10 py-10 px-4 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/30 text-zinc-500 shadow-inner">
                 <FolderOpen className="h-6 w-6 text-zinc-450" />
             </div>
             <div className="max-w-sm">
-                <h4 className="text-[14px] font-bold text-white">No files shared yet</h4>
+                <h4 className="text-[14px] font-bold text-white">{tx('pages.messages.contractDetails.noFilesShared')}</h4>
                 <p className="text-[12px] text-zinc-400 mt-1 leading-relaxed">
                     {userRole === 'freelancer' 
-                        ? 'Get started by submitting your deliverables to the client.' 
-                        : 'Files will appear here once the freelancer submits a delivery.'}
+                        ? tx('pages.messages.contractDetails.filesEmptyFreelancerDesc')
+                        : tx('pages.messages.contractDetails.filesEmptyClientDesc')}
                 </p>
             </div>
             {userRole === 'freelancer' && canDeliver && (
                 <button type="button" onClick={onDeliver} className="rounded-full bg-emerald-600 hover:bg-emerald-500 px-5 py-2 text-[12px] font-bold text-white transition-all duration-150 shadow-md">
-                    Submit Deliverable
+                    {tx('pages.messages.contractDetails.submitDeliverable')}
                 </button>
             )}
         </div>
@@ -1829,20 +1812,21 @@ function FilesEmptyState({ userRole, canDeliver, onDeliver }: { userRole: 'clien
 }
 
 function ActivityTab({ events, model, contract, rt }: { events: ContractActivityEvent[]; model: WorkspaceModel; contract: ContractSidebarData; rt: RoleTheme }) {
+    const { tx } = useTranslation();
     const fallbackEvents = useMemo<ContractActivityEvent[]>(() => {
         const items: ContractActivityEvent[] = [];
-        if (contract.deliverySubmittedAt) items.push({ id: 'delivery-date', text: 'Work delivered and ready for review', timestamp: contract.deliverySubmittedAt, actorRole: 'freelancer', kind: 'delivery' });
-        if (model.st === 'completed') items.push({ id: 'completed-state', text: 'Work has been accepted and payment released', timestamp: contract.reviewDueAt || contract.deliverySubmittedAt, actorRole: 'system', kind: 'payment', system: true });
-        if (model.showReviewConfirmation) items.push({ id: 'review-state', text: '5 stars: No comment provided', timestamp: null, actorRole: 'client', kind: 'review' });
+        if (contract.deliverySubmittedAt) items.push({ id: 'delivery-date', text: tx('pages.messages.contractDetails.eventWorkDelivered'), timestamp: contract.deliverySubmittedAt, actorRole: 'freelancer', kind: 'delivery' });
+        if (model.st === 'completed') items.push({ id: 'completed-state', text: tx('pages.messages.contractDetails.eventWorkAccepted'), timestamp: contract.reviewDueAt || contract.deliverySubmittedAt, actorRole: 'system', kind: 'payment', system: true });
+        if (model.showReviewConfirmation) items.push({ id: 'review-state', text: tx('pages.messages.contractDetails.reviewStarsPlaceholder'), timestamp: null, actorRole: 'client', kind: 'review' });
         return items;
-    }, [contract.deliverySubmittedAt, contract.reviewDueAt, model.showReviewConfirmation, model.st]);
+    }, [contract.deliverySubmittedAt, contract.reviewDueAt, model.showReviewConfirmation, model.st, tx]);
     const list = events.length > 0 ? events : fallbackEvents;
 
     return (
         <section className="border border-zinc-800 bg-zinc-900/30 rounded-xl p-5 flex flex-col gap-4">
             <div className="border-b border-zinc-850/50 pb-3">
-                <p className={labelClass}>Activity Log</p>
-                <h3 className="text-[15px] font-bold text-white mt-0.5">Contract Event History</h3>
+                <p className={labelClass}>{tx('pages.messages.contractDetails.activityLog')}</p>
+                <h3 className="text-[15px] font-bold text-white mt-0.5">{tx('pages.messages.contractDetails.contractEventHistory')}</h3>
             </div>
             {list.length > 0 ? (
                 <div className="relative flex flex-col gap-6 pl-8 mt-2">
@@ -1853,13 +1837,14 @@ function ActivityTab({ events, model, contract, rt }: { events: ContractActivity
                     ))}
                 </div>
             ) : (
-                <CompactEmpty icon={<Clock className="h-3.5 w-3.5" />} title="No activity yet" text="Contract events will appear here chronologically." />
+                <CompactEmpty icon={<Clock className="h-3.5 w-3.5" />} title={tx('pages.messages.contractDetails.noActivityYet')} text={tx('pages.messages.contractDetails.noActivityYetDesc')} />
             )}
         </section>
     );
 }
 
 function DeliveryFileCardRow({ file, onPreviewFile }: { file: ContractDeliveryAsset; onPreviewFile: (file: ContractSharedFile) => void }) {
+    const { tx } = useTranslation();
     const contractFile = { id: file.id, name: file.name, url: '', type: file.mimeType ?? null, size: file.sizeBytes ?? null, storageBucket: file.storageBucket ?? 'contract-files', storagePath: file.storagePath };
 
     return (
@@ -1868,10 +1853,10 @@ function DeliveryFileCardRow({ file, onPreviewFile }: { file: ContractDeliveryAs
             <FileIcon name={file.name} mimeType={file.mimeType} />
             <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-semibold text-zinc-100 transition-colors group-hover:text-white">{file.name}</p>
-                <p className={`${monoClass} mt-0.5`}>{file.assetKind === 'final_asset' ? 'Final source file' : 'Delivery file'} - {fmtSize(file.sizeBytes) || 'Size unknown'}</p>
+                <p className={`${monoClass} mt-0.5`}>{file.assetKind === 'final_asset' ? tx('pages.messages.contractDetails.finalSourceFile') : tx('pages.messages.contractDetails.deliveryFile')} - {fmtSize(file.sizeBytes) || tx('pages.messages.contractDetails.sizeUnknown')}</p>
             </div>
             <span className="shrink-0 rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-zinc-350">
-                {file.assetKind === 'final_asset' ? 'Final Source' : 'Delivery'}
+                {file.assetKind === 'final_asset' ? tx('pages.messages.contractDetails.finalSource') : tx('pages.messages.contractDetails.delivery')}
             </span>
             <ChevronRight className="h-4 w-4 shrink-0 text-zinc-500 transition-colors group-hover:text-zinc-200" />
         </button>
@@ -1879,21 +1864,23 @@ function DeliveryFileCardRow({ file, onPreviewFile }: { file: ContractDeliveryAs
 }
 
 function SharedFileCardRow({ file, onPreviewFile }: { file: ContractSharedFile; onPreviewFile: (file: ContractSharedFile) => void }) {
+    const { tx } = useTranslation();
     return (
         <button type="button" onClick={() => onPreviewFile(file)} 
             className={`group flex w-full items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/30 p-3 text-left transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-800/40 disabled:cursor-default ${focusRing}`}>
             <FileIcon name={file.name} mimeType={file.type} />
             <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-bold text-white group-hover:text-white transition-colors">{file.name}</p>
-                <p className={`${monoClass} mt-0.5`}>{[file.senderName || 'Client upload', fmtDate(file.uploadedAt, 'Unknown'), fmtSize(file.size)].filter(Boolean).join(' · ')}</p>
+                <p className={`${monoClass} mt-0.5`}>{[file.senderName || tx('pages.messages.contractDetails.clientUpload'), fmtDate(file.uploadedAt, tx('pages.messages.contractDetails.unknownDate')), fmtSize(file.size)].filter(Boolean).join(' · ')}</p>
             </div>
-            <span className="shrink-0 rounded-full border border-zinc-750 bg-zinc-850 text-zinc-350 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider">Shared</span>
+            <span className="shrink-0 rounded-full border border-zinc-750 bg-zinc-850 text-zinc-350 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider">{tx('pages.messages.contractDetails.shared')}</span>
             <ChevronRight className="h-4 w-4 text-zinc-500 group-hover:text-zinc-200 transition-colors shrink-0" />
         </button>
     );
 }
 
-function ActivityRow({ event, rt }: { event: ContractActivityEvent; rt: RoleTheme }) {
+function ActivityRow({ event, rt: _rt }: { event: ContractActivityEvent; rt: RoleTheme }) {
+    const { tx } = useTranslation();
     const isSystem = event.system || event.actorRole === 'system' || event.kind === 'payment' || event.kind === 'system';
     
     const dotColor = isSystem 
@@ -1904,7 +1891,7 @@ function ActivityRow({ event, rt }: { event: ContractActivityEvent; rt: RoleThem
 
     return (
         <div className="relative flex flex-col gap-1">
-            <div className={`absolute -left-[30px] top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 ${dotColor} bg-[#0d0d11]`} />
+            <div className={`absolute -start-[30px] top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 ${dotColor} bg-[#0d0d11]`} />
 
             {isSystem ? (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pl-2">
@@ -1922,7 +1909,7 @@ function ActivityRow({ event, rt }: { event: ContractActivityEvent; rt: RoleThem
                           <PartyAvatar party={{ full_name: event.actorName || undefined, avatar_url: event.actorAvatarUrl }} size="sm" />
                           <div className="min-w-0">
                               <p className="text-[13px] font-semibold text-zinc-100 truncate">
-                                  {event.actorName || (event.actorRole === 'client' ? 'Client' : 'Freelancer')}
+                                  {event.actorName || (event.actorRole === 'client' ? tx('pages.messages.contractDetails.clientFallback') : tx('pages.messages.contractDetails.freelancerFallback'))}
                               </p>
                           </div>
                         </div>
@@ -1941,11 +1928,11 @@ function ActivityRow({ event, rt }: { event: ContractActivityEvent; rt: RoleThem
     );
 }
 
-function TimelineMilestone({ milestone, index, rt }: { milestone: ContractMilestone; index: number; rt: RoleTheme }) {
+function _TimelineMilestone({ milestone: _milestone, index: _index, rt: _rt }: { milestone: ContractMilestone; index: number; rt: RoleTheme }) {
     return null;
 }
 
-function InfoChip({ icon, label, hideOnMobile, className }: { icon: ReactNode; label: string; hideOnMobile?: boolean; className?: string }) {
+function _InfoChip({ icon, label, hideOnMobile, className }: { icon: ReactNode; label: string; hideOnMobile?: boolean; className?: string }) {
     return <span className={`items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.01] px-2.5 py-1 font-mono text-[11px] text-zinc-400 ${hideOnMobile ? 'hidden sm:inline-flex' : 'inline-flex'} ${className ?? ''}`}>{icon}{label}</span>;
 }
 
@@ -1981,17 +1968,16 @@ function CompactEmpty({ icon, title, text }: { icon: ReactNode; title: string; t
 }
 
 function PartyAvatar({ party, size = 'md' }: { party?: { full_name?: string; avatar_url?: string | null } | null; size?: 'sm' | 'md' | 'lg' }) {
+    const { tx } = useTranslation();
     const dim = size === 'lg' ? 'h-9 w-9' : size === 'sm' ? 'h-6 w-6' : 'h-8 w-8';
     return (
         <div className={`relative flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-md border border-white/[0.06] bg-white/[0.02] text-zinc-400`}>
-            {party?.avatar_url ? <img src={party.avatar_url} alt={party.full_name || 'User'} className="h-full w-full object-cover" /> : <User className={size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />}
+            {party?.avatar_url ? <img src={party.avatar_url} alt={party.full_name || tx('pages.messages.userFallback')} className="h-full w-full object-cover" /> : <User className={size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />}
         </div>
     );
 }
 
-function PrimaryButton({ rt, onClick, disabled, icon, label }: { rt: RoleTheme; onClick?: () => void; disabled?: boolean; icon: ReactNode; label: string }) {
-    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors disabled:opacity-50 bg-emerald-600 hover:bg-emerald-500 text-white ${focusRing}`}>{icon}{label}</button>;
-}
+
 
 function GhostButton({ onClick, disabled, icon, label }: { onClick?: () => void; disabled?: boolean; icon: ReactNode; label: string }) {
     return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-transparent px-4 py-1.5 text-[12px] font-semibold text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white disabled:opacity-35 ${focusRing}`}>{icon}{label}</button>;
@@ -2003,6 +1989,7 @@ function DangerButton({ onClick, disabled, icon, label }: { onClick?: () => void
 
 // ─── Direct Image Preview Component ──────────────────────────────────────────
 function ImagePreview({ storageBucket, storagePath }: { storageBucket: string; storagePath: string }) {
+    const { tx } = useTranslation();
     const [url, setUrl] = useState<string | null>(null);
     const [error, setError] = useState(false);
 
@@ -2026,14 +2013,15 @@ function ImagePreview({ storageBucket, storagePath }: { storageBucket: string; s
         return () => { active = false; };
     }, [storageBucket, storagePath]);
 
-    if (error) return <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-[11px] text-zinc-500">Preview unavailable</div>;
+    if (error) return <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-[11px] text-zinc-500">{tx('pages.messages.contractDetails.previewUnavailable')}</div>;
     if (!url) return <div className="flex h-full w-full items-center justify-center bg-zinc-950/20"><div className="h-4 w-4 animate-spin rounded-full border-2 border-white/10 border-t-zinc-400" /></div>;
 
-    return <img src={url} alt="Delivery preview" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />;
+    return <img src={url} alt={tx('pages.messages.contractDetails.deliveryPreview')} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />;
 }
 
 // ─── Escrow Vault Visualizer Panel Component ────────────────────────────────
 function EscrowVaultVisualizer({ isLocked }: { isLocked: boolean }) {
+    const { tx } = useTranslation();
     return (
         <div className={`flex items-center gap-3 rounded-lg border px-3.5 py-2.5 ${
             isLocked 
@@ -2047,12 +2035,12 @@ function EscrowVaultVisualizer({ isLocked }: { isLocked: boolean }) {
             )}
             <div className="flex-1 min-w-0 text-[12px] leading-snug">
                 <span className={`font-bold ${isLocked ? 'text-amber-400' : 'text-emerald-450'}`}>
-                    {isLocked ? 'Escrow Vault Secured: ' : 'Escrow Released: '}
+                    {isLocked ? tx('pages.messages.contractDetails.escrowVaultSecured') : tx('pages.messages.contractDetails.escrowReleased')}
                 </span>
                 <span className="text-zinc-350">
                     {isLocked 
-                        ? 'Final hand-off deliverables are locked and will release automatically upon payment approval.'
-                        : 'Secure deliverables are now fully unlocked and accessible below.'}
+                        ? tx('pages.messages.contractDetails.vaultLockedDesc')
+                        : tx('pages.messages.contractDetails.vaultUnlockedDesc')}
                 </span>
             </div>
         </div>
@@ -2061,6 +2049,7 @@ function EscrowVaultVisualizer({ isLocked }: { isLocked: boolean }) {
 
 // ─── Prominent Delivery Hero Card Component ───────────────────────────────────
 function DeliveryFileHeroCard({ file, onPreviewFile }: { file: ContractDeliveryAsset; onPreviewFile: (file: ContractSharedFile) => void }) {
+    const { tx } = useTranslation();
     const contractFile = { id: file.id, name: file.name, url: '', type: file.mimeType ?? null, size: file.sizeBytes ?? null, storageBucket: file.storageBucket ?? 'contract-files', storagePath: file.storagePath };
     
     const value = `${file.name || ''} ${file.mimeType || ''}`.toLowerCase();
@@ -2076,18 +2065,18 @@ function DeliveryFileHeroCard({ file, onPreviewFile }: { file: ContractDeliveryA
                 ) : (
                     <div className="flex flex-col items-center gap-2">
                         <FileIcon name={file.name} mimeType={file.mimeType} />
-                        <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">{file.mimeType?.split('/')[1] || 'File'}</span>
+                        <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">{file.mimeType?.split('/')[1] || tx('pages.messages.contractDetails.fileLabel')}</span>
                     </div>
                 )}
                 
                 {/* Badge Overlay */}
                 {isLocked ? (
                     <span className="absolute top-3 right-3 rounded-full border border-amber-500/20 bg-amber-500/15 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300 backdrop-blur-sm flex items-center gap-0.5">
-                        <Lock className="h-2 w-2" /> Escrow Lock
+                        <Lock className="h-2 w-2" /> {tx('pages.messages.contractDetails.escrowLock')}
                     </span>
                 ) : (
                     <span className="absolute top-3 right-3 rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-350 backdrop-blur-sm">
-                        {file.assetKind === 'final_asset' ? 'Final Source' : 'Delivery'}
+                        {file.assetKind === 'final_asset' ? tx('pages.messages.contractDetails.finalSource') : tx('pages.messages.contractDetails.delivery')}
                     </span>
                 )}
             </div>
@@ -2098,7 +2087,7 @@ function DeliveryFileHeroCard({ file, onPreviewFile }: { file: ContractDeliveryA
                         {file.name}
                     </h4>
                     <p className="text-[11px] text-zinc-500 mt-1 font-mono">
-                        {fmtSize(file.sizeBytes) || 'Size unknown'}
+                        {fmtSize(file.sizeBytes) || tx('pages.messages.contractDetails.sizeUnknown')}
                     </p>
                 </div>
             </div>
@@ -2107,8 +2096,8 @@ function DeliveryFileHeroCard({ file, onPreviewFile }: { file: ContractDeliveryA
             {isLocked ? (
                 <div className="absolute inset-0 bg-black/75 backdrop-blur-[2.5px] rounded-xl flex flex-col items-center justify-center p-3 text-center opacity-0 group-hover:opacity-100 transition-all duration-150">
                     <Lock className="h-5 w-5 text-amber-400" />
-                    <p className="text-[11px] font-semibold text-zinc-300 mt-1">Escrow Locked</p>
-                    <p className="text-[9px] text-zinc-500 mt-0.5 leading-tight max-w-[200px]">Approve and release payment to unlock this final deliverable.</p>
+                    <p className="text-[11px] font-semibold text-zinc-300 mt-1">{tx('pages.messages.contractDetails.escrowLocked')}</p>
+                    <p className="text-[9px] text-zinc-500 mt-0.5 leading-tight max-w-[200px]">{tx('pages.messages.contractDetails.approveReleaseToUnlock')}</p>
                 </div>
             ) : (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] rounded-xl flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-150">
@@ -2118,7 +2107,7 @@ function DeliveryFileHeroCard({ file, onPreviewFile }: { file: ContractDeliveryA
                         className="flex items-center gap-1 rounded-full bg-zinc-100 hover:bg-white text-[#0A0A0B] px-3.5 py-2 text-[11px] font-bold shadow-md transition-all transform translate-y-2 group-hover:translate-y-0 duration-200"
                     >
                         <Eye className="h-3.5 w-3.5" />
-                        Open file
+                        {tx('pages.messages.contractDetails.openFile')}
                     </button>
                 </div>
             )}
@@ -2142,6 +2131,7 @@ function DeliveryLinkHeroCard({
     reveal: boolean; 
     onInspectPreview?: (url: string, label: string, category: string) => void;
 }) {
+    const { tx } = useTranslation();
     const [copied, setCopied] = useState(false);
 
     const isGithub = link.category === 'github';
@@ -2174,42 +2164,24 @@ function DeliveryLinkHeroCard({
         );
     }
 
-    let categoryLabel = 'Link';
+    let categoryLabel = tx('pages.messages.contractDetails.categoryLink');
     let CategoryIcon = LinkIcon;
-    let colorClasses = 'text-zinc-400 bg-zinc-950/40 border-white/[0.04]';
-    let badgeClasses = 'border-zinc-500/20 bg-zinc-500/15 text-zinc-300';
-    let gradientBg = 'from-zinc-900/30 to-zinc-950/50';
 
     if (isGithub) {
-        categoryLabel = 'Repository';
+        categoryLabel = tx('pages.messages.contractDetails.categoryRepository');
         CategoryIcon = Github;
-        colorClasses = 'text-violet-400 bg-violet-950/20 border-violet-500/20';
-        badgeClasses = 'border-violet-500/20 bg-violet-500/15 text-violet-300';
-        gradientBg = 'from-violet-950/25 via-indigo-950/15 to-zinc-950/30';
     } else if (isFigma) {
-        categoryLabel = 'Figma Prototype';
+        categoryLabel = tx('pages.messages.contractDetails.categoryFigmaPrototype');
         CategoryIcon = Globe;
-        colorClasses = 'text-pink-400 bg-pink-950/20 border-pink-500/20';
-        badgeClasses = 'border-pink-500/20 bg-pink-500/15 text-pink-300';
-        gradientBg = 'from-pink-950/25 via-rose-950/15 to-zinc-950/30';
     } else if (isDrive) {
-        categoryLabel = 'Cloud Drive';
+        categoryLabel = tx('pages.messages.contractDetails.categoryCloudDrive');
         CategoryIcon = FileSpreadsheet;
-        colorClasses = 'text-emerald-400 bg-emerald-950/20 border-emerald-500/20';
-        badgeClasses = 'border-emerald-500/20 bg-emerald-500/15 text-emerald-300';
-        gradientBg = 'from-emerald-950/25 via-teal-950/15 to-zinc-950/30';
     } else if (isLoom) {
-        categoryLabel = 'Loom Video';
+        categoryLabel = tx('pages.messages.contractDetails.categoryLoomVideo');
         CategoryIcon = Video;
-        colorClasses = 'text-orange-400 bg-orange-950/20 border-orange-500/20';
-        badgeClasses = 'border-orange-500/20 bg-orange-500/15 text-orange-300';
-        gradientBg = 'from-orange-950/25 via-amber-950/15 to-zinc-950/30';
     } else if (isVercel) {
-        categoryLabel = 'Staging Site';
+        categoryLabel = tx('pages.messages.contractDetails.categoryStagingSite');
         CategoryIcon = ExternalLink;
-        colorClasses = 'text-sky-400 bg-sky-950/20 border-sky-500/20';
-        badgeClasses = 'border-sky-500/20 bg-sky-500/15 text-sky-300';
-        gradientBg = 'from-sky-950/25 via-blue-950/15 to-zinc-950/30';
     }
 
     const handleCopyCredentials = () => {
@@ -2219,7 +2191,7 @@ function DeliveryLinkHeroCard({
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const isLocked = link.link_kind === 'final_link' && !reveal;
+    const _isLocked = link.link_kind === 'final_link' && !reveal;
 
     return (
         <div className="group relative border border-zinc-800 bg-zinc-900/30 rounded-xl flex flex-col overflow-hidden transition-all duration-200 hover:border-zinc-700">
@@ -2235,7 +2207,7 @@ function DeliveryLinkHeroCard({
 
                 {link.link_kind === 'final_link' && (
                     <span className="absolute top-3 left-3 rounded-full border border-amber-500/20 bg-amber-500/15 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300 backdrop-blur-sm flex items-center gap-0.5">
-                        <Lock className="h-2 w-2" /> Escrow Lock
+                        <Lock className="h-2 w-2" /> {tx('pages.messages.contractDetails.escrowLock')}
                     </span>
                 )}
             </div>
@@ -2257,7 +2229,7 @@ function DeliveryLinkHeroCard({
                     
                     {link.credentials && (
                         <div className="mt-2 border-t border-zinc-850 pt-2">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Access Info / Credentials</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{tx('pages.messages.contractDetails.accessInfo')}</p>
                             {reveal ? (
                                 <div className="mt-1 flex items-center justify-between gap-2 rounded-xl bg-black/40 border border-zinc-800 p-1.5 font-mono text-[10px] text-zinc-300">
                                     <span className="truncate">{link.credentials}</span>
@@ -2266,12 +2238,12 @@ function DeliveryLinkHeroCard({
                                         onClick={handleCopyCredentials}
                                         className="shrink-0 text-emerald-500 hover:text-emerald-400 font-semibold"
                                     >
-                                        {copied ? 'Copied!' : 'Copy'}
+                                        {copied ? tx('pages.messages.contractDetails.copied') : tx('pages.messages.contractDetails.copy')}
                                     </button>
                                 </div>
                             ) : (
                                 <p className="mt-1 text-[10px] italic text-amber-300/80 flex items-center gap-1">
-                                    <Lock className="h-2.5 w-2.5 shrink-0" /> Hidden until payment release
+                                    <Lock className="h-2.5 w-2.5 shrink-0" /> {tx('pages.messages.contractDetails.hiddenUntilPayment')}
                                 </p>
                             )}
                         </div>
@@ -2289,7 +2261,7 @@ function DeliveryLinkHeroCard({
                         className="flex items-center gap-1 rounded-full bg-zinc-100 hover:bg-white text-[#0A0A0B] px-3.5 py-2 text-[11px] font-bold shadow-md transition-all transform translate-y-2 group-hover:translate-y-0 duration-200"
                     >
                         <ExternalLink className="h-3.5 w-3.5" />
-                        Open
+                        {tx('pages.messages.contractDetails.openLink')}
                     </a>
                     {onInspectPreview && (isVercel || isFigma || link.category === 'other') && (
                         <button
@@ -2298,15 +2270,15 @@ function DeliveryLinkHeroCard({
                             className="flex items-center gap-1 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 text-[11px] font-bold shadow-md transition-all transform translate-y-2 group-hover:translate-y-0 duration-200"
                         >
                             <Globe className="h-3.5 w-3.5" />
-                            Inspect
+                            {tx('pages.messages.contractDetails.inspect')}
                         </button>
                     )}
                 </div>
             ) : (
                 <div className="absolute inset-0 bg-black/75 backdrop-blur-[2.5px] rounded-xl flex flex-col items-center justify-center p-3 text-center opacity-0 group-hover:opacity-100 transition-all duration-150">
                     <Lock className="h-5 w-5 text-amber-400" />
-                    <p className="text-[11px] font-semibold text-zinc-300 mt-1">Escrow Locked</p>
-                    <p className="text-[9px] text-zinc-500 mt-0.5 leading-tight max-w-[200px]">Approve and release payment to unlock this final deliverable.</p>
+                    <p className="text-[11px] font-semibold text-zinc-300 mt-1">{tx('pages.messages.contractDetails.escrowLocked')}</p>
+                    <p className="text-[9px] text-zinc-500 mt-0.5 leading-tight max-w-[200px]">{tx('pages.messages.contractDetails.approveReleaseToUnlock')}</p>
                 </div>
             )}
         </div>

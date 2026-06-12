@@ -10,12 +10,12 @@ import {
   AlertTriangle,
   ExternalLink,
   Plus,
-  Trash2,
+  _Trash2,
   Loader2,
   RefreshCw,
-  Clock,
+  _Clock,
   Wallet,
-  Building2,
+  _Building2,
   Info,
   UserCircle,
   CheckCircle,
@@ -366,7 +366,7 @@ function PaymentSettingsTab({
       }
       setLoading(false);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [userId]);
 
   const addMethod = async () => {
@@ -395,7 +395,7 @@ function PaymentSettingsTab({
     } finally { setSaving(false); }
   };
 
-  const setDefault = async (id: string) => {
+  const _setDefault = async (id: string) => {
     if (!userId) return;
     try {
       await supabase.from('payment_methods').update({ is_default: false }).eq('user_id', userId);

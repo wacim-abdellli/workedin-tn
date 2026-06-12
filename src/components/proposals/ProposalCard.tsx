@@ -1,7 +1,7 @@
-import { useState, memo } from 'react';
+import { memo } from 'react';
 import { Star, Clock, CheckCircle2, DollarSign } from 'lucide-react';
 import type { Proposal } from '../../types/proposal';
-import { useTranslation } from '../../i18n';
+
 
 interface ProposalListItemProps {
     proposal: Proposal;

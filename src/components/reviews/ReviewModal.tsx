@@ -84,7 +84,7 @@ export default function ReviewModal({
     };
 
     const StarRating = ({ value, onChange, size = 'md' }: { value: number; onChange: (v: number) => void; size?: 'sm' | 'md' | 'lg' }) => {
-        const { tx } = useTranslation();
+        const { tx: _tx } = useTranslation();
         const [hover, setHover] = useState(0);
         const sizeClass = size === 'lg' ? 'w-10 h-10' : size === 'md' ? 'w-6 h-6' : 'w-5 h-5';
 
