@@ -2082,7 +2082,9 @@ export const ar = {
                 "audioTooLarge": "المقطع الصوتي كبير جداً للتخزين غير المتصل",
                 "encodingFailed": "فشل تحضير الملف للتخزين غير المتصل",
                 "storageFailed": "فشل حفظ الرسالة غير المتصلة",
-                "queued": "أنت غير متصل. تم وضع الرسالة في قائمة الانتظار وسيتم إرسالها عند الاتصال."
+                "queued": "أنت غير متصل. تم وضع الرسالة في قائمة الانتظار وسيتم إرسالها عند الاتصال.",
+                "attachmentPending": "المرفق قيد الانتظار",
+                "statusWaiting": "قيد الانتظار"
             },
             "time": {
                 "now": "الآن",
@@ -2099,6 +2101,8 @@ export const ar = {
             "reacting": "جارٍ التفاعل...",
             "copyMessage": "نسخ الرسالة",
             "replyTo": "الرد على الرسالة",
+            "replyingTo": "الرد على",
+            "cancelReply": "إلغاء الرد",
             "edited": "تم التعديل",
             "readOnlyThread": "{{message}}",
             "readOnlyPlaceholder": "{{message}}",
@@ -2121,6 +2125,35 @@ export const ar = {
                 "reviewFilesDescription": "الملفات التي يمكن للعميل مراجعتها فوراً قبل القبول.",
                 "finalLockedFiles": "الملفات النهائية المقفلة",
                 "finalLockedFilesDescription": "الملفات التي تبقى مقفلة حتى يقبل العميل ويتم تحرير الدفع."
+            },
+            "markUnread": "تحديد كغير مقروء",
+            "reportUser": "الإبلاغ عن المستخدم",
+            "reportUserTitle": "الإبلاغ عن المستخدم",
+            "reportUserDescription": "أخبرنا عن سبب إبلاغك عن هذا المستخدم. سيقوم فريقنا بمراجعة ملفه الشخصي ونشاطه الأخير.",
+            "reportSubmittedSuccess": "تم تقديم البلاغ بنجاح. سيقوم فريقنا بمراجعته.",
+            "reportReason": {
+                "spam": "رسائل مزعجة أو مضللة",
+                "inappropriate": "سلوك أو محتوى غير مناسب",
+                "fraud": "محاولة احتيال",
+                "harassment": "تحرش أو إساءة",
+                "other": "أخرى"
+            },
+            "unarchive": "إلغاء الأرشفة",
+            "archiveSuccess": "تمت أرشفة المحادثة",
+            "unarchiveSuccess": "تمت إعادة المحادثة إلى الصندوق",
+            "contractOpenFailed": "تعذر فتح محادثة العقد حتى الآن. يرجى التحديث والمحاولة مرة أخرى.",
+            "loadingContractSidebar": "جاري تحميل تفاصيل العقد...",
+            "contractSidebarUnavailable": "تفاصيل العقد غير متاحة لهذه المحادثة بعد.",
+            "imageLabel": "صورة",
+            "replyTargetMissing": "الرسالة الأصلية غير متاحة بعد.",
+            "searchResultsSummary": "{{count}} نتيجة",
+            "threadCountSummary": "{{count}} محادثة",
+            "reply": "رد",
+            "delete": "حذف",
+            "unfundedLabel": "غير ممول",
+            "a11y": {
+                "openImageAttachment": "فتح الصورة المرفقة",
+                "openAttachment": "فتح المرفق"
             }
         },
         "freelancerProfile": {
@@ -4486,6 +4519,9 @@ export const ar = {
     "dynamic_key_730815621": "الذهاب للعقد",
     "dynamic_key_1762109572": "فشل التحقق من الدفع",
     "dynamic_key_764967864": "العودة للوحة التحكم",
+    "auto": {
+        "escrow_not_funded_ye": "الضمان لم يتم تمويله بعد"
+    },
     "toast": {
         "close": "إغلاق",
         "success": "نجاح",

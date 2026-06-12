@@ -374,7 +374,7 @@ export const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                                                             if (needsEscrowFunding) {
                                                                 items.push(
                                                                     <span key="unfunded" className="shrink-0 text-[var(--color-status-warning)] font-semibold" title={tx('auto.escrow_not_funded_ye', undefined, 'Escrow not funded yet')}>
-                                                                        Unfunded
+                                                                        {tx('pages.messages.unfundedLabel', undefined, 'Unfunded')}
                                                                     </span>
                                                                 );
                                                             }

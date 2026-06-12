@@ -2084,7 +2084,9 @@ export const en: Translations = {
                 "audioTooLarge": "Audio too large for offline storage",
                 "encodingFailed": "Failed to prepare file for offline storage",
                 "storageFailed": "Failed to save message offline",
-                "queued": "You are offline. Message queued and will send when reconnected."
+                "queued": "You are offline. Message queued and will send when reconnected.",
+                "attachmentPending": "Attachment pending",
+                "statusWaiting": "Waiting"
             },
             "time": {
                 "now": "Now",
@@ -2101,6 +2103,8 @@ export const en: Translations = {
             "reacting": "Reacting...",
             "copyMessage": "Copy message",
             "replyTo": "Reply to message",
+            "replyingTo": "Replying to",
+            "cancelReply": "Cancel reply",
             "edited": "Edited",
             "readOnlyThread": "{{message}}",
             "readOnlyPlaceholder": "{{message}}",
@@ -2123,6 +2127,37 @@ export const en: Translations = {
                 "reviewFilesDescription": "Files the client can review immediately before accepting.",
                 "finalLockedFiles": "Final Locked Files",
                 "finalLockedFilesDescription": "Files that stay locked until the client accepts and payment is released."
+            },
+            "markUnread": "Mark as Unread",
+            "reportUser": "Report User",
+            "reportUserTitle": "Report User",
+            "reportUserDescription": "Tell us why you are reporting this user. Our team will review their profile and recent activity.",
+            "reportSubmittedSuccess": "Report submitted successfully. Our team will review it.",
+            "reportReason": {
+                "spam": "Spam or misleading",
+                "inappropriate": "Inappropriate behavior or content",
+                "fraud": "Fraud or scam attempt",
+                "harassment": "Harassment or abuse",
+                "other": "Other"
+            },
+            "unarchive": "Unarchive",
+            "archiveSuccess": "Conversation archived",
+            "unarchiveSuccess": "Conversation returned to inbox",
+            "contractOpenFailed": "Could not open this contract thread yet. Please refresh and try again.",
+            "loadingContractSidebar": "Loading contract details...",
+            "contractSidebarUnavailable": "Contract details are not available for this conversation yet.",
+            "imageLabel": "Image",
+            "replyTargetMissing": "Original message is no longer available.",
+            "searchResultsSummary": "{{count}} results",
+            "threadCountSummary": "{{count}} threads",
+            "reply": "Reply",
+            "delete": "Delete",
+            "unfundedLabel": "Unfunded",
+            "replyingTo": "Replying to",
+            "cancelReply": "Cancel reply",
+            "a11y": {
+                "openImageAttachment": "Open image attachment",
+                "openAttachment": "Open attachment"
             }
         },
         "freelancerProfile": {
@@ -4551,6 +4586,9 @@ export const en: Translations = {
     "dynamic_key_730815621": "Go to Contract",
     "dynamic_key_1762109572": "Payment Verification Failed",
     "dynamic_key_764967864": "Return to Dashboard",
+    "auto": {
+        "escrow_not_funded_ye": "Escrow not funded yet"
+    },
     "toast": {
         "close": "Close",
         "success": "Success",

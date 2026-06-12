@@ -201,7 +201,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     navigate,
     isOnline: _isOnline,
 }) => {
-    const deletedMessageLabel = tx('messages.deletedMessage');
+    const deletedMessageLabel = tx('pages.messages.deletedMessage');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isBannerDismissed, setIsBannerDismissed] = useState(false);
     const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
@@ -251,7 +251,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     const handleOpenAttachment = useCallback(async (attachment: NonNullable<ThreadMessage['attachments']>[number]) => {
         const sourceUrl = resolveMessageAttachmentUrl(attachment.url);
         if (!sourceUrl) {
-            showToast(tx('messages.errors.invalidAttachment'), 'error');
+            showToast(tx('pages.messages.errors.invalidAttachment'), 'error');
             return;
         }
 
@@ -285,7 +285,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                 openBlobAsPreviewOrDownload(data, attachment.name || 'attachment', canPreviewInTab);
             } catch (downloadError) {
                 console.error('[Messages] Failed to open attachment via fallback:', downloadError);
-                showToast(tx('messages.errors.openAttachment'), 'error');
+                showToast(tx('pages.messages.errors.openAttachment'), 'error');
             }
         }
     }, [showToast, tx]);
@@ -314,7 +314,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                 size: file.size,
             });
             if (!validation.ok) {
-                showToast(validation.reason || tx('messages.errors.fileUnsupported'), 'error');
+                showToast(validation.reason || tx('pages.messages.errors.fileUnsupported'), 'error');
                 e.target.value = '';
                 return;
             }
@@ -329,13 +329,13 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                 });
 
                 if (!payloadValidation.ok) {
-                    showToast(payloadValidation.reason || tx('messages.errors.fileUnsupported'), 'error');
+                    showToast(payloadValidation.reason || tx('pages.messages.errors.fileUnsupported'), 'error');
                     e.target.value = '';
                     return;
                 }
             } catch (error) {
                 console.error('[Messages] Failed to inspect attachment payload:', error);
-                showToast(tx('messages.errors.fileInspectionFailed'), 'error');
+                showToast(tx('pages.messages.errors.fileInspectionFailed'), 'error');
                 e.target.value = '';
                 return;
             }
@@ -389,7 +389,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => navigate(getConversationProfilePath(selectedConversation))}
-                                            aria-label={tx('messages.profileAction')}
+                                            aria-label={tx('pages.messages.profileAction')}
                                             className={`relative block h-10 w-10 overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-sm font-semibold text-zinc-300 transition-all hover:ring-2 ${accentClasses.headerAvatarHoverRing}`}
                                         >
                                             <span aria-hidden="true" className="text-[13px] font-semibold">{selectedConversation.otherUser.full_name.charAt(0)}</span>
@@ -493,7 +493,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                     >
                                         <span className="flex items-center gap-3">
                                             <User className="w-4 h-4" />
-                                            <span>{tx('messages.profileAction')}</span>
+                                            <span>{tx('pages.messages.profileAction')}</span>
                                         </span>
                                     </button>
 
@@ -511,7 +511,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                     >
                                         <span className="flex items-center gap-3">
                                             <Mail className="w-4 h-4" />
-                                            <span>{tx('messages.markUnread')}</span>
+                                            <span>{tx('pages.messages.markUnread')}</span>
                                         </span>
                                     </button>
 
@@ -527,7 +527,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                     >
                                         <span className="flex items-center gap-3">
                                             <Flag className="w-4 h-4" />
-                                            <span>{tx('messages.reportUser')}</span>
+                                            <span>{tx('pages.messages.reportUser')}</span>
                                         </span>
                                     </button>
                                 </div>
@@ -573,7 +573,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                 <div className="flex-1 flex items-center justify-center">
                                     <div className="text-center">
                                         <Send className="mx-auto h-10 w-10 text-on-surface-subtle" />
-                                        <p className="mt-3 text-sm text-on-surface-subtle">{tx('messages.empty.noConversationsTitle')}</p>
+                                        <p className="mt-3 text-sm text-on-surface-subtle">{tx('pages.messages.empty.noConversationsTitle')}</p>
                                     </div>
                                 </div>
                             ) : (
@@ -627,7 +627,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => handleReplyToMessage(message)}
-                                                                            title={tx('messages.reply')}
+                                                                            title={tx('pages.messages.reply')}
                                                                             className="h-6 w-6 rounded-full border border-white/[0.06] bg-[#070709] flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
                                                                         >
                                                                             <CornerUpLeft className="h-3 w-3" />
@@ -637,7 +637,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => handleDeleteMessage(message)}
-                                                                            title={tx('messages.delete')}
+                                                                            title={tx('pages.messages.delete')}
                                                                             className="h-6 w-6 rounded-full border border-white/[0.06] bg-[#070709] flex items-center justify-center text-zinc-400 hover:text-[var(--color-status-error)] transition-colors"
                                                                         >
                                                                             <Trash2 className="h-3 w-3" />
@@ -726,7 +726,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                                                                         key={index}
                                                                                         type="button"
                                                                                         onClick={() => { setLightboxImageUrl(attachmentUrl); }}
-                                                                                        aria-label={tx('messages.a11y.openImageAttachment')}
+                                                                                        aria-label={tx('pages.messages.a11y.openImageAttachment')}
                                                                                         className="block w-full max-w-sm rounded-xl overflow-hidden"
                                                                                     >
                                                                                         <div className="relative">
@@ -778,14 +778,14 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                                                                                 ? accentClasses.ownAttachmentCard
                                                                                                 : 'surface-card hover-surface border border-surface'
                                                                                         }`}
-                                                                                        aria-label={tx('messages.a11y.openAttachment')}
+                                                                                        aria-label={tx('pages.messages.a11y.openAttachment')}
                                                                                     >
                                                                                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isOwnMessage ? accentClasses.ownAttachmentIcon : `bg-[var(--color-bg-muted)] ${accentClasses.neutralAttachmentIcon}`}`}>
                                                                                             <FileText className="w-5 h-5" />
                                                                                         </div>
 
                                                                                         <div className="min-w-0 flex-1 text-start">
-                                                                                            <p className="font-semibold text-sm truncate text-on-surface">{att.name || tx('messages.attachmentLabel')}</p>
+                                                                                            <p className="font-semibold text-sm truncate text-on-surface">{att.name || tx('pages.messages.attachmentLabel')}</p>
                                                                                             <p className="text-xs opacity-70 text-on-surface-muted">{fileMetaLabel}</p>
                                                                                         </div>
 
@@ -822,16 +822,16 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                         <div key={`pending-${idx}`} className="flex justify-end w-full opacity-70">
                                             <div className="max-w-[80%]">
                                                 <div className={`${accentClasses.ownBubbleBg} text-white px-3 py-2 rounded-xl rounded-ee-sm text-[13px]`}>
-                                                    <p className="text-sm break-words">{parseReplyMetadataFromContent(pendingMsg.content).bodyText || tx('messages.attachmentLabel')}</p>
+                                                    <p className="text-sm break-words">{parseReplyMetadataFromContent(pendingMsg.content).bodyText || tx('pages.messages.attachmentLabel')}</p>
                                                     {(pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFile || pendingMsg.offlineAudio) ? (
                                                         <div className="mt-2 text-xs italic opacity-90 flex items-center gap-1">
                                                             <Paperclip className="w-3 h-3" />
-                                                            <span>{pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFileName || pendingMsg.offlineFile?.name || tx('messages.offline.attachmentPending')}</span>
+                                                            <span>{pendingMsg.fileName || pendingMsg.audioFileName || pendingMsg.offlineFileName || pendingMsg.offlineFile?.name || tx('pages.messages.offline.attachmentPending')}</span>
                                                         </div>
                                                     ) : null}
                                                 </div>
                                                 <p className="mt-1 text-[11px] text-zinc-600 flex items-center justify-end gap-1">
-                                                    <Clock className="w-3 h-3" /> {tx('messages.offline.statusWaiting')}
+                                                    <Clock className="w-3 h-3" /> {tx('pages.messages.offline.statusWaiting')}
                                                 </p>
                                             </div>
                                         </div>
@@ -852,8 +852,8 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                     </div>
                                     <span>
                                         {typingUsers.length === 1
-                                            ? `${selectedConversation.otherUser.full_name} ${tx('messages.typingIndicator.singular')}`
-                                            : `${typingUsers.length} ${tx('messages.typingIndicator.plural')}`}
+                                            ? `${selectedConversation.otherUser.full_name} ${tx('pages.messages.typingIndicator.singular')}`
+                                            : `${typingUsers.length} ${tx('pages.messages.typingIndicator.plural')}`}
                                     </span>
                                 </div>
                             </div>
@@ -871,14 +871,14 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                     <div className="flex items-start gap-2">
                                         <span className={`mt-0.5 h-8 w-1 rounded-full ${accentClasses.replyStripe}`} aria-hidden="true" />
                                         <div className="min-w-0 flex-1">
-                                            <p className={`text-xs font-semibold ${accentClasses.headerMetaText}`}>{tx('messages.replyingTo')} {replyTarget.senderName}</p>
+                                            <p className={`text-xs font-semibold ${accentClasses.headerMetaText}`}>{tx('pages.messages.replyingTo')} {replyTarget.senderName}</p>
                                             <p className="text-xs text-zinc-400 truncate">{replyTarget.previewText}</p>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setReplyTarget(null)}
                                             className="rounded-md p-1 text-zinc-500 hover:bg-[var(--color-bg-muted)] hover:text-white transition-colors"
-                                            aria-label={tx('messages.cancelReply')}
+                                            aria-label={tx('pages.messages.cancelReply')}
                                         >
                                             <X className="h-4 w-4" />
                                         </button>
@@ -927,7 +927,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                     onToggleRecord={() => {
                                         if (!canSendVoiceInSelectedConversation) {
                                             const blockedMessage = selectedConversationPolicy?.blockedReasonFallback || tx('pages.messages.readOnlyPlaceholder');
-                                            showToast(tx('messages.readOnlyThread', { message: blockedMessage }), 'warning');
+                                            showToast(tx('pages.messages.readOnlyThread', { message: blockedMessage }), 'warning');
                                             return;
                                         }
                                         if (isRecording) stopRecording();
@@ -935,7 +935,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                                     }}
                                     canRecordAudio={canSendVoiceInSelectedConversation}
                                     disabled={isSending}
-                                    placeholder={tx('messages.messagePlaceholder')}
+                                    placeholder={tx('pages.messages.messagePlaceholder')}
                                 />
                             )}
                         </div>
@@ -948,10 +948,10 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                             <Mail className="h-7 w-7" />
                         </div>
                         <h3 className="text-[18px] font-medium tracking-[-0.01em] text-[#F0EFE8]">
-                            {tx('messages.selectConversationTitle')}
+                            {tx('pages.messages.selectConversationTitle')}
                         </h3>
                         <p className="mt-2 text-[14px] leading-relaxed text-[#8A8880]">
-                            {tx('messages.selectConversationDescription')}
+                            {tx('pages.messages.selectConversationDescription')}
                         </p>
                     </div>
                 </div>

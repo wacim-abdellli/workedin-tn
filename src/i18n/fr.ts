@@ -2084,7 +2084,9 @@ export const fr: Translations = {
                 "audioTooLarge": "Audio trop volumineux pour le stockage hors ligne",
                 "encodingFailed": "Échec de la préparation du fichier pour le stockage hors ligne",
                 "storageFailed": "Échec de la sauvegarde du message hors ligne",
-                "queued": "Vous êtes hors ligne. Message mis en file d'attente et sera envoyé lors de la reconnexion."
+                "queued": "Vous êtes hors ligne. Message mis en file d'attente et sera envoyé lors de la reconnexion.",
+                "attachmentPending": "Pièce jointe en attente",
+                "statusWaiting": "En attente"
             },
             "time": {
                 "now": "Maintenant",
@@ -2101,6 +2103,8 @@ export const fr: Translations = {
             "reacting": "Réaction...",
             "copyMessage": "Copier le message",
             "replyTo": "Répondre au message",
+            "replyingTo": "Répondre à",
+            "cancelReply": "Annuler la réponse",
             "edited": "Modifié",
             "readOnlyThread": "{{message}}",
             "readOnlyPlaceholder": "{{message}}",
@@ -2123,6 +2127,35 @@ export const fr: Translations = {
                 "reviewFilesDescription": "Fichiers que le client peut examiner immédiatement avant d'accepter.",
                 "finalLockedFiles": "Fichiers finaux verrouillés",
                 "finalLockedFilesDescription": "Fichiers qui restent verrouillés jusqu'à ce que le client accepte et que le paiement soit libéré."
+            },
+            "markUnread": "Marquer comme non lu",
+            "reportUser": "Signaler l'utilisateur",
+            "reportUserTitle": "Signaler l'utilisateur",
+            "reportUserDescription": "Dites-nous pourquoi vous signalez cet utilisateur. Notre équipe examinera son profil et son activité récente.",
+            "reportSubmittedSuccess": "Signalement soumis avec succès. Notre équipe l'examinera.",
+            "reportReason": {
+                "spam": "Spam ou trompeur",
+                "inappropriate": "Comportement ou contenu inapproprié",
+                "fraud": "Tentative de fraude ou d'escroquerie",
+                "harassment": "Harcèlement ou abus",
+                "other": "Autre"
+            },
+            "unarchive": "Désarchiver",
+            "archiveSuccess": "Conversation archivée",
+            "unarchiveSuccess": "Conversation remise dans la boîte de réception",
+            "contractOpenFailed": "Impossible d'ouvrir ce fil de contrat pour le moment. Veuillez actualiser et réessayer.",
+            "loadingContractSidebar": "Chargement des détails du contrat...",
+            "contractSidebarUnavailable": "Les détails du contrat ne sont pas encore disponibles pour cette conversation.",
+            "imageLabel": "Image",
+            "replyTargetMissing": "Le message original n'est plus disponible.",
+            "searchResultsSummary": "{{count}} résultat",
+            "threadCountSummary": "{{count}} fils",
+            "reply": "Répondre",
+            "delete": "Supprimer",
+            "unfundedLabel": "Non financé",
+            "a11y": {
+                "openImageAttachment": "Ouvrir la pièce jointe image",
+                "openAttachment": "Ouvrir la pièce jointe"
             }
         },
         "freelancerProfile": {
@@ -4488,6 +4521,9 @@ export const fr: Translations = {
     "dynamic_key_730815621": "Aller au contrat",
     "dynamic_key_1762109572": "Échec de la vérification du paiement",
     "dynamic_key_764967864": "Retour au tableau de bord",
+    "auto": {
+        "escrow_not_funded_ye": "Garantie non encore financée"
+    },
     "toast": {
         "close": "Fermer",
         "success": "Succès",
