@@ -50,15 +50,21 @@ function AppContent() {
 
   const workspaceClass = pathname.startsWith("/admin")
     ? "workspace-admin"
-    : resolvedWorkspace === "client"
+    : pathname.startsWith("/onboarding/client") || resolvedWorkspace === "client"
       ? "workspace-client"
-      : "";
+      : pathname.startsWith("/onboarding/freelancer")
+        ? "workspace-freelancer"
+        : "";
 
   const workspaceMode = pathname.startsWith("/admin")
     ? "admin"
-    : resolvedWorkspace === "client"
+    : pathname.startsWith("/onboarding/client")
       ? "client"
-      : "freelancer";
+      : pathname.startsWith("/onboarding/freelancer")
+        ? "freelancer"
+        : resolvedWorkspace === "client"
+          ? "client"
+          : "freelancer";
 
   useEffect(() => {
     const root = document.documentElement;

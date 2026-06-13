@@ -12,6 +12,7 @@ import {
 import { MIN_WITHDRAWAL_AMOUNT } from '../../types/payment';
 import type { WithdrawalFormProps, WithdrawalMethod } from '../../types/payment';
 import { useTranslation } from "../../i18n";
+import { formatPhoneAsYouType, normalizePhoneNumber } from '../../lib/phone';
 
 /**
  * WithdrawalForm Component
@@ -52,7 +53,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                 p_bank_name: method === 'bank_transfer' ? bankName : null,
                 p_bank_account_name: method === 'bank_transfer' ? bankAccountName : null,
                 p_bank_iban: method === 'bank_transfer' ? bankIban : null,
-                p_phone_number: method !== 'bank_transfer' ? phoneNumber : null,
+                p_phone_number: method !== 'bank_transfer' ? normalizePhoneNumber(phoneNumber) : null,
             });
 
             if (withdrawalError) {
@@ -243,7 +244,7 @@ const WithdrawalForm = ({ wallet, onSuccess, onCancel }: WithdrawalFormProps) =>
                         <input
                             type="tel"
                             value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            onChange={(e) => setPhoneNumber(formatPhoneAsYouType(e.target.value))}
                             placeholder={tx('ui.xx_xxx_xxx')}
                             className="input w-full ps-10"
                             dir="ltr"

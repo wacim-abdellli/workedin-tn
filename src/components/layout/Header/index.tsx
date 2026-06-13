@@ -3,7 +3,6 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Bookmark,
   Briefcase,
-  _ChevronDown,
   FileText,
   FolderOpen,
   Menu,

@@ -1190,6 +1190,14 @@ export const en: Translations = {
             "ratingLabel": "Rating",
             "recentProposals": "Recent Proposals",
             "seeAllJobs": "See all jobs",
+            "completeProfileButton": "Complete profile →",
+            "quota": {
+                "title": "Daily Applications",
+                "remainingLabel": {
+                    "one": "application remaining today",
+                    "other": "applications remaining today"
+                }
+            },
             "stats": {
                 "contracts": "Contracts",
                 "contractsDesc": "active now",
@@ -1207,6 +1215,11 @@ export const en: Translations = {
             "viewAll": "View all",
             "viewWallet": "View Wallet",
             "vsLastMonth": "vs last month",
+            "wallet": {
+                "available": "Available",
+                "inReview": "In review",
+                "lastMonth": "Last month"
+            },
             "withdrawFunds": "Withdraw Funds"
         },
         "freelancerSubtitle": "Freelancer Dashboard",

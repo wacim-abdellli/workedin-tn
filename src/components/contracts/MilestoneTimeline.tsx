@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
+import {
+  useState,
+  useEffect } from 'react';
 import { 
-    CheckCircle, 
-    Clock, 
-    AlertTriangle, 
-    ArrowRight, 
-    Lock, 
-    _Shield, 
-    Timer, 
-    PackageCheck,
-    AlertCircle
-} from 'lucide-react';
+    CheckCircle,
+  Clock,
+  AlertTriangle,
+  ArrowRight,
+  Lock,
+  Timer,
+  PackageCheck,
+  AlertCircle
+} from "lucide-react";
 import { CountdownTimer } from '../ui';
 
 type Milestone = {

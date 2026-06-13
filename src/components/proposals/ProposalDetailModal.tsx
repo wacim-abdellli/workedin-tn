@@ -5,7 +5,7 @@ import {
     MessageSquare, Star, Bookmark, MapPin, Clock, Briefcase,
     Archive, CheckCircle, Loader2, User,
     DollarSign, TrendingUp, Shield, FileText, Download,
-    _ChevronDown, X,
+    X,
 } from 'lucide-react';
 import type { ProposalAttachment } from '../../types/proposal';
 import { useTranslation } from '../../i18n';

@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Camera, CheckCircle2, Shield, Loader2, Sparkles, Lock, ScanLine, AlertCircle } from 'lucide-react';
+import { Camera, CheckCircle2, Shield, Loader2, Sparkles, Lock, ScanLine, AlertCircle, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/i18n';
 import { logger } from '@/lib/logger';
@@ -333,16 +333,17 @@ export default function VerifyIdentity() {
     // ── Status screens ──────────────────────────────────────────────────────────
     if (effectiveStatus === 'verified') {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12">
+            <div className="min-h-screen bg-zinc-950 text-white py-16 relative overflow-hidden bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))]">
                 <SEO title={tx('verifyIdentity.seo.title', undefined, 'التحقق من الهوية')} description="" />
                 <div className="container mx-auto px-4">
-                    <div className="max-w-2xl mx-auto text-center bg-card bg-opacity-100 rounded-3xl p-12 shadow-xl border border-green-100 dark:border-green-900">
-                        <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" />
+                    <div className="max-w-2xl mx-auto text-center border border-zinc-800/80 bg-zinc-950/50 backdrop-blur-2xl rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden shadow-emerald-950/5 animate-in fade-in zoom-in duration-500">
+                        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400" />
+                        <div className="w-20 h-20 bg-gradient-to-b from-emerald-500/15 to-teal-500/5 border border-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(16,185,129,0.2)] hover:scale-105 transition-transform duration-300">
+                            <CheckCircle2 className="w-10 h-10 text-emerald-400" />
                         </div>
-                        <h2 className="text-3xl font-bold text-foreground mb-4">{tx('verifyIdentity.verified.title', undefined, 'تم التحقق من هويتك بنجاح')}</h2>
-                        <p className="text-muted-foreground text-lg mb-8">{tx('verifyIdentity.verified.description', undefined, 'حسابك موثق الآن وحصلت على شارة التحقق الزرقاء.')}</p>
-                        <button onClick={() => navigate('/settings?tab=profile')} className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">{tx('verifyIdentity.verified.title', undefined, 'تم التحقق من هويتك بنجاح')}</h2>
+                        <p className="text-zinc-400 text-base mb-8 max-w-md mx-auto leading-relaxed">{tx('verifyIdentity.verified.description', undefined, 'حسابك موثق الآن وحصلت على شارة التحقق الزرقاء.')}</p>
+                        <button onClick={() => navigate('/settings?tab=profile')} className="bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 text-zinc-950 px-8 py-3.5 rounded-xl font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-emerald-500/10">
                             {tx('verifyIdentity.backToSettings', undefined, 'العودة إلى الإعدادات')}
                         </button>
                     </div>
@@ -353,32 +354,31 @@ export default function VerifyIdentity() {
 
     if (effectiveStatus === 'pending') {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-10">
+            <div className="min-h-screen bg-zinc-950 text-white py-16 relative overflow-hidden bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(245,158,11,0.12),rgba(255,255,255,0))]">
                 <SEO title={tx('verifyIdentity.pending.seoTitle', undefined, 'طلب التحقق قيد المراجعة')} description="" />
                 <div className="container mx-auto px-4">
-                    <div className="relative max-w-2xl mx-auto text-center bg-card bg-opacity-100 rounded-3xl p-8 md:p-12 shadow-xl border-2 border-orange-200 dark:border-orange-900 overflow-hidden">
-                        <div className="pointer-events-none absolute -top-16 -end-12 h-40 w-40 rounded-full bg-orange-300/20 blur-2xl" />
-                        <div className="pointer-events-none absolute -bottom-20 -start-16 h-44 w-44 rounded-full bg-yellow-300/10 blur-2xl" />
-                        <div className="w-24 h-24 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Shield className="w-12 h-12 text-orange-500 dark:text-orange-400" />
+                    <div className="relative max-w-2xl mx-auto text-center border border-zinc-800/80 bg-zinc-950/50 backdrop-blur-2xl rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden shadow-amber-950/5 animate-in fade-in zoom-in duration-500">
+                        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-400" />
+                        <div className="w-20 h-20 bg-gradient-to-b from-amber-500/15 to-yellow-500/5 border border-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(245,158,11,0.2)] hover:scale-105 transition-transform duration-300">
+                            <Shield className="w-10 h-10 text-amber-400" />
                         </div>
-                        <div className="inline-flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
-                            <Loader2 className="w-4 h-4 animate-spin" />{tx('verifyIdentity.pending.badge', undefined, 'قيد المراجعة')}
+                        <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-5">
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />{tx('verifyIdentity.pending.badge', undefined, 'قيد المراجعة')}
                         </div>
-                        <h2 className="text-3xl font-bold text-foreground mb-4">{tx('verifyIdentity.pending.title', undefined, 'طلبك قيد المراجعة')}</h2>
-                        <p className="text-muted-foreground text-lg mb-6">{tx('verifyIdentity.pending.description', undefined, 'تم استلام طلب التحقق من هويتك بنجاح.')}</p>
-                        <div className="bg-surface rounded-2xl p-5 md:p-6 mb-8">
-                            <div className="flex items-center justify-center gap-3 text-muted-foreground">
-                                <AlertCircle className="w-5 h-5 text-orange-500" />
-                                <span>{tx('verifyIdentity.pending.reviewTime', undefined, 'مدة المراجعة: 24 ساعة كحد أقصى')}</span>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">{tx('verifyIdentity.pending.title', undefined, 'طلبك قيد المراجعة')}</h2>
+                        <p className="text-zinc-400 text-base mb-6 leading-relaxed">{tx('verifyIdentity.pending.description', undefined, 'تم استلام طلب التحقق من هويتك بنجاح.')}</p>
+                        <div className="bg-zinc-900/25 border border-zinc-800/60 rounded-2xl p-5 md:p-6 mb-8 backdrop-blur-sm shadow-inner">
+                            <div className="flex items-center justify-center gap-3 text-zinc-350">
+                                <AlertCircle className="w-5 h-5 text-amber-400" />
+                                <span className="font-semibold text-zinc-200">{tx('verifyIdentity.pending.reviewTime', undefined, 'مدة المراجعة: 24 ساعة كحد أقصى')}</span>
                             </div>
-                            <p className="text-sm text-muted mt-2">{tx('verifyIdentity.pending.emailNotice', undefined, 'سيتم إشعارك عبر البريد الإلكتروني فور اكتمال المراجعة')}</p>
+                            <p className="text-xs text-zinc-500 mt-2">{tx('verifyIdentity.pending.emailNotice', undefined, 'سيتم إشعارك عبر البريد الإلكتروني فور اكتمال المراجعة')}</p>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <button onClick={() => navigate('/settings?tab=profile')} className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20">
+                            <button onClick={() => navigate('/settings?tab=profile')} className="w-full sm:w-auto bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-zinc-950 px-8 py-3.5 rounded-xl font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/10">
                                 {tx('verifyIdentity.backToSettings', undefined, 'العودة إلى الإعدادات')}
                             </button>
-                            <button onClick={() => navigate('/dashboard')} className="w-full sm:w-auto border border-border px-8 py-3 rounded-xl font-medium text-foreground hover:bg-secondary transition-colors">
+                            <button onClick={() => navigate('/dashboard')} className="w-full sm:w-auto bg-zinc-900/40 border border-zinc-800/80 hover:bg-zinc-800/60 hover:text-white px-8 py-3.5 rounded-xl font-bold text-zinc-300 transition-all duration-300 shadow-md backdrop-blur-md">
                                 {tx('verifyIdentity.goToDashboard', undefined, 'Go to dashboard')}
                             </button>
                         </div>
@@ -390,26 +390,21 @@ export default function VerifyIdentity() {
 
     if (step === 'submitted') {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-10">
+            <div className="min-h-screen bg-zinc-950 text-white py-16 relative overflow-hidden bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(139,92,246,0.12),rgba(255,255,255,0))]">
                 <SEO title={tx('verifyIdentity.submitted.seoTitle', undefined, 'تم تقديم الطلب')} description="" />
                 <div className="container mx-auto px-4">
-                    <div className="relative max-w-2xl mx-auto text-center bg-card bg-opacity-100 rounded-3xl p-8 md:p-12 shadow-xl border border-primary-100 dark:border-primary-900 overflow-hidden">
-                        <div className="pointer-events-none absolute inset-0">
-                            <div className="absolute top-8 left-[15%] h-2 w-2 rounded-full bg-primary-400 animate-ping" />
-                            <div className="absolute top-20 right-[18%] h-2.5 w-2.5 rounded-full bg-cyan-400 animate-pulse" />
-                            <div className="absolute bottom-16 right-[24%] h-2 w-2 rounded-full bg-green-400 animate-ping" />
-                            <div className="absolute bottom-10 left-[20%] h-2.5 w-2.5 rounded-full bg-yellow-400 animate-pulse" />
+                    <div className="relative max-w-2xl mx-auto text-center border border-zinc-800/80 bg-zinc-950/50 backdrop-blur-2xl rounded-3xl p-8 md:p-12 shadow-2xl overflow-hidden shadow-purple-950/5 animate-in fade-in zoom-in duration-500">
+                        <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-purple-500 via-indigo-400 to-purple-400" />
+                        <div className="w-20 h-20 bg-gradient-to-b from-purple-500/15 to-indigo-500/5 border border-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(139,92,246,0.2)] hover:scale-105 transition-transform duration-300">
+                            <Shield className="w-10 h-10 text-purple-450" />
                         </div>
-                        <div className="w-24 h-24 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-                            <Shield className="w-12 h-12 text-primary-600 dark:text-primary-400" />
-                        </div>
-                        <h2 className="text-3xl font-bold text-foreground mb-4">{tx('verifyIdentity.submitted.title', undefined, 'تم استلام طلبك بنجاح')}</h2>
-                        <p className="text-muted-foreground text-lg mb-8">{tx('verifyIdentity.submitted.description', undefined, 'سيقوم فريقنا بمراجعة مستنداتك والرد عليك في أقرب وقت ممكن (عادة خلال 24 ساعة).')}</p>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 tracking-tight">{tx('verifyIdentity.submitted.title', undefined, 'تم استلام طلبك بنجاح')}</h2>
+                        <p className="text-zinc-400 text-base mb-8 max-w-md mx-auto leading-relaxed">{tx('verifyIdentity.submitted.description', undefined, 'سيقوم فريقنا بمراجعة مستنداتك والرد عليك في أقرب وقت ممكن (عادة خلال 24 ساعة).')}</p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <button onClick={() => navigate('/settings?tab=profile')} className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-primary-600/20">
+                            <button onClick={() => navigate('/settings?tab=profile')} className="w-full sm:w-auto bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-600 text-white px-8 py-3.5 rounded-xl font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-500/10">
                                 {tx('verifyIdentity.backToSettings', undefined, 'العودة إلى الإعدادات')}
                             </button>
-                            <button onClick={() => navigate('/dashboard')} className="w-full sm:w-auto border border-border px-8 py-3 rounded-xl font-medium text-foreground hover:bg-secondary transition-colors">
+                            <button onClick={() => navigate('/dashboard')} className="w-full sm:w-auto bg-zinc-900/40 border border-zinc-800/80 hover:bg-zinc-800/60 hover:text-white px-8 py-3.5 rounded-xl font-bold text-zinc-300 transition-all duration-300 shadow-md backdrop-blur-md">
                                 {tx('verifyIdentity.goToDashboard', undefined, 'Go to dashboard')}
                             </button>
                         </div>
@@ -420,35 +415,40 @@ export default function VerifyIdentity() {
     }
     // ── Main flow ───────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-[var(--color-bg-subtle)] py-10">
+        <div className="min-h-screen bg-zinc-950 text-white py-12 relative overflow-hidden bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(139,92,246,0.12),rgba(255,255,255,0))]">
             <SEO title={tx('verifyIdentity.seo.title', undefined, 'التحقق من الهوية')} description={tx('verifyIdentity.seo.description', undefined, 'قم بتوثيق هويتك لزيادة ثقة العملاء وفتح جميع ميزات المنصة')} />
+            
+            {/* Background glowing decorations */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
+
             <div className="container mx-auto px-4">
-                <div className="mx-auto max-w-4xl">
+                <div className="mx-auto max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-700">
                     {/* Header */}
                     <div className="mb-10 text-center px-1">
-                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--workspace-primary)]/30 bg-[var(--workspace-primary-dim)] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--workspace-primary)]">
+                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-purple-400 shadow-[0_0_15px_rgba(139,92,246,0.15)]">
                             <Sparkles className="h-3.5 w-3.5" />
                             {tx('verifyIdentity.header.kicker', undefined, 'Secure Account Upgrade')}
                         </div>
-                        <h1 className="mb-3 text-3xl font-bold text-[var(--color-text-primary)] md:text-4xl">{tx('verifyIdentity.header.title', undefined, 'Identity verification')}</h1>
-                        <p className="mx-auto max-w-2xl text-lg text-[var(--color-text-secondary)]">{tx('verifyIdentity.header.subtitle', undefined, 'خطوة واحدة تفصلك عن زيادة ثقة عملائك وحماية حسابك')}</p>
-                        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-1.5 text-xs font-medium text-cyan-600 dark:text-cyan-300">
-                            <Loader2 className="h-3.5 w-3.5" />
+                        <h1 className="mb-3 text-3xl font-extrabold text-white md:text-4xl tracking-tight">{tx('verifyIdentity.header.title', undefined, 'Identity verification')}</h1>
+                        <p className="mx-auto max-w-2xl text-base text-zinc-400 leading-relaxed">{tx('verifyIdentity.header.subtitle', undefined, 'خطوة واحدة تفصلك عن زيادة ثقة عملائك وحماية حسابك')}</p>
+                        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4.5 py-1.5 text-xs font-semibold text-cyan-400">
+                            <Clock className="h-3.5 w-3.5 animate-pulse" />
                             {tx('verifyIdentity.header.eta', undefined, 'Takes about 2-3 minutes to complete')}
                         </div>
                     </div>
 
                     {/* Security badges */}
-                    <div className="mb-8 grid gap-3 md:grid-cols-3">
+                    <div className="mb-8 grid gap-4 md:grid-cols-3">
                         {[
-                            { icon: <Lock className="h-4 w-4" />, title: tx('verifyIdentity.security.title', undefined, 'Encrypted storage'), desc: tx('verifyIdentity.security.desc', undefined, 'Your documents are encrypted and only used for account verification.') },
-                            { icon: <ScanLine className="h-4 w-4" />, title: tx('verifyIdentity.security.qualityTitle', undefined, 'Smart quality checks'), desc: tx('verifyIdentity.security.qualityDesc', undefined, 'We validate file format, size, and basic image quality before upload.') },
-                            { icon: <Loader2 className="h-4 w-4" />, title: tx('verifyIdentity.security.reviewTitle', undefined, 'Fast review'), desc: tx('verifyIdentity.security.reviewDesc', undefined, 'Most verification requests are reviewed within 24 hours.') },
+                            { icon: <Lock className="h-4.5 w-4.5" />, title: tx('verifyIdentity.security.title', undefined, 'Encrypted storage'), desc: tx('verifyIdentity.security.desc', undefined, 'Your documents are encrypted and only used for account verification.') },
+                            { icon: <ScanLine className="h-4.5 w-4.5" />, title: tx('verifyIdentity.security.qualityTitle', undefined, 'Smart quality checks'), desc: tx('verifyIdentity.security.qualityDesc', undefined, 'We validate file format, size, and basic image quality before upload.') },
+                            { icon: <Clock className="h-4.5 w-4.5" />, title: tx('verifyIdentity.security.reviewTitle', undefined, 'Fast review'), desc: tx('verifyIdentity.security.reviewDesc', undefined, 'Most verification requests are reviewed within 24 hours.') },
                         ].map((b, i) => (
-                            <div key={i} className="rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-4 text-sm text-[var(--color-text-secondary)]">
-                                <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--workspace-primary-dim)] text-[var(--workspace-primary)]">{b.icon}</div>
-                                <p className="font-semibold text-[var(--color-text-primary)]">{b.title}</p>
-                                <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">{b.desc}</p>
+                            <div key={i} className="rounded-2xl border border-zinc-800/80 bg-zinc-950/45 backdrop-blur-xl p-5 text-sm text-zinc-300 hover:border-purple-500/30 hover:bg-zinc-900/20 transition-all duration-300 hover:scale-[1.02] group">
+                                <div className="mb-3.5 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:border-purple-500/40 group-hover:shadow-[0_0_15px_rgba(139,92,246,0.15)] transition-all duration-300">{b.icon}</div>
+                                <p className="font-bold text-white text-base">{b.title}</p>
+                                <p className="mt-1.5 text-xs text-zinc-400 leading-relaxed">{b.desc}</p>
                             </div>
                         ))}
                     </div>

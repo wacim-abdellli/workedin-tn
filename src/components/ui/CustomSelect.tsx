@@ -33,21 +33,13 @@ const CustomSelect = forwardRef<HTMLButtonElement, CustomSelectProps>(
                 setSelectedValue(value);
             }
         }, [value]);
-
-        // Role-specific accents
-        const colors = variant === 'freelancer'
-            ? {
-                icon: 'text-purple-400',
-                optionHover: 'hover:bg-purple-500/10 hover:text-purple-300',
-                optionSelected: 'bg-purple-500/15 text-purple-300 font-semibold',
-                checkIcon: 'text-purple-400',
-            }
-            : {
-                icon: 'text-[#F59E0B]',
-                optionHover: 'hover:bg-[#F59E0B]/10 hover:text-amber-300',
-                optionSelected: 'bg-[#F59E0B]/15 text-amber-300 font-semibold',
-                checkIcon: 'text-[#F59E0B]',
-            };
+        // Dynamic workspace-based accents
+        const colors = {
+            icon: 'text-[var(--workspace-primary)]',
+            optionHover: 'hover:bg-[var(--accent-color-soft)] hover:text-[var(--color-text-primary)]',
+            optionSelected: 'bg-[var(--accent-color-soft)] text-[var(--workspace-primary)] font-semibold',
+            checkIcon: 'text-[var(--workspace-primary)]',
+        };
 
         useEffect(() => {
             const handleClickOutside = (event: MouseEvent) => {

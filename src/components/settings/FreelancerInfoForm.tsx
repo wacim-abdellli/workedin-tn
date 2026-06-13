@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Briefcase, DollarSign, Wrench, Timer, Repeat, FileText, Zap, Search, Check, X, Plus, Languages, Trash2, GraduationCap } from 'lucide-react';
+import { Briefcase, DollarSign, Wrench, Timer, Repeat, FileText, Zap, Search, Check, X, Plus, Languages, Trash2, GraduationCap, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/i18n';
 import Input from '@/components/ui/Input';
 import CustomSelect from '@/components/ui/CustomSelect';
@@ -103,6 +104,7 @@ const COMMON_LANGUAGES = [
 
 export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) {
     const { t, tx } = useTranslation();
+    const navigate = useNavigate();
     const [skillsSearch, setSkillsSearch] = useState('');
 
     const set = (patch: Partial<FreelancerFormData>) => onChange({ ...form, ...patch });
@@ -573,9 +575,19 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
 
             {/* Preferences & Work Deliverables Card */}
             <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
-                <div className="flex items-center gap-2 pb-3 border-b border-gray-150 dark:border-white/[0.04]">
-                    <FileText className="w-4 h-4 text-purple-500" />
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('profile.portfolioPreferencesTitle', undefined, 'Portfolio & Work Preferences')}</h3>
+                <div className="flex items-center justify-between pb-3 border-b border-gray-150 dark:border-white/[0.04] gap-2">
+                    <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-purple-500" />
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('profile.portfolioPreferencesTitle', undefined, 'Portfolio & Work Preferences')}</h3>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/freelancer/portfolio')}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 hover:border-purple-500/30 transition-all active:scale-95 duration-200"
+                    >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        {tx('profile.managePortfolioWorks', undefined, 'Manage Portfolio Works')}
+                    </button>
                 </div>
 
                 <div className="space-y-5">

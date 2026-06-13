@@ -1,33 +1,33 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
-import SEO, { SEO_CONFIG } from "@/components/common/SEO";
+import {
+  useEffect,
+  useMemo,
+  useState } from "react";
+import { useNavigate,
+  useParams,
+  Link,
+  useLocation } from "react-router-dom";
+import SEO,
+  { SEO_CONFIG } from "@/components/common/SEO";
 import {
   MapPin,
   Calendar,
   Briefcase,
   Star,
-  _DollarSign,
   MessageSquare,
   ArrowLeft,
   CheckCircle,
   UserX,
   Users,
-  _FileText,
   Edit2,
-  _Save,
-  _ShieldCheck,
-  _X,
-  _Target,
   Settings,
   Plus,
-  _Eye,
   Globe,
   Loader2,
   Camera,
   Check,
   Share2,
   Clock,
-  ExternalLink,
+  ExternalLink
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import { supabase, isMissingStorageBucketError, getStorageConfigErrorMessage } from "@/lib/supabase";
@@ -462,7 +462,6 @@ export default function ClientProfile() {
         await updateProfile({
           avatar_url: avatarUrl,
           avatar_url_client: avatarUrl,
-          avatar_url_freelancer: avatarUrl,
         });
       } catch (error) {
         const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();

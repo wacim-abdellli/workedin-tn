@@ -1175,28 +1175,40 @@ export const ar = {
             "contractsLabel": "العقود",
             "defaultName": "موظف",
             "earningsLabel": "الأرباح",
-            "earningsThisMonth": "Earnings This Month",
+            "completeProfileButton": "أكمل ملفك الشخصي ←",
+            "earningsThisMonth": "الأرباح هذا الشهر",
             "matchedForYou": "معروضة لك",
-            "myProposals": "My Proposals",
+            "myProposals": "عروضي",
             "noActiveContracts": "لا توجد عقود نشطة",
             "noMatchesYet": "لا توجد مطابقات حتى الآن",
             "noProposalsYet": "لم تقدم أي عروض بعد",
-            "profileCompletion": "Profile Strength",
+            "profileCompletion": "قوة الملف الشخصي",
             "profileStrength": "قوة الملف الشخصي",
             "proposalsLabel": "العروض",
             "quickActions": "الإجراءات السريعة",
+            "quota": {
+                "title": "التقديمات اليومية",
+                "remainingLabel": {
+                    "zero": "تقديمات متبقية اليوم",
+                    "one": "تقديم متبقٍ اليوم",
+                    "two": "تقديمات متبقية اليوم",
+                    "few": "تقديمات متبقية اليوم",
+                    "many": "تقديمًا متبقيًا اليوم",
+                    "other": "تقديم متبقٍ اليوم"
+                }
+            },
             "ratingLabel": "التقييم",
             "recentProposals": "العروض الحديثة",
             "seeAllJobs": "عرض جميع المشاريع",
             "stats": {
-                "contracts": "Contracts",
-                "contractsDesc": "active now",
-                "earnings": "This Month",
-                "proposals": "Proposals",
-                "proposalsDesc": "awaiting reply",
-                "views": "Views",
-                "viewsDesc": "profile views",
-                "vsLastMonth": "vs last month"
+                "contracts": "العقود",
+                "contractsDesc": "نشطة الآن",
+                "earnings": "هذا الشهر",
+                "proposals": "العروض",
+                "proposalsDesc": "في انتظار الرد",
+                "views": "المشاهدات",
+                "viewsDesc": "مشاهدات الملف الشخصي",
+                "vsLastMonth": "مقارنة بالشهر الماضي"
             },
             "submitProposalsToStart": "قدم عروضاً لبدء الحصول على عقود",
             "thisMonth": "هذا الشهر",
@@ -1205,7 +1217,12 @@ export const ar = {
             "viewAll": "عرض الكل",
             "viewWallet": "عرض المحفظة",
             "vsLastMonth": "مقارنة بالشهر الماضي",
-            "withdrawFunds": "Withdraw Funds"
+            "wallet": {
+                "available": "المتاح",
+                "inReview": "قيد المراجعة",
+                "lastMonth": "الشهر الماضي"
+            },
+            "withdrawFunds": "سحب الأموال"
         },
         "freelancerSubtitle": "لوحة تحكم الموظف الحر",
         "greeting": {

@@ -9,7 +9,7 @@ import Input from '@/components/ui/Input';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { getAvatarGradient, getInitials } from '@/lib/avatar';
 import { uploadAvatar } from '@/services/profiles';
-import { sanitizePhoneInput } from '@/lib/phone';
+import { formatPhoneAsYouType } from '@/lib/phone';
 import { getLocalizedGovernorateOptions } from '@/lib/governorates';
 import { logger } from '@/lib/logger';
 import { useRef } from 'react';
@@ -33,7 +33,7 @@ export function buildBasicInitialForm(
 ): BasicFormData {
     return {
         full_name: profile?.full_name || '',
-        phone: profile?.phone || '',
+        phone: profile?.phone ? formatPhoneAsYouType(profile.phone) : '',
         email: profile?.email || userEmail || '',
         bio: profile?.bio || '',
         location: profile?.location || '',
@@ -72,7 +72,16 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
         setIsUploadingAvatar(true);
         try {
             const avatarUrl = await uploadAvatar(user.id, file);
-            await updateProfile({ avatar_url: avatarUrl, avatar_url_freelancer: avatarUrl, avatar_url_client: avatarUrl });
+            try {
+                if (activeMode === 'freelancer') {
+                    await updateProfile({ avatar_url: avatarUrl, avatar_url_freelancer: avatarUrl });
+                } else {
+                    await updateProfile({ avatar_url: avatarUrl, avatar_url_client: avatarUrl });
+                }
+            } catch (error) {
+                logger.warn('Failed to update mode-specific avatar, falling back to legacy avatar_url', error);
+                await updateProfile({ avatar_url: avatarUrl });
+            }
             showToast(tx('settings.toasts.avatarUpdated', undefined, 'Profile image updated'), 'success');
         } catch (err) {
             logger.error('Avatar upload error:', err);
@@ -199,7 +208,7 @@ export function BasicInfoForm({ form, onChange }: BasicInfoFormProps) {
                             inputMode="tel"
                             autoComplete="tel"
                             value={form.phone}
-                            onChange={e => set({ phone: sanitizePhoneInput(e.target.value) })}
+                            onChange={e => set({ phone: formatPhoneAsYouType(e.target.value) })}
                             placeholder="+216 XX XXX XXX"
                         />
                         {form.phone ? (

@@ -1,36 +1,27 @@
 import {
-    MapPin,
-    Star,
-    _Target,
-    Briefcase,
-    CalendarDays,
-    Camera,
-    ChevronLeft,
-    ChevronRight,
-    _Eye,
-    ExternalLink,
-    _ShieldCheck,
-    TrendingUp,
-    _Wallet,
-    Clock,
-    _Coins,
-    Check,
-    CheckCircle,
-    Circle,
-    Images,
-    Plus,
-    Edit2,
-    Trash2,
-    _Settings,
-    MessageSquare,
-    ArrowLeft,
-    X,
-    _Save,
-    _Loader2,
-    _DollarSign,
-    Globe,
-    Share2,
-} from 'lucide-react';
+  MapPin,
+  Star,
+  Briefcase,
+  CalendarDays,
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  TrendingUp,
+  Clock,
+  Check,
+  CheckCircle,
+  Circle,
+  Images,
+  Plus,
+  Edit2,
+  Trash2,
+  MessageSquare,
+  ArrowLeft,
+  X,
+  Globe,
+  Share2
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Header } from '../components/layout';
@@ -47,20 +38,6 @@ import InviteToJobModal from '../components/freelancer/InviteToJobModal';
 import { uploadAvatar } from '@/services/profiles';
 import { getPortfolioImageUrl, resolvePortfolioMediaUrl } from '@/lib/portfolioMedia';
 import { splitPortfolioSkillsAndTools } from '@/lib/portfolioTools';
-import {
-    _ProfileAvatar,
-    _ProfileEmptyState,
-    _ProfileInfoHeader,
-    _ProfileInfoRow,
-    _ProfileSectionCard,
-    _ProfileSectionHeader,
-    _ProfileStatCard,
-} from '@/components/profile/ProfilePrimitives';
-
-
-
-
-import OptimizedImage from '@/components/common/OptimizedImage';
 import type {
     FreelancerData,
     FreelancerProfilePublicRow,
@@ -1919,7 +1896,7 @@ export default function FreelancerProfile() {
             await updateProfile({
                 avatar_url: avatarUrl,
                 avatar_url_freelancer: avatarUrl,
-                avatar_url_client: avatarUrl,
+
             });
         } catch (error) {
             // Backward compatibility for workspaces that still have the legacy

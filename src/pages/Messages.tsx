@@ -1,38 +1,40 @@
-import { useState, useEffect, useRef, useCallback, useMemo, type CSSProperties } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  type CSSProperties } from 'react';
+import { useLocation,
+  useNavigate,
+  useSearchParams } from 'react-router-dom';
 import {
     Search,
-    Send,
-    Paperclip,
-    Trash2,
-    ArrowLeft,
-    FileText,
-    Loader2,
-    _Mic,
-    _Square,
-    X,
-    _FileAudio,
-    Clock,
-    _Play,
-    _Pause,
-    AlertCircle,
-    MoreVertical,
-    CheckCheck,
-    CornerUpLeft,
-    Download,
-    Image as ImageIcon,
-    User,
-    Mail,
-    Flag,
-    CheckCircle,
-    AlertTriangle,
-    Archive,
-    ChevronLeft,
-    _ChevronRight,
-    Menu,
-    RefreshCw,
-    Star,
-} from 'lucide-react';
+  Send,
+  Paperclip,
+  Trash2,
+  ArrowLeft,
+  FileText,
+  Loader2,
+  X,
+  Clock,
+  AlertCircle,
+  MoreVertical,
+  CheckCheck,
+  CornerUpLeft,
+  Download,
+  Image as ImageIcon,
+  User,
+  Mail,
+  Flag,
+  CheckCircle,
+  AlertTriangle,
+  Archive,
+  ChevronLeft,
+  Menu,
+  RefreshCw,
+  Star
+} from "lucide-react";
 import { Header } from '../components/layout';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
@@ -87,32 +89,22 @@ import { isProtectedContractEvidenceMessage } from '../lib/contractEvidence';
 import { validateUploadPayload } from '../lib/uploadPolicy';
 import { getErrorMessage } from '../lib/errorMessage';
 import { getContractWorkspaceRoute } from '@/lib/routes';
-import { extractMessageAttachmentPath } from '../lib/messageUtils';
-
 
 import {
   fileToBase64,
   base64ToFile,
   blobToBase64,
   normalizeMimeType,
-  _canonicalizeVoiceMimeType,
-  _getAudioExtensionFromMimeType,
   buildVoiceMemoFile,
-  _hasSignature,
-  _detectAudioMimeTypeFromBuffer,
-  _inferAudioMimeType,
-  _formatAudioTime
 } from '../lib/audioProcessing';
 
 import {
-    _MESSAGE_ATTACHMENT_ACCEPT,
     isImageAttachment,
     isAudioAttachment,
     formatAttachmentSize,
     getAttachmentExtensionLabel,
     resolveMessageAttachmentUrl,
     openBlobAsPreviewOrDownload,
-    _truncateText,
     sanitizeContractTitle,
     TERMINAL_STATUSES,
     sortConversationsByActivity,
@@ -129,14 +121,10 @@ import {
     extractRpcConversationId,
     isUuidLike,
     resolveSystemMessageText,
+    extractMessageAttachmentPath,
     type ThreadMessage,
-    type _MessageAttachment,
-    type _ContractSystemMessageKind,
 } from '../lib/messageUtils';
 import { CollapsibleMessageText } from '../components/chat/CollapsibleMessageText';
-
-
-
 
 import FundEscrow from '../components/payments/FundEscrow';
 
@@ -147,14 +135,12 @@ import {
 } from '../lib/messageReplies';
 import { MessageAudioPlayer } from '../components/chat/MessageAudioPlayer';
 
-// ─── Local-only session / cache constants ────────────────────────────────────
 const _MAX_CACHED_CONVERSATIONS = 50;
 const MAX_CACHED_MESSAGES = 200;
 const ENABLE_MESSAGES_SESSION_CACHE = false;
 
 const _getConversationsCacheKey = (userId: string, modeKey: string) => `messages:conversations:${userId}:${modeKey}`;
 const getMessagesCacheKey = (conversationId: string) => `messages:thread:${conversationId}`;
-
 const resolveConversationScopes = (activeMode: string | null | undefined): ConversationScope[] => {
     if (activeMode === 'freelancer') return ['freelancer', 'contract', 'shared'];
     if (activeMode === 'client') return ['client', 'contract', 'shared'];

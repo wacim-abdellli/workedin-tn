@@ -1177,37 +1177,50 @@ export const fr: Translations = {
             "contractsLabel": "Contrats",
             "defaultName": "Freelance",
             "earningsLabel": "Revenus",
-            "earningsThisMonth": "Earnings This Month",
+            "completeProfileButton": "Compléter le profil →",
+            "earningsThisMonth": "Revenus ce mois-ci",
             "matchedForYou": "Correspondances pour vous",
-            "myProposals": "My Proposals",
+            "myProposals": "Mes propositions",
             "noActiveContracts": "Aucun contrat actif",
             "noMatchesYet": "Pas encore de correspondances",
             "noProposalsYet": "Pas encore de propositions",
-            "profileCompletion": "Profile Strength",
+            "profileCompletion": "Force du profil",
             "profileStrength": "Force du profil",
             "proposalsLabel": "Propositions",
             "quickActions": "Actions rapides",
+            "quota": {
+                "title": "Candidatures quotidiennes",
+                "remainingLabel": {
+                    "one": "candidature restante aujourd'hui",
+                    "other": "candidatures restantes aujourd'hui"
+                }
+            },
             "ratingLabel": "Évaluation",
             "recentProposals": "Propositions récentes",
             "seeAllJobs": "Voir tous les projets",
             "stats": {
-                "contracts": "Contracts",
-                "contractsDesc": "active now",
-                "earnings": "This Month",
-                "proposals": "Proposals",
-                "proposalsDesc": "awaiting reply",
-                "views": "Views",
-                "viewsDesc": "profile views",
-                "vsLastMonth": "vs last month"
+                "contracts": "Contrats",
+                "contractsDesc": "actifs actuellement",
+                "earnings": "Ce mois-ci",
+                "proposals": "Propositions",
+                "proposalsDesc": "en attente de réponse",
+                "views": "Vues",
+                "viewsDesc": "vues du profil",
+                "vsLastMonth": "vs le mois dernier"
             },
             "submitProposalsToStart": "Soumettez des propositions pour commencer à obtenir des contrats",
-            "thisMonth": "Ce mois",
+            "thisMonth": "Ce mois-ci",
             "untitledJob": "Projet sans titre",
             "updateProfile": "Mettre à jour le profil",
             "viewAll": "Voir tout",
             "viewWallet": "Voir le portefeuille",
             "vsLastMonth": "par rapport au mois dernier",
-            "withdrawFunds": "Withdraw Funds"
+            "wallet": {
+                "available": "Disponible",
+                "inReview": "En cours de révision",
+                "lastMonth": "Le mois dernier"
+            },
+            "withdrawFunds": "Retirer des fonds"
         },
         "freelancerSubtitle": "Tableau de bord freelance",
         "greeting": {

@@ -1,4 +1,4 @@
-﻿import { useCallback } from "react";
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import SEO from "../components/common/SEO";
 import ProgressiveOnboarding from "../components/onboarding/ProgressiveOnboarding";
@@ -111,7 +111,6 @@ function FreelancerOnboardingPage() {
       />
       <ProgressiveOnboarding
         role="freelancer"
-        onSaveExit={() => navigate("/freelancer/dashboard")}
         onComplete={handleComplete}
       />
     </>

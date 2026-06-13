@@ -60,22 +60,23 @@ function clearProfileCache() {
   }
 }
 
-function resolveModeAvatarUrl(profile: Profile): string | undefined {
-  if (profile.active_mode === 'freelancer' && profile.avatar_url_freelancer) {
+function resolveModeAvatarUrl(profile: Profile, currentMode?: string): string | undefined {
+  const mode = currentMode || useWorkspaceStore.getState().activeWorkspace || profile.active_mode;
+  if (mode === 'freelancer' && profile.avatar_url_freelancer) {
     return profile.avatar_url_freelancer;
   }
 
-  if (profile.active_mode === 'client' && profile.avatar_url_client) {
+  if (mode === 'client' && profile.avatar_url_client) {
     return profile.avatar_url_client;
   }
 
   return profile.avatar_url_freelancer || profile.avatar_url_client || profile.avatar_url;
 }
 
-function withModeAwareAvatar(profile: Profile): Profile {
+function withModeAwareAvatar(profile: Profile, currentMode?: string): Profile {
   return {
     ...profile,
-    avatar_url: resolveModeAvatarUrl(profile),
+    avatar_url: resolveModeAvatarUrl(profile, currentMode),
   };
 }
 
@@ -142,6 +143,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     freelancerProfileRef.current = freelancerProfile;
   }, [freelancerProfile]);
+
+  // Dynamically update profile avatar URL and active_mode when workspace mode switches
+  useEffect(() => {
+    if (profile) {
+      const nextAvatar = resolveModeAvatarUrl(profile, activeMode);
+      const modeChanged = profile.active_mode !== activeMode;
+      const avatarChanged = profile.avatar_url !== nextAvatar;
+
+      if (modeChanged || avatarChanged) {
+        setProfile((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            active_mode: activeMode,
+            avatar_url: nextAvatar,
+          };
+        });
+      }
+    }
+  }, [activeMode, profile?.avatar_url_freelancer, profile?.avatar_url_client, profile?.active_mode, profile?.avatar_url]);
 
   const getPreferredLanguage = useCallback((): Language => {
     if (typeof window === 'undefined') return 'ar';

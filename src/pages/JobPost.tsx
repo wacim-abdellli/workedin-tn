@@ -1,18 +1,18 @@
-import { logger } from '@/lib/logger';
+import {
+  logger } from '@/lib/logger';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowLeft,
   Check,
   ChevronRight,
-  _Clock,
   Lightbulb,
   Loader2,
   Save,
   Search,
   ShieldCheck,
   UploadCloud,
-  X,
-} from 'lucide-react';
+  X
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { FormProvider, useForm, type SubmitHandler } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';

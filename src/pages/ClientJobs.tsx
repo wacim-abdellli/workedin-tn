@@ -1,25 +1,29 @@
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+  useRef } from 'react'
+import { useNavigate,
+  useSearchParams } from 'react-router-dom'
 import { getJobEditRoute } from '@/lib/routes'
 import { 
-  FolderOpen, 
-  Search, 
-  LayoutGrid, 
-  List, 
-  Table, 
-  _Plus, 
-  Trash2, 
-  Edit, 
-  Clock, 
-  Coins, 
-  MessageSquare, 
-  AlertCircle, 
-  CheckCircle2, 
-  _ExternalLink,
+  FolderOpen,
+  Search,
+  LayoutGrid,
+  List,
+  Table,
+  Trash2,
+  Edit,
+  Clock,
+  Coins,
+  MessageSquare,
+  AlertCircle,
+  CheckCircle2,
   ChevronDown,
   Briefcase,
   X
-} from 'lucide-react'
+} from "lucide-react"
 import { Header } from '@/components/layout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'

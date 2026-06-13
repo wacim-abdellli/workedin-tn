@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import {
+  useEffect,
+  useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Settings as SettingsIcon,
@@ -10,16 +12,13 @@ import {
   AlertTriangle,
   ExternalLink,
   Plus,
-  _Trash2,
   Loader2,
   RefreshCw,
-  _Clock,
   Wallet,
-  _Building2,
   Info,
   UserCircle,
-  CheckCircle,
-} from 'lucide-react';
+  CheckCircle
+} from "lucide-react";
 
 import { Header } from '../components/layout';
 import { useAuth } from '../contexts/AuthContext';

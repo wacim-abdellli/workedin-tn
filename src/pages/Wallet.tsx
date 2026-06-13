@@ -1,5 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import {
+  useState,
+  useEffect,
+  useCallback } from 'react';
+import { useSearchParams,
+  useNavigate } from 'react-router-dom';
 
 import {
   Wallet as WalletIcon,
@@ -7,9 +11,6 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownLeft,
-  _Building,
-  _Phone,
-  _X,
   Info,
   CheckCircle,
   Plus,
@@ -18,8 +19,8 @@ import {
   ReceiptText,
   CreditCard,
   ChevronRight,
-  BadgeCheck,
-} from 'lucide-react';
+  BadgeCheck
+} from "lucide-react";
 import { Header } from '@/components/layout';
 import SEO from '@/components/common/SEO';
 import Button from '@/components/ui/Button';

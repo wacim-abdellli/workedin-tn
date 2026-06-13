@@ -201,7 +201,7 @@ function formatJobBudget(job: MatchedJob, language: Parameters<typeof formatCurr
 function FreelancerDashboardPage() {
   const { profile, freelancerProfile, isLoading: isAuthLoading, isFullyReady } = useAuth();
   const navigate = useNavigate();
-  const { language, tx } = useTranslation();
+  const { language, tx, txPlural } = useTranslation();
 
   const locale = useMemo(() => {
     if (language === "ar") return "ar-TN";
@@ -582,7 +582,7 @@ function FreelancerDashboardPage() {
                   className="text-xs font-medium flex items-center gap-1 transition-opacity hover:opacity-70"
                   style={{ color: 'var(--workspace-primary)' }}
                 >
-                  View all <ArrowRight className="w-3 h-3" />
+                  {tx('dashboard.freelancer.viewAll', undefined, 'View all')} <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
 
@@ -814,15 +814,15 @@ function FreelancerDashboardPage() {
 
               <div className="mt-4 pt-3 space-y-2" style={{ borderTop: '1px solid var(--color-border-subtle)' }}>
                 <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: 'var(--color-text-tertiary)' }}>Last month</span>
+                  <span style={{ color: 'var(--color-text-tertiary)' }}>{tx('dashboard.freelancer.wallet.lastMonth', undefined, 'Last month')}</span>
                   <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{formatCurrency(lastMonthEarnings, true, language)}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: 'var(--color-text-tertiary)' }}>In review</span>
+                  <span style={{ color: 'var(--color-text-tertiary)' }}>{tx('dashboard.freelancer.wallet.inReview', undefined, 'In review')}</span>
                   <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{formatCurrency(stats?.pendingBalance ?? 0, true, language)}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span style={{ color: 'var(--color-text-tertiary)' }}>Available</span>
+                  <span style={{ color: 'var(--color-text-tertiary)' }}>{tx('dashboard.freelancer.wallet.available', undefined, 'Available')}</span>
                   <span className="font-semibold" style={{ color: 'var(--color-status-success)' }}>{formatCurrency(stats?.walletBalance ?? 0, true, language)}</span>
                 </div>
               </div>
@@ -840,7 +840,7 @@ function FreelancerDashboardPage() {
             <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-tertiary)' }}>
-                  Daily Applications
+                  {tx('dashboard.freelancer.quota.title', undefined, 'Daily Applications')}
                 </p>
                 <span className="text-xs font-bold tabular-nums" style={{ color: 'var(--color-text-primary)' }}>
                   {dailyProposalUsage.used} / {dailyProposalUsage.limit}
@@ -858,7 +858,8 @@ function FreelancerDashboardPage() {
               <p className="text-[11px] mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
                 <span className="font-semibold" style={{ color: dailyProposalUsage.remaining <= 2 ? 'var(--color-status-error)' : 'var(--color-text-secondary)' }}>
                   {dailyProposalUsage.remaining}
-                </span>{' '}application{dailyProposalUsage.remaining !== 1 ? 's' : ''} remaining today
+                </span>{' '}
+                {txPlural('dashboard.freelancer.quota.remainingLabel', dailyProposalUsage.remaining)}
               </p>
             </div>
 
@@ -896,7 +897,7 @@ function FreelancerDashboardPage() {
                   className="w-full mt-4 py-2 rounded-xl text-xs font-semibold transition-all hover:brightness-95 active:scale-95"
                   style={{ background: 'var(--color-bg-subtle)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-subtle)' }}
                 >
-                  Complete profile →
+                  {tx('dashboard.freelancer.completeProfileButton', undefined, 'Complete profile →')}
                 </button>
               </div>
             )}

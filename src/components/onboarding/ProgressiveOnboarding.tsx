@@ -1,13 +1,14 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, ReactNode } from "react";
-import { CheckCircle2, Lightbulb, Upload, UserCircle2, X } from "lucide-react";
+import { CheckCircle2, Lightbulb, Upload, UserCircle2, X, Building2, User, Target, Users, Search, Check } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import CustomSelect from "../ui/CustomSelect";
 import { Header } from "../layout";
 import { useToast } from "../ui/Toast";
 import { useTranslation } from "../../i18n";
 import { getLocalizedGovernorateOptions } from "../../lib/governorates";
-import { isValidOptionalPhone } from "../../lib/phone";
+import { isValidOptionalPhone, formatPhoneAsYouType } from "../../lib/phone";
 import { PREDEFINED_SKILLS } from "../../types";
 
 export type OnboardingRole = "freelancer" | "client";
@@ -54,7 +55,6 @@ type Awaitable<T> = T | Promise<T>;
 
 interface OnboardingFlowProps {
   role: OnboardingRole;
-  onSaveExit?: () => void;
   onComplete?: (payload: CompletePayload) => Awaitable<void>;
 }
 
@@ -66,7 +66,6 @@ interface SharedLayoutProps {
   subtitle: string;
   proTipText: string;
   stepErrorSummary?: string;
-  onSaveExit: () => void;
   children: ReactNode;
   showBackButton: boolean;
   onBack: () => void;
@@ -74,7 +73,7 @@ interface SharedLayoutProps {
   onPrimaryAction: () => void;
   isPrimaryActionDisabled?: boolean;
   isBackDisabled?: boolean;
-  isSaveExitDisabled?: boolean;
+  onStepClick: (step: number) => void;
 }
 
 interface SearchableTagInputProps {
@@ -89,10 +88,9 @@ interface SearchableTagInputProps {
 }
 
 const INPUT_CLASS =
-  "bg-[var(--color-bg-base)] border border-surface rounded-xl focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-[var(--color-text-primary)] p-3.5 w-full outline-none transition-all";
+  "bg-[var(--input-bg)] border border-[var(--color-border-subtle)] hover:border-[var(--color-border-default)] focus:border-[var(--workspace-primary)] focus:ring-1 focus:ring-[var(--workspace-primary)]/20 text-[var(--color-text-primary)] p-3.5 w-full outline-none transition-all rounded-xl";
 
-const CLIENT_INPUT_CLASS =
-  "bg-[var(--color-bg-base)] border border-surface rounded-xl focus:border-[#E8820C] focus:ring-1 focus:ring-[#E8820C] text-[var(--color-text-primary)] p-3.5 w-full outline-none transition-all";
+const CLIENT_INPUT_CLASS = INPUT_CLASS;
 
 function scrollToStepAnchor() {
   if (typeof window === "undefined") return;
@@ -324,46 +322,93 @@ function uniqueCaseInsensitive(values: string[]): string[] {
 function Stepper({
   stepLabels,
   currentStep,
-  accentColor,
-  activeLabelColor,
+  onStepClick,
 }: {
   stepLabels: string[];
   currentStep: number;
-  accentColor: string;
-  activeLabelColor: string;
+  onStepClick: (step: number) => void;
 }) {
   return (
-    <div id="onboarding-step-anchor" className="mb-8">
-      <div className="flex gap-2 mb-2">
+    <div id="onboarding-step-anchor" className="mb-12 select-none">
+      <div className="relative flex items-center justify-between px-12 sm:px-16 md:px-24">
+        {/* Progress Track Container */}
+        <div className="absolute left-12 right-12 sm:left-16 sm:right-16 md:left-24 md:right-24 top-1/2 -translate-y-1/2 h-[2px] z-0">
+          {/* Background Track Line */}
+          <div className="w-full h-full bg-zinc-800 rounded-full" />
+          
+          {/* Filled Progress Line */}
+          <div 
+            className="absolute left-0 top-0 h-full bg-[var(--workspace-primary)] rounded-full transition-all duration-350 ease-out" 
+            style={{ 
+              width: `${((currentStep - 1) / (stepLabels.length - 1 || 1)) * 100}%`,
+              boxShadow: '0 0 8px var(--workspace-primary)'
+            }}
+          />
+        </div>
+        
+        {/* Step Nodes */}
         {stepLabels.map((label, index) => {
-          const isActiveOrCompleted = index + 1 <= currentStep;
-          return (
-            <div
-              key={label}
-              className="h-2 flex-1 rounded-full transition-colors"
-              style={{ backgroundColor: isActiveOrCompleted ? accentColor : "#262626" }}
-            />
-          );
-        })}
-      </div>
+          const stepNumber = index + 1;
+          const isCompleted = stepNumber < currentStep;
+          const isActive = stepNumber === currentStep;
+          const isClickable = stepNumber < currentStep;
 
-      <div
-        className="grid gap-2"
-        style={{ gridTemplateColumns: `repeat(${stepLabels.length}, minmax(0, 1fr))` }}
-      >
-        {stepLabels.map((label, index) => {
-          const isActive = index + 1 === currentStep;
           return (
-            <p
-              key={label}
-              className="text-[11px] md:text-xs text-center leading-tight"
-              style={{ color: isActive ? activeLabelColor : "#6b7280" }}
-            >
-              {label}
-            </p>
+            <div key={label} className="relative z-10 flex flex-col items-center">
+              <button
+                type="button"
+                disabled={!isClickable}
+                onClick={() => onStepClick(stepNumber)}
+                className={`
+                  w-9 h-9 rounded-full flex items-center justify-center font-semibold text-xs transition-all duration-300
+                  ${isCompleted 
+                    ? "bg-[var(--workspace-primary)] text-white hover:scale-105 cursor-pointer" 
+                    : isActive 
+                      ? "bg-zinc-950 border-[2px] border-[var(--workspace-primary)] text-[var(--workspace-primary)] scale-105" 
+                      : "bg-zinc-900 border border-zinc-800 text-zinc-500 cursor-not-allowed"
+                  }
+                `}
+                style={
+                  isActive 
+                    ? { 
+                        boxShadow: '0 0 0 4px color-mix(in srgb, var(--workspace-primary) 12%, transparent), 0 0 20px color-mix(in srgb, var(--workspace-primary) 30%, transparent)' 
+                      }
+                    : isCompleted 
+                      ? { 
+                          boxShadow: '0 0 10px color-mix(in srgb, var(--workspace-primary) 30%, transparent)' 
+                        }
+                      : undefined
+                }
+              >
+                {isCompleted ? (
+                  <Check className="w-4 h-4 stroke-[3]" />
+                ) : (
+                  stepNumber
+                )}
+              </button>
+              
+              {/* Step Label */}
+              <span 
+                onClick={() => isClickable && onStepClick(stepNumber)}
+                className={`
+                  absolute top-11 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold tracking-wider uppercase text-center transition-all duration-300
+                  ${isActive 
+                    ? "text-[var(--workspace-primary)] font-bold scale-102" 
+                    : isCompleted 
+                      ? "text-zinc-300 hover:text-white cursor-pointer" 
+                      : "text-zinc-500"
+                  }
+                `}
+              >
+                {label}
+              </span>
+            </div>
           );
         })}
       </div>
+      
+      {/* Spacer */}
+      <div className="h-6" />
     </div>
   );
 }
@@ -437,7 +482,7 @@ function SearchableTagInput({
               key={item}
               type="button"
               onClick={() => addTag(item)}
-              className="px-3 py-1.5 rounded-full border border-surface text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:border-purple-500/50 transition-colors"
+              className="px-3 py-1.5 rounded-full border border-zinc-800 text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] hover:border-[var(--workspace-primary)]/50 transition-colors"
             >
               {item}
             </button>
@@ -450,20 +495,20 @@ function SearchableTagInput({
           {tags.map((item) => (
             <span
               key={item}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border border-purple-500/40 bg-purple-500/10 text-purple-200"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs border border-[var(--workspace-primary)]/30 bg-[var(--workspace-primary-dim)] text-[var(--color-text-primary)]"
             >
               {item}
               <button
                 type="button"
                 onClick={() => removeTag(item)}
-                className="text-purple-200 hover:text-[var(--color-text-primary)] transition-colors"
+                className="text-zinc-400 hover:text-white transition-colors"
                 aria-label={tx(
                   "onboarding.progressive.common.removeTagAria",
                   { item },
                   `Remove ${item}`,
                 )}
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             </span>
           ))}
@@ -483,7 +528,6 @@ function OnboardingLayout({
   subtitle,
   proTipText,
   stepErrorSummary,
-  onSaveExit,
   children,
   showBackButton,
   onBack,
@@ -491,17 +535,12 @@ function OnboardingLayout({
   onPrimaryAction,
   isPrimaryActionDisabled = false,
   isBackDisabled = false,
-  isSaveExitDisabled = false,
+  onStepClick,
 }: SharedLayoutProps) {
   const { tx } = useTranslation();
   const isClient = role === "client";
-  const accentColor = isClient ? "#E8820C" : "#7c3aed";
+  const accentColor = "var(--workspace-primary)";
   const accentHoverClass = isClient ? "hover:bg-[#d4750a]" : "hover:bg-purple-700";
-  const stepLabelColor = isClient ? "#f6c27a" : "#c4b5fd";
-  const panelAccentBackground = isClient ? "rgba(232, 130, 12, 0.12)" : "rgba(124, 58, 237, 0.12)";
-  const panelAccentBorder = isClient ? "rgba(232, 130, 12, 0.3)" : "rgba(124, 58, 237, 0.3)";
-  const panelAccentText = isClient ? "#f6c27a" : "#c4b5fd";
-  const panelAccentIcon = isClient ? "#E8820C" : "#a78bfa";
 
   return (
     <div className="min-h-screen page-bg-base">
@@ -513,14 +552,16 @@ function OnboardingLayout({
             <Stepper
               stepLabels={stepLabels}
               currentStep={currentStep}
-              accentColor={accentColor}
-              activeLabelColor={stepLabelColor}
+              onStepClick={onStepClick}
             />
 
-            <section className="surface-card border border-surface p-6 md:p-8 rounded-3xl shadow-[0_35px_80px_-60px_rgba(0,0,0,0.9)]">
+            <section className="relative overflow-hidden bg-zinc-950/45 dark:bg-zinc-950/45 border border-zinc-800/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
+              {/* Premium Glow Top Bar */}
+              <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[var(--workspace-primary)] to-transparent opacity-80" />
+
               <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.18em] font-semibold mb-3" style={{ color: panelAccentText }}>
+                  <p className="text-xs uppercase tracking-[0.18em] font-semibold mb-3" style={{ color: "var(--workspace-primary)" }}>
                     {tx(
                       "onboarding.progressive.common.stepCounter",
                       { step: currentStep, total: stepLabels.length },
@@ -530,22 +571,6 @@ function OnboardingLayout({
                   <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-text-primary)]">{title}</h1>
                   <p className="text-sm md:text-base text-[var(--color-text-tertiary)] mt-2">{subtitle}</p>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={onSaveExit}
-                  disabled={isSaveExitDisabled}
-                  className="w-full sm:w-auto px-4 py-2 rounded-xl border text-sm font-medium transition-colors"
-                  style={{
-                    borderColor: panelAccentBorder,
-                    backgroundColor: panelAccentBackground,
-                    color: panelAccentText,
-                    opacity: isSaveExitDisabled ? 0.65 : 1,
-                    cursor: isSaveExitDisabled ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {tx("onboarding.progressive.common.saveExit", undefined, "Save & Exit")}
-                </button>
               </div>
 
               {stepErrorSummary ? (
@@ -556,16 +581,15 @@ function OnboardingLayout({
 
               <div>{children}</div>
 
-              <footer className="sticky bottom-0 z-10 flex justify-between mt-8 pt-4 pb-1 border-t border-surface bg-gradient-to-t from-[#141414] to-[#141414]/95 backdrop-blur">
+              <footer className="flex items-center justify-between mt-10 pt-6 border-t border-zinc-800/80 bg-transparent">
                 <div>
                   {showBackButton ? (
                     <button
                       type="button"
                       onClick={onBack}
                       disabled={isBackDisabled}
-                      className="px-5 py-3 rounded-xl border border-surface text-gray-200 hover:text-[var(--color-text-primary)] transition-colors"
+                      className="px-5 py-3 rounded-xl border border-zinc-805 text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
                       style={{
-                        borderColor: "#262626",
                         opacity: isBackDisabled ? 0.65 : 1,
                         cursor: isBackDisabled ? "not-allowed" : "pointer",
                       }}
@@ -579,9 +603,9 @@ function OnboardingLayout({
                   type="button"
                   onClick={onPrimaryAction}
                   disabled={isPrimaryActionDisabled}
-                  className={`text-[var(--color-text-primary)] px-8 py-3 rounded-xl font-medium transition-colors ${accentHoverClass} disabled:cursor-not-allowed disabled:opacity-70`}
+                  className="text-white px-8 py-3 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70 hover:opacity-95"
                   style={{
-                    backgroundColor: accentColor,
+                    backgroundColor: "var(--workspace-primary)",
                     cursor: isPrimaryActionDisabled ? "not-allowed" : "pointer",
                   }}
                 >
@@ -592,19 +616,14 @@ function OnboardingLayout({
           </div>
 
           <aside className="lg:col-span-1">
-            <div
-              className="p-6 rounded-2xl sticky top-24"
-              style={{
-                backgroundColor: panelAccentBackground,
-                border: `1px solid ${panelAccentBorder}`,
-              }}
-            >
-              <div className="inline-flex items-center gap-2 font-semibold mb-3" style={{ color: panelAccentText }}>
-                <Lightbulb className="w-5 h-5" style={{ color: panelAccentIcon }} />
+            <div className="bg-zinc-950/45 border border-zinc-800/80 backdrop-blur-xl p-6 rounded-2xl sticky top-24 shadow-lg overflow-hidden transition-all duration-300 hover:border-[var(--workspace-primary)]/30">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[var(--workspace-primary)]" />
+              <div className="inline-flex items-center gap-2 font-semibold mb-3 text-[var(--workspace-primary)]">
+                <Lightbulb className="w-5 h-5 text-[var(--workspace-primary)]" />
                 <span>{tx("onboarding.progressive.common.proTip", undefined, "Pro Tip")}</span>
               </div>
 
-              <p className="text-sm leading-7" style={{ color: isClient ? "#fde8cc" : "#e9d5ff" }}>{proTipText}</p>
+              <p className="text-sm leading-relaxed text-zinc-300">{proTipText}</p>
             </div>
           </aside>
         </div>
@@ -618,9 +637,96 @@ interface RoleFlowBaseProps {
   onComplete?: (payload: CompletePayload) => Awaitable<void>;
 }
 
+function AvatarUploadZone({
+  previewUrl,
+  onFileSelect,
+  error,
+  tx,
+}: {
+  previewUrl: string;
+  onFileSelect: (file: File) => void;
+  error?: string;
+  tx: any;
+}) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isDragActive, setIsDragActive] = useState(false);
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setIsDragActive(true);
+    } else if (e.type === "dragleave") {
+      setIsDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        onFileSelect(file);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-2 flex flex-col items-center">
+      <div
+        onDragEnter={handleDrag}
+        onDragOver={handleDrag}
+        onDragLeave={handleDrag}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className={`
+          relative w-36 h-36 border-2 border-dashed rounded-full flex flex-col items-center justify-center gap-2 cursor-pointer overflow-hidden transition-all duration-300 mx-auto
+          ${isDragActive 
+            ? "border-[var(--workspace-primary)] bg-[var(--workspace-primary)]/5 shadow-[0_0_15px_var(--workspace-shadow)]" 
+            : "border-zinc-800 bg-zinc-900/50 hover:border-[var(--workspace-primary)]/50 hover:bg-zinc-900"
+          }
+        `}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files?.[0]) onFileSelect(e.target.files[0]);
+          }}
+        />
+
+        {previewUrl ? (
+          <>
+            <img src={previewUrl} alt="Avatar Preview" className="w-full h-full object-cover animate-fade-in" />
+            <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex flex-col items-center justify-center gap-1.5 text-white transition-opacity duration-300 backdrop-blur-xs">
+              <Upload className="w-5 h-5 text-[var(--workspace-primary)] animate-bounce" />
+              <span className="text-[10px] font-semibold text-center px-2">{tx("onboarding.progressive.freelancer.fields.chooseAvatar", undefined, "Change")}</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="p-2 bg-zinc-800 rounded-full text-zinc-400 group-hover:text-[var(--workspace-primary)] transition-colors">
+              <Upload className="w-5 h-5" />
+            </div>
+            <div className="text-center px-3">
+              <p className="text-[11px] font-semibold text-zinc-300 leading-tight">{tx("onboarding.progressive.freelancer.fields.chooseAvatar", undefined, "Upload Photo")}</p>
+              <p className="text-[9px] text-zinc-500 mt-0.5 leading-none">PNG, JPG</p>
+            </div>
+          </>
+        )}
+      </div>
+      {error ? <p className="text-xs text-red-400 mt-1 text-center">{error}</p> : null}
+    </div>
+  );
+}
+
 export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [stepErrorSummary, setStepErrorSummary] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
@@ -783,7 +889,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
     yearsOfExperience: "",
     availability: "",
     portfolioLink: "",
-    phoneNumber: "",
+    phoneNumber: "+216",
   });
 
   const validateCurrentStep = () => {
@@ -882,13 +988,6 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
     }
 
     if (currentStep === 4) {
-      if (!formData.portfolioLink.trim()) {
-        nextErrors.portfolioLink = tx(
-          "onboarding.progressive.freelancer.errors.portfolioRequired",
-          undefined,
-          "Portfolio link is required.",
-        );
-      }
       if (!formData.phoneNumber.trim()) {
         nextErrors.phoneNumber = tx(
           "onboarding.progressive.freelancer.errors.phoneRequired",
@@ -959,12 +1058,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
     }
   };
 
-  const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
+  const handleFileSelect = (file: File) => {
     const previewUrl = URL.createObjectURL(file);
     setFormData((prev) => ({
       ...prev,
@@ -990,22 +1084,11 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
     formData.portfolioLink.trim().length > 0 ||
     formData.phoneNumber.trim().length > 0;
 
-  const handleSaveAndExit = () => {
-    if (isSubmitting) {
-      return;
+  const handleStepClick = (step: number) => {
+    if (step < currentStep) {
+      setCurrentStep(step);
+      setStepErrorSummary("");
     }
-
-    if (hasFreelancerDraft && !isCompleted) {
-      const shouldExit = window.confirm(
-        tx(
-          "onboarding.progressive.common.unsavedConfirm",
-          undefined,
-          "You have unsaved onboarding progress. Exit anyway?",
-        ),
-      );
-      if (!shouldExit) return;
-    }
-    onSaveExit();
   };
 
   const stepTitle = stepLabels[currentStep - 1];
@@ -1036,7 +1119,6 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
       }
       proTipText={tipByStep[currentStep - 1]}
       stepErrorSummary={stepErrorSummary}
-      onSaveExit={handleSaveAndExit}
       showBackButton={currentStep > 1 && !isCompleted}
       onBack={() => setCurrentStep((previousStep) => Math.max(1, previousStep - 1))}
       primaryActionLabel={
@@ -1050,7 +1132,6 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
       }
       isPrimaryActionDisabled={isSubmitting}
       isBackDisabled={isSubmitting}
-      isSaveExitDisabled={isSubmitting}
       onPrimaryAction={() => {
         if (isSubmitting) {
           return;
@@ -1063,6 +1144,7 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
 
         void handlePrimaryAction();
       }}
+      onStepClick={handleStepClick}
     >
       {isCompleted ? (
         <div className="py-6 flex flex-col items-center text-center gap-3">
@@ -1075,350 +1157,328 @@ export function FreelancerOnboarding({ onSaveExit, onComplete }: RoleFlowBasePro
             )}
           </p>
         </div>
-      ) : null}
-
-      {!isCompleted && currentStep === 1 ? (
-        <div className="space-y-6">
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-3">
-              {tx(
-                "onboarding.progressive.freelancer.fields.avatarUpload",
-                undefined,
-                "Avatar Upload (Required)",
-              )}
-            </label>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => avatarInputRef.current?.click()}
-                className="w-24 h-24 rounded-2xl border border-surface bg-[var(--color-bg-base)] flex items-center justify-center overflow-hidden hover:border-purple-500/60 transition-colors"
-              >
-                {formData.avatarPreviewUrl ? (
-                  <img
-                    src={formData.avatarPreviewUrl}
-                    alt={tx("onboarding.progressive.freelancer.fields.avatarPreviewAlt", undefined, "Avatar preview")}
-                    className="w-full h-full object-cover"
+      ) : (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 15 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -15 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="space-y-6"
+          >
+            {currentStep === 1 && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-3">
+                    {tx(
+                      "onboarding.progressive.freelancer.fields.avatarUpload",
+                      undefined,
+                      "Avatar Upload (Required)",
+                    )}
+                  </label>
+                  <AvatarUploadZone
+                    previewUrl={formData.avatarPreviewUrl}
+                    onFileSelect={handleFileSelect}
+                    error={errors.avatarFile}
+                    tx={tx}
                   />
-                ) : (
-                  <UserCircle2 className="w-10 h-10 text-[var(--color-text-primary)]-subtle" />
-                )}
-              </button>
+                </div>
 
-              <div>
-                <button
-                  type="button"
-                  onClick={() => avatarInputRef.current?.click()}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-surface bg-[var(--color-bg-base)] text-sm text-gray-200 hover:border-purple-500/60 transition-colors"
-                >
-                  <Upload className="w-4 h-4" />
-                  {tx("onboarding.progressive.freelancer.fields.chooseAvatar", undefined, "Choose avatar")}
-                </button>
-                <p className="text-xs text-[var(--color-text-primary)]-subtle mt-2">
-                  {tx("onboarding.progressive.freelancer.fields.avatarHint", undefined, "PNG, JPG, WEBP")}
-                </p>
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                      {tx("onboarding.progressive.common.fields.fullName", undefined, "Full Name")}
+                    </label>
+                    <input
+                      value={formData.fullName}
+                      onChange={(event) =>
+                        setFormData((prev) => ({ ...prev, fullName: event.target.value }))
+                      }
+                      className={INPUT_CLASS}
+                      placeholder={tx(
+                        "onboarding.progressive.common.placeholders.fullName",
+                        undefined,
+                        "Your full name",
+                      )}
+                    />
+                    {errors.fullName ? <p className="text-xs text-red-400 mt-2">{errors.fullName}</p> : null}
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                      {tx("onboarding.progressive.common.fields.location", undefined, "Location")}
+                    </label>
+                    <CustomSelect
+                      value={formData.location}
+                      onChange={(value) => setFormData((prev) => ({ ...prev, location: value }))}
+                      options={governorateOptions}
+                      placeholder={tx(
+                        "onboarding.progressive.common.placeholders.selectLocation",
+                        undefined,
+                        "Select location",
+                      )}
+                      variant="freelancer"
+                    />
+                    {errors.location ? <p className="text-xs text-red-400 mt-2">{errors.location}</p> : null}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                    {tx(
+                      "onboarding.progressive.freelancer.fields.professionalTitle",
+                      undefined,
+                      "Professional Title",
+                    )}
+                  </label>
+                  <input
+                    value={formData.professionalTitle}
+                    onChange={(event) =>
+                      setFormData((prev) => ({ ...prev, professionalTitle: event.target.value }))
+                    }
+                    className={INPUT_CLASS}
+                    placeholder={tx(
+                      "onboarding.progressive.freelancer.placeholders.professionalTitle",
+                      undefined,
+                      "Senior React Developer",
+                    )}
+                  />
+                  {errors.professionalTitle ? (
+                    <p className="text-xs text-red-400 mt-2">{errors.professionalTitle}</p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                    {tx("onboarding.progressive.freelancer.fields.bioSummary", undefined, "Bio/Summary")}
+                  </label>
+                  <textarea
+                    value={formData.bio}
+                    onChange={(event) =>
+                      setFormData((prev) => ({ ...prev, bio: event.target.value.slice(0, 500) }))
+                    }
+                    className={`${INPUT_CLASS} min-h-[130px] resize-y`}
+                    placeholder={tx(
+                      "onboarding.progressive.freelancer.placeholders.bioSummary",
+                      undefined,
+                      "What do you do best and what kind of projects excite you?",
+                    )}
+                  />
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-[var(--color-text-primary)]-subtle">{formData.bio.length}/500</p>
+                    {errors.bio ? <p className="text-xs text-red-400">{errors.bio}</p> : null}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {currentStep === 2 && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                    {tx("onboarding.progressive.freelancer.fields.mainCategory", undefined, "Main Category")}
+                  </label>
+                  <CustomSelect
+                    value={formData.mainCategory}
+                    onChange={(value) => setFormData((prev) => ({ ...prev, mainCategory: value }))}
+                    options={categoryOptions}
+                    placeholder={tx(
+                      "onboarding.progressive.freelancer.placeholders.selectCategory",
+                      undefined,
+                      "Select category",
+                    )}
+                    variant="freelancer"
+                  />
+                  {errors.mainCategory ? (
+                    <p className="text-xs text-red-400 mt-2">{errors.mainCategory}</p>
+                  ) : null}
+                </div>
+
+                <SearchableTagInput
+                  label={tx("onboarding.progressive.freelancer.fields.coreSkills", undefined, "Core Skills")}
+                  hint={tx(
+                    "onboarding.progressive.freelancer.hints.coreSkills",
+                    undefined,
+                    "Search and add up to 30 skills",
+                  )}
+                  placeholder={tx(
+                    "onboarding.progressive.freelancer.placeholders.coreSkills",
+                    undefined,
+                    "Type a skill and press Enter",
+                  )}
+                  tags={formData.coreSkills}
+                  maxTags={30}
+                  suggestions={skillSuggestions}
+                  onChange={(nextTags) =>
+                    setFormData((prev) => ({ ...prev, coreSkills: nextTags }))
+                  }
+                  error={errors.coreSkills}
                 />
-              </div>
-            </div>
-            {errors.avatarFile ? <p className="text-xs text-red-400 mt-2">{errors.avatarFile}</p> : null}
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-                {tx("onboarding.progressive.common.fields.fullName", undefined, "Full Name")}
-              </label>
-              <input
-                value={formData.fullName}
-                onChange={(event) =>
-                  setFormData((prev) => ({ ...prev, fullName: event.target.value }))
-                }
-                className={INPUT_CLASS}
-                placeholder={tx(
-                  "onboarding.progressive.common.placeholders.fullName",
-                  undefined,
-                  "Your full name",
-                )}
-              />
-              {errors.fullName ? <p className="text-xs text-red-400 mt-2">{errors.fullName}</p> : null}
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-                {tx("onboarding.progressive.common.fields.location", undefined, "Location")}
-              </label>
-              <CustomSelect
-                value={formData.location}
-                onChange={(value) => setFormData((prev) => ({ ...prev, location: value }))}
-                options={governorateOptions}
-                placeholder={tx(
-                  "onboarding.progressive.common.placeholders.selectLocation",
-                  undefined,
-                  "Select location",
-                )}
-                variant="freelancer"
-              />
-              {errors.location ? <p className="text-xs text-red-400 mt-2">{errors.location}</p> : null}
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-              {tx(
-                "onboarding.progressive.freelancer.fields.professionalTitle",
-                undefined,
-                "Professional Title",
-              )}
-            </label>
-            <input
-              value={formData.professionalTitle}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, professionalTitle: event.target.value }))
-              }
-              className={INPUT_CLASS}
-              placeholder={tx(
-                "onboarding.progressive.freelancer.placeholders.professionalTitle",
-                undefined,
-                "Senior React Developer",
-              )}
-            />
-            {errors.professionalTitle ? (
-              <p className="text-xs text-red-400 mt-2">{errors.professionalTitle}</p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-              {tx("onboarding.progressive.freelancer.fields.bioSummary", undefined, "Bio/Summary")}
-            </label>
-            <textarea
-              value={formData.bio}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, bio: event.target.value.slice(0, 500) }))
-              }
-              className={`${INPUT_CLASS} min-h-[130px] resize-y`}
-              placeholder={tx(
-                "onboarding.progressive.freelancer.placeholders.bioSummary",
-                undefined,
-                "What do you do best and what kind of projects excite you?",
-              )}
-            />
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-[var(--color-text-primary)]-subtle">{formData.bio.length}/500</p>
-              {errors.bio ? <p className="text-xs text-red-400">{errors.bio}</p> : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {!isCompleted && currentStep === 2 ? (
-        <div className="space-y-6">
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-              {tx("onboarding.progressive.freelancer.fields.mainCategory", undefined, "Main Category")}
-            </label>
-            <CustomSelect
-              value={formData.mainCategory}
-              onChange={(value) => setFormData((prev) => ({ ...prev, mainCategory: value }))}
-              options={categoryOptions}
-              placeholder={tx(
-                "onboarding.progressive.freelancer.placeholders.selectCategory",
-                undefined,
-                "Select category",
-              )}
-              variant="freelancer"
-            />
-            {errors.mainCategory ? (
-              <p className="text-xs text-red-400 mt-2">{errors.mainCategory}</p>
-            ) : null}
-          </div>
-
-          <SearchableTagInput
-            label={tx("onboarding.progressive.freelancer.fields.coreSkills", undefined, "Core Skills")}
-            hint={tx(
-              "onboarding.progressive.freelancer.hints.coreSkills",
-              undefined,
-              "Search and add up to 30 skills",
+                <SearchableTagInput
+                  label={tx("onboarding.progressive.freelancer.fields.toolsUsed", undefined, "Tools Used")}
+                  hint={tx(
+                    "onboarding.progressive.freelancer.hints.toolsUsed",
+                    undefined,
+                    "Search and add up to 15 tools",
+                  )}
+                  placeholder={tx(
+                    "onboarding.progressive.freelancer.placeholders.toolsUsed",
+                    undefined,
+                    "Type a tool and press Enter",
+                  )}
+                  tags={formData.toolsUsed}
+                  maxTags={15}
+                  suggestions={toolSuggestions}
+                  onChange={(nextTags) =>
+                    setFormData((prev) => ({ ...prev, toolsUsed: nextTags }))
+                  }
+                  error={errors.toolsUsed}
+                />
+              </>
             )}
-            placeholder={tx(
-              "onboarding.progressive.freelancer.placeholders.coreSkills",
-              undefined,
-              "Type a skill and press Enter",
+
+            {currentStep === 3 && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                    {tx("onboarding.progressive.freelancer.fields.hourlyRate", undefined, "Hourly Rate")}
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-tertiary)]">
+                      {tx("onboarding.progressive.freelancer.currency", undefined, "TND")}
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={formData.hourlyRate}
+                      onChange={(event) =>
+                        setFormData((prev) => ({ ...prev, hourlyRate: event.target.value }))
+                      }
+                      className={`${INPUT_CLASS} pl-14`}
+                      placeholder={tx("onboarding.progressive.freelancer.placeholders.hourlyRate", undefined, "80")}
+                    />
+                  </div>
+                  {errors.hourlyRate ? <p className="text-xs text-red-400 mt-2">{errors.hourlyRate}</p> : null}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                      {tx(
+                        "onboarding.progressive.freelancer.fields.yearsOfExperience",
+                        undefined,
+                        "Years of Experience",
+                      )}
+                    </label>
+                    <CustomSelect
+                      value={formData.yearsOfExperience}
+                      onChange={(value) =>
+                        setFormData((prev) => ({ ...prev, yearsOfExperience: value as FreelancerExperience }))
+                      }
+                      options={experienceOptions}
+                      placeholder={tx(
+                        "onboarding.progressive.freelancer.placeholders.experienceRange",
+                        undefined,
+                        "Select range",
+                      )}
+                      variant="freelancer"
+                    />
+                    {errors.yearsOfExperience ? (
+                      <p className="text-xs text-red-400 mt-2">{errors.yearsOfExperience}</p>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                      {tx("onboarding.progressive.freelancer.fields.availability", undefined, "Availability")}
+                    </label>
+                    <CustomSelect
+                      value={formData.availability}
+                      onChange={(value) =>
+                        setFormData((prev) => ({ ...prev, availability: value as FreelancerAvailability }))
+                      }
+                      options={availabilityOptions}
+                      placeholder={tx(
+                        "onboarding.progressive.freelancer.placeholders.availability",
+                        undefined,
+                        "Select availability",
+                      )}
+                      variant="freelancer"
+                    />
+                    {errors.availability ? (
+                      <p className="text-xs text-red-400 mt-2">{errors.availability}</p>
+                    ) : null}
+                  </div>
+                </div>
+              </>
             )}
-            tags={formData.coreSkills}
-            maxTags={30}
-            suggestions={skillSuggestions}
-            onChange={(nextTags) =>
-              setFormData((prev) => ({ ...prev, coreSkills: nextTags }))
-            }
-            error={errors.coreSkills}
-          />
 
-          <SearchableTagInput
-            label={tx("onboarding.progressive.freelancer.fields.toolsUsed", undefined, "Tools Used")}
-            hint={tx(
-              "onboarding.progressive.freelancer.hints.toolsUsed",
-              undefined,
-              "Search and add up to 15 tools",
+            {currentStep === 4 && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                    {tx("onboarding.progressive.freelancer.fields.portfolioLink", undefined, "Portfolio Link (Optional)")}
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.portfolioLink}
+                    onChange={(event) =>
+                      setFormData((prev) => ({ ...prev, portfolioLink: event.target.value }))
+                    }
+                    className={INPUT_CLASS}
+                    placeholder={tx(
+                      "onboarding.progressive.freelancer.placeholders.portfolioLink",
+                      undefined,
+                      "https://your-portfolio.com",
+                    )}
+                  />
+                  {errors.portfolioLink ? (
+                    <p className="text-xs text-red-400 mt-2">{errors.portfolioLink}</p>
+                  ) : null}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                    {tx("onboarding.progressive.common.fields.phoneNumber", undefined, "Phone Number")}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.phoneNumber}
+                    onChange={(event) => {
+                      const nextValue = formatPhoneAsYouType(event.target.value);
+                      setFormData((prev) => ({ ...prev, phoneNumber: nextValue }));
+                      if (errors.phoneNumber) {
+                        setErrors((prev) => ({ ...prev, phoneNumber: "" }));
+                      }
+                      if (stepErrorSummary) {
+                        setStepErrorSummary("");
+                      }
+                    }}
+                    className={INPUT_CLASS}
+                    placeholder={tx(
+                      "onboarding.progressive.freelancer.placeholders.phoneNumber",
+                      undefined,
+                      "For security and verified badge",
+                    )}
+                  />
+                  <p className="text-xs text-[var(--color-text-primary)]-subtle mt-2">
+                    {tx(
+                      "onboarding.progressive.freelancer.hints.phoneNumber",
+                      undefined,
+                      "For security and verified badge.",
+                    )}
+                  </p>
+                  {errors.phoneNumber ? (
+                    <p className="text-xs text-red-400 mt-2">{errors.phoneNumber}</p>
+                  ) : null}
+                </div>
+              </>
             )}
-            placeholder={tx(
-              "onboarding.progressive.freelancer.placeholders.toolsUsed",
-              undefined,
-              "Type a tool and press Enter",
-            )}
-            tags={formData.toolsUsed}
-            maxTags={15}
-            suggestions={toolSuggestions}
-            onChange={(nextTags) =>
-              setFormData((prev) => ({ ...prev, toolsUsed: nextTags }))
-            }
-            error={errors.toolsUsed}
-          />
-        </div>
-      ) : null}
-
-      {!isCompleted && currentStep === 3 ? (
-        <div className="space-y-6">
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-              {tx("onboarding.progressive.freelancer.fields.hourlyRate", undefined, "Hourly Rate")}
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-tertiary)]">
-                {tx("onboarding.progressive.freelancer.currency", undefined, "TND")}
-              </span>
-              <input
-                type="number"
-                min={0}
-                value={formData.hourlyRate}
-                onChange={(event) =>
-                  setFormData((prev) => ({ ...prev, hourlyRate: event.target.value }))
-                }
-                className={`${INPUT_CLASS} pl-14`}
-                placeholder={tx("onboarding.progressive.freelancer.placeholders.hourlyRate", undefined, "80")}
-              />
-            </div>
-            {errors.hourlyRate ? <p className="text-xs text-red-400 mt-2">{errors.hourlyRate}</p> : null}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-                {tx(
-                  "onboarding.progressive.freelancer.fields.yearsOfExperience",
-                  undefined,
-                  "Years of Experience",
-                )}
-              </label>
-              <CustomSelect
-                value={formData.yearsOfExperience}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, yearsOfExperience: value as FreelancerExperience }))
-                }
-                options={experienceOptions}
-                placeholder={tx(
-                  "onboarding.progressive.freelancer.placeholders.experienceRange",
-                  undefined,
-                  "Select range",
-                )}
-                variant="freelancer"
-              />
-              {errors.yearsOfExperience ? (
-                <p className="text-xs text-red-400 mt-2">{errors.yearsOfExperience}</p>
-              ) : null}
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-                {tx("onboarding.progressive.freelancer.fields.availability", undefined, "Availability")}
-              </label>
-              <CustomSelect
-                value={formData.availability}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, availability: value as FreelancerAvailability }))
-                }
-                options={availabilityOptions}
-                placeholder={tx(
-                  "onboarding.progressive.freelancer.placeholders.availability",
-                  undefined,
-                  "Select availability",
-                )}
-                variant="freelancer"
-              />
-              {errors.availability ? (
-                <p className="text-xs text-red-400 mt-2">{errors.availability}</p>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {!isCompleted && currentStep === 4 ? (
-        <div className="space-y-6">
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-              {tx("onboarding.progressive.freelancer.fields.portfolioLink", undefined, "Portfolio Link")}
-            </label>
-            <input
-              type="url"
-              value={formData.portfolioLink}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, portfolioLink: event.target.value }))
-              }
-              className={INPUT_CLASS}
-              placeholder={tx(
-                "onboarding.progressive.freelancer.placeholders.portfolioLink",
-                undefined,
-                "https://your-portfolio.com",
-              )}
-            />
-            {errors.portfolioLink ? (
-              <p className="text-xs text-red-400 mt-2">{errors.portfolioLink}</p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-              {tx("onboarding.progressive.common.fields.phoneNumber", undefined, "Phone Number")}
-            </label>
-            <input
-              type="text"
-              value={formData.phoneNumber}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setFormData((prev) => ({ ...prev, phoneNumber: nextValue }));
-                if (errors.phoneNumber) {
-                  setErrors((prev) => ({ ...prev, phoneNumber: "" }));
-                }
-                if (stepErrorSummary) {
-                  setStepErrorSummary("");
-                }
-              }}
-              className={INPUT_CLASS}
-              placeholder={tx(
-                "onboarding.progressive.freelancer.placeholders.phoneNumber",
-                undefined,
-                "For security and verified badge",
-              )}
-            />
-            <p className="text-xs text-[var(--color-text-primary)]-subtle mt-2">
-              {tx(
-                "onboarding.progressive.freelancer.hints.phoneNumber",
-                undefined,
-                "For security and verified badge.",
-              )}
-            </p>
-            {errors.phoneNumber ? (
-              <p className="text-xs text-red-400 mt-2">{errors.phoneNumber}</p>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+          </motion.div>
+        </AnimatePresence>
+      )}
     </OnboardingLayout>
   );
 }
@@ -1500,7 +1560,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
   const [formData, setFormData] = useState<ClientOnboardingData>({
     fullName: "",
     location: "",
-    phoneNumber: "",
+    phoneNumber: "+216",
     accountType: "",
     companyName: "",
     primaryGoal: "",
@@ -1640,22 +1700,11 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
     formData.companyName.trim().length > 0 ||
     formData.primaryGoal.trim().length > 0;
 
-  const handleSaveAndExit = () => {
-    if (isSubmitting) {
-      return;
+  const handleStepClick = (step: number) => {
+    if (step < currentStep) {
+      setCurrentStep(step);
+      setStepErrorSummary("");
     }
-
-    if (hasClientDraft && !isCompleted) {
-      const shouldExit = window.confirm(
-        tx(
-          "onboarding.progressive.common.unsavedConfirm",
-          undefined,
-          "You have unsaved onboarding progress. Exit anyway?",
-        ),
-      );
-      if (!shouldExit) return;
-    }
-    onSaveExit();
   };
 
   return (
@@ -1679,7 +1728,6 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
       }
       proTipText={tipByStep[currentStep - 1]}
       stepErrorSummary={stepErrorSummary}
-      onSaveExit={handleSaveAndExit}
       showBackButton={currentStep > 1 && !isCompleted}
       onBack={() => setCurrentStep((previousStep) => Math.max(1, previousStep - 1))}
       primaryActionLabel={
@@ -1693,7 +1741,6 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
       }
       isPrimaryActionDisabled={isSubmitting}
       isBackDisabled={isSubmitting}
-      isSaveExitDisabled={isSubmitting}
       onPrimaryAction={() => {
         if (isSubmitting) {
           return;
@@ -1706,6 +1753,7 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
 
         void handlePrimaryAction();
       }}
+      onStepClick={handleStepClick}
     >
       {isCompleted ? (
         <div className="py-6 flex flex-col items-center text-center gap-3">
@@ -1718,167 +1766,222 @@ export function ClientOnboarding({ onSaveExit, onComplete }: RoleFlowBaseProps) 
             )}
           </p>
         </div>
-      ) : null}
-
-      {!isCompleted && currentStep === 1 ? (
-        <div className="space-y-6">
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-              {tx("onboarding.progressive.common.fields.fullName", undefined, "Full Name")}
-            </label>
-            <input
-              value={formData.fullName}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, fullName: event.target.value }))
-              }
-              className={CLIENT_INPUT_CLASS}
-              placeholder={tx(
-                "onboarding.progressive.common.placeholders.fullName",
-                undefined,
-                "Your full name",
-              )}
-            />
-            {errors.fullName ? <p className="text-xs text-red-400 mt-2">{errors.fullName}</p> : null}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-              {tx("onboarding.progressive.common.fields.location", undefined, "Location")}
-            </label>
-            <CustomSelect
-              value={formData.location}
-              onChange={(value) => setFormData((prev) => ({ ...prev, location: value }))}
-              options={governorateOptions}
-              placeholder={tx(
-                "onboarding.progressive.common.placeholders.selectLocation",
-                undefined,
-                "Select location",
-              )}
-              variant="client"
-            />
-            {errors.location ? <p className="text-xs text-red-400 mt-2">{errors.location}</p> : null}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-              {tx("onboarding.progressive.common.fields.phoneNumber", undefined, "Phone Number")}
-            </label>
-            <input
-              value={formData.phoneNumber}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setFormData((prev) => ({ ...prev, phoneNumber: nextValue }));
-                if (errors.phoneNumber) {
-                  setErrors((prev) => ({ ...prev, phoneNumber: "" }));
-                }
-                if (stepErrorSummary) {
-                  setStepErrorSummary("");
-                }
-              }}
-              className={CLIENT_INPUT_CLASS}
-              placeholder={tx(
-                "onboarding.progressive.client.placeholders.phoneNumber",
-                undefined,
-                "+216 00 000 000",
-              )}
-            />
-            {errors.phoneNumber ? (
-              <p className="text-xs text-red-400 mt-2">{errors.phoneNumber}</p>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-
-      {!isCompleted && currentStep === 2 ? (
-        <div className="space-y-6">
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-3">
-              {tx("onboarding.progressive.client.fields.accountType", undefined, "Account Type")}
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {accountTypeOptions.map((option) => {
-                const isActive = formData.accountType === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        accountType: option.value,
-                        companyName: option.value === "Company" ? prev.companyName : "",
-                      }))
+      ) : (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 15 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -15 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="space-y-6"
+          >
+            {currentStep === 1 && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                    {tx("onboarding.progressive.common.fields.fullName", undefined, "Full Name")}
+                  </label>
+                  <input
+                    value={formData.fullName}
+                    onChange={(event) =>
+                      setFormData((prev) => ({ ...prev, fullName: event.target.value }))
                     }
-                    className="text-left px-4 py-3.5 rounded-xl border transition-colors"
-                    style={{
-                      borderColor: isActive ? "#E8820C" : "#262626",
-                      backgroundColor: isActive ? "rgba(232, 130, 12, 0.12)" : "#0a0a0a",
-                    }}
-                  >
-                    <span className="text-sm text-[var(--color-text-primary)] font-medium">{option.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-            {errors.accountType ? (
-              <p className="text-xs text-red-400 mt-2">{errors.accountType}</p>
-            ) : null}
-          </div>
+                    className={CLIENT_INPUT_CLASS}
+                    placeholder={tx(
+                      "onboarding.progressive.common.placeholders.fullName",
+                      undefined,
+                      "Your full name",
+                    )}
+                  />
+                  {errors.fullName ? <p className="text-xs text-red-450 mt-2">{errors.fullName}</p> : null}
+                </div>
 
-          {formData.accountType === "Company" ? (
-            <div>
-              <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
-                {tx("onboarding.progressive.client.fields.companyName", undefined, "Company Name")}
-              </label>
-              <input
-                value={formData.companyName}
-                onChange={(event) =>
-                  setFormData((prev) => ({ ...prev, companyName: event.target.value }))
-                }
-                className={CLIENT_INPUT_CLASS}
-                placeholder={tx(
-                  "onboarding.progressive.client.placeholders.companyName",
-                  undefined,
-                  "Your company name",
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                    {tx("onboarding.progressive.common.fields.location", undefined, "Location")}
+                  </label>
+                  <CustomSelect
+                    value={formData.location}
+                    onChange={(value) => setFormData((prev) => ({ ...prev, location: value }))}
+                    options={governorateOptions}
+                    placeholder={tx(
+                      "onboarding.progressive.common.placeholders.selectLocation",
+                      undefined,
+                      "Select location",
+                    )}
+                    variant="client"
+                  />
+                  {errors.location ? <p className="text-xs text-red-400 mt-2">{errors.location}</p> : null}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                    {tx("onboarding.progressive.common.fields.phoneNumber", undefined, "Phone Number")}
+                  </label>
+                  <input
+                    value={formData.phoneNumber}
+                    onChange={(event) => {
+                      const nextValue = formatPhoneAsYouType(event.target.value);
+                      setFormData((prev) => ({ ...prev, phoneNumber: nextValue }));
+                      if (errors.phoneNumber) {
+                        setErrors((prev) => ({ ...prev, phoneNumber: "" }));
+                      }
+                      if (stepErrorSummary) {
+                        setStepErrorSummary("");
+                      }
+                    }}
+                    className={CLIENT_INPUT_CLASS}
+                    placeholder={tx(
+                      "onboarding.progressive.client.placeholders.phoneNumber",
+                      undefined,
+                      "+216 00 000 000",
+                    )}
+                  />
+                  {errors.phoneNumber ? (
+                    <p className="text-xs text-red-400 mt-2">{errors.phoneNumber}</p>
+                  ) : null}
+                </div>
+              </>
+            )}
+
+            {currentStep === 2 && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-3">
+                    {tx("onboarding.progressive.client.fields.accountType", undefined, "Account Type")}
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {accountTypeOptions.map((option) => {
+                      const isActive = formData.accountType === option.value;
+                      const IconComponent = option.value === "Individual" ? User : Building2;
+                      const description = option.value === "Individual"
+                        ? tx("onboarding.progressive.client.accountTypes.individualDesc", undefined, "Hire as a single person for personal projects")
+                        : tx("onboarding.progressive.client.accountTypes.companyDesc", undefined, "Hire on behalf of an agency, startup, or company");
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              accountType: option.value,
+                              companyName: option.value === "Company" ? prev.companyName : "",
+                            }))
+                          }
+                          className={`
+                            text-left p-5 rounded-2xl border transition-all duration-300 flex items-start gap-4 relative overflow-hidden group
+                            ${isActive 
+                              ? "border-[var(--workspace-primary)] bg-[var(--workspace-primary-dim)] shadow-[0_0_20px_var(--workspace-shadow)]" 
+                              : "border-zinc-800 bg-zinc-950 hover:border-zinc-700 hover:bg-zinc-900/50"
+                            }
+                          `}
+                        >
+                          <div className={`
+                            p-3 rounded-xl transition-colors duration-300
+                            ${isActive 
+                              ? "bg-[var(--workspace-primary)] text-white" 
+                              : "bg-zinc-900 text-zinc-400 group-hover:text-zinc-200"
+                            }
+                          `}>
+                            <IconComponent className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="block text-sm font-semibold text-[var(--color-text-primary)]">{option.label}</span>
+                            <span className="block text-xs text-zinc-500 mt-1 leading-relaxed">{description}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.accountType ? (
+                    <p className="text-xs text-red-400 mt-2">{errors.accountType}</p>
+                  ) : null}
+                </div>
+
+                {formData.accountType === "Company" && (
+                  <div>
+                    <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-2">
+                      {tx("onboarding.progressive.client.fields.companyName", undefined, "Company Name")}
+                    </label>
+                    <input
+                      value={formData.companyName}
+                      onChange={(event) =>
+                        setFormData((prev) => ({ ...prev, companyName: event.target.value }))
+                      }
+                      className={CLIENT_INPUT_CLASS}
+                      placeholder={tx(
+                        "onboarding.progressive.client.placeholders.companyName",
+                        undefined,
+                        "Your company name",
+                      )}
+                    />
+                    {errors.companyName ? (
+                      <p className="text-xs text-red-400 mt-2">{errors.companyName}</p>
+                    ) : null}
+                  </div>
                 )}
-              />
-              {errors.companyName ? (
-                <p className="text-xs text-red-400 mt-2">{errors.companyName}</p>
-              ) : null}
-            </div>
-          ) : null}
 
-          <div>
-            <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-3">
-              {tx("onboarding.progressive.client.fields.primaryGoal", undefined, "Primary Goal")}
-            </label>
-            <div className="space-y-3">
-              {primaryGoalOptions.map((option) => {
-                const isActive = formData.primaryGoal === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, primaryGoal: option.value }))
-                    }
-                    className="w-full text-left px-4 py-3.5 rounded-xl border transition-colors"
-                    style={{
-                      borderColor: isActive ? "#E8820C" : "#262626",
-                      backgroundColor: isActive ? "rgba(232, 130, 12, 0.12)" : "#0a0a0a",
-                    }}
-                  >
-                    <span className="text-sm text-[var(--color-text-primary)] font-medium">{option.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-            {errors.primaryGoal ? (
-              <p className="text-xs text-red-400 mt-2">{errors.primaryGoal}</p>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+                <div>
+                  <label className="text-sm font-medium text-[var(--color-text-primary)] block mb-3">
+                    {tx("onboarding.progressive.client.fields.primaryGoal", undefined, "Primary Goal")}
+                  </label>
+                  <div className="space-y-3">
+                    {primaryGoalOptions.map((option) => {
+                      const isActive = formData.primaryGoal === option.value;
+                      const IconComponent = option.value === "Hire for a specific project"
+                        ? Target
+                        : option.value === "Build a team"
+                          ? Users
+                          : Search;
+                      const description = option.value === "Hire for a specific project"
+                        ? tx("onboarding.progressive.client.primaryGoals.specificProjectDesc", undefined, "Post a job and find a freelancer for a one-off task or scope")
+                        : option.value === "Build a team"
+                          ? tx("onboarding.progressive.client.primaryGoals.buildTeamDesc", undefined, "Bring on multiple experts for long-term collaboration")
+                          : tx("onboarding.progressive.client.primaryGoals.justBrowsingDesc", undefined, "Explore freelancers, profiles, and active job postings first");
+
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({ ...prev, primaryGoal: option.value }))
+                          }
+                          className={`
+                            w-full text-left p-5 rounded-2xl border transition-all duration-355 flex items-center gap-4 relative overflow-hidden group
+                            ${isActive 
+                              ? "border-[var(--workspace-primary)] bg-[var(--workspace-primary-dim)] shadow-[0_0_20px_var(--workspace-shadow)]" 
+                              : "border-zinc-800 bg-zinc-950 hover:border-zinc-700 hover:bg-zinc-900/50"
+                            }
+                          `}
+                        >
+                          <div className={`
+                            p-3 rounded-xl transition-colors duration-300
+                            ${isActive 
+                              ? "bg-[var(--workspace-primary)] text-white" 
+                              : "bg-zinc-900 text-zinc-400 group-hover:text-zinc-200"
+                            }
+                          `}>
+                            <IconComponent className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="block text-sm font-semibold text-[var(--color-text-primary)]">{option.label}</span>
+                            <span className="block text-xs text-zinc-500 mt-0.5 leading-relaxed">{description}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.primaryGoal ? (
+                    <p className="text-xs text-red-400 mt-2">{errors.primaryGoal}</p>
+                  ) : null}
+                </div>
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      )}
     </OnboardingLayout>
   );
 }

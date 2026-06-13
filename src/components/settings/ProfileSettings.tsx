@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useTranslation } from '@/i18n';
 import { logger } from '@/lib/logger';
 import { isValidOptionalPhone, normalizeOptionalPhone } from '@/lib/phone';
+import { calculateFreelancerProfileCompletion, calculateClientProfileCompletion } from '@/lib/profileCompletion';
 import { supabase } from '@/lib/supabase';
 import { switchWorkspace } from '@/lib/switchWorkspace';
 
@@ -299,6 +300,48 @@ export default function ProfileSettings() {
       : activeTab === 'client'    ? CLIENT_COLOR
       : 'var(--workspace-primary)';
 
+    const completion = activeMode === 'freelancer'
+        ? calculateFreelancerProfileCompletion(profile, freelancerProfile)
+        : calculateClientProfileCompletion(profile);
+
+    const strengthLabel = completion.percentage < 30
+        ? tx('components.profileCompletion.weak', undefined, 'Needs work')
+        : completion.percentage < 60
+            ? tx('components.profileCompletion.medium', undefined, 'Getting there')
+            : completion.percentage < 90
+                ? tx('components.profileCompletion.good', undefined, 'Looking solid')
+                : tx('components.profileCompletion.excellent', undefined, 'Standout');
+
+    const strengthColor = completion.percentage < 30
+        ? 'text-red-500 bg-red-500/10 border-red-500/20'
+        : completion.percentage < 60
+            ? 'text-amber-500 bg-amber-500/10 border-amber-500/20'
+            : completion.percentage < 90
+                ? 'text-sky-500 bg-sky-500/10 border-sky-500/20'
+                : 'text-green-500 bg-green-500/10 border-green-500/20';
+
+    const getStepLabel = (stepId: string, fallback: string) => {
+        const labels: Record<string, string> = {
+            avatar: tx('components.profileCompletion.steps.avatar', undefined, 'Add a profile photo'),
+            full_name: tx('components.profileCompletion.steps.fullName', undefined, 'Complete your full name'),
+            bio: tx('components.profileCompletion.steps.bio', undefined, 'Write a stronger bio'),
+            phone: tx('components.profileCompletion.steps.phone', undefined, 'Add your phone number'),
+            location: tx('components.profileCompletion.steps.location', undefined, 'Set your location'),
+            title: tx('components.profileCompletion.steps.title', undefined, 'Add professional title'),
+            skills: tx('components.profileCompletion.steps.skills', undefined, 'Add skills'),
+            hourly_rate: tx('components.profileCompletion.steps.hourlyRate', undefined, 'Set hourly rate'),
+            languages: tx('components.profileCompletion.steps.languages', undefined, 'Add languages'),
+            education: tx('components.profileCompletion.steps.education', undefined, 'Add education'),
+            portfolio: tx('components.profileCompletion.steps.portfolio', undefined, 'Show past work'),
+            company_name: tx('components.profileCompletion.steps.companyName', undefined, 'Add company name'),
+            company_industry: tx('components.profileCompletion.steps.companyIndustry', undefined, 'Set company industry'),
+            hiring_needs: tx('components.profileCompletion.steps.hiringNeeds', undefined, 'Add hiring needs'),
+            project_budget_preference: tx('components.profileCompletion.steps.budgetPref', undefined, 'Set budget preference'),
+            project_timeline_preference: tx('components.profileCompletion.steps.timelinePref', undefined, 'Set timeline preference'),
+        };
+        return labels[stepId] || fallback;
+    };
+
     return (
         <div className="space-y-0">
             {/* ── Card wrapper ─────────────────────────────────────────── */}
@@ -306,6 +349,59 @@ export default function ProfileSettings() {
                 {/* Top accent line */}
                 <div className="absolute top-0 left-0 right-0 h-0.5 transition-all duration-300"
                      style={{ background: `linear-gradient(90deg, ${accentVar} 0%, transparent 70%)` }} />
+
+                {/* Profile Completion Panel */}
+                <div className="px-6 pt-5 pb-4 border-b border-gray-200/50 dark:border-white/[0.04] bg-black/5 dark:bg-white/[0.01]">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-zinc-400">
+                                {activeMode === 'freelancer' ? 'Freelancer Profile Strength' : 'Client Profile Strength'}
+                            </span>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${strengthColor}`}>
+                                {strengthLabel}
+                            </span>
+                        </div>
+                        <div className="text-xs font-semibold" style={{ color: accentVar }}>
+                            {completion.percentage}% Completed
+                        </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="w-full h-2 rounded-full bg-black/10 dark:bg-white/[0.04] overflow-hidden relative">
+                        <div
+                            className="h-full rounded-full transition-all duration-700 ease-out"
+                            style={{
+                                width: `${completion.percentage}%`,
+                                background: accentVar,
+                                boxShadow: `0 0 12px ${accentVar}40`
+                            }}
+                        />
+                    </div>
+
+                    {/* Missing steps hint */}
+                    {completion.missingSteps.length > 0 ? (
+                        <div className="mt-3 flex flex-wrap gap-2 items-center">
+                            <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-medium">
+                                Remaining items:
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                                {completion.missingSteps.map((step) => (
+                                    <span
+                                        key={step.id}
+                                        className="inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/[0.02] border border-gray-200/50 dark:border-white/[0.04] text-gray-600 dark:text-zinc-400 font-medium"
+                                    >
+                                        {getStepLabel(step.id, step.label)}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="mt-3 text-[10px] text-green-500 font-semibold flex items-center gap-1">
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Your profile is 100% completed and optimized!</span>
+                        </div>
+                    )}
+                </div>
 
                 {/* ── Tab bar - Segmented Pill Bar ──────────────────────── */}
                 <div className="px-6 pt-5 pb-2 flex overflow-x-auto">
