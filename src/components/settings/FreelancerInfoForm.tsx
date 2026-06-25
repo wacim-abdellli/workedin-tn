@@ -196,6 +196,16 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                             leftIcon={<Timer className="w-4 h-4 text-purple-400" />}
                         />
                     </div>
+
+                    <div id="field-portfolio_links" className="md:col-span-2 transition-all duration-300 rounded-xl p-0.5">
+                        <Input
+                            label={tx('profile.portfolioLinks', undefined, 'Portfolio links (comma separated)')}
+                            value={form.portfolio_links}
+                            onChange={e => set({ portfolio_links: e.target.value })}
+                            placeholder={tx('profile.portfolioLinksPlaceholder', undefined, 'https://site.com/work-1, https://behance.net/mywork')}
+                            leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -573,56 +583,29 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                 )}
             </div>
 
-            {/* Preferences & Work Deliverables Card */}
-            <div className="rounded-2xl border border-gray-150 dark:border-white/[0.04] p-5 space-y-5 bg-white/[0.01] dark:bg-zinc-900/[0.05]">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-150 dark:border-white/[0.04] gap-2">
-                    <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-purple-500" />
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{tx('profile.portfolioPreferencesTitle', undefined, 'Portfolio & Work Preferences')}</h3>
+            {/* Portfolio Dashboard Shoutout Link */}
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-2xl border border-purple-500/25 bg-gradient-to-r from-purple-950/20 to-indigo-950/15 backdrop-blur-sm gap-4 shadow-[0_4px_20px_rgba(139,92,246,0.05)] hover:border-purple-500/40 hover:shadow-[0_4px_25px_rgba(139,92,246,0.1)] transition-all duration-300">
+                <div className="flex items-center gap-3 text-center sm:text-left">
+                    <div className="p-2.5 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20">
+                        <Briefcase className="w-5 h-5" />
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => navigate('/freelancer/portfolio')}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 hover:border-purple-500/30 transition-all active:scale-95 duration-200"
-                    >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        {tx('profile.managePortfolioWorks', undefined, 'Manage Portfolio Works')}
-                    </button>
-                </div>
-
-                <div className="space-y-5">
-                    <div id="field-portfolio_links" className="transition-all duration-300 rounded-xl p-0.5">
-                        <Input
-                            label={tx('profile.portfolioLinks', undefined, 'Portfolio links (comma separated)')}
-                            value={form.portfolio_links}
-                            onChange={e => set({ portfolio_links: e.target.value })}
-                            placeholder={tx('profile.portfolioLinksPlaceholder', undefined, 'https://site.com/work-1, https://behance.net/mywork')}
-                            leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
-                        />
-                    </div>
-
-                    <div id="field-revision_policy" className="transition-all duration-300 rounded-xl p-0.5">
-                        <Input
-                            label={tx('profile.revisionPolicy', undefined, 'Revision policy')}
-                            value={form.revision_policy}
-                            onChange={e => set({ revision_policy: e.target.value })}
-                            placeholder={tx('profile.revisionPolicyPlaceholder', undefined, 'e.g. 2 revisions included, additional billed separately.')}
-                            leftIcon={<Repeat className="w-4 h-4 text-purple-400" />}
-                        />
-                    </div>
-
-                    <div id="field-project_preferences" className="transition-all duration-300 rounded-xl p-0.5">
-                        <Input
-                            as="textarea"
-                            rows={4}
-                            label={tx('profile.projectPreferences', undefined, 'Project preferences')}
-                            value={form.project_preferences}
-                            onChange={e => set({ project_preferences: e.target.value })}
-                            placeholder={tx('profile.projectPreferencesPlaceholder', undefined, 'Describe ideal project size, communication style, and client type.')}
-                            leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
-                        />
+                    <div>
+                        <h4 className="text-sm font-semibold text-white">
+                            {tx('profile.shoutout.title', undefined, 'Manage Your Portfolio Works')}
+                        </h4>
+                        <p className="text-xs text-zinc-400 mt-0.5">
+                            {tx('profile.shoutout.desc', undefined, 'Showcase your real-world projects, designs, and case studies to stand out to clients.')}
+                        </p>
                     </div>
                 </div>
+                <button
+                    type="button"
+                    onClick={() => navigate('/freelancer/portfolio')}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl text-white bg-purple-600 hover:bg-purple-500 border border-purple-500/30 hover:border-purple-400 shadow-[0_2px_8px_rgba(147,51,234,0.2)] hover:shadow-[0_4px_15px_rgba(147,51,234,0.3)] active:scale-[0.97] transition-all duration-200"
+                >
+                    {tx('profile.shoutout.button', undefined, 'Portfolio Dashboard')}
+                    <ExternalLink className="w-3.5 h-3.5" />
+                </button>
             </div>
         </div>
     );

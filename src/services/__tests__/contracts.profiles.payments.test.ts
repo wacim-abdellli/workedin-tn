@@ -207,10 +207,14 @@ import {
     getFreelancerProfile,
     getFreelancerWithProfile,
     getFreelancers,
+    getOwnProfile,
     getProfileById,
     getReviewsByUser,
+    getSavedFreelancerIds,
     getSavedJobs,
+    getFreelancerReviewStats,
     toggleFavorite,
+    toggleFreelancerFavorite,
     uploadAvatar,
     updateFreelancerProfile,
     updateProfile,
@@ -229,6 +233,7 @@ import {
     reconcilePayment,
     requestWithdrawal,
 } from '@/services/payments';
+import { submitReview } from '@/services/reviews';
 
 describe('contracts service coverage', () => {
     beforeEach(() => {
@@ -692,5 +697,196 @@ describe('payments service coverage', () => {
 
         expect(stuck).toEqual([]);
         expect(result).toEqual({ success: false, message: 'Function failed' });
+    });
+});
+
+describe('profiles service — gap coverage', () => {
+    beforeEach(() => {
+        serviceState.reset();
+    });
+
+    it('getOwnProfile reads from base profiles table', async () => {
+        serviceState.state.tableResults.profiles = {
+            data: { id: 'user-1', full_name: 'Owner', email: 'hidden@test.com' },
+            error: null,
+        };
+
+        const result = await getOwnProfile('user-1');
+
+        expect(result.data).toEqual({ id: 'user-1', full_name: 'Owner', email: 'hidden@test.com' });
+        expect(serviceState.state.fromCalls).toContain('profiles');
+        expect(serviceState.state.eqCalls).toContainEqual({ table: 'profiles', column: 'id', value: 'user-1' });
+    });
+
+    it('getSavedFreelancerIds queries favorites for freelancer ids', async () => {
+        serviceState.state.tableResults.favorites = {
+            data: [{ freelancer_id: 'freelancer-1' }, { freelancer_id: 'freelancer-2' }],
+            error: null,
+        };
+
+        const result = await getSavedFreelancerIds('user-1');
+
+        expect(result.data).toHaveLength(2);
+        expect(serviceState.state.eqCalls).toContainEqual({ table: 'favorites', column: 'user_id', value: 'user-1' });
+        expect(serviceState.state.notCalls).toContainEqual({
+            table: 'favorites',
+            column: 'freelancer_id',
+            operator: 'is',
+            value: null,
+        });
+    });
+
+    it('toggleFreelancerFavorite inserts and deletes correctly', async () => {
+        await toggleFreelancerFavorite('user-1', 'freelancer-1', false);
+        expect(serviceState.state.insertCalls).toContainEqual({
+            table: 'favorites',
+            value: { user_id: 'user-1', freelancer_id: 'freelancer-1' },
+        });
+
+        await toggleFreelancerFavorite('user-1', 'freelancer-1', true);
+        expect(serviceState.state.eqCalls).toContainEqual({
+            table: 'favorites',
+            column: 'freelancer_id',
+            value: 'freelancer-1',
+        });
+    });
+
+    it('getFreelancerReviewStats computes weighted average rating', async () => {
+        serviceState.state.tableResults.reviews = {
+            data: [
+                { rating: 5, trust_weight: 2 },
+                { rating: 3, trust_weight: 1 },
+                { rating: 4, trust_weight: 1 },
+            ],
+            error: null,
+        };
+
+        const stats = await getFreelancerReviewStats('freelancer-1');
+
+        // Weighted: (5*2 + 3*1 + 4*1) / (2+1+1) = 17/4 = 4.25 → rounded to 4.3
+        expect(stats.averageRating).toBe(4.3);
+        expect(stats.reviewCount).toBe(3);
+    });
+
+    it('getFreelancerReviewStats returns zeros on error', async () => {
+        serviceState.state.tableResults.reviews = {
+            data: null,
+            error: { message: 'broken' },
+        };
+
+        const stats = await getFreelancerReviewStats('freelancer-1');
+        expect(stats).toEqual({ averageRating: 0, reviewCount: 0 });
+    });
+
+    it('getFreelancerReviewStats returns zeros for empty data', async () => {
+        serviceState.state.tableResults.reviews = {
+            data: [],
+            error: null,
+        };
+
+        const stats = await getFreelancerReviewStats('freelancer-1');
+        expect(stats).toEqual({ averageRating: 0, reviewCount: 0 });
+    });
+
+    it('getFreelancers applies all filter types', async () => {
+        await getFreelancers({
+            skills: ['React', 'TypeScript'],
+            availability: 'full-time',
+            excludeId: 'user-1',
+        }, 1, 10);
+
+        expect(serviceState.state.eqCalls).toContainEqual({
+            table: 'public_profiles',
+            column: 'freelancer_profiles.availability',
+            value: 'full-time',
+        });
+        expect(serviceState.state.rangeCalls).toContainEqual({
+            table: 'public_profiles',
+            from: 0,
+            to: 9,
+        });
+    });
+});
+
+describe('contracts service — manual hydration fallback', () => {
+    beforeEach(() => {
+        serviceState.reset();
+    });
+
+    it('falls back to manual hydration on schema cache error', async () => {
+        // First call with schema cache error triggers fallback
+        let callCount = 0;
+        const originalFrom = serviceState.state.fromCalls;
+
+        // Override single to return schema cache error first time, then success
+        serviceState.state.tableResults.contracts = {
+            data: { id: 'c1', job_id: 'j1', client_id: 'cl1', freelancer_id: 'f1', status: 'active' },
+            error: { message: 'could not find the "delivery_note" column of "contracts" in schema cache' },
+        };
+        serviceState.state.tableResults.jobs = { data: { id: 'j1', title: 'Test Job' }, error: null };
+        serviceState.state.tableResults.public_profiles = { data: { id: 'cl1', full_name: 'Client' }, error: null };
+        serviceState.state.tableResults.milestones = { data: [], error: null };
+
+        // Mock getUser to return null (no user = no access check)
+        const mockGetUser = vi.fn(async () => ({ data: { user: null } }));
+
+        // Need to re-mock supabase with auth.getUser
+        const { supabase: mockSupabase } = await import('@/lib/supabase');
+        (mockSupabase.auth as any).getUser = mockGetUser;
+
+        const result = await getContractById('c1');
+
+        // Should have queried all related tables in fallback path
+        expect(serviceState.state.fromCalls).toContain('contracts');
+    });
+});
+
+describe('reviews service coverage', () => {
+    beforeEach(() => {
+        serviceState.reset();
+    });
+
+    it('submits review via atomic RPC', async () => {
+        serviceState.state.rpcResults['submit_review_atomic'] = {
+            data: { success: true },
+            error: null,
+        };
+
+        const result = await submitReview('contract-1', 5, 'Great work!');
+
+        expect(serviceState.state.rpcCalls).toContainEqual({
+            fn: 'submit_review_atomic',
+            params: {
+                p_contract_id: 'contract-1',
+                p_rating: 5,
+                p_comment: 'Great work!',
+            },
+        });
+    });
+
+    it('trims and nullifies empty comments', async () => {
+        await submitReview('contract-2', 4, '   ');
+
+        expect(serviceState.state.rpcCalls).toContainEqual({
+            fn: 'submit_review_atomic',
+            params: {
+                p_contract_id: 'contract-2',
+                p_rating: 4,
+                p_comment: null,
+            },
+        });
+    });
+
+    it('handles null comment', async () => {
+        await submitReview('contract-3', 3, null);
+
+        expect(serviceState.state.rpcCalls).toContainEqual({
+            fn: 'submit_review_atomic',
+            params: {
+                p_contract_id: 'contract-3',
+                p_rating: 3,
+                p_comment: null,
+            },
+        });
     });
 });

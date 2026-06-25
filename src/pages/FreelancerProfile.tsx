@@ -999,46 +999,10 @@ function ProfileView({
               </div>
             </section>
 
-            {/* Project Preferences & Details */}
-            <section className="p-6 sm:p-8 flex flex-col gap-5">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-50">
-                  {tx('pages.freelancerProfile.projectPreferences.title', undefined, 'Project Preferences & Details')}
-                </h3>
-                {isOwner && (
-                  <button
-                    type="button"
-                    onClick={() => navigate('/settings?tab=profile&focus=project_preferences')}
-                    className="p-1.5 text-gray-400 hover:text-[#8B5CF6] dark:text-zinc-500 dark:hover:text-[#a78bfa] hover:bg-[#8B5CF6]/10 dark:hover:bg-[#8B5CF6]/20 hover:scale-110 active:scale-90 rounded-full transition-all duration-200"
-                    aria-label="Edit project preferences"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30 hover:-translate-y-0.5 hover:border-[#8B5CF6]/20 hover:shadow-sm transition-all duration-300">
-                  <h4 className="font-semibold text-gray-800 dark:text-zinc-200 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-[#8B5CF6]" />
-                    {tx('pages.freelancerProfile.projectPreferences.revisionPolicy', undefined, 'Revision Policy')}
-                  </h4>
-                  <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-xs">
-                    {freelancer.revision_policy || tx('pages.freelancerProfile.projectPreferences.revisionPolicyDefault', undefined, '2 revisions included, additional billed separately.')}
-                  </p>
-                </div>
 
-                <div className="space-y-2.5 p-4 rounded-xl border border-gray-100 dark:border-[#2d2d2d] bg-gray-50/50 dark:bg-[#161618]/30 hover:-translate-y-0.5 hover:border-[#8B5CF6]/20 hover:shadow-sm transition-all duration-300">
-                  <h4 className="font-semibold text-gray-800 dark:text-zinc-200 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-[#8B5CF6]" />
-                    {tx('pages.freelancerProfile.projectPreferences.projectPreferences', undefined, 'Project Preferences')}
-                  </h4>
-                  <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-xs">
-                    {(freelancer.project_preferences?.details as string) || tx('pages.freelancerProfile.projectPreferences.projectPreferencesDefault', undefined, 'Open to project scope changes, regular text/call communication, and milestone-based deliverables.')}
-                  </p>
-                </div>
-              </div>
-            </section>
+
+
 
             {/* Portfolio */}
             <section className="p-6 sm:p-8 flex flex-col gap-6">

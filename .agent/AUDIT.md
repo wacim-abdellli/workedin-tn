@@ -11,7 +11,7 @@
 | Architecture & Organization | **9.5** | Domain-driven, clean separation, composable guards, barrel exports |
 | TypeScript Quality | **9.0** | `strict: true`, type-only imports, Zod. Some `any` in service layer |
 | Security | **9.5** | Defense-in-depth: RLS + SECURITY DEFINER RPCs + magic-byte uploads + HMAC webhooks + PKCE + CSP |
-| Testing | **7.5** | 70 unit test files, 765+ tests. Coverage 23.3% (up from 20%). Needs more tests |
+| Testing | **7.5** | 71 unit test files, 789+ tests. Coverage 23.4% (up from 20%). Needs more tests |
 | Performance | **8.0** | Code-split pages, React Query cache, Zustand sync init, singleton channels. Missing `useMemo` in spots |
 | i18n | **9.0** | Full custom system, 3 languages (5.5k lines each), pluralization, RTL, cross-tab sync |
 | Accessibility | **8.0** | Extensive ARIA, focus trapping, SkipLinks, axe-core E2E. Color contrast skipped as debt |
@@ -267,7 +267,7 @@ Enforced client-side AND server-side via SECURITY DEFINER atomic RPCs with row-l
 
 | Layer | Framework | Count |
 |---|---|---|
-| Unit/Integration | Vitest + testing-library | 70 files, 765+ tests |
+| Unit/Integration | Vitest + testing-library | 71 files, 789+ tests |
 | E2E | Playwright | 11 spec files |
 | Visual Regression | Playwright | 6 screenshots |
 | Accessibility | Playwright + axe-core | 6 flows |
