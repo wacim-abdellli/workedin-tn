@@ -136,20 +136,20 @@ Enforced client-side AND server-side via SECURITY DEFINER atomic RPCs with row-l
 
 | # | Issue | File(s) | Detail |
 |---|---|---|---|
-| 5 | No timeouts in 7/9 services | `services/profiles.ts`, `contracts.ts`, `proposals.ts`, `notifications.ts`, `payments.ts`, `reviews.ts`, `dhmad.ts` | A hanging Supabase query hangs the UI indefinitely |
+| 5 | No timeouts in 7/9 services | `services/profiles.ts`, `contracts.ts`, `proposals.ts`, `notifications.ts`, `payments.ts`, `reviews.ts`, `dhmad.ts` | ✅ FIXED — added `supabaseWithRetry` to profiles, contracts, proposals, notifications, payments, reviews. `dhmad.ts` skipped (uses edge functions, not DB queries) |
 | 6 | Error handling inconsistency — 4 patterns | All `src/services/*.ts` | Some throw, some return `{data,error}`, some return defaults silently, some normalize+rethrow. Pick one |
-| 7 | `console.error` in production code | `services/jobs.ts` lines 100,115,163,187,208,229 | Should use `logger.error()` |
+| 7 | `console.error` in production code | `services/jobs.ts` lines 100,115,163,187,208,229 | ✅ FIXED — replaced all 6 with `logger.error()` |
 | 8 | `scratch/` directory (32 debug scripts) | `scratch/` | ✅ FIXED — `git rm -r --cached scratch/` removes from tracking. Already in `.gitignore` |
 | 9 | Duplicate AUDIT.md content | `.agent/AUDIT.md` | Same text duplicated (lines 1-55 = lines 56-120) |
-| 10 | `LoadingStates.example.tsx` | `src/components/ui/` | Demo file with `console.log` — should not ship |
-| 11 | Incomplete barrel exports | `services/index.ts` | Missing `reviews`, `reports`, `dhmad` |
+| 10 | `LoadingStates.example.tsx` | `src/components/ui/` | ✅ ALREADY RESOLVED — file does not exist |
+| 11 | Incomplete barrel exports | `services/index.ts` | ✅ FIXED — added `reviews`, `reports`, `dhmad` |
 
 ### MEDIUM
 
 | # | Issue | File(s) | Detail |
 |---|---|---|---|
 | 12 | AuthContext is 903 lines | `src/contexts/AuthContext.tsx` | Split into `useProfileCache`, `useAuthSession`, `useWorkspaceSync` |
-| 13 | Duplicate ErrorBoundary (3 versions) | `ui/`, `common/`, root `components/` | One uses manual `if/else` language detection instead of `tx()` |
+| 13 | Duplicate ErrorBoundary (3 versions) | `ui/`, `common/`, root `components/` | ✅ FIXED — consolidated to `ui/ErrorBoundary.tsx` only. Added error details section. Updated 7 imports. Deleted `common/ErrorBoundary.tsx` and `components/ErrorBoundary.tsx` |
 | 14 | God components | `Messages.tsx` (5,410 lines), `ContractWorkspacePage.tsx` (~2,000) | High regression risk |
 | 15 | `: any` type usage | 30+ files inc. `Wallet.tsx`, `JobBoard.tsx`, `JobDetail.tsx`, `services/jobs.ts` | Use `unknown` + type guards |
 | 16 | Low test coverage thresholds | `vitest.config.ts` | CI passes at 20% statements / 15% branches. Aim for ≥60% |

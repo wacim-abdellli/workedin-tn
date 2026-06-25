@@ -8,3 +8,6 @@ export * as profilesService from './profiles';
 export * as messagesService from './messages';
 export * as notificationsService from './notifications';
 export * as paymentsService from './payments';
+export * as reviewsService from './reviews';
+export * as reportsService from './reports';
+export * as dhmadService from './dhmad';

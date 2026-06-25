@@ -2,6 +2,7 @@
  * Contracts Service — All contract-related Supabase queries
  */
 import { supabase } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { canAccessContract } from '@/lib/permissionEngine';
 import { canTransitionContractStatus } from '@/lib/contractWorkflow';
 
@@ -127,16 +128,18 @@ export async function getContractById(contractId: string) {
 }
 
 export async function getContractsByUser(userId: string) {
-    return supabase
-        .from('contracts')
-        .select(`
-            *,
-            client:public_profiles!client_id(id, full_name, avatar_url),
-            freelancer:public_profiles!freelancer_id(id, full_name, avatar_url),
-            job:jobs(id, title)
-        `)
-        .or(`client_id.eq.${userId},freelancer_id.eq.${userId}`)
-        .order('created_at', { ascending: false });
+    return supabaseWithRetry(() =>
+        supabase
+            .from('contracts')
+            .select(`
+                *,
+                client:public_profiles!client_id(id, full_name, avatar_url),
+                freelancer:public_profiles!freelancer_id(id, full_name, avatar_url),
+                job:jobs(id, title)
+            `)
+            .or(`client_id.eq.${userId},freelancer_id.eq.${userId}`)
+            .order('created_at', { ascending: false })
+    );
 }
 
 // --- WRITE ---
@@ -194,11 +197,13 @@ export async function updateContractStatus(contractId: string, status: string) {
 // --- MILESTONES ---
 
 export async function getMilestones(contractId: string) {
-    return supabase
-        .from('milestones')
-        .select('*')
-        .eq('contract_id', contractId)
-        .order('order_index', { ascending: true });
+    return supabaseWithRetry(() =>
+        supabase
+            .from('milestones')
+            .select('*')
+            .eq('contract_id', contractId)
+            .order('order_index', { ascending: true })
+    );
 }
 
 export async function createMilestone(data: {

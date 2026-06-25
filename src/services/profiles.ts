@@ -2,6 +2,7 @@
  * Profiles Service — User and freelancer profile queries
  */
 import { supabase, uploadFile } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { sanitizeFreelancerProfileData } from '@/lib/schemaValidation';
 
 // Export supabase for direct queries when needed
@@ -13,30 +14,38 @@ export { supabase };
 // Accessible to anon + authenticated via view-level GRANT.
 // Does NOT expose: email, phone, is_admin, account_status, cin_submitted.
 export async function getProfileById(userId: string) {
-    return supabase
-        .from('public_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+    return supabaseWithRetry(() =>
+        supabase
+            .from('public_profiles')
+            .select('*')
+            .eq('id', userId)
+            .single()
+    );
 }
 
 // Full own-profile read — only safe to call when userId === auth.uid().
 // Reads the base table (all columns). Protected by profiles_select_own RLS.
 export async function getOwnProfile(userId: string) {
-    return supabase.from('profiles').select('*').eq('id', userId).single();
+    return supabaseWithRetry(() =>
+        supabase.from('profiles').select('*').eq('id', userId).single()
+    );
 }
 
 export async function getFreelancerProfile(userId: string) {
-    return supabase.from('freelancer_profiles').select('*').eq('id', userId).single();
+    return supabaseWithRetry(() =>
+        supabase.from('freelancer_profiles').select('*').eq('id', userId).single()
+    );
 }
 
 export async function getFreelancerWithProfile(userId: string) {
-    return supabase
-        .from('profiles')
-        .select(`*, freelancer_profiles(*), portfolio_items(*)`)
-        .limit(20, { foreignTable: 'portfolio_items' })
-        .eq('id', userId)
-        .single();
+    return supabaseWithRetry(() =>
+        supabase
+            .from('profiles')
+            .select(`*, freelancer_profiles(*), portfolio_items(*)`)
+            .limit(20, { foreignTable: 'portfolio_items' })
+            .eq('id', userId)
+            .single()
+    );
 }
 
 export async function getFreelancers(filters: {
@@ -122,17 +131,21 @@ export async function getFreelancers(filters: {
 // --- WRITE ---
 
 export async function updateProfile(userId: string, data: Record<string, unknown>) {
-    return supabase
-        .from('profiles')
-        .update({ ...data, updated_at: new Date().toISOString() })
-        .eq('id', userId);
+    return supabaseWithRetry(() =>
+        supabase
+            .from('profiles')
+            .update({ ...data, updated_at: new Date().toISOString() })
+            .eq('id', userId)
+    );
 }
 
 export async function updateFreelancerProfile(userId: string, data: Record<string, unknown>) {
     const safeData = sanitizeFreelancerProfileData(data);
-    return supabase
-        .from('freelancer_profiles')
-        .upsert({ id: userId, ...safeData, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    return supabaseWithRetry(() =>
+        supabase
+            .from('freelancer_profiles')
+            .upsert({ id: userId, ...safeData, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    );
 }
 
 export async function uploadAvatar(userId: string, file: File) {

@@ -24,7 +24,7 @@ import {
 import { Header } from '@/components/layout';
 import SEO from '@/components/common/SEO';
 import Button from '@/components/ui/Button';
-import ErrorBoundary from '@/components/common/ErrorBoundary';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWorkspaceStore } from '@/lib/workspaceState';
 import { initiatePayment } from '@/lib/flouci';

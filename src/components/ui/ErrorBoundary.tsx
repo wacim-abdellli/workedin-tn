@@ -120,9 +120,21 @@ class ErrorBoundaryInner extends Component<Props & {
                         <h1 className="mb-3 text-[26px] font-black tracking-tight text-white">
                             {this.props.tx('pages.errorBoundary.title', undefined, 'Something went wrong')}
                         </h1>
-                        <p className="mb-10 max-w-[340px] text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
+                        <p className="mb-6 max-w-[340px] text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
                             {this.props.tx('pages.errorBoundary.description', undefined, 'An unexpected error interrupted this page. Refresh and try again, or head back to the homepage.')}
                         </p>
+
+                        {/* Error details */}
+                        {this.state.error && (
+                            <div className="mb-8 w-full rounded-2xl border border-white/[0.06] bg-[#0E0E10] p-4 text-start text-xs font-mono text-zinc-400 max-h-32 overflow-auto shadow-inner">
+                                <div className="text-[10px] uppercase tracking-wider text-red-400 font-semibold mb-1">
+                                    {this.props.tx('pages.errorBoundary.details', undefined, 'Error Details')}
+                                </div>
+                                <div className="break-all whitespace-pre-wrap leading-relaxed select-all">
+                                    {this.state.error.message}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Actions */}
                         <div className="flex w-full flex-col justify-center gap-3 sm:flex-row">

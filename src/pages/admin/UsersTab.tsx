@@ -3,7 +3,7 @@ import { Ban, Eye, Loader2, Repeat2, Search, ShieldOff, Trash2, UserX, X, Users,
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
-import ErrorBoundary from '@/components/common/ErrorBoundary';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';

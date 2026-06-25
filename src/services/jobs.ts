@@ -2,6 +2,7 @@
  * Jobs Service — All job-related Supabase queries
  */
 import { supabase, supabaseAnon } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import type { Skill } from '@/types';
 
 export interface JobFilters {
@@ -97,7 +98,7 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
         const { data, error, count } = await query;
 
         if (error) {
-            console.error('[getJobs] error:', error);
+            logger.error('[getJobs] error:', error);
             return { data: [], count: 0 };
         }
 
@@ -112,7 +113,7 @@ export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10)
     try {
         return await Promise.race([fetchPromise(), timeout]);
     } catch (err) {
-        console.error('[getJobs] fatal:', err);
+        logger.error('[getJobs] fatal:', err);
         return { data: [], count: 0 };
     }
 }
@@ -160,7 +161,7 @@ export async function getCategoryCounts(categories: string[]) {
 
         return counts;
     } catch (err) {
-        console.error('[getCategoryCounts] error:', err);
+        logger.error('[getCategoryCounts] error:', err);
         // Return zeros for all categories on error
         const counts: Record<string, number> = {};
         categories.forEach(cat => {
@@ -184,7 +185,7 @@ export async function getJobById(jobId: string) {
     try {
         return await Promise.race([fetchPromise(), timeout]);
     } catch (err) {
-        console.error('[getJobById] fatal:', err);
+        logger.error('[getJobById] fatal:', err);
         return { data: null, error: err };
     }
 }
@@ -204,7 +205,7 @@ export async function getJobsByClient(clientId: string) {
     try {
         return await Promise.race([fetchPromise(), timeout]);
     } catch (err) {
-        console.error('[getJobsByClient] fatal:', err);
+        logger.error('[getJobsByClient] fatal:', err);
         return { data: [], error: err };
     }
 }
@@ -225,7 +226,7 @@ export async function getSimilarJobs(jobId: string, category: string, limit = 3)
     try {
         return await Promise.race([fetchPromise(), timeout]);
     } catch (err) {
-        console.error('[getSimilarJobs] fatal:', err);
+        logger.error('[getSimilarJobs] fatal:', err);
         return { data: [], error: err };
     }
 }

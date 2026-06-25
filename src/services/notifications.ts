@@ -3,6 +3,7 @@
  * Real-time subscription is handled by useRealtimeNotifications hook.
  */
 import { supabase } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import type { AppNotification } from '@/hooks/useRealtimeNotifications';
 
 export type { AppNotification };
@@ -10,25 +11,29 @@ export type { AppNotification };
 // --- READ ---
 
 export async function getNotifications(userId: string): Promise<AppNotification[]> {
-    const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .neq('type', 'message')
-        .order('created_at', { ascending: false })
-        .limit(50);
+    const { data, error } = await supabaseWithRetry(() =>
+        supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', userId)
+            .neq('type', 'message')
+            .order('created_at', { ascending: false })
+            .limit(50)
+    );
 
     if (error) throw new Error(error.message);
     return (data ?? []) as AppNotification[];
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
-    const { count, error } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .neq('type', 'message')
-        .eq('is_read', false);
+    const { count, error } = await supabaseWithRetry(() =>
+        supabase
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .neq('type', 'message')
+            .eq('is_read', false)
+    );
 
     if (error) throw new Error(error.message);
     return count ?? 0;
@@ -53,33 +58,39 @@ export async function insertNotification(data: {
     link?: string;
 }) {
     const normalizedType = NOTIFICATION_TYPE_ALIASES[data.type] ?? data.type;
-    const { error } = await supabase.rpc('create_notification', {
-        p_user_id: data.user_id,
-        p_type: normalizedType,
-        p_title: data.title,
-        p_body: data.body,
-        p_related_id: data.related_id,
-        p_link: data.link
-    });
+    const { error } = await supabaseWithRetry(() =>
+        supabase.rpc('create_notification', {
+            p_user_id: data.user_id,
+            p_type: normalizedType,
+            p_title: data.title,
+            p_body: data.body,
+            p_related_id: data.related_id,
+            p_link: data.link
+        })
+    );
     if (error) throw new Error(error.message);
 }
 
 export const createNotification = insertNotification;
 
 export async function markNotificationRead(notificationId: string) {
-    const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', notificationId);
+    const { error } = await supabaseWithRetry(() =>
+        supabase
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('id', notificationId)
+    );
     if (error) throw new Error(error.message);
 }
 
 export async function markAllRead(userId: string) {
-    const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('user_id', userId)
-        .eq('is_read', false);
+    const { error } = await supabaseWithRetry(() =>
+        supabase
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('user_id', userId)
+            .eq('is_read', false)
+    );
     if (error) throw new Error(error.message);
 }
 

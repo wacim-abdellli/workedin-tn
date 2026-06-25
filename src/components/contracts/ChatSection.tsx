@@ -3,7 +3,7 @@ import { Send, Paperclip, Loader2, FileText, Download, Check, CheckCheck } from 
 import Button from '../ui/Button';
 import SanitizedHtml from '../ui/SanitizedHtml';
 import { useTranslation } from '../../i18n';
-import ErrorBoundary from '../ErrorBoundary';
+import ErrorBoundary from '../ui/ErrorBoundary';
 import type { Message } from '../../types';
 interface ChatMessage extends Omit<Message, 'sender'> {
     type?: 'text' | 'system'; // System messages like "Contract Started"

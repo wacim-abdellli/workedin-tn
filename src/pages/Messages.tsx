@@ -67,7 +67,7 @@ import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { useReadReceipts } from '../hooks/useReadReceipts';
 import { usePresence } from '../hooks/usePresence';
 import { useTranslation } from '../i18n';
-import ErrorBoundary from '../components/ErrorBoundary';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
 import { validateUploadSelection } from '../lib/uploadPolicy';
 import ContractDetailsSidebar, { type ContractActivityEvent } from '@/components/contracts/ContractDetailsSidebar';
 import SubmitDeliveryForm from '@/components/contracts/SubmitDeliveryForm';

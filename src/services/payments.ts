@@ -2,6 +2,7 @@
  * Payments Service — Flouci payment and wallet queries
  */
 import { supabase } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import type {
     AddPaymentMethodInput,
     EarningsTransactionSummary,
@@ -105,29 +106,35 @@ export function buildPaymentMethodInsert(userId: string, data: AddPaymentMethodI
 // --- WALLETS ---
 
 export async function getWallet(userId: string) {
-    return supabase.from('wallets').select('*').eq('user_id', userId).single();
+    return supabaseWithRetry(() =>
+        supabase.from('wallets').select('*').eq('user_id', userId).single()
+    );
 }
 
 export async function getTransactions(userId: string, page = 1, pageSize = 20) {
     const from = (page - 1) * pageSize;
-    return supabase
-        .from('transactions')
-        .select('*', { count: 'exact' })
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .range(from, from + pageSize - 1);
+    return supabaseWithRetry(() =>
+        supabase
+            .from('transactions')
+            .select('*', { count: 'exact' })
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .range(from, from + pageSize - 1)
+    );
 }
 
 // --- WITHDRAWALS ---
 
 export async function getWithdrawals(userId: string, page = 1, pageSize = 20) {
     const from = (page - 1) * pageSize;
-    return supabase
-        .from('withdrawals')
-        .select('*', { count: 'exact' })
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .range(from, from + pageSize - 1);
+    return supabaseWithRetry(() =>
+        supabase
+            .from('withdrawals')
+            .select('*', { count: 'exact' })
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .range(from, from + pageSize - 1)
+    );
 }
 
 export async function requestWithdrawal(data: WithdrawalRequestInput) {
@@ -146,7 +153,9 @@ export async function requestWithdrawal(data: WithdrawalRequestInput) {
 // --- PAYMENT METHODS ---
 
 export function getPaymentMethods(userId: string) {
-    return supabase.from('payment_methods').select('*').eq('user_id', userId);
+    return supabaseWithRetry(() =>
+        supabase.from('payment_methods').select('*').eq('user_id', userId)
+    );
 }
 
 export function addPaymentMethod(userId: string, data: AddPaymentMethodInput) {

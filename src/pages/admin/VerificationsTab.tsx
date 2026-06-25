@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react';
 import { Check, Eye, Loader2, RefreshCw, Shield, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import ErrorBoundary from '@/components/common/ErrorBoundary';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import SkeletonList from '@/components/common/SkeletonList';
 import { useToast } from '@/components/ui/Toast';
 import { supabase } from '@/lib/supabase';

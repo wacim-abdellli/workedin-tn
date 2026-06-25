@@ -2,6 +2,8 @@
  * Proposals Service - All proposal-related Supabase queries
  */
 import { supabase, uploadFile } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
+import { logger } from '@/lib/logger';
 
 
 
@@ -56,7 +58,7 @@ export async function getDailyProposalUsage(
 
     if (error) {
         // If we can't count (e.g. RLS blocks it), assume 0 used — don't crash
-        console.warn('[proposals] getDailyProposalUsage error (non-fatal):', extractMessage(error));
+        logger.warn('[proposals] getDailyProposalUsage error (non-fatal):', extractMessage(error));
         return { used: 0, remaining: DAILY_PROPOSAL_LIMIT, limit: DAILY_PROPOSAL_LIMIT, resetAt: null };
     }
 
@@ -169,28 +171,34 @@ async function fallbackCreateProposalWithoutAtomicRpc(
 // --- READ ---
 
 export async function getProposalsByJob(jobId: string) {
-    return supabase
-        .from('proposals')
-        .select(`*, freelancer:public_profiles!freelancer_id(id, full_name, avatar_url, location)`)
-        .eq('job_id', jobId)
-        .order('created_at', { ascending: false });
+    return supabaseWithRetry(() =>
+        supabase
+            .from('proposals')
+            .select(`*, freelancer:public_profiles!freelancer_id(id, full_name, avatar_url, location)`)
+            .eq('job_id', jobId)
+            .order('created_at', { ascending: false })
+    );
 }
 
 export async function getMyProposal(jobId: string, freelancerId: string) {
-    return supabase
-        .from('proposals')
-        .select('*')
-        .eq('job_id', jobId)
-        .eq('freelancer_id', freelancerId)
-        .maybeSingle();
+    return supabaseWithRetry(() =>
+        supabase
+            .from('proposals')
+            .select('*')
+            .eq('job_id', jobId)
+            .eq('freelancer_id', freelancerId)
+            .maybeSingle()
+    );
 }
 
 export async function getProposalsByFreelancer(freelancerId: string) {
-    return supabase
-        .from('proposals')
-        .select(`*, job:jobs(id, title, category, budget_min, budget_max, status)`)
-        .eq('freelancer_id', freelancerId)
-        .order('created_at', { ascending: false });
+    return supabaseWithRetry(() =>
+        supabase
+            .from('proposals')
+            .select(`*, job:jobs(id, title, category, budget_min, budget_max, status)`)
+            .eq('freelancer_id', freelancerId)
+            .order('created_at', { ascending: false })
+    );
 }
 
 // --- WRITE ---

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Check, Flag, RefreshCw, X } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Button from '@/components/ui/Button';
-import ErrorBoundary from '@/components/common/ErrorBoundary';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import SkeletonList from '@/components/common/SkeletonList';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/contexts/AuthContext';
