@@ -1,8 +1,4 @@
-import type { Conversation, ConversationScope, Message } from '../../services/messages';
-import type { ThreadMessage } from '../../lib/messageUtils';
-import type { ReplyMetadata } from '../../lib/messageReplies';
-
-export type { Conversation, ConversationScope, Message, ThreadMessage, ReplyMetadata };
+import type { Conversation, ConversationScope } from '../../services/messages';
 
 export type ContractSessionMeta = {
     id: string;
@@ -86,19 +82,7 @@ export type ContractConversationLookupRow = {
     inbox_participant_2?: string | null;
 };
 
-export interface ConversationRoleMeta {
-    label: string;
-    className: string;
-    textColor?: string;
-}
-
-export interface ConversationStatusMeta {
-    label: string;
-    className: string;
-    textColor?: string;
-}
-
-export interface AccentClasses {
+export type AccentClasses = {
     selectedConversationBorder: string;
     selectedConversationSurface: string;
     conversationHoverSurface: string;
@@ -126,4 +110,4 @@ export interface AccentClasses {
     iconAccent: string;
     sendButton: string;
     composerShell: string;
-}
+};
