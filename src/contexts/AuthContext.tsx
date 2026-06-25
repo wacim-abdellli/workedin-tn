@@ -17,6 +17,14 @@ import {
   getWorkspaceCapabilities,
   persistUserTypeSelectionMarker,
 } from '@/lib/workspaceRoutes';
+import {
+  readProfileCache,
+  writeProfileCache,
+  clearProfileCache,
+  resolveModeAvatarUrl,
+  withModeAwareAvatar,
+  getPreferredLanguage,
+} from '@/lib/authHelpers';
 import type { AccountMode, FreelancerProfile, Language, Profile, UserType } from '@/types';
 
 // Lazy import Sentry to avoid circular dependencies
@@ -25,59 +33,6 @@ if (import.meta.env.PROD) {
   import('@/lib/sentry').then((module) => {
     Sentry = module.Sentry;
   });
-}
-
-// ─── Profile session cache ────────────────────────────────────────────────────
-// Stores profile + freelancerProfile in sessionStorage so the header/avatar
-// renders instantly on page load instead of waiting 2-3s for the DB round-trip.
-const PROFILE_CACHE_KEY = 'wi_profile_cache';
-
-function readProfileCache(userId: string): { profile: Profile; freelancerProfile: FreelancerProfile | null } | null {
-  try {
-    const raw = sessionStorage.getItem(PROFILE_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (parsed?.userId !== userId) return null;
-    return { profile: parsed.profile, freelancerProfile: parsed.freelancerProfile ?? null };
-  } catch {
-    return null;
-  }
-}
-
-function writeProfileCache(userId: string, profile: Profile, freelancerProfile: FreelancerProfile | null) {
-  try {
-    sessionStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify({ userId, profile, freelancerProfile }));
-  } catch {
-    // sessionStorage unavailable — silently ignore
-  }
-}
-
-function clearProfileCache() {
-  try {
-    sessionStorage.removeItem(PROFILE_CACHE_KEY);
-  } catch {
-    // ignore
-  }
-}
-
-function resolveModeAvatarUrl(profile: Profile, currentMode?: string): string | undefined {
-  const mode = currentMode || useWorkspaceStore.getState().activeWorkspace || profile.active_mode;
-  if (mode === 'freelancer' && profile.avatar_url_freelancer) {
-    return profile.avatar_url_freelancer;
-  }
-
-  if (mode === 'client' && profile.avatar_url_client) {
-    return profile.avatar_url_client;
-  }
-
-  return profile.avatar_url_freelancer || profile.avatar_url_client || profile.avatar_url;
-}
-
-function withModeAwareAvatar(profile: Profile, currentMode?: string): Profile {
-  return {
-    ...profile,
-    avatar_url: resolveModeAvatarUrl(profile, currentMode),
-  };
 }
 
 interface AuthContextType {
@@ -164,22 +119,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [activeMode, profile?.avatar_url_freelancer, profile?.avatar_url_client, profile?.active_mode, profile?.avatar_url]);
 
-  const getPreferredLanguage = useCallback((): Language => {
-    if (typeof window === 'undefined') return 'ar';
-
-    const storedLanguage = window.localStorage.getItem('i18n-language') || window.localStorage.getItem('language');
-    if (storedLanguage === 'ar' || storedLanguage === 'fr' || storedLanguage === 'en') {
-      return storedLanguage;
-    }
-
-    const htmlLanguage = document.documentElement.lang;
-    if (htmlLanguage === 'ar' || htmlLanguage === 'fr' || htmlLanguage === 'en') {
-      return htmlLanguage;
-    }
-
-    return 'ar';
-  }, []);
-
   const syncWorkspaceFromProfile = useCallback(
     (nextProfile: Profile | null, nextFreelancerProfile: FreelancerProfile | null = null) => {
       const store = useWorkspaceStore.getState();
@@ -249,7 +188,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         { timeoutMs: 3000 }
       );
     },
-    [getPreferredLanguage]
+    []
   );
 
   const fetchProfile = useCallback(
