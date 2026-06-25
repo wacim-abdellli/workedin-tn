@@ -19,6 +19,7 @@ import type { PortfolioItem } from '../types';
 import { useToast } from '../components/ui/Toast';
 import PortfolioModal from '../components/freelancer/PortfolioModal';
 import type { PortfolioSubmitData } from '../components/freelancer/PortfolioModal';
+import Modal from '../components/ui/Modal';
 import OptimizedImage from '../components/common/OptimizedImage';
 import { Skeleton } from '../components/common/SkeletonCard';
 import { useTranslation } from '../i18n';
@@ -168,6 +169,10 @@ export default function PortfolioDashboard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Delete Confirmation state
+    const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const requestedEditId = useMemo(() => {
         const params = new URLSearchParams(location.search);
@@ -396,22 +401,29 @@ export default function PortfolioDashboard() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm(t.portfolio.deleteConfirm)) return;
+    const handleDelete = (id: string) => {
+        setDeleteItemId(id);
+    };
 
+    const confirmDelete = async () => {
+        if (!deleteItemId) return;
+        setIsDeleting(true);
         try {
             const { error } = await supabase
                 .from('portfolio_items')
                 .delete()
-                .eq('id', id);
+                .eq('id', deleteItemId);
 
             if (error) throw error;
 
-            setItems(prev => prev.filter(item => item.id !== id));
+            setItems(prev => prev.filter(item => item.id !== deleteItemId));
             showToast(t.portfolio.workDeleted, 'success');
         } catch (error) {
             logger.error('Error deleting item:', error);
             showToast(t.portfolio.deleteError, 'error');
+        } finally {
+            setIsDeleting(false);
+            setDeleteItemId(null);
         }
     };
 
@@ -636,6 +648,40 @@ export default function PortfolioDashboard() {
                 initialData={editingItem}
                 isSubmitting={isSubmitting}
             />
+
+            {/* Custom Delete Confirmation Modal */}
+            <Modal
+                isOpen={deleteItemId !== null}
+                onClose={() => setDeleteItemId(null)}
+                title={tx('portfolio.deleteConfirmTitle', undefined, 'Delete Work')}
+                size="sm"
+            >
+                <div className="space-y-5">
+                    <p className="text-sm text-zinc-300">
+                        {t.portfolio?.deleteConfirm || tx('portfolio.deleteConfirm', undefined, 'Are you sure you want to delete this work?')}
+                    </p>
+                    <div className="flex justify-end gap-3 pt-2">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setDeleteItemId(null)}
+                            disabled={isDeleting}
+                            className="!rounded-xl !px-5"
+                        >
+                            {tx('common.cancel', undefined, 'Cancel')}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="danger"
+                            onClick={confirmDelete}
+                            isLoading={isDeleting}
+                            className="!rounded-xl !px-5"
+                        >
+                            {tx('common.delete', undefined, 'Delete')}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
