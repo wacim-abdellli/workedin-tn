@@ -22,7 +22,7 @@ loadEnvFile(resolve(process.cwd(), '.env.local'));
 loadEnvFile(resolve(process.cwd(), '.env'));
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://wvgkezmboewtlpnyjnyd.supabase.co';
-const SERVICE_ROLE_KEY = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SERVICE_ROLE_KEY) {
   console.error('❌ SERVICE_ROLE_KEY not found in .env.local');

@@ -127,10 +127,10 @@ Enforced client-side AND server-side via SECURITY DEFINER atomic RPCs with row-l
 
 | # | Issue | File(s) | Detail |
 |---|---|---|---|
-| 1 | `test-admin.html` deploys to production | `public/test-admin.html` | Exposes admin query patterns. Delete or add to `.vercelignore` |
-| 2 | Domain mismatch | `sitemap.xml`, `robots.txt` | Say `khedmetna.tn` instead of `workedin.tn` |
-| 3 | Service role key with `VITE_` prefix | `.env.local` | Exposed in browser bundle if Vite builds with it. Remove `VITE_` prefix, rotate key |
-| 4 | `user-scalable=no` in viewport | `index.html:14` | Blocks zoom for low-vision users. Fails WCAG 2.1 SC 1.4.4 |
+| 1 | `test-admin.html` deploys to production | `public/test-admin.html` | ✅ ALREADY RESOLVED — file does not exist on disk |
+| 2 | Domain mismatch | `sitemap.xml`, `robots.txt` | ✅ ALREADY RESOLVED — both use `workedin.tn` |
+| 3 | Service role key with `VITE_` prefix | `.env`, `scripts/inspect_db.js`, `scripts/reseed_database.js`, `.env.payments.example` | ✅ FIXED — renamed to `SUPABASE_SERVICE_ROLE_KEY` in .env + both scripts. Removed `VITE_FLOUCI_APP_SECRET` from .env.payments.example |
+| 4 | `user-scalable=no` in viewport | `index.html:14` | ✅ ALREADY RESOLVED — viewport has `width=device-width, initial-scale=1.0, viewport-fit=cover` only |
 
 ### HIGH
 
@@ -139,7 +139,7 @@ Enforced client-side AND server-side via SECURITY DEFINER atomic RPCs with row-l
 | 5 | No timeouts in 7/9 services | `services/profiles.ts`, `contracts.ts`, `proposals.ts`, `notifications.ts`, `payments.ts`, `reviews.ts`, `dhmad.ts` | A hanging Supabase query hangs the UI indefinitely |
 | 6 | Error handling inconsistency — 4 patterns | All `src/services/*.ts` | Some throw, some return `{data,error}`, some return defaults silently, some normalize+rethrow. Pick one |
 | 7 | `console.error` in production code | `services/jobs.ts` lines 100,115,163,187,208,229 | Should use `logger.error()` |
-| 8 | `scratch/` directory (32 debug scripts) | `scratch/` | Not in `.gitignore`, clutters repo |
+| 8 | `scratch/` directory (32 debug scripts) | `scratch/` | ✅ FIXED — `git rm -r --cached scratch/` removes from tracking. Already in `.gitignore` |
 | 9 | Duplicate AUDIT.md content | `.agent/AUDIT.md` | Same text duplicated (lines 1-55 = lines 56-120) |
 | 10 | `LoadingStates.example.tsx` | `src/components/ui/` | Demo file with `console.log` — should not ship |
 | 11 | Incomplete barrel exports | `services/index.ts` | Missing `reviews`, `reports`, `dhmad` |
