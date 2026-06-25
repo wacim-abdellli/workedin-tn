@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { canAccessContract } from '@/lib/permissionEngine';
 import { canTransitionContractStatus } from '@/lib/contractWorkflow';
+import type { ContractStatus } from '@/types';
 
 function getErrorText(error: unknown): string {
     if (!error || typeof error !== 'object') return '';
@@ -54,7 +55,7 @@ export async function getContractById(contractId: string) {
         if (directResult.data && supabase.auth && typeof supabase.auth.getUser === 'function') {
             const { data: { user } } = await supabase.auth.getUser();
             if (user && !canAccessContract(user.id, directResult.data)) {
-                return { data: null, error: { message: 'Access Denied: You do not have permission to access this contract.' } as any };
+                return { data: null, error: { message: 'Access Denied: You do not have permission to access this contract.', code: '403', details: '', hint: '' } };
             }
         }
         return directResult;
@@ -118,7 +119,7 @@ export async function getContractById(contractId: string) {
 
     const user = (supabase.auth && typeof supabase.auth.getUser === 'function') ? (await supabase.auth.getUser())?.data?.user : null;
     if (user && !canAccessContract(user.id, contract)) {
-        return { data: null, error: { message: 'Access Denied: You do not have permission to access this contract.' } as any };
+        return { data: null, error: { message: 'Access Denied: You do not have permission to access this contract.', code: '403', details: '', hint: '' } };
     }
 
     return {
@@ -180,14 +181,15 @@ export async function updateContractStatus(contractId: string, status: string) {
     const currentContract = Array.isArray(contractData) ? contractData[0] : contractData;
     const currentStatus = currentContract?.status;
 
-    if (!canTransitionContractStatus(currentStatus, status as any)) {
+    if (!canTransitionContractStatus(currentStatus, status as ContractStatus)) {
         return {
             data: null,
             error: {
                 message: `Access Denied: Illegal transition from ${currentStatus} to ${status}`,
                 details: 'Contract status transition is not permitted.',
-                hint: 'Check the contract workflow state machine rules.'
-            } as any
+                hint: 'Check the contract workflow state machine rules.',
+                code: '403',
+            }
         };
     }
 

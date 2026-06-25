@@ -2,6 +2,8 @@
 -- GRANT ADMIN ACCESS
 -- Run this in Supabase SQL Editor (prod + dev)
 -- Replace the email below with your actual admin email
+-- WARNING: Do NOT commit new emails to this file.
+-- Use Supabase SQL Editor directly for admin grants.
 -- =====================================================
 
 UPDATE public.profiles

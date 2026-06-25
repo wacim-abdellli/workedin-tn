@@ -94,8 +94,10 @@ test.describe('Proposal Submission Flow (Freelancer)', () => {
       await page.fill('textarea[name="cover_letter"]', 'This is my first proposal for this job. I have the required skills and experience to complete this project successfully.');
       await page.click('button[type="submit"]:has-text("Submit"), button[type="submit"]:has-text("إرسال")');
       
-      // Wait for success
-      await page.waitForTimeout(2000);
+      // Wait for success — applied button or success state
+      await expect(page.locator('text=/applied|تم.*التقديم|success|نجح/i')).toBeVisible({ timeout: 5000 }).catch(() => {
+        return page.locator('button:has-text("Apply"), button:has-text("تقديم")').first().waitFor({ state: 'detached', timeout: 3000 });
+      });
       
       // Try to apply again - button should be disabled or show "Applied"
       const applyButtonAfter = page.locator('button:has-text("Apply"), button:has-text("تقديم")');
@@ -128,7 +130,9 @@ test.describe('Proposal Submission Flow (Freelancer)', () => {
       await page.fill('input[name="bid_amount"]', '400');
       await page.fill('textarea[name="cover_letter"]', 'I am submitting this proposal to test the MyProposals page functionality. I have relevant experience.');
       await page.click('button[type="submit"]:has-text("Submit"), button[type="submit"]:has-text("إرسال")');
-      await page.waitForTimeout(2000);
+      await expect(page.locator('text=/applied|تم.*التقديم|success|نجح/i')).toBeVisible({ timeout: 5000 }).catch(() => {
+        return page.locator('button[type="submit"]').first().waitFor({ state: 'detached', timeout: 3000 });
+      });
     }
     
     // Navigate to My Proposals page
@@ -159,8 +163,8 @@ test.describe('Proposal Submission Flow (Freelancer)', () => {
     // Enter bid amount
     await page.fill('input[name="bid_amount"]', '1000');
     
-    // Wait for calculation to update
-    await page.waitForTimeout(500);
+    // Wait for calculation to update — platform fee or net amount appears
+    await expect(page.locator('text=/100|10%|رسوم.*المنصة|platform.*fee|900/i')).toBeVisible({ timeout: 3000 });
     
     // Verify platform fee is shown (10% = 100)
     await expect(page.locator('text=/100|10%|رسوم.*المنصة|platform.*fee/i')).toBeVisible();

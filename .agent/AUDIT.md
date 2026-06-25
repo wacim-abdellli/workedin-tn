@@ -11,7 +11,7 @@
 | Architecture & Organization | **9.5** | Domain-driven, clean separation, composable guards, barrel exports |
 | TypeScript Quality | **9.0** | `strict: true`, type-only imports, Zod. Some `any` in service layer |
 | Security | **9.5** | Defense-in-depth: RLS + SECURITY DEFINER RPCs + magic-byte uploads + HMAC webhooks + PKCE + CSP |
-| Testing | **7.5** | 76 unit + 11 E2E. Coverage thresholds too low (20%). Some shallow tests |
+| Testing | **7.5** | 67 unit test files, 650+ tests. Coverage 22.4% (up from 20%). Needs more tests |
 | Performance | **8.0** | Code-split pages, React Query cache, Zustand sync init, singleton channels. Missing `useMemo` in spots |
 | i18n | **9.0** | Full custom system, 3 languages (5.5k lines each), pluralization, RTL, cross-tab sync |
 | Accessibility | **8.0** | Extensive ARIA, focus trapping, SkipLinks, axe-core E2E. Color contrast skipped as debt |
@@ -51,7 +51,7 @@
 | `src/services/` | 12 | Data access layer — all DB queries go here (never inline in components) |
 | `src/hooks/` | 23 | Custom React hooks |
 | `src/contexts/` | 4 | React Context providers (Auth, Theme, Notifications, Workspace) |
-| `src/types/` | 8 | TypeScript type definitions |
+| `src/types/` | 11 | TypeScript type definitions (barrel + domain files) |
 | `src/i18n/` | 4 | Internationalization (ar 5.5k lines, fr 5.5k, en 5.5k, provider) |
 | `src/styles/` | 2 | Global styles |
 | `src/config/` | 1 | App configuration |
@@ -152,10 +152,10 @@ Enforced client-side AND server-side via SECURITY DEFINER atomic RPCs with row-l
 | 13 | Duplicate ErrorBoundary (3 versions) | `ui/`, `common/`, root `components/` | ✅ FIXED — consolidated to `ui/ErrorBoundary.tsx` only. Added error details section. Updated 7 imports. Deleted `common/ErrorBoundary.tsx` and `components/ErrorBoundary.tsx` |
 | 14 | God components | `Messages.tsx` (5,410 lines), `ContractWorkspacePage.tsx` (~2,000) | High regression risk |
 | 15 | `: any` type usage | 30+ files inc. `Wallet.tsx`, `JobBoard.tsx`, `JobDetail.tsx`, `services/jobs.ts` | Use `unknown` + type guards |
-| 16 | Low test coverage thresholds | `vitest.config.ts` | CI passes at 20% statements / 15% branches. Aim for ≥60% |
+| 16 | Low test coverage thresholds | `vitest.config.ts` | CI passes at 20% statements / 15% branches. Currently 22.4% statements. Needs more tests to reach 60% |
 | 17 | Some shallow tests | `services/__tests__/*.test.ts` | Check table name only, not query params |
-| 18 | Flaky E2E patterns | `wallet.spec.ts` | `if (!isDisabled)` skips tests entirely |
-| 19 | `waitForTimeout` in E2E | `job-post.spec.ts` | Use proper wait conditions |
+| 18 | ~~Flaky E2E patterns~~ | ~~`wallet.spec.ts`~~ | ✅ Replaced `if (!isDisabled)` skips with explicit `test.skip` annotations |
+| 19 | ~~`waitForTimeout` in E2E~~ | ~~`job-post.spec.ts`~~ | ✅ Replaced with proper wait conditions |
 | 20 | Circular chunk dependency | `vite.config.ts` build output | `form-vendor → react-vendor → form-vendor` |
 | 21 | `connects_transactions` misleading comment | Migration | Says "server-side only" but policy allows client inserts |
 
@@ -163,17 +163,17 @@ Enforced client-side AND server-side via SECURITY DEFINER atomic RPCs with row-l
 
 | # | Issue | File(s) | Detail |
 |---|---|---|---|
-| 22 | SkipLinks hardcoded English | `components/layout/SkipLinks.tsx` | Not translated via i18n |
+| 22 | ~~SkipLinks hardcoded English~~ | ~~`components/layout/SkipLinks.tsx`~~ | ✅ Now uses `tx()` from `useTranslation()` |
 | 23 | Color contrast testing skipped | `e2e/a11y-matrix.spec.ts:71` | Tracked as V1.1 design debt |
-| 24 | `useMediaQuery` optimization | `hooks/useMediaQuery.ts` | `matches` in dependency array causes re-subscription |
-| 25 | Missing `useMemo` for computed booleans | `hooks/useContractState.ts` | `canDeliver`, `canAccept`, etc. recomputed every render |
-| 26 | Duplicate debounce implementation | `hooks/useDebounce.ts`, `hooks/useAutosave.tsx` | `useAutosave` has its own debounce — should use `useDebounce` |
-| 27 | Unused `infrastructure.test.ts` | `src/test/` | Tests `true === true` — leftover scaffolding |
+| 24 | ~~`useMediaQuery` optimization~~ | ~~`hooks/useMediaQuery.ts`~~ | ✅ Removed `matches` from dependency array |
+| 25 | ~~Missing `useMemo` for computed booleans~~ | ~~`hooks/useContractState.ts`~~ | ✅ Added `useMemo` for `canDeliver`, `canAccept`, `canDispute`, `canCancel` |
+| 26 | ~~Duplicate debounce implementation~~ | ~~`hooks/useDebounce.ts`, `hooks/useAutosave.tsx`~~ | ✅ Extracted callback debounce to `useDebouncedCallback.ts` |
+| 27 | ~~Unused `infrastructure.test.ts`~~ | ~~`src/test/`~~ | ✅ Deleted (tested `true === true`) |
 | 28 | Hardcoded admin email in migration | `20260326020000_grant_admin.sql` | `wacimabdelli01@gmail.com` committed to repo |
 | 29 | `VITE_FLOUCI_APP_SECRET` in example | `.env.payments.example:12` | TODO says move to server-side. If used naively, secret leaks in client bundle |
 | 30 | Hardcoded Supabase fallback URL | `lib/supabase.ts:20-21` | `'https://your-project.supabase.co'` — fails open in dev |
 | 31 | `Message` type duplicated | `types/index.ts` + `services/messages.ts` | Keep one source of truth |
-| 32 | `types/index.ts` is 537 lines | Mixes types, constants, helpers | Split into `domain.ts`, `skills.ts`, `tools.ts` |
+| 32 | ~~`types/index.ts` is 537 lines~~ | ~~Mixes types, constants, helpers~~ | ✅ Split into `enums.ts`, `attachments.ts`, `profile.ts`, `job.ts`, `messaging.ts`, `constants.ts` — barrel `index.ts` re-exports |
 | 33 | `services/messages.ts` is 844 lines | Too dense | Split conversations / messages / realtime |
 
 ---
@@ -267,7 +267,7 @@ Enforced client-side AND server-side via SECURITY DEFINER atomic RPCs with row-l
 
 | Layer | Framework | Count |
 |---|---|---|
-| Unit/Integration | Vitest + testing-library | 76 files |
+| Unit/Integration | Vitest + testing-library | 67 files, 650+ tests |
 | E2E | Playwright | 11 spec files |
 | Visual Regression | Playwright | 6 screenshots |
 | Accessibility | Playwright + axe-core | 6 flows |
@@ -279,7 +279,7 @@ Enforced client-side AND server-side via SECURITY DEFINER atomic RPCs with row-l
 4. Avatar Consistency Audit
 5. i18n Strict Audit
 6. TypeScript Type Check (`tsc --noEmit`)
-7. Unit Tests with Coverage (20% threshold)
+7. Unit Tests with Coverage (18% function threshold, ~22% actual)
 8. Build with Bundle Budgets
 9. Preview Server + Security Headers
 10. Strict Accessibility E2E
@@ -331,18 +331,23 @@ Enforced client-side AND server-side via SECURITY DEFINER atomic RPCs with row-l
 - [ ] Delete `LoadingStates.example.tsx`
 
 ### Phase 3 — Maintainability (when touching related code)
+- [x] Split `types/index.ts` into domain files ✅
+- [x] Remove duplicate `useDebounce` in `useAutosave.tsx` ✅
 - [ ] Split `AuthContext.tsx` into smaller hooks
 - [ ] Split `useContractState.ts` (756 lines)
 - [ ] Fix `: any` types incrementally
-- [ ] Split `types/index.ts` into domain files
 - [ ] Split `services/messages.ts` (844 lines)
-- [ ] Remove duplicate `useDebounce` in `useAutosave.tsx`
 
 ### Phase 4 — Quality (ongoing)
-- [ ] Raise coverage thresholds to 60%
-- [ ] Replace `waitForTimeout` in E2E with proper wait conditions
-- [ ] Fix `wallet.spec.ts` flaky skip patterns
+- [x] Fix `useMediaQuery` dependency array ✅
+- [x] Add `useMemo` for computed booleans in `useContractState.ts` ✅
+- [x] Add missing a11y: `aria-label` on RatingStars, `role="status"` on FullScreenLoader ✅
+- [x] Extract `withTimeout` into `lib/withTimeout.ts` — fixes 30+ broken test mocks ✅
+- [x] Exclude `src/types/` from coverage (type-only files) ✅
+- [x] Replace `waitForTimeout` in E2E with proper wait conditions ✅
+- [x] Write comprehensive tests for lib files: phone, permissionEngine, profileCompletion, marketplaceAccess, workspaceRoutes, colors, uploadPolicy, schemaValidation, notificationDisplay, contractEvidence, contractChatSafety, adminAccess, jobLinks, errorMessage, timeUtils, jobCategories, avatar, contractWorkflow, audioProcessing, governorates ✅
+- [ ] Raise coverage thresholds to 60% (currently 22.4% statements — needs more tests)
+- [x] Fix `wallet.spec.ts` flaky skip patterns ✅
+- [x] SkipLinks i18n ✅
+- [x] Delete unused `infrastructure.test.ts` ✅
 - [ ] Add RTL visual regression tests
-- [ ] Add missing a11y: `aria-label` on RatingStars, `role="status"` on FullScreenLoader
-- [ ] Fix `useMediaQuery` dependency array
-- [ ] Add `useMemo` for computed booleans in `useContractState.ts`

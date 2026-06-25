@@ -15,8 +15,8 @@ export default function RatingStars({
 }) {
   const numRating = Number(rating) || 0;
   return (
-    <div className={cn('group relative inline-flex items-center gap-2', className)}>
-      <div className="flex items-center gap-1">
+    <div className={cn('group relative inline-flex items-center gap-2', className)} role="img" aria-label={`${numRating.toFixed(1)} out of 5 stars${typeof reviews === 'number' ? `, ${reviews} reviews` : ''}`}>
+      <div className="flex items-center gap-1" aria-hidden="true">
         {Array.from({ length: 5 }).map((_, index) => {
           const fill = Math.max(0, Math.min(1, numRating - index));
           return (

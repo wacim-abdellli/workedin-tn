@@ -1,4 +1,5 @@
-import { supabase, withTimeout } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
+import { withTimeout } from '@/lib/withTimeout';
 type SupabaseErrorLike = Error & {
   status?: number;
   code?: string;

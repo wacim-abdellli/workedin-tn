@@ -1,6 +1,5 @@
 import { useState } from 'react';
-// import { useLocation } from 'react-router-dom';
-// import { useLocation } from 'react-router-dom';
+import { useTranslation } from '@/i18n';
 
 /**
  * Skip links for keyboard navigation accessibility.
@@ -8,14 +7,11 @@ import { useState } from 'react';
  */
 export default function SkipLinks() {
     const [isFocused, setIsFocused] = useState(false);
-    // const location = useLocation(); // Not currently used, focus resets on blur/navigation naturally
-
-    // Reset visible state on navigation just in case
-    // (though focus usually resets anyway)
+    const { tx } = useTranslation();
 
     const links = [
-        { id: 'main-content', label: 'Skip to main content' },
-        { id: 'main-nav', label: 'Skip to navigation' },
+        { id: 'main-content', label: tx('a11y.skipToMainContent', undefined, 'Skip to main content') },
+        { id: 'main-nav', label: tx('a11y.skipToNavigation', undefined, 'Skip to navigation') },
     ];
 
     return (

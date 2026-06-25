@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { sendContractMessage } from '../services/messages';
@@ -716,13 +716,13 @@ export function useContractState({
         [contract, contractId, queryClient, userId, userRole]
     );
 
-    const canDeliver = userRole === 'freelancer' && canFreelancerDeliverForStatus(contract?.status);
-    const canAccept = userRole === 'client' && canClientAcceptForStatus(
+    const canDeliver = useMemo(() => userRole === 'freelancer' && canFreelancerDeliverForStatus(contract?.status), [userRole, contract?.status]);
+    const canAccept = useMemo(() => userRole === 'client' && canClientAcceptForStatus(
         contract?.status,
         hasRecordedDeliveryEvidence(contract?.delivery_note) || contract?.status === 'delivery_submitted'
-    );
-    const canDispute = canOpenDisputeForStatus(contract?.status);
-    const canCancel = !!contract && ['pending_payment', 'active'].includes(contract.status);
+    ), [userRole, contract?.status, contract?.delivery_note]);
+    const canDispute = useMemo(() => canOpenDisputeForStatus(contract?.status), [contract?.status]);
+    const canCancel = useMemo(() => !!contract && ['pending_payment', 'active'].includes(contract.status), [contract]);
 
     useEffect(() => {
         void refresh();

@@ -36,11 +36,11 @@ test.describe('Job Posting Flow (Client)', () => {
     // Click Next
     await page.click('button:has-text("Next"), button:has-text("التالي")');
     
-    // Step 2: Budget
-    await page.waitForTimeout(500); // Wait for step transition
+    // Step 2: Budget — wait for budget fields to appear
+    const fixedPriceRadio = page.locator('input[value="fixed_price"]');
+    await expect(fixedPriceRadio.or(page.locator('input[name="budget_min"]'))).toBeVisible({ timeout: 5000 });
     
     // Select job type (fixed price)
-    const fixedPriceRadio = page.locator('input[value="fixed_price"]');
     if (await fixedPriceRadio.isVisible()) {
       await fixedPriceRadio.check();
     }
@@ -63,11 +63,11 @@ test.describe('Job Posting Flow (Client)', () => {
     // Click Next
     await page.click('button:has-text("Next"), button:has-text("التالي")');
     
-    // Step 3: Visibility
-    await page.waitForTimeout(500);
+    // Step 3: Visibility — wait for visibility options
+    const publicRadio = page.locator('input[value="public"]');
+    await expect(publicRadio.or(page.locator('button:has-text("Next"), button:has-text("التالي")').nth(1))).toBeVisible({ timeout: 5000 });
     
     // Select public visibility
-    const publicRadio = page.locator('input[value="public"]');
     if (await publicRadio.isVisible()) {
       await publicRadio.check();
     }
@@ -75,11 +75,8 @@ test.describe('Job Posting Flow (Client)', () => {
     // Click Next to review
     await page.click('button:has-text("Next"), button:has-text("التالي")');
     
-    // Step 4: Review and Submit
-    await page.waitForTimeout(500);
-    
-    // Verify job details are shown in review
-    await expect(page.locator('text=' + jobTitle)).toBeVisible();
+    // Step 4: Review and Submit — wait for review content
+    await expect(page.locator('text=' + jobTitle)).toBeVisible({ timeout: 5000 });
     
     // Submit the job
     await page.click('button[type="submit"], button:has-text("Publish"), button:has-text("نشر")');
@@ -125,21 +122,21 @@ test.describe('Job Posting Flow (Client)', () => {
     }
     
     await page.click('button:has-text("Next"), button:has-text("التالي")');
-    await page.waitForTimeout(500);
     
-    // Budget step
+    // Budget step — wait for budget fields
+    await expect(page.locator('input[name="budget_min"]')).toBeVisible({ timeout: 5000 });
     await page.fill('input[name="budget_min"]', '200');
     await page.fill('input[name="budget_max"]', '800');
     await page.selectOption('select[name="duration"]', { index: 1 }).catch(() => {});
     
     await page.click('button:has-text("Next"), button:has-text("التالي")');
-    await page.waitForTimeout(500);
     
-    // Visibility step
+    // Visibility step — wait for next step content
+    await expect(page.locator('button:has-text("Next"), button:has-text("التالي")').last()).toBeVisible({ timeout: 5000 });
     await page.click('button:has-text("Next"), button:has-text("التالي")');
-    await page.waitForTimeout(500);
     
-    // Submit
+    // Submit — wait for review content
+    await expect(page.locator('text=' + uniqueJobTitle)).toBeVisible({ timeout: 5000 });
     await page.click('button[type="submit"], button:has-text("Publish"), button:has-text("نشر")');
     
     // Wait for success
@@ -153,7 +150,6 @@ test.describe('Job Posting Flow (Client)', () => {
     if (await searchInput.isVisible()) {
       await searchInput.fill(uniqueJobTitle);
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(1000);
     }
     
     // Verify job appears in the list
@@ -185,10 +181,12 @@ test.describe('Job Posting Flow (Client)', () => {
     await page.fill('textarea[name="description"]', 'Test hourly job description with sufficient length for validation.');
     
     await page.click('button:has-text("Next"), button:has-text("التالي")');
-    await page.waitForTimeout(500);
+    
+    // Wait for budget step to appear
+    const hourlyRadio = page.locator('input[value="hourly"]');
+    await expect(hourlyRadio.or(page.locator('input[name="budget_min"]'))).toBeVisible({ timeout: 5000 });
     
     // Select hourly job type
-    const hourlyRadio = page.locator('input[value="hourly"]');
     if (await hourlyRadio.isVisible()) {
       await hourlyRadio.check();
       

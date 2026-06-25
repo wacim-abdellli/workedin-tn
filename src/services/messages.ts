@@ -725,8 +725,8 @@ export function subscribeToConversations(
             table: 'conversations',
         },
         (payload) => {
-            const newRecord = payload.new as any;
-            const oldRecord = payload.old as any;
+            const newRecord = payload.new as Record<string, unknown> | undefined;
+            const oldRecord = payload.old as Record<string, unknown> | undefined;
             const isParticipant =
                 (newRecord && (newRecord.participant_1 === userId || newRecord.participant_2 === userId)) ||
                 (oldRecord && (oldRecord.participant_1 === userId || oldRecord.participant_2 === userId));

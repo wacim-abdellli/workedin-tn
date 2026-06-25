@@ -17,8 +17,15 @@ const getEnvVar = (key: string): string | undefined => {
     return undefined;
 };
 
-const supabaseUrl = getEnvVar('VITE_SUPABASE_URL') || 'https://your-project.supabase.co';
-const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY') || 'your-anon-key';
+const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
+const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
+
+if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+        '[WorkedIn] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. ' +
+        'Copy .env.example to .env and fill in your Supabase credentials.'
+    );
+}
 
 // Anon-only client for public queries (jobs, freelancers) — isolated from user session churn.
 export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
@@ -79,34 +86,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     },
 });
 
-/**
- * Wraps a promise with a timeout
- * @param promise The promise to wrap
- * @param timeoutMs Timeout in milliseconds (default: 15000)
- * @returns The promise result or throws if timeout exceeded
- */
-export async function withTimeout<T>(
-    promise: PromiseLike<T>,
-    timeoutMs: number = 15000,
-    operationName: string = 'Operation'
-): Promise<T> {
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    const timeoutPromise = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => {
-            reject(new Error(`${operationName} timed out after ${timeoutMs}ms`));
-        }, timeoutMs);
-    });
-
-    try {
-        const result = await Promise.race([promise, timeoutPromise]);
-        clearTimeout(timeoutId!);
-        return result;
-    } catch (error) {
-        clearTimeout(timeoutId!);
-        throw error;
-    }
-}
+export { withTimeout } from './withTimeout';
 
 export function isMissingStorageBucketError(error: unknown): boolean {
     if (!error || typeof error !== 'object') return false;

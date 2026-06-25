@@ -30,9 +30,10 @@ function extractMessage(err: unknown, fallback = 'An error occurred'): string {
     if (typeof err === 'string') return err || fallback;
     if (err instanceof Error) return err.message || fallback;
     // PostgrestError or similar object with a message property
-    if (typeof (err as any)?.message === 'string') return (err as any).message || fallback;
-    if (typeof (err as any)?.details === 'string') return (err as any).details || fallback;
-    if (typeof (err as any)?.hint === 'string') return (err as any).hint || fallback;
+    const obj = err as Record<string, unknown>;
+    if (typeof obj.message === 'string') return obj.message || fallback;
+    if (typeof obj.details === 'string') return obj.details || fallback;
+    if (typeof obj.hint === 'string') return obj.hint || fallback;
     return fallback;
 }
 

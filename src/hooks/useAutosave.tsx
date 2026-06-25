@@ -1,21 +1,6 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState, useCallback } from 'react';
-
-/**
- * Custom debounce implementation to avoid lodash dependency
- */
-function useDebounce<TArgs extends unknown[]>(callback: (...args: TArgs) => void, delay: number) {
-    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    return useCallback((...args: TArgs) => {
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-        }
-        timeoutRef.current = setTimeout(() => {
-            callback(...args);
-        }, delay);
-    }, [callback, delay]);
-}
+import { useDebouncedCallback } from './useDebouncedCallback';
 
 interface UseAutosaveProps<T> {
     data: T;
@@ -60,7 +45,7 @@ export const useAutosave = <T,>({
         }
     }, [storageKey, onSave]);
 
-    const debouncedSave = useDebounce(saveToStorage, 1000);
+    const debouncedSave = useDebouncedCallback(saveToStorage, 1000);
 
     // Save on data change (debounced) — this is the only trigger needed
     useEffect(() => {

@@ -240,7 +240,7 @@ export async function getClientStats(clientId: string) {
         return { totalJobs: 0, totalSpent: 0, rating: 0 };
     }
     
-    const stats = (data as any)?.[0] || {};
+    const stats = (data as Record<string, unknown> | null)?.[0] as Record<string, unknown> || {};
     return {
         totalJobs: stats.job_count || 0,
         totalSpent: Number(stats.total_spent) || 0,

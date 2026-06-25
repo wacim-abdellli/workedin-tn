@@ -55,8 +55,8 @@ test.describe('Payment Flow', () => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
 
-    // Wait for content to load
-    await page.waitForTimeout(2000);
+    // Wait for content to load — job cards or empty state
+    await expect(page.locator('article, [data-testid="job-card"], text=/no.*jobs|لا.*مشاريع/i').first()).toBeVisible({ timeout: 10000 });
 
     // No JS errors should have occurred
     expect(errors).toHaveLength(0);

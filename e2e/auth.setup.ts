@@ -10,7 +10,7 @@ setup('authenticate as freelancer', async ({ page }) => {
     await login(page, TEST_USERS.freelancer.email, TEST_USERS.freelancer.password);
   } catch (_error) {
     console.log('Initial login failed, waiting for page to load and retrying...');
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
     await page.reload();
     await login(page, TEST_USERS.freelancer.email, TEST_USERS.freelancer.password);
   }
@@ -31,7 +31,7 @@ setup('authenticate as client', async ({ page }) => {
     await login(page, TEST_USERS.client.email, TEST_USERS.client.password);
   } catch (_error) {
     console.log('Initial login failed, waiting for page to load and retrying...');
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
     await page.reload();
     await login(page, TEST_USERS.client.email, TEST_USERS.client.password);
   }

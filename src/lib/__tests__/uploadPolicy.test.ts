@@ -1,196 +1,231 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  getRawStoragePathSegments,
-  isUploadRateLimited,
-  sanitizeStoragePath,
-  validateUploadPayload,
-  validateUploadSelection,
-} from '../uploadPolicy';
+    getUploadPolicy,
+    getFileExtension,
+    sanitizePathSegment,
+    getRawStoragePathSegments,
+    validateUploadSelection,
+    validateUploadPayload,
+    sanitizeStoragePath,
+    isUploadRateLimited,
+    UPLOAD_POLICIES,
+} from '@/lib/uploadPolicy';
 
-describe('upload policy', () => {
-  it('rejects suspicious archive and executable extensions', () => {
-    expect(
-      validateUploadSelection({
-        bucket: 'attachments',
-        fileName: 'payload.zip',
-        mimeType: 'application/zip',
-        size: 1024,
-      }),
-    ).toEqual({ ok: false, reason: 'Unsupported file type.' });
+describe('uploadPolicy', () => {
+    describe('getUploadPolicy', () => {
+        it('returns policy for avatars', () => {
+            expect(getUploadPolicy('avatars')).toBeDefined();
+            expect(getUploadPolicy('avatars')?.maxSizeBytes).toBe(5 * 1024 * 1024);
+        });
 
-    expect(
-      validateUploadSelection({
-        bucket: 'attachments',
-        fileName: 'payload.exe',
-        mimeType: 'application/octet-stream',
-        size: 1024,
-      }),
-    ).toEqual({ ok: false, reason: 'This file type is not allowed.' });
-  });
+        it('returns null for unknown bucket', () => {
+            expect(getUploadPolicy('nonexistent')).toBeNull();
+        });
 
-  it('rejects files whose bytes do not match the declared type', () => {
-    const result = validateUploadPayload({
-      bucket: 'attachments',
-      fileName: 'brief.pdf',
-      mimeType: 'application/pdf',
-      size: 16,
-      bytes: new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
+        it('has all expected buckets', () => {
+            expect(Object.keys(UPLOAD_POLICIES)).toEqual(
+                expect.arrayContaining(['avatars', 'attachments', 'contract-files', 'message_attachments', 'identity-documents'])
+            );
+        });
     });
 
-    expect(result).toEqual({ ok: false, reason: 'File content does not match its declared type.' });
-  });
+    describe('getFileExtension', () => {
+        it('extracts lowercase extension', () => {
+            expect(getFileExtension('photo.JPG')).toBe('jpg');
+        });
 
-  it('accepts mp4-family and mp3 voice memo payloads for message attachments', () => {
-    const mp4Like = validateUploadPayload({
-      bucket: 'message_attachments',
-      fileName: 'voice_note.m4a',
-      mimeType: 'audio/mp4',
-      size: 32,
-      bytes: new Uint8Array([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70, 0x4d, 0x34, 0x41, 0x20]),
+        it('returns empty for no extension', () => {
+            expect(getFileExtension('Makefile')).toBe('');
+        });
+
+        it('handles multi-dot filenames', () => {
+            expect(getFileExtension('archive.tar.gz')).toBe('gz');
+        });
     });
 
-    const mp3Like = validateUploadPayload({
-      bucket: 'message_attachments',
-      fileName: 'voice_note.mp3',
-      mimeType: 'audio/mpeg',
-      size: 32,
-      bytes: new Uint8Array([0x49, 0x44, 0x33, 0x04, 0x00, 0x00]),
+    describe('sanitizePathSegment', () => {
+        it('replaces invalid characters', () => {
+            expect(sanitizePathSegment('hello world!')).toBe('hello_world_');
+        });
+
+        it('strips leading dots', () => {
+            expect(sanitizePathSegment('...hidden')).toBe('hidden');
+        });
+
+        it('truncates to 80 chars', () => {
+            const long = 'a'.repeat(100);
+            expect(sanitizePathSegment(long)).toHaveLength(80);
+        });
     });
 
-    expect(mp4Like).toEqual({ ok: true });
-    expect(mp3Like).toEqual({ ok: true });
-  });
+    describe('getRawStoragePathSegments', () => {
+        it('splits and trims path', () => {
+            expect(getRawStoragePathSegments('user123 / file.pdf')).toEqual(['user123', 'file.pdf']);
+        });
 
-  it('accepts newly supported image formats (heic, heif, avif, bmp)', () => {
-    const heicResult = validateUploadPayload({
-      bucket: 'avatars',
-      fileName: 'photo.heic',
-      mimeType: 'image/heic',
-      size: 32,
-      bytes: new Uint8Array([0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63]),
+        it('filters dots and empty segments', () => {
+            expect(getRawStoragePathSegments('/./file.txt')).toEqual(['file.txt']);
+        });
+
+        it('filters parent references', () => {
+            expect(getRawStoragePathSegments('../secret/file.txt')).toEqual(['secret', 'file.txt']);
+        });
     });
 
-    const bmpResult = validateUploadPayload({
-      bucket: 'avatars',
-      fileName: 'photo.bmp',
-      mimeType: 'image/bmp',
-      size: 32,
-      bytes: new Uint8Array([0x42, 0x4d, 0x36, 0x00, 0x00, 0x00]),
+    describe('validateUploadSelection', () => {
+        it('allows valid jpeg upload', () => {
+            expect(validateUploadSelection({
+                bucket: 'avatars',
+                fileName: 'photo.jpg',
+                mimeType: 'image/jpeg',
+                size: 1024,
+            })).toEqual({ ok: true });
+        });
+
+        it('rejects empty file', () => {
+            expect(validateUploadSelection({
+                bucket: 'avatars',
+                fileName: 'photo.jpg',
+                mimeType: 'image/jpeg',
+                size: 0,
+            })).toEqual({ ok: false, reason: 'Empty files are not allowed.' });
+        });
+
+        it('rejects oversized file', () => {
+            expect(validateUploadSelection({
+                bucket: 'avatars',
+                fileName: 'photo.jpg',
+                mimeType: 'image/jpeg',
+                size: 10 * 1024 * 1024,
+            }).ok).toBe(false);
+        });
+
+        it('rejects blocked extension', () => {
+            expect(validateUploadSelection({
+                bucket: 'avatars',
+                fileName: 'script.js',
+                mimeType: 'text/plain',
+                size: 100,
+            }).ok).toBe(false);
+        });
+
+        it('rejects unknown bucket', () => {
+            expect(validateUploadSelection({
+                bucket: 'unknown',
+                fileName: 'file.pdf',
+                mimeType: 'application/pdf',
+                size: 100,
+            }).ok).toBe(false);
+        });
+
+        it('rejects unsupported extension for bucket', () => {
+            expect(validateUploadSelection({
+                bucket: 'avatars',
+                fileName: 'doc.pdf',
+                mimeType: 'application/pdf',
+                size: 100,
+            }).ok).toBe(false);
+        });
+
+        it('normalizes audio MIME types', () => {
+            expect(validateUploadSelection({
+                bucket: 'message_attachments',
+                fileName: 'voice.mp3',
+                mimeType: 'audio/x-mp3',
+                size: 1024,
+            })).toEqual({ ok: true });
+        });
+
+        it('allows relaxed MIME types', () => {
+            expect(validateUploadSelection({
+                bucket: 'attachments',
+                fileName: 'doc.pdf',
+                mimeType: '',
+                size: 1024,
+            })).toEqual({ ok: true });
+        });
     });
 
-    expect(heicResult).toEqual({ ok: true });
-    expect(bmpResult).toEqual({ ok: true });
-  });
+    describe('validateUploadPayload', () => {
+        it('validates content signature for PNG', () => {
+            const pngBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+            expect(validateUploadPayload({
+                bucket: 'avatars',
+                fileName: 'photo.png',
+                mimeType: 'image/png',
+                size: pngBytes.length,
+                bytes: pngBytes,
+            })).toEqual({ ok: true });
+        });
 
-  it('accepts aliased and codec-suffixed MIME values for message attachments', () => {
-    expect(
-      validateUploadSelection({
-        bucket: 'message_attachments',
-        fileName: 'voice_note.m4a',
-        mimeType: 'audio/x-m4a',
-        size: 2048,
-      }),
-    ).toEqual({ ok: true });
+        it('rejects mismatched content signature', () => {
+            const fakeBytes = new Uint8Array([0x00, 0x00, 0x00, 0x00]);
+            expect(validateUploadPayload({
+                bucket: 'avatars',
+                fileName: 'photo.png',
+                mimeType: 'image/png',
+                size: fakeBytes.length,
+                bytes: fakeBytes,
+            }).ok).toBe(false);
+        });
 
-    expect(
-      validateUploadSelection({
-        bucket: 'message_attachments',
-        fileName: 'voice_note.webm',
-        mimeType: 'audio/webm;codecs=opus',
-        size: 2048,
-      }),
-    ).toEqual({ ok: true });
-  });
-
-  it('rejects message attachments whose bytes do not match the declared type', () => {
-    expect(
-      validateUploadPayload({
-        bucket: 'message_attachments',
-        fileName: 'contract.mp4',
-        mimeType: 'video/mp4',
-        size: 24,
-        bytes: new Uint8Array([0x25, 0x50, 0x44, 0x46]),
-      }),
-    ).toEqual({ ok: false, reason: 'File content does not match its declared type.' });
-  });
-
-  it('limits uploads that exceed the bucket rate policy', () => {
-    expect(isUploadRateLimited('identity-documents', 6)).toBe(true);
-    expect(isUploadRateLimited('identity-documents', 5)).toBe(false);
-  });
-
-  it('sanitizes paths and enforces user prefixes where required', () => {
-    const allowed = sanitizeStoragePath({
-      bucket: 'avatars',
-      userId: 'user-1',
-      desiredPath: 'user-1/../avatar<script>.png',
-      fileName: 'avatar.png',
+        it('validates JPEG signature', () => {
+            const jpgBytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);
+            expect(validateUploadPayload({
+                bucket: 'avatars',
+                fileName: 'photo.jpg',
+                mimeType: 'image/jpeg',
+                size: jpgBytes.length,
+                bytes: jpgBytes,
+            })).toEqual({ ok: true });
+        });
     });
 
-    expect(allowed).toEqual({ ok: true, path: 'user-1/avatar_script_.png' });
+    describe('sanitizeStoragePath', () => {
+        it('returns valid path for user-scoped upload', () => {
+            const result = sanitizeStoragePath({
+                bucket: 'avatars',
+                userId: 'user123',
+                desiredPath: 'user123/avatar.jpg',
+                fileName: 'avatar.jpg',
+            });
+            expect(result.ok).toBe(true);
+            expect(result.path).toContain('user123');
+        });
 
-    const blocked = sanitizeStoragePath({
-      bucket: 'attachments',
-      userId: 'user-1',
-      desiredPath: 'user-2/brief.pdf',
-      fileName: 'brief.pdf',
+        it('rejects path outside user scope', () => {
+            const result = sanitizeStoragePath({
+                bucket: 'avatars',
+                userId: 'user123',
+                desiredPath: 'otheruser/file.jpg',
+                fileName: 'file.jpg',
+            });
+            expect(result.ok).toBe(false);
+        });
+
+        it('rejects unknown bucket', () => {
+            const result = sanitizeStoragePath({
+                bucket: 'unknown',
+                userId: 'u1',
+                desiredPath: 'u1/file.jpg',
+                fileName: 'file.jpg',
+            });
+            expect(result.ok).toBe(false);
+        });
     });
 
-    expect(blocked).toEqual({ ok: false, reason: 'Upload path must stay inside the current user scope.' });
-  });
+    describe('isUploadRateLimited', () => {
+        it('returns true when at limit', () => {
+            expect(isUploadRateLimited('avatars', 8)).toBe(true);
+        });
 
-  it('keeps conversation-scoped message attachment prefixes intact', () => {
-    expect(getRawStoragePathSegments('conversation-123/../1712-brief.pdf')).toEqual([
-      'conversation-123',
-      '1712-brief.pdf',
-    ]);
+        it('returns false when under limit', () => {
+            expect(isUploadRateLimited('avatars', 7)).toBe(false);
+        });
 
-    const sanitized = sanitizeStoragePath({
-      bucket: 'message_attachments',
-      userId: 'user-1',
-      desiredPath: 'conversation-123/1712-brief<script>.pdf',
-      fileName: 'brief.pdf',
+        it('returns true for unknown bucket', () => {
+            expect(isUploadRateLimited('unknown', 1)).toBe(true);
+        });
     });
-
-    expect(sanitized).toEqual({ ok: true, path: 'conversation-123/1712-brief_script_.pdf' });
-  });
-
-  it('accepts new formats like zip, xlsx, ai, and mp4 in contract-files', () => {
-    const zipResult = validateUploadPayload({
-      bucket: 'contract-files',
-      fileName: 'archive.zip',
-      mimeType: 'application/zip',
-      size: 1024,
-      bytes: new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]),
-    });
-    expect(zipResult).toEqual({ ok: true });
-
-    const xlsxResult = validateUploadPayload({
-      bucket: 'contract-files',
-      fileName: 'report.xlsx',
-      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      size: 2048,
-      bytes: new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]),
-    });
-    expect(xlsxResult).toEqual({ ok: true });
-
-    const psdResult = validateUploadPayload({
-      bucket: 'contract-files',
-      fileName: 'mockup.psd',
-      mimeType: 'image/vnd.adobe.photoshop',
-      size: 4096,
-      bytes: new Uint8Array([0x38, 0x42, 0x50, 0x53, 0x00, 0x01]),
-    });
-    expect(psdResult).toEqual({ ok: true });
-
-    const mp4Result = validateUploadPayload({
-      bucket: 'contract-files',
-      fileName: 'demo.mp4',
-      mimeType: 'video/mp4',
-      size: 10240,
-      bytes: new Uint8Array([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32]),
-    });
-    expect(mp4Result).toEqual({ ok: true });
-  });
 });

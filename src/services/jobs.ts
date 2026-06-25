@@ -152,7 +152,7 @@ export async function getCategoryCounts(categories: string[]) {
             .select('*');
 
         if (!error && data) {
-            data.forEach((row: any) => {
+            data.forEach((row: { category: string; job_count: number | string }) => {
                 if (categories.includes(row.category)) {
                     counts[row.category] = Number(row.job_count);
                 }
@@ -178,7 +178,7 @@ export async function getJobById(jobId: string) {
         .eq('id', jobId)
         .single();
     
-    const timeout = new Promise<any>((_, reject) =>
+    const timeout = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('getJobById timed out after 8s')), 8000)
     );
 
@@ -198,7 +198,7 @@ export async function getJobsByClient(clientId: string) {
         .eq('client_id', clientId)
         .order('created_at', { ascending: false });
 
-    const timeout = new Promise<any>((_, reject) =>
+    const timeout = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('getJobsByClient timed out after 8s')), 8000)
     );
 
@@ -219,7 +219,7 @@ export async function getSimilarJobs(jobId: string, category: string, limit = 3)
         .neq('id', jobId)
         .limit(limit);
 
-    const timeout = new Promise<any>((_, reject) =>
+    const timeout = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('getSimilarJobs timed out after 8s')), 8000)
     );
 
