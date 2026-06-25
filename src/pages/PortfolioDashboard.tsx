@@ -9,6 +9,9 @@ import {
     Image as ImageIcon,
     CalendarDays,
     ExternalLink,
+    Globe,
+    Check,
+    X,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout';
@@ -20,6 +23,7 @@ import { useToast } from '../components/ui/Toast';
 import PortfolioModal from '../components/freelancer/PortfolioModal';
 import type { PortfolioSubmitData } from '../components/freelancer/PortfolioModal';
 import Modal from '../components/ui/Modal';
+import Input from '../components/ui/Input';
 import OptimizedImage from '../components/common/OptimizedImage';
 import { Skeleton } from '../components/common/SkeletonCard';
 import { useTranslation } from '../i18n';
@@ -174,6 +178,11 @@ export default function PortfolioDashboard() {
     const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    // External Portfolio Links state
+    const [portfolioLinks, setPortfolioLinks] = useState<string>('');
+    const [isEditingLinks, setIsEditingLinks] = useState(false);
+    const [isSavingLinks, setIsSavingLinks] = useState(false);
+
     const requestedEditId = useMemo(() => {
         const params = new URLSearchParams(location.search);
         return params.get('edit');
@@ -213,8 +222,48 @@ export default function PortfolioDashboard() {
         );
     }, [isModalOpen, items, location.pathname, location.search, navigate, requestedEditId]);
 
+    const handleSaveLinks = async () => {
+        setIsSavingLinks(true);
+        try {
+            const linksArray = portfolioLinks
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean);
+
+            const { error } = await supabase
+                .from('freelancer_profiles')
+                .update({ portfolio_links: linksArray })
+                .eq('id', user!.id);
+
+            if (error) throw error;
+            setIsEditingLinks(false);
+            showToast(tx('portfolio.linksSaved', undefined, 'Portfolio links updated successfully'), 'success');
+        } catch (error) {
+            logger.error('Error saving portfolio links:', error);
+            showToast(tx('portfolio.linksSaveError', undefined, 'Failed to save portfolio links'), 'error');
+        } finally {
+            setIsSavingLinks(false);
+        }
+    };
+
     const loadPortfolio = async () => {
         try {
+            // Load portfolio links
+            const { data: profileData, error: profileError } = await supabase
+                .from('freelancer_profiles')
+                .select('portfolio_links')
+                .eq('id', user!.id)
+                .single();
+
+            if (profileError) {
+                logger.error('Error loading freelancer profile links:', profileError);
+            } else if (profileData) {
+                const links = Array.isArray(profileData.portfolio_links)
+                    ? profileData.portfolio_links.join(', ')
+                    : '';
+                setPortfolioLinks(links);
+            }
+
             const { data, error } = await supabase
                 .from('portfolio_items')
                 .select('*')
@@ -487,6 +536,91 @@ export default function PortfolioDashboard() {
                     </div>
                 </div>
 
+                {/* External Portfolio Links Section */}
+                <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 mb-8">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                        <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-purple-400" />
+                            <h2 className="text-sm font-semibold text-white">External Portfolio Links</h2>
+                        </div>
+                        {!isEditingLinks && (
+                            <button
+                                type="button"
+                                onClick={() => setIsEditingLinks(true)}
+                                className="text-xs font-semibold text-[#8B5CF6] hover:text-[#a78bfa] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/5 hover:bg-purple-500/10 border border-purple-500/10 transition-all duration-200"
+                            >
+                                <Edit2 className="w-3.5 h-3.5" />
+                                {portfolioLinks ? 'Edit Links' : 'Add Links'}
+                            </button>
+                        )}
+                    </div>
+
+                    {isEditingLinks ? (
+                        <div className="space-y-4">
+                            <Input
+                                value={portfolioLinks}
+                                onChange={e => setPortfolioLinks(e.target.value)}
+                                placeholder="e.g. https://behance.net/mywork, https://wassim.com"
+                                className="w-full bg-[var(--color-bg-base)] text-white"
+                                hint="Enter your external links separated by commas"
+                            />
+                            <div className="flex items-center gap-2.5">
+                                <Button
+                                    variant="primary"
+                                    onClick={handleSaveLinks}
+                                    isLoading={isSavingLinks}
+                                    className="!rounded-xl !px-5"
+                                >
+                                    <Check className="w-4 h-4 mr-1" />
+                                    Save
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        setIsEditingLinks(false);
+                                        // Reload to discard changes
+                                        loadPortfolio();
+                                    }}
+                                    disabled={isSavingLinks}
+                                    className="!rounded-xl !px-5"
+                                >
+                                    <X className="w-4 h-4 mr-1" />
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div>
+                            {portfolioLinks ? (
+                                <div className="flex flex-wrap gap-2.5">
+                                    {portfolioLinks.split(',').map((link, idx) => {
+                                        const cleanLink = link.trim();
+                                        if (!cleanLink) return null;
+                                        const displayLabel = cleanLink.replace(/^https?:\/\/(www\.)?/, '').split('/')[0] || 'Link';
+                                        return (
+                                            <a
+                                                key={idx}
+                                                href={/^https?:\/\//i.test(cleanLink) ? cleanLink : `https://${cleanLink}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="inline-flex items-center gap-2 px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/30 rounded-xl text-xs font-semibold text-[#8B5CF6] hover:text-[#a78bfa] transition-all duration-200"
+                                            >
+                                                <Globe className="w-3.5 h-3.5 text-purple-400" />
+                                                <span className="truncate max-w-[200px]">{displayLabel}</span>
+                                                <ExternalLink className="w-3 h-3 text-white/40" />
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-white/40">
+                                    No external portfolio links added yet. Add links to your website, Behance, GitHub, etc. to make it easier for clients to see your work.
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </div>
+
                 {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[...Array(6)].map((_, i) => (
@@ -569,7 +703,7 @@ export default function PortfolioDashboard() {
                                                 ) : null}
                                                 {item.project_url ? (
                                                     <a
-                                                        href={item.project_url}
+                                                        href={/^https?:\/\//i.test(item.project_url) ? item.project_url : `https://${item.project_url}`}
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         onClick={(event) => event.stopPropagation()}

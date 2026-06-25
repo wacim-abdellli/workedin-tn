@@ -197,15 +197,7 @@ export function FreelancerInfoForm({ form, onChange }: FreelancerInfoFormProps) 
                         />
                     </div>
 
-                    <div id="field-portfolio_links" className="md:col-span-2 transition-all duration-300 rounded-xl p-0.5">
-                        <Input
-                            label={tx('profile.portfolioLinks', undefined, 'Portfolio links (comma separated)')}
-                            value={form.portfolio_links}
-                            onChange={e => set({ portfolio_links: e.target.value })}
-                            placeholder={tx('profile.portfolioLinksPlaceholder', undefined, 'https://site.com/work-1, https://behance.net/mywork')}
-                            leftIcon={<FileText className="w-4 h-4 text-purple-400" />}
-                        />
-                    </div>
+
                 </div>
             </div>
 

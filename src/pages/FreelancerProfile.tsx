@@ -1089,7 +1089,7 @@ function ProfileView({
                           <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-[#2d2d2d]/80 mt-1">
                             {item.project_url ? (
                               <a
-                                href={item.project_url}
+                                href={/^https?:\/\//i.test(item.project_url) ? item.project_url : `https://${item.project_url}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1 text-xs text-[#8B5CF6] dark:text-[#a78bfa] hover:underline"
@@ -1342,7 +1342,7 @@ function ProfileView({
                     return (
                       <li key={idx}>
                         <a
-                          href={cleanLink}
+                          href={/^https?:\/\//i.test(cleanLink) ? cleanLink : `https://${cleanLink}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 text-sm text-[#8B5CF6] dark:text-[#a78bfa] hover:underline hover:translate-x-1 transition-transform duration-200"
@@ -1616,7 +1616,7 @@ function ProfileView({
                     )}
                     {activeWorkSample.project_url && (
                       <a
-                        href={activeWorkSample.project_url}
+                        href={/^https?:\/\//i.test(activeWorkSample.project_url) ? activeWorkSample.project_url : `https://${activeWorkSample.project_url}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-[#8B5CF6] hover:underline"

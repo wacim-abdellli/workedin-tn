@@ -582,7 +582,7 @@ export default function ProposalDetailPane({
                                             <div className="flex items-center justify-between text-[10px] uppercase tracking-wider font-bold text-[var(--color-text-primary)]/40">
                                                 <span>{item.completion_date ? new Date(item.completion_date).toLocaleDateString() : 'Recent work'}</span>
                                                 {item.project_url && (
-                                                    <a href={item.project_url} target="_blank" rel="noreferrer" className="text-amber-500 hover:text-amber-400 transition-colors">
+                                                    <a href={/^https?:\/\//i.test(item.project_url) ? item.project_url : `https://${item.project_url}`} target="_blank" rel="noreferrer" className="text-amber-500 hover:text-amber-400 transition-colors">
                                                         Open
                                                     </a>
                                                 )}
