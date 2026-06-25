@@ -86,15 +86,19 @@
 ## COVERAGE GAP ANALYSIS
 
 ```
-Current:  23.3% statements (23.3% lines)
+Current:  23.4% statements (24.3% lines)
 Target:   60.0% statements
-Gap:      ~36.7pp (approximately 15,000 more lines need coverage)
+Gap:      ~36.6pp
 
-To close the gap efficiently:
-- Test lib pure functions (DONE — most are now covered)
-- Test services with mocked Supabase (high ROI — ~1,500 lines across 10 services)
-- Test hooks with renderHook (medium ROI — ~1,000 lines across 15 hooks)
-- Skip most page/component tests (use E2E instead)
+Coverage by directory (latest):
+  src/lib           66.4% stmts — near ceiling, most pure functions done
+  src/services      47.0% stmts — need error-path tests
+  src/hooks         54.0% stmts — pure hooks tested, side-effect hooks remain
+  src/contexts      36.9% stmts — AuthContext dominates (903 lines)
+  src/pages         24.4% stmts — logic-only tests
+  src/components     0.0% stmts — no component tests yet
+  src/components/ui 23.0% stmts — simple primitives
+  src/routes        55.3% stmts — route graph tested
 ```
 
 ### Realistic Coverage Ceiling Without Component Tests
@@ -109,11 +113,28 @@ To reach 60%, we NEED component/hook tests or accept that coverage threshold sta
 
 ## RECOMMENDED NEXT STEPS (Priority Order)
 
-### Immediate (this session if tokens allow)
-1. **Test `lib/sanitization.ts`** — DOMPurify wrappers, ~50 lines, easy
-2. **Test `lib/withTimeout.ts`** — ~15 lines, trivial
-3. **Test `services/contracts.ts`** — mock Supabase, ~80 lines
-4. **Test `services/profiles.ts`** — mock Supabase, ~80 lines
+### DONE This Session
+- [x] Test `lib/sanitization.ts` — DOMPurify wrappers
+- [x] Test `lib/withTimeout.ts` — race utility
+- [x] Test `services/contracts.ts` — mock Supabase + manual hydration fallback
+- [x] Test `services/profiles.ts` — getOwnProfile, getSavedFreelancerIds, toggleFreelancerFavorite, getFreelancerReviewStats
+- [x] Test `services/reviews.ts` — submitReview
+- [x] Test `lib/messageUtils.ts` + `lib/messageReplies.ts` — all pure functions
+- [x] Test `lib/portfolioTools.ts`, `lib/profileHydrationUtils.ts`, `lib/dashboardQueries.ts`
+- [x] Test `lib/routes.ts`, `lib/portfolioMedia.ts`
+- [x] Test `lib/workspaceRoutes.ts`, `lib/colors.ts`
+- [x] Test `lib/phone.ts`, `lib/permissionEngine.ts`, `lib/profileCompletion.ts`, `lib/marketplaceAccess.ts`
+- [x] Test `lib/schemaValidation.ts`, `lib/notificationDisplay.ts`
+
+### Short-term (next session)
+5. Write hook tests for remaining pure hooks (`useDebounce`, `useDebouncedCallback`)
+6. Write error-path tests for remaining services
+7. Update coverage threshold to 30%
+
+### Medium-term
+8. Split `Messages.tsx` (5,410 lines) → enable testing
+9. Split `ContractWorkspacePage.tsx` (~2,000 lines) → enable testing
+10. Component tests for key flows
 
 ### Short-term (next session)
 5. Service tests for remaining 6 services
