@@ -1,6 +1,6 @@
 # WorkedIn.tn — Session Progress Tracker
 
-> Last updated: 2026-06-25 | Commit: `HEAD`
+> Last updated: 2026-06-25 | Commit: `7521563`
 
 ---
 
@@ -13,7 +13,7 @@
 | **TypeScript** | 9.0/10 | Strict mode, `any` reduced in services. Types split into domains. |
 | **Consistency** | 8.5/10 | supabaseWithRetry on 6 services, logger everywhere, ErrorBoundary consolidated. |
 | **i18n** | 9.0/10 | Full 3-language system, RTL, pluralization. SkipLinks localized. |
-| **Testing** | 7.0/10 | 765 tests, 70 files. Coverage 23.3% — needs significant work to reach 60%. |
+| **Testing** | 7.0/10 | 811 tests, 72 files. Coverage ~23.5% — needs significant work to reach 60%. |
 | **Build** | 9.0/10 | Clean build, clean typecheck. Chunk warning is cosmetic. |
 | **Maintainability** | 8.0/10 | Types split, debounce extracted, withTimeout extracted. Big files remain. |
 | **UI/Components** | 9.0/10 | 37 primitives, design tokens, Framer Motion. |
@@ -23,7 +23,7 @@
 
 ## SESSION HISTORY (This Session)
 
-### Commits (6 total, all pushed)
+### Commits (7 total, all pushed)
 | Commit | Description | Tests | Coverage |
 |---|---|---|---|
 | `b032447` | Phase 1 safety — VITE_ secrets, scratch/, manifest | — | — |
@@ -32,13 +32,14 @@
 | `ca3f816` | messageUtils + messageReplies tests | 716 | 22.9% |
 | `0d0f5cb` | portfolioTools + profileHydration + dashboardQueries tests | 745 | 23.1% |
 | `55dff0c` | routes + portfolioMedia tests | 765 | 23.3% |
+| `7521563` | Extract AuthContext helpers to authHelpers + 22 tests | 811 | 23.5% |
 
 ### Test Growth This Session
 - **Start:** 64 files, 401 tests, 21.2% statements
-- **End:** 71 files, 789 tests, 23.4% statements
-- **Delta:** +7 files, +388 tests, +2.2pp coverage
+- **End:** 72 files, 811 tests, ~23.5% statements
+- **Delta:** +8 files, +410 tests, +2.3pp coverage
 
-### New Test Files Created (7 files)
+### New Test Files Created (8 files)
 1. `contractEvidence.chatSafety.adminAccess.jobLinks.test.ts` — 44 tests
 2. `phone.permissionEngine.profileCompletion.marketplaceAccess.test.ts` — 59 tests
 3. `schemaValidation.notificationDisplay.test.ts` — 53 tests
@@ -46,6 +47,7 @@
 5. `messageUtils.messageReplies.test.ts` — 66 tests
 6. `portfolioTools.profileHydration.dashboardQueries.test.ts` — 29 tests
 7. `routes.portfolioMedia.test.ts` — 20 tests
+8. `authHelpers.test.ts` — 22 tests
 
 ---
 
@@ -54,7 +56,7 @@
 ### High-Impact (biggest coverage gains)
 | Target | Est. Lines | Why It's 0% |
 |---|---|---|
-| `AuthContext.tsx` | 903 lines | Complex React context, hard to test |
+| `AuthContext.tsx` | 857 lines | Extracted 6 helpers to authHelpers.ts; context still complex |
 | `Messages.tsx` | 5,410 lines | God component — needs split first |
 | `ContractWorkspacePage.tsx` | ~2,000 lines | God component |
 | `useContractState.ts` | 756 lines | Hook with many side effects |
@@ -86,9 +88,9 @@
 ## COVERAGE GAP ANALYSIS
 
 ```
-Current:  23.4% statements (24.3% lines)
+Current:  ~23.5% statements (24.5% lines)
 Target:   60.0% statements
-Gap:      ~36.6pp
+Gap:      ~36.5pp
 
 Coverage by directory (latest):
   src/lib           66.4% stmts — near ceiling, most pure functions done

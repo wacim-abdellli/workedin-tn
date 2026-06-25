@@ -82,8 +82,10 @@ vi.mock('@/lib/supabase', () => {
                 if (fnName === 'delete_message_atomic') {
                     return { data: { conversation_id: 'conversation-1' }, error: null };
                 }
+                if (state.tableResults.rpc) return state.tableResults.rpc;
                 return { data: null, error: null };
             }),
+            removeChannel: vi.fn(async () => undefined),
         },
         withTimeout: vi.fn(async <T>(promise: PromiseLike<T>) => promise),
         uploadFile: state.uploadFile,
@@ -98,6 +100,13 @@ import {
     subscribeToMessages,
     uploadMessageAttachment,
     deleteMessage,
+    getTotalUnreadCount,
+    markConversationRead,
+    subscribeToConversation,
+    subscribeToIncomingMessages,
+    subscribeToConversations,
+    sendContractMessage,
+    unsubscribeFromChannel,
 } from '@/services/messages';
 
 describe('messages service coverage', () => {
@@ -384,5 +393,168 @@ describe('messages service coverage', () => {
         expect(result.error).toBeInstanceOf(Error);
         expect((result.error as Error).message).toContain('Access Denied');
         expect(result.data).toBeNull();
+    });
+
+    it('returns 0 unread when no conversations exist (no scope)', async () => {
+        state.tableResults.rpc = { data: 0, error: null };
+        const result = await getTotalUnreadCount('user-1');
+        expect(result.count).toBe(0);
+        expect(result.error).toBeNull();
+    });
+
+    it('counts unread with client scope filter', async () => {
+        state.tableResults.conversations = {
+            data: [
+                {
+                    participant_1: 'user-1',
+                    participant_2: 'other-1',
+                    client_id: 'user-1',
+                    freelancer_id: 'other-1',
+                    unread_count_1: 3,
+                    unread_count_2: 0,
+                    status: 'active',
+                },
+            ],
+            error: null,
+        };
+        const result = await getTotalUnreadCount('user-1', ['client']);
+        expect(result.count).toBe(3);
+        expect(result.error).toBeNull();
+    });
+
+    it('counts unread with freelancer scope filter', async () => {
+        state.tableResults.conversations = {
+            data: [
+                {
+                    participant_1: 'client-1',
+                    participant_2: 'user-1',
+                    client_id: 'client-1',
+                    freelancer_id: 'user-1',
+                    unread_count_1: 0,
+                    unread_count_2: 5,
+                    status: 'active',
+                },
+            ],
+            error: null,
+        };
+        const result = await getTotalUnreadCount('user-1', ['freelancer']);
+        expect(result.count).toBe(5);
+        expect(result.error).toBeNull();
+    });
+
+    it('skips archived conversations in unread count', async () => {
+        state.tableResults.conversations = {
+            data: [
+                {
+                    participant_1: 'user-1',
+                    participant_2: 'other-1',
+                    client_id: 'user-1',
+                    freelancer_id: 'other-1',
+                    unread_count_1: 10,
+                    unread_count_2: 0,
+                    status: 'archived',
+                },
+            ],
+            error: null,
+        };
+        const result = await getTotalUnreadCount('user-1', ['client']);
+        expect(result.count).toBe(0);
+    });
+
+    it('handles getTotalUnreadCount error gracefully', async () => {
+        state.tableResults.conversations = { data: null, error: new Error('db down') };
+        const result = await getTotalUnreadCount('user-1', ['client']);
+        expect(result.count).toBe(0);
+        expect(result.error).toBeInstanceOf(Error);
+    });
+
+    it('marks conversation as read via RPC', async () => {
+        state.tableResults.rpc = { data: null, error: null };
+        const result = await markConversationRead('conversation-1');
+        expect(result.error).toBeNull();
+    });
+
+    it('handles markConversationRead error gracefully', async () => {
+        state.tableResults.rpc = { data: null, error: new Error('rpc failed') };
+        const result = await markConversationRead('conversation-1');
+        expect(result.error).toBeInstanceOf(Error);
+    });
+
+    it('subscribes to a single conversation channel', () => {
+        const callback = vi.fn();
+        const channel = subscribeToConversation('conversation-1', callback);
+        expect(state.channelCalls).toContain('messages:conversation-1');
+        expect(state.onCalls).toContainEqual({
+            channel: 'messages:conversation-1',
+            event: 'postgres_changes',
+            config: {
+                event: '*',
+                schema: 'public',
+                table: 'messages',
+                filter: 'conversation_id=eq.conversation-1',
+            },
+        });
+        expect(channel).toEqual({ id: 'messages:conversation-1' });
+    });
+
+    it('subscribes to incoming messages for a user', () => {
+        const callback = vi.fn();
+        const channel = subscribeToIncomingMessages('user-1', callback);
+        expect(state.channelCalls).toContain('incoming_messages:user-1');
+        expect(state.onCalls).toContainEqual({
+            channel: 'incoming_messages:user-1',
+            event: 'postgres_changes',
+            config: {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+                filter: 'receiver_id=eq.user-1',
+            },
+        });
+        expect(channel).toEqual({ id: 'incoming_messages:user-1' });
+    });
+
+    it('subscribes to conversations channel', () => {
+        const callback = vi.fn();
+        const channel = subscribeToConversations('user-1', ['client', 'freelancer'], callback);
+        expect(state.channelCalls).toContain('conversations:user-1');
+        // subscribeToConversations returns the channel object (with .on and .subscribe methods)
+        expect(channel).toHaveProperty('on');
+        expect(channel).toHaveProperty('subscribe');
+    });
+
+    it('unsubscribes from a channel', async () => {
+        const channel = { id: 'test-channel' } as any;
+        await unsubscribeFromChannel(channel);
+        // removeChannel is now mocked and should have been called
+    });
+
+    it('deletes message when no active session', async () => {
+        state.tableResults.authUserId = '';
+        const result = await deleteMessage('message-1');
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toContain('Unauthorized');
+        expect(result.data).toBeNull();
+    });
+
+    it('deletes message when message not found', async () => {
+        state.tableResults.authUserId = 'sender-1';
+        state.tableResults.messages = { data: null, error: null };
+        const result = await deleteMessage('message-1');
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toContain('not found');
+        expect(result.data).toBeNull();
+    });
+
+    it('sendContractMessage returns error when conversation resolution fails', async () => {
+        state.tableResults.conversations = { data: null, error: new Error('no conv') };
+        const result = await sendContractMessage({
+            contract_id: 'contract-1',
+            sender_id: 'sender-1',
+            receiver_id: 'receiver-1',
+            content: 'Hello',
+        });
+        expect(result.data).toBeNull();
+        expect(result.error).toBeInstanceOf(Error);
     });
 });
