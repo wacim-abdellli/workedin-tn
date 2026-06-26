@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTusUpload } from '@/hooks/useTusUpload';
 import { logger } from '@/lib/logger';
 import type { ContractRow, LatestDelivery, SharedFile } from './types';
 import { fetchContractByColumn } from './contractFetchers';
 import type { User } from '@supabase/supabase-js';
+import { useWorkspaceModals } from './useWorkspaceModals';
+import { useDeliveryUpload } from './useDeliveryUpload';
 
 type Profile = {
     full_name?: string | null;
@@ -64,51 +65,7 @@ type UseWorkspaceDataReturn = {
     error: string | null;
     setError: React.Dispatch<React.SetStateAction<string | null>>;
     loadWorkspace: () => Promise<void>;
-    // Upload state
-    selectedMilestoneId: string;
-    setSelectedMilestoneId: React.Dispatch<React.SetStateAction<string>>;
-    savedLinks: SharedAttachment[];
-    savedFileStages: Record<number, 'review' | 'final'>;
-    isUploadPaused: boolean;
-    setIsUploadPaused: React.Dispatch<React.SetStateAction<boolean>>;
-    uploadingFileName: string | null;
-    setUploadingFileName: React.Dispatch<React.SetStateAction<string | null>>;
-    uploadedAssetsRef: React.MutableRefObject<ContractMilestoneRow[]>;
-    uploadedAssets: ContractMilestoneRow[];
-    setUploadedAssets: React.Dispatch<React.SetStateAction<ContractMilestoneRow[]>>;
-    isUploadPausedRef: React.MutableRefObject<boolean>;
-    handlePauseUpload: () => void;
-    handleResumeUpload: () => Promise<void>;
-    deliverOpen: boolean;
-    setDeliverOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    deliverNote: string;
-    setDeliverNote: React.Dispatch<React.SetStateAction<string>>;
-    changesOpen: boolean;
-    setChangesOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    disputeOpen: boolean;
-    setDisputeOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    fundEscrowOpen: boolean;
-    setFundEscrowOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    confirmReleaseOpen: boolean;
-    setConfirmReleaseOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    cancelOpen: boolean;
-    setCancelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    holdClearanceOpen: boolean;
-    setHoldClearanceOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    holdClearanceReason: string;
-    setHoldClearanceReason: React.Dispatch<React.SetStateAction<string>>;
-    isHoldingClearance: boolean;
-    setIsHoldingClearance: React.Dispatch<React.SetStateAction<boolean>>;
-    reviewFiles: File[];
-    setReviewFiles: React.Dispatch<React.SetStateAction<File[]>>;
-    isUploading: boolean;
-    setIsUploading: React.Dispatch<React.SetStateAction<boolean>>;
-    uploadProgress: { current: number; total: number; currentBytes: number; totalBytes: number };
-    setUploadProgress: React.Dispatch<React.SetStateAction<{ current: number; total: number; currentBytes: number; totalBytes: number }>>;
-    uploadTusFile: (file: File, bucket: string, path: string) => Promise<void>;
-    isTusUploading: boolean;
-    tusProgress: number;
-};
+} & UseWorkspaceModalsReturn & UseDeliveryUploadReturn;
 
 export function useWorkspaceData({ contractId }: UseWorkspaceDataParams): UseWorkspaceDataReturn {
     const { user, profile } = useAuth();
@@ -125,45 +82,8 @@ export function useWorkspaceData({ contractId }: UseWorkspaceDataParams): UseWor
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [selectedMilestoneId, setSelectedMilestoneId] = useState<string>('');
-    const [savedLinks, setSavedLinks] = useState<SharedAttachment[]>([]);
-    const [savedFileStages, setSavedFileStages] = useState<Record<number, 'review' | 'final'>>({});
-    const [isUploadPaused, setIsUploadPaused] = useState(false);
-    const [uploadingFileName, setUploadingFileName] = useState<string | null>(null);
-
-    const uploadedAssetsRef = useRef<ContractMilestoneRow[]>([]);
-    const [_uploadedAssets, setUploadedAssets] = useState<ContractMilestoneRow[]>([]);
-    const isUploadPausedRef = useRef(false);
-
-    const {
-        uploadFile: uploadTusFile,
-        isUploading: isTusUploading,
-        progress: tusProgress,
-    } = useTusUpload({ bucket: 'contract-files' });
-
-    const handlePauseUpload = () => {
-        isUploadPausedRef.current = true;
-        setIsUploadPaused(true);
-    };
-
-    const handleResumeUpload = async () => {
-        isUploadPausedRef.current = false;
-        setIsUploadPaused(false);
-    };
-
-    const [deliverOpen, setDeliverOpen] = useState(false);
-    const [deliverNote, setDeliverNote] = useState('');
-    const [changesOpen, setChangesOpen] = useState(false);
-    const [disputeOpen, setDisputeOpen] = useState(false);
-    const [fundEscrowOpen, setFundEscrowOpen] = useState(false);
-    const [confirmReleaseOpen, setConfirmReleaseOpen] = useState(false);
-    const [cancelOpen, setCancelOpen] = useState(false);
-    const [holdClearanceOpen, setHoldClearanceOpen] = useState(false);
-    const [holdClearanceReason, setHoldClearanceReason] = useState('');
-    const [isHoldingClearance, setIsHoldingClearance] = useState(false);
-    const [reviewFiles, setReviewFiles] = useState<File[]>([]);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0, currentBytes: 0, totalBytes: 0 });
+    const modals = useWorkspaceModals();
+    const upload = useDeliveryUpload();
 
     const loadWorkspace = useCallback(async () => {
         if (!contractId || !user?.id) return;
@@ -370,26 +290,7 @@ export function useWorkspaceData({ contractId }: UseWorkspaceDataParams): UseWor
         isLoading,
         error, setError,
         loadWorkspace,
-        selectedMilestoneId, setSelectedMilestoneId,
-        savedLinks, savedFileStages,
-        isUploadPaused, setIsUploadPaused,
-        uploadingFileName, setUploadingFileName,
-        uploadedAssetsRef, uploadedAssets: _uploadedAssets, setUploadedAssets,
-        isUploadPausedRef,
-        handlePauseUpload, handleResumeUpload,
-        deliverOpen, setDeliverOpen,
-        deliverNote, setDeliverNote,
-        changesOpen, setChangesOpen,
-        disputeOpen, setDisputeOpen,
-        fundEscrowOpen, setFundEscrowOpen,
-        confirmReleaseOpen, setConfirmReleaseOpen,
-        cancelOpen, setCancelOpen,
-        holdClearanceOpen, setHoldClearanceOpen,
-        holdClearanceReason, setHoldClearanceReason,
-        isHoldingClearance, setIsHoldingClearance,
-        reviewFiles, setReviewFiles,
-        isUploading, setIsUploading,
-        uploadProgress, setUploadProgress,
-        uploadTusFile, isTusUploading, tusProgress,
+        ...modals,
+        ...upload,
     };
 }
