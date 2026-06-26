@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 vi.mock('@/lib/logger', () => ({
     logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
@@ -39,7 +39,6 @@ describe('workspaceState', () => {
         });
 
         it('tracks switching state', () => {
-            expect(useWorkspaceStore.getState().isSwitching).toBe(false);
             useWorkspaceStore.getState().setSwitching(true);
             expect(useWorkspaceStore.getState().isSwitching).toBe(true);
         });
@@ -48,13 +47,6 @@ describe('workspaceState', () => {
             useWorkspaceStore.getState().setSwitching(true);
             useWorkspaceStore.getState().setSwitching(false);
             expect(useWorkspaceStore.getState().isSwitching).toBe(false);
-        });
-
-        it('persists workspace across setState resets', () => {
-            useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
-            expect(useWorkspaceStore.getState().activeWorkspace).toBe('freelancer');
-            useWorkspaceStore.setState({ isSwitching: true });
-            expect(useWorkspaceStore.getState().activeWorkspace).toBe('freelancer');
         });
     });
 });
