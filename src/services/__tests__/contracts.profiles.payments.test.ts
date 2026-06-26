@@ -25,6 +25,7 @@ const serviceState = vi.hoisted(() => {
         removeChannelCalls: [] as string[],
         tableResults: {} as Record<string, unknown>,
         session: { access_token: 'session-token' } as { access_token: string } | null,
+        user: null as { id: string } | null,
         functionResult: { data: { message: 'Reconciled' } as { message: string } | null, error: null as { message: string } | null },
         uploadFileResult: { url: 'https://files.example/avatar.png' } as unknown,
         uploadFileCalls: [] as Array<{ bucket: string; path: string; file: File }>,
@@ -54,6 +55,7 @@ const serviceState = vi.hoisted(() => {
         state.removeChannelCalls = [];
         state.tableResults = {};
         state.session = { access_token: 'session-token' };
+        state.user = null;
         state.functionResult = { data: { message: 'Reconciled' }, error: null };
         state.uploadFileResult = { url: 'https://files.example/avatar.png' };
         state.uploadFileCalls = [];
@@ -164,6 +166,7 @@ vi.mock('@/lib/supabase', () => {
             }),
             auth: {
                 getSession: vi.fn(async () => ({ data: { session: serviceState.state.session } })),
+                getUser: vi.fn(async () => ({ data: { user: serviceState.state.user } })),
             },
             functions: {
                 invoke: vi.fn(async (name: string, options?: { body?: unknown }) => {
@@ -185,6 +188,7 @@ vi.mock('@/lib/supabase', () => {
     };
 });
 
+import { supabase } from '@/lib/supabase';
 import {
     createContract,
     createMilestone,
@@ -232,6 +236,9 @@ import {
     getWithdrawals,
     reconcilePayment,
     requestWithdrawal,
+    getAllWithdrawalsAdmin,
+    processWithdrawalRequest,
+    buildPaymentMethodInsert,
 } from '@/services/payments';
 import { submitReview } from '@/services/reviews';
 
@@ -325,6 +332,63 @@ describe('contracts service coverage', () => {
         const result = await updateContractStatus('contract-1', 'completed');
         expect(result.error).not.toBeNull();
         expect(result.error?.message).toContain('Access Denied: Illegal transition from pending_payment to completed');
+    });
+
+    it('getContractById falls back to manual hydration and returns error if fallback also fails', async () => {
+        serviceState.state.tableResults.contracts = {
+            data: null,
+            error: { message: 'column does not exist' },
+        };
+        const result = await getContractById('contract-1');
+        expect(result.error).toEqual({ message: 'column does not exist' });
+    });
+
+    it('getContractById falls back to manual hydration and succeeds if fallback succeeds', async () => {
+        let callCount = 0;
+        Object.defineProperty(serviceState.state.tableResults, 'contracts', {
+            get() {
+                callCount++;
+                if (callCount === 1) {
+                    return { data: null, error: { message: 'column does not exist' } };
+                }
+                return {
+                    data: { id: 'contract-99', client_id: 'client-99', freelancer_id: 'freelancer-99', job_id: 'job-99' },
+                    error: null,
+                };
+            },
+            configurable: true,
+        });
+        
+        serviceState.state.tableResults.jobs = { data: { id: 'job-99', title: 'Job 99' }, error: null };
+        serviceState.state.tableResults.public_profiles = { data: { id: 'profile-99', full_name: 'User 99' }, error: null };
+        serviceState.state.tableResults.milestones = { data: [], error: null };
+
+        const result = await getContractById('contract-99');
+        expect(result.data).toEqual(expect.objectContaining({ id: 'contract-99' }));
+        expect(result.error).toBeNull();
+    });
+
+    it('updateContractStatus handles fetch errors gracefully', async () => {
+        serviceState.state.tableResults.contracts = {
+            data: null,
+            error: { message: 'Fetch failed' },
+        };
+        const result = await updateContractStatus('contract-1', 'completed');
+        expect(result.error).toEqual({ message: 'Fetch failed' });
+    });
+
+    it('createContract sanitizes identity verification error message', async () => {
+        serviceState.state.tableResults.contracts = {
+            data: null,
+            error: { message: '  New first-time accounts must complete identity verification.  ' },
+        };
+        const result = await createContract({
+            job_id: 'job-1',
+            client_id: 'client-1',
+            freelancer_id: 'freelancer-1',
+            amount: 900,
+        });
+        expect(result.error?.message).toBe('New first-time accounts must complete identity verification.');
     });
 });
 
@@ -698,6 +762,67 @@ describe('payments service coverage', () => {
         expect(stuck).toEqual([]);
         expect(result).toEqual({ success: false, message: 'Function failed' });
     });
+
+    it('buildPaymentMethodInsert handles other payment types', async () => {
+        await addPaymentMethod('user-1', {
+            type: 'card',
+            details: '1234567812345678',
+            is_default: true,
+        });
+        expect(serviceState.state.insertCalls).toContainEqual({
+            table: 'payment_methods',
+            value: {
+                user_id: 'user-1',
+                type: 'card',
+                card_last_four: '5678',
+                is_default: true,
+                label: 'Card',
+            },
+        });
+
+        await addPaymentMethod('user-1', {
+            type: 'flouci',
+            details: { phone_number: '20111111' },
+        });
+        expect(serviceState.state.insertCalls).toContainEqual({
+            table: 'payment_methods',
+            value: {
+                user_id: 'user-1',
+                type: 'flouci',
+                d17_phone: '20111111',
+                is_default: false,
+                label: 'Flouci',
+            },
+        });
+    });
+
+    it('getPaymentMethodDetails fallback and card cases', async () => {
+        expect(getPaymentMethodDetails({ type: 'card', card_last_four: undefined })).toBe('');
+        expect(getPaymentMethodDetails({ type: 'bank_transfer', bank_name: 'STB', iban: undefined })).toBe('STB');
+        expect(getPaymentMethodDetails({ type: 'unknown_type', iban: 'FALLBACK_IBAN' })).toBe('FALLBACK_IBAN');
+    });
+
+    it('getAllWithdrawalsAdmin range bounds and processWithdrawalRequest function call', async () => {
+        await getAllWithdrawalsAdmin(2, 10);
+        expect(serviceState.state.rangeCalls).toContainEqual({
+            table: 'withdrawals',
+            from: 10,
+            to: 19,
+        });
+
+        serviceState.state.functionResult = { data: { success: true }, error: null };
+        const result = await processWithdrawalRequest('withdrawal-1', 'approve', 'Approved payout');
+        expect(serviceState.state.functionCalls).toContainEqual({
+            name: 'dhmad-process-payout',
+            body: { withdrawal_id: 'withdrawal-1', action: 'approve', admin_notes: 'Approved payout' },
+        });
+        expect(result).toEqual({ success: true });
+    });
+
+    it('processWithdrawalRequest throws on error', async () => {
+        serviceState.state.functionResult = { data: null, error: new Error('Edge function failed') };
+        await expect(processWithdrawalRequest('withdrawal-1', 'reject')).rejects.toThrow('Edge function failed');
+    });
 });
 
 describe('profiles service — gap coverage', () => {
@@ -888,5 +1013,112 @@ describe('reviews service coverage', () => {
                 p_comment: null,
             },
         });
+    });
+});
+
+describe('extra service layer coverage', () => {
+    beforeEach(() => {
+        serviceState.reset();
+    });
+
+    it('contracts getContractById handles error results for client, freelancer, and milestones queries', async () => {
+        serviceState.state.tableResults.contracts = {
+            data: { id: 'contract-1', client_id: 'client-1', freelancer_id: 'free-1', job_id: 'job-1' },
+            error: null,
+        };
+
+        // 1. Client error
+        serviceState.state.tableResults.public_profiles = { data: null, error: new Error('Client load error') };
+        let result = await getContractById('contract-1');
+        expect(result.error).toBeDefined();
+
+        // Reset and mock client success, freelancer error
+        serviceState.reset();
+        serviceState.state.tableResults.contracts = {
+            data: { id: 'contract-1', client_id: 'client-1', freelancer_id: 'free-1', job_id: 'job-1' },
+            error: null,
+        };
+        serviceState.state.tableResults.public_profiles = { data: { id: 'client-1' }, error: null };
+        serviceState.state.tableResults.profiles = { data: null, error: new Error('Freelancer load error') };
+        result = await getContractById('contract-1');
+        expect(result.error).toBeDefined();
+
+        // Reset and mock client + freelancer success, milestones error
+        serviceState.reset();
+        serviceState.state.tableResults.contracts = {
+            data: { id: 'contract-1', client_id: 'client-1', freelancer_id: 'free-1', job_id: 'job-1' },
+            error: null,
+        };
+        serviceState.state.tableResults.public_profiles = { data: { id: 'client-1' }, error: null };
+        serviceState.state.tableResults.profiles = { data: { id: 'free-1' }, error: null };
+        serviceState.state.tableResults.milestones = { data: null, error: new Error('Milestones load error') };
+        result = await getContractById('contract-1');
+        expect(result.error).toBeDefined();
+    });
+
+    it('contracts getContractById returns 403 access denied when user is not authorized', async () => {
+        serviceState.state.tableResults.contracts = {
+            data: { id: 'contract-1', client_id: 'client-1', freelancer_id: 'free-1', job_id: 'job-1' },
+            error: null,
+        };
+        serviceState.state.tableResults.public_profiles = { data: { id: 'client-1' }, error: null };
+        serviceState.state.tableResults.profiles = { data: { id: 'free-1' }, error: null };
+        serviceState.state.tableResults.milestones = { data: [], error: null };
+
+        // Logged in user is 'other-user', who is neither client-1 nor free-1
+        vi.spyOn(supabase.auth, 'getUser').mockResolvedValueOnce({
+            data: { user: { id: 'other-user' } as any },
+            error: null
+        });
+
+        const result = await getContractById('contract-1');
+        expect(result.data).toBeNull();
+        expect(result.error?.message).toContain('Access Denied');
+        vi.restoreAllMocks();
+    });
+
+    it('payments getPaymentMethodLabel and buildPaymentMethodInsert fall back on unknown payment method types', () => {
+        expect(getPaymentMethodLabel('unknown_type')).toBe('unknown_type');
+        
+        const payload = buildPaymentMethodInsert('user-123', {
+            type: 'unknown_type' as any,
+            details: 'some details',
+            is_default: true
+        });
+        
+        expect(payload.type).toBe('unknown_type');
+        expect(payload.is_default).toBe(true);
+        expect(payload.label).toBe('unknown_type');
+        expect(payload.card_last_four).toBeUndefined();
+        expect(payload.d17_phone).toBeUndefined();
+        expect(payload.iban).toBeUndefined();
+    });
+
+    it('profiles getFreelancerReviewStats handles exceptions in catch blocks', async () => {
+        // Force getFreelancerReviewStats to throw an exception in query builder
+        vi.spyOn(serviceState.state.eqCalls, 'push').mockImplementationOnce(() => {
+            throw new Error('Database connection failed');
+        });
+        const stats = await getFreelancerReviewStats('user-1');
+        expect(stats).toEqual({ averageRating: 0, reviewCount: 0 });
+        vi.restoreAllMocks();
+    });
+
+    it('profiles getClientStats handles RPC error returns and catch blocks', async () => {
+        // RPC error path
+        serviceState.state.rpcResults['get_client_stats_v2'] = {
+            data: null,
+            error: new Error('RPC query execution failed')
+        };
+        let stats = await getClientStats('client-1');
+        expect(stats).toEqual({ totalJobs: 0, totalSpent: 0, rating: 0 });
+
+        // RPC throws exception catch block
+        vi.spyOn(serviceState.state.rpcCalls, 'push').mockImplementationOnce(() => {
+            throw new Error('RPC function not found');
+        });
+        stats = await getClientStats('client-1');
+        expect(stats).toEqual({ totalJobs: 0, totalSpent: 0, rating: 0 });
+        vi.restoreAllMocks();
     });
 });

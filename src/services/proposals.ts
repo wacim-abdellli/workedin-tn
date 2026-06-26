@@ -50,12 +50,15 @@ export async function getDailyProposalUsage(
     const windowStart = new Date(now.getTime() - 48 * 60 * 60 * 1000); // 48 hours ago
 
     // Use count without head:true to avoid 400 on some Supabase RLS configurations
-    const { data, error } = await supabase
-        .from('proposals')
-        .select('created_at')
-        .eq('freelancer_id', freelancerId)
-        .gte('created_at', windowStart.toISOString())
-        .order('created_at', { ascending: true }); // oldest first
+    const { data, error } = await supabaseWithRetry(() =>
+        supabase
+            .from('proposals')
+            .select('created_at')
+            .eq('freelancer_id', freelancerId)
+            .gte('created_at', windowStart.toISOString())
+            .order('created_at', { ascending: true }),
+        { throwOnError: false }
+    );
 
     if (error) {
         // If we can't count (e.g. RLS blocks it), assume 0 used — don't crash
@@ -129,19 +132,22 @@ async function fallbackCreateProposalWithoutAtomicRpc(
     data: CreateProposalInput,
     attachmentUrls: string[],
 ): Promise<{ data: string | null; error: Error | null }> {
-    const insertResult = await supabase
-        .from('proposals')
-        .insert({
-            job_id: data.job_id,
-            freelancer_id: data.freelancer_id,
-            cover_letter: data.cover_letter,
-            bid_amount: data.bid_amount,
-            delivery_time_days: data.delivery_time_days,
-            attachments: attachmentUrls,
-            status: 'pending',
-        })
-        .select('id')
-        .single();
+    const insertResult = await supabaseWithRetry(() =>
+        supabase
+            .from('proposals')
+            .insert({
+                job_id: data.job_id,
+                freelancer_id: data.freelancer_id,
+                cover_letter: data.cover_letter,
+                bid_amount: data.bid_amount,
+                delivery_time_days: data.delivery_time_days,
+                attachments: attachmentUrls,
+                status: 'pending',
+            })
+            .select('id')
+            .single(),
+        { throwOnError: false }
+    );
 
     if (!insertResult.error && typeof insertResult.data?.id === 'string') {
         return { data: insertResult.data.id, error: null };
@@ -151,12 +157,15 @@ async function fallbackCreateProposalWithoutAtomicRpc(
     const duplicateDetected = duplicateMessage.includes('duplicate key') || duplicateMessage.includes('unique');
 
     if (duplicateDetected) {
-        const existing = await supabase
-            .from('proposals')
-            .select('id')
-            .eq('job_id', data.job_id)
-            .eq('freelancer_id', data.freelancer_id)
-            .maybeSingle();
+        const existing = await supabaseWithRetry(() =>
+            supabase
+                .from('proposals')
+                .select('id')
+                .eq('job_id', data.job_id)
+                .eq('freelancer_id', data.freelancer_id)
+                .maybeSingle(),
+            { throwOnError: false }
+        );
 
         if (!existing.error && typeof existing.data?.id === 'string') {
             return { data: existing.data.id, error: null };
@@ -177,7 +186,8 @@ export async function getProposalsByJob(jobId: string) {
             .from('proposals')
             .select(`*, freelancer:public_profiles!freelancer_id(id, full_name, avatar_url, location)`)
             .eq('job_id', jobId)
-            .order('created_at', { ascending: false })
+            .order('created_at', { ascending: false }),
+        { throwOnError: false }
     );
 }
 
@@ -188,7 +198,8 @@ export async function getMyProposal(jobId: string, freelancerId: string) {
             .select('*')
             .eq('job_id', jobId)
             .eq('freelancer_id', freelancerId)
-            .maybeSingle()
+            .maybeSingle(),
+        { throwOnError: false }
     );
 }
 
@@ -198,7 +209,8 @@ export async function getProposalsByFreelancer(freelancerId: string) {
             .from('proposals')
             .select(`*, job:jobs(id, title, category, budget_min, budget_max, status)`)
             .eq('freelancer_id', freelancerId)
-            .order('created_at', { ascending: false })
+            .order('created_at', { ascending: false }),
+        { throwOnError: false }
     );
 }
 
@@ -214,13 +226,16 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
             })
         );
 
-        const { data: rpcData, error } = await supabase.rpc('submit_proposal_atomic', {
-            p_job_id: data.job_id,
-            p_cover_letter: data.cover_letter,
-            p_bid_amount: data.bid_amount,
-            p_delivery_time_days: data.delivery_time_days,
-            p_attachments: attachmentUrls,
-        });
+        const { data: rpcData, error } = await supabaseWithRetry(() =>
+            supabase.rpc('submit_proposal_atomic', {
+                p_job_id: data.job_id,
+                p_cover_letter: data.cover_letter,
+                p_bid_amount: data.bid_amount,
+                p_delivery_time_days: data.delivery_time_days,
+                p_attachments: attachmentUrls,
+            }),
+            { throwOnError: false }
+        );
 
         if (error) {
             if (isMissingSubmitProposalAtomicRpc(error)) {
@@ -236,12 +251,15 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
 
         if (!proposalId) {
             // Defensive confirmation for unexpected RPC payload shapes.
-            const existing = await supabase
-                .from('proposals')
-                .select('id')
-                .eq('job_id', data.job_id)
-                .eq('freelancer_id', data.freelancer_id)
-                .maybeSingle();
+            const existing = await supabaseWithRetry(() =>
+                supabase
+                    .from('proposals')
+                    .select('id')
+                    .eq('job_id', data.job_id)
+                    .eq('freelancer_id', data.freelancer_id)
+                    .maybeSingle(),
+                { throwOnError: false }
+            );
 
             if (!existing.error && typeof existing.data?.id === 'string') {
                 proposalId = existing.data.id;
@@ -262,13 +280,20 @@ export async function createProposal(data: CreateProposalInput, files: File[] = 
 }
 
 export async function withdrawProposal(proposalId: string) {
-    return supabase
-        .from('proposals')
-        .delete()
-        .eq('id', proposalId)
-        .eq('status', 'pending');
+    return supabaseWithRetry(() =>
+        supabase
+            .from('proposals')
+            .delete()
+            .eq('id', proposalId)
+            .eq('status', 'pending'),
+        { throwOnError: false }
+    );
 }
 
 export async function updateProposalStatus(proposalId: string, status: string) {
-    return supabase.from('proposals').update({ status }).eq('id', proposalId);
+    return supabaseWithRetry(() =>
+        supabase.from('proposals').update({ status }).eq('id', proposalId),
+        { throwOnError: false }
+    );
 }
+

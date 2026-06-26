@@ -138,39 +138,49 @@ export async function getWithdrawals(userId: string, page = 1, pageSize = 20) {
 }
 
 export async function requestWithdrawal(data: WithdrawalRequestInput) {
-    return supabase.rpc('request_withdrawal_atomic', {
-        p_wallet_id: (data as WithdrawalRequestInput & { wallet_id?: string }).wallet_id,
-        p_amount: data.amount,
-        p_method: data.method,
-        p_client_request_id: crypto.randomUUID(),
-        p_bank_name: data.details.bank_name ?? null,
-        p_bank_account_name: data.details.bank_account_name ?? null,
-        p_bank_iban: data.details.bank_iban ?? data.details.iban ?? null,
-        p_phone_number: data.details.phone_number ?? data.details.d17_phone ?? null,
-    });
+    return supabaseWithRetry(() =>
+        supabase.rpc('request_withdrawal_atomic', {
+            p_wallet_id: (data as WithdrawalRequestInput & { wallet_id?: string }).wallet_id,
+            p_amount: data.amount,
+            p_method: data.method,
+            p_client_request_id: crypto.randomUUID(),
+            p_bank_name: data.details.bank_name ?? null,
+            p_bank_account_name: data.details.bank_account_name ?? null,
+            p_bank_iban: data.details.bank_iban ?? data.details.iban ?? null,
+            p_phone_number: data.details.phone_number ?? data.details.d17_phone ?? null,
+        }),
+        { throwOnError: false }
+    );
 }
 
 // --- PAYMENT METHODS ---
 
 export function getPaymentMethods(userId: string) {
     return supabaseWithRetry(() =>
-        supabase.from('payment_methods').select('*').eq('user_id', userId)
+        supabase.from('payment_methods').select('*').eq('user_id', userId),
+        { throwOnError: false }
     );
 }
 
 export function addPaymentMethod(userId: string, data: AddPaymentMethodInput) {
-    return supabase.from('payment_methods').insert(buildPaymentMethodInsert(userId, data));
+    return supabaseWithRetry(() =>
+        supabase.from('payment_methods').insert(buildPaymentMethodInsert(userId, data)),
+        { throwOnError: false }
+    );
 }
 
 // --- ESCROW ---
 
 export async function completeEscrowPayment(transactionId: string, contractId: string, freelancerId: string, amount: number) {
-    return supabase.rpc('complete_escrow_payment', {
-        p_transaction_id: transactionId,
-        p_contract_id: contractId,
-        p_freelancer_id: freelancerId,
-        p_amount: amount,
-    });
+    return supabaseWithRetry(() =>
+        supabase.rpc('complete_escrow_payment', {
+            p_transaction_id: transactionId,
+            p_contract_id: contractId,
+            p_freelancer_id: freelancerId,
+            p_amount: amount,
+        }),
+        { throwOnError: false }
+    );
 }
 
 // --- STATS ---
@@ -178,10 +188,13 @@ export async function completeEscrowPayment(transactionId: string, contractId: s
 export async function getEarningsStats(userId: string): Promise<WalletEarningsStats> {
     const [walletResult, transactionsResult] = await Promise.all([
         getWallet(userId),
-        supabase
-            .from('transactions')
-            .select('amount, type, created_at')
-            .eq('user_id', userId),
+        supabaseWithRetry(() =>
+            supabase
+                .from('transactions')
+                .select('amount, type, created_at')
+                .eq('user_id', userId),
+            { throwOnError: false }
+        ),
     ]);
 
     const transactions: EarningsTransactionSummary[] = transactionsResult.data || [];
@@ -197,12 +210,15 @@ export async function getEarningsStats(userId: string): Promise<WalletEarningsSt
 }
 
 export async function getStuckTransactions(): Promise<StuckTransaction[]> {
-    const { data, error } = await supabase
-        .from('transactions')
-        .select('id, user_id, amount, type, status, contract_id, created_at')
-        .eq('status', 'pending')
-        .lt('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: true });
+    const { data, error } = await supabaseWithRetry(() =>
+        supabase
+            .from('transactions')
+            .select('id, user_id, amount, type, status, contract_id, created_at')
+            .eq('status', 'pending')
+            .lt('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
+            .order('created_at', { ascending: true }),
+        { throwOnError: false }
+    );
 
     if (error || !data) return [];
     return data as unknown as StuckTransaction[];
@@ -212,9 +228,12 @@ export async function reconcilePayment(transactionId: string): Promise<Reconcile
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return { success: false, message: 'Not authenticated' };
 
-    const { data, error } = await supabase.functions.invoke('reconcile-payment', {
-        body: { transaction_id: transactionId },
-    });
+    const { data, error } = await supabaseWithRetry(() =>
+        supabase.functions.invoke('reconcile-payment', {
+            body: { transaction_id: transactionId },
+        }),
+        { throwOnError: false }
+    );
 
     if (error) {
         const message = error.message || 'Reconciliation failed';
@@ -227,19 +246,26 @@ export async function reconcilePayment(transactionId: string): Promise<Reconcile
 
 export async function getAllWithdrawalsAdmin(page = 1, pageSize = 20) {
     const from = (page - 1) * pageSize;
-    return supabase
-        .from('withdrawals')
-        .select('*, profile:profiles!user_id(id, full_name, email, avatar_url)', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(from, from + pageSize - 1);
+    return supabaseWithRetry(() =>
+        supabase
+            .from('withdrawals')
+            .select('*, profile:profiles!user_id(id, full_name, email, avatar_url)', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(from, from + pageSize - 1),
+        { throwOnError: false }
+    );
 }
 
 export async function processWithdrawalRequest(withdrawalId: string, action: 'approve' | 'reject', notes?: string) {
-    const { data, error } = await supabase.functions.invoke('dhmad-process-payout', {
-        body: { withdrawal_id: withdrawalId, action, admin_notes: notes },
-    });
+    const { data, error } = await supabaseWithRetry(() =>
+        supabase.functions.invoke('dhmad-process-payout', {
+            body: { withdrawal_id: withdrawalId, action, admin_notes: notes },
+        }),
+        { throwOnError: false }
+    );
     if (error) {
         throw error;
     }
     return data;
 }
+

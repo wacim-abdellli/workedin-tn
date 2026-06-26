@@ -10,33 +10,39 @@ export type { AppNotification };
 
 // --- READ ---
 
-export async function getNotifications(userId: string): Promise<AppNotification[]> {
-    const { data, error } = await supabaseWithRetry(() =>
+export async function getNotifications(userId: string) {
+    const result = await supabaseWithRetry(() =>
         supabase
             .from('notifications')
             .select('*')
             .eq('user_id', userId)
             .neq('type', 'message')
             .order('created_at', { ascending: false })
-            .limit(50)
+            .limit(50),
+        { throwOnError: false }
     );
 
-    if (error) throw new Error(error.message);
-    return (data ?? []) as AppNotification[];
+    return {
+        data: (result.data ?? []) as AppNotification[],
+        error: result.error ?? null,
+    };
 }
 
-export async function getUnreadCount(userId: string): Promise<number> {
-    const { count, error } = await supabaseWithRetry(() =>
+export async function getUnreadCount(userId: string) {
+    const result = await supabaseWithRetry(() =>
         supabase
             .from('notifications')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', userId)
             .neq('type', 'message')
-            .eq('is_read', false)
+            .eq('is_read', false),
+        { throwOnError: false }
     );
 
-    if (error) throw new Error(error.message);
-    return count ?? 0;
+    return {
+        data: result.count ?? 0,
+        error: result.error ?? null,
+    };
 }
 
 // --- WRITE ---
@@ -58,7 +64,7 @@ export async function insertNotification(data: {
     link?: string;
 }) {
     const normalizedType = NOTIFICATION_TYPE_ALIASES[data.type] ?? data.type;
-    const { error } = await supabaseWithRetry(() =>
+    const result = await supabaseWithRetry(() =>
         supabase.rpc('create_notification', {
             p_user_id: data.user_id,
             p_type: normalizedType,
@@ -66,33 +72,37 @@ export async function insertNotification(data: {
             p_body: data.body,
             p_related_id: data.related_id,
             p_link: data.link
-        })
+        }),
+        { throwOnError: false }
     );
-    if (error) throw new Error(error.message);
+    return { error: result.error ?? null };
 }
 
 export const createNotification = insertNotification;
 
 export async function markNotificationRead(notificationId: string) {
-    const { error } = await supabaseWithRetry(() =>
+    const result = await supabaseWithRetry(() =>
         supabase
             .from('notifications')
             .update({ is_read: true })
-            .eq('id', notificationId)
+            .eq('id', notificationId),
+        { throwOnError: false }
     );
-    if (error) throw new Error(error.message);
+    return { error: result.error ?? null };
 }
 
 export async function markAllRead(userId: string) {
-    const { error } = await supabaseWithRetry(() =>
+    const result = await supabaseWithRetry(() =>
         supabase
             .from('notifications')
             .update({ is_read: true })
             .eq('user_id', userId)
-            .eq('is_read', false)
+            .eq('is_read', false),
+        { throwOnError: false }
     );
-    if (error) throw new Error(error.message);
+    return { error: result.error ?? null };
 }
+
 
 // --- REALTIME ---
 // @deprecated Prefer the useRealtimeNotifications hook for new code.

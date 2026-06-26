@@ -7,12 +7,15 @@ import { ProtectedRoute } from '@/components/routing/ProtectedRoute';
 import { ProtectedGate } from '@/components/routing/ProtectedGate';
 import { WorkspaceRoute } from '@/components/routing/WorkspaceRoute';
 import { OnboardingRoute } from '@/components/routing/OnboardingRoute';
+import { AdminRoute } from '@/components/routing/AdminRoute';
+import { AdminRoute } from '@/components/routing/AdminRoute';
 
 const authState = vi.hoisted(() => ({
     isAuthenticated: true,
     isFullyReady: true,
     profile: null as any,
     freelancerProfile: null as any,
+    user: null as any,
 }));
 
 const workspaceState = vi.hoisted(() => ({
@@ -285,5 +288,199 @@ describe('workspace routing guards', () => {
         );
 
         expect(screen.getByTestId('location')).toHaveTextContent('/client/dashboard');
+    });
+
+    describe('ProtectedGate Extra Coverage', () => {
+        it('renders null when not fully ready or profile is missing', () => {
+            authState.isFullyReady = false;
+            authState.profile = null;
+
+            const { container } = render(
+                <I18nProvider>
+                    <MemoryRouter>
+                        <ProtectedGate>
+                            <div data-testid="child">Content</div>
+                        </ProtectedGate>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(container.firstChild).toBeNull();
+        });
+
+        it('renders AccountStatusGate when account status is suspended', () => {
+            authState.isFullyReady = true;
+            authState.profile = { id: 'user-suspended', account_status: 'suspended' };
+
+            render(
+                <I18nProvider>
+                    <MemoryRouter>
+                        <ProtectedGate>
+                            <div data-testid="child">Content</div>
+                        </ProtectedGate>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(screen.getByText('Account blocked: suspended')).toBeInTheDocument();
+        });
+
+        it('renders AccountStatusGate when account status is archived', () => {
+            authState.isFullyReady = true;
+            authState.profile = { id: 'user-archived', account_status: 'archived' };
+
+            render(
+                <I18nProvider>
+                    <MemoryRouter>
+                        <ProtectedGate>
+                            <div data-testid="child">Content</div>
+                        </ProtectedGate>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(screen.getByText('Account blocked: archived')).toBeInTheDocument();
+        });
+
+        it('renders children when user is fully ready and onboarding is complete', () => {
+            authState.isFullyReady = true;
+            authState.profile = {
+                id: 'user-ready',
+                user_type: 'freelancer',
+                active_mode: 'freelancer',
+                freelancer_onboarding_completed: true,
+            };
+            authState.freelancerProfile = { id: 'user-ready', title: 'Developer', skills: ['react'] };
+            workspaceState.activeWorkspace = 'freelancer';
+
+            render(
+                <I18nProvider>
+                    <MemoryRouter>
+                        <ProtectedGate>
+                            <div data-testid="child">Protected Content</div>
+                        </ProtectedGate>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(screen.getByTestId('child')).toHaveTextContent('Protected Content');
+        });
+    });
+
+    describe('AdminRoute', () => {
+        it('should render loading screen when auth is not fully ready', () => {
+            authState.isFullyReady = false;
+
+            render(
+                <I18nProvider>
+                    <MemoryRouter>
+                        <AdminRoute>
+                            <div>Admin Content</div>
+                        </AdminRoute>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(screen.getByText('Preparing your workspace')).toBeInTheDocument();
+        });
+
+        it('should redirect to login when unauthenticated', () => {
+            authState.isFullyReady = true;
+            authState.isAuthenticated = false;
+
+            render(
+                <I18nProvider>
+                    <MemoryRouter initialEntries={['/admin']}>
+                        <Routes>
+                            <Route
+                                path="/admin"
+                                element={
+                                    <AdminRoute>
+                                        <div>Admin Content</div>
+                                    </AdminRoute>
+                                }
+                            />
+                            <Route path="/login" element={<LocationProbe />} />
+                        </Routes>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(screen.getByTestId('location')).toHaveTextContent('/login');
+        });
+
+        it('should render AccountStatusGate when account is suspended or archived', () => {
+            authState.isFullyReady = true;
+            authState.isAuthenticated = true;
+            authState.profile = { id: 'admin-1', account_status: 'suspended' };
+
+            render(
+                <I18nProvider>
+                    <MemoryRouter>
+                        <AdminRoute>
+                            <div>Admin Content</div>
+                        </AdminRoute>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(screen.getByText('Account blocked: suspended')).toBeInTheDocument();
+        });
+
+        it('should render Access Denied when user has no admin access', () => {
+            authState.isFullyReady = true;
+            authState.isAuthenticated = true;
+            authState.profile = { id: 'user-normal', account_status: 'active' };
+            authState.user = { id: 'user-normal', app_metadata: { role: 'user' } } as any;
+
+            render(
+                <I18nProvider>
+                    <MemoryRouter>
+                        <AdminRoute>
+                            <div>Admin Content</div>
+                        </AdminRoute>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(screen.getByText('Access Denied')).toBeInTheDocument();
+        });
+
+        it('should render children when user has admin access', () => {
+            authState.isFullyReady = true;
+            authState.isAuthenticated = true;
+            authState.profile = { id: 'admin-user', account_status: 'active', is_admin: true };
+            authState.user = { id: 'admin-user', app_metadata: { role: 'admin' } } as any;
+
+            render(
+                <I18nProvider>
+                    <MemoryRouter>
+                        <AdminRoute>
+                            <div data-testid="admin-child">Protected Admin Area</div>
+                        </AdminRoute>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(screen.getByTestId('admin-child')).toBeInTheDocument();
+        });
+    });
+
+    describe('OnboardingRoute Loading', () => {
+        it('should render loading when not fully ready', () => {
+            authState.isFullyReady = false;
+
+            render(
+                <I18nProvider>
+                    <MemoryRouter>
+                        <OnboardingRoute workspace="client">
+                            <div>Onboarding Content</div>
+                        </OnboardingRoute>
+                    </MemoryRouter>
+                </I18nProvider>
+            );
+
+            expect(screen.getByText('Preparing your workspace')).toBeInTheDocument();
+        });
     });
 });

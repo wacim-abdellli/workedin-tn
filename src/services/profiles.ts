@@ -19,7 +19,8 @@ export async function getProfileById(userId: string) {
             .from('public_profiles')
             .select('*')
             .eq('id', userId)
-            .single()
+            .single(),
+        { throwOnError: false }
     );
 }
 
@@ -27,13 +28,15 @@ export async function getProfileById(userId: string) {
 // Reads the base table (all columns). Protected by profiles_select_own RLS.
 export async function getOwnProfile(userId: string) {
     return supabaseWithRetry(() =>
-        supabase.from('profiles').select('*').eq('id', userId).single()
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        { throwOnError: false }
     );
 }
 
 export async function getFreelancerProfile(userId: string) {
     return supabaseWithRetry(() =>
-        supabase.from('freelancer_profiles').select('*').eq('id', userId).single()
+        supabase.from('freelancer_profiles').select('*').eq('id', userId).single(),
+        { throwOnError: false }
     );
 }
 
@@ -44,7 +47,8 @@ export async function getFreelancerWithProfile(userId: string) {
             .select(`*, freelancer_profiles(*), portfolio_items(*)`)
             .limit(20, { foreignTable: 'portfolio_items' })
             .eq('id', userId)
-            .single()
+            .single(),
+        { throwOnError: false }
     );
 }
 
@@ -57,8 +61,6 @@ export async function getFreelancers(filters: {
     locations?: string[];
     excludeId?: string;   // exclude the current user from their own search results
 } = {}, page = 1, pageSize = 20) {
-    // Use authenticated client — ensures RLS policies allow reading freelancer_profiles
-    // Query the public_profiles view — safe columns only, anon-readable.
     let query = supabase
         .from('public_profiles')
         .select(`
@@ -125,7 +127,7 @@ export async function getFreelancers(filters: {
     const from = (page - 1) * pageSize;
     query = query.range(from, from + pageSize - 1);
 
-    return query;
+    return supabaseWithRetry(() => query, { throwOnError: false });
 }
 
 // --- WRITE ---
@@ -135,7 +137,8 @@ export async function updateProfile(userId: string, data: Record<string, unknown
         supabase
             .from('profiles')
             .update({ ...data, updated_at: new Date().toISOString() })
-            .eq('id', userId)
+            .eq('id', userId),
+        { throwOnError: false }
     );
 }
 
@@ -144,7 +147,8 @@ export async function updateFreelancerProfile(userId: string, data: Record<strin
     return supabaseWithRetry(() =>
         supabase
             .from('freelancer_profiles')
-            .upsert({ id: userId, ...safeData, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+            .upsert({ id: userId, ...safeData, updated_at: new Date().toISOString() }, { onConflict: 'id' }),
+        { throwOnError: false }
     );
 }
 
@@ -157,93 +161,124 @@ export async function uploadAvatar(userId: string, file: File) {
 // --- FAVORITES ---
 
 export async function getFavoriteStatus(userId: string, jobId: string) {
-    return supabase
-        .from('favorites')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('job_id', jobId)
-        .maybeSingle();
+    return supabaseWithRetry(() =>
+        supabase
+            .from('favorites')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('job_id', jobId)
+            .maybeSingle(),
+        { throwOnError: false }
+    );
 }
 
 export async function toggleFavorite(userId: string, jobId: string, isSaved: boolean) {
-    if (isSaved) {
-        return supabase.from('favorites').delete().eq('user_id', userId).eq('job_id', jobId);
-    }
-    return supabase.from('favorites').insert({ user_id: userId, job_id: jobId });
+    return supabaseWithRetry(() => {
+        if (isSaved) {
+            return supabase.from('favorites').delete().eq('user_id', userId).eq('job_id', jobId);
+        }
+        return supabase.from('favorites').insert({ user_id: userId, job_id: jobId });
+    }, { throwOnError: false });
 }
 
 export async function getSavedJobs(userId: string) {
-    return supabase
-        .from('favorites')
-        .select('job_id, jobs(*)')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .not('job_id', 'is', null);
+    return supabaseWithRetry(() =>
+        supabase
+            .from('favorites')
+            .select('job_id, jobs(*)')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .not('job_id', 'is', null),
+        { throwOnError: false }
+    );
 }
 
 export async function getSavedFreelancerIds(userId: string) {
-    return supabase
-        .from('favorites')
-        .select('freelancer_id')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .not('freelancer_id', 'is', null);
+    return supabaseWithRetry(() =>
+        supabase
+            .from('favorites')
+            .select('freelancer_id')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .not('freelancer_id', 'is', null),
+        { throwOnError: false }
+    );
 }
 
 export async function toggleFreelancerFavorite(userId: string, freelancerId: string, isSaved: boolean) {
-    if (isSaved) {
-        return supabase
-            .from('favorites')
-            .delete()
-            .eq('user_id', userId)
-            .eq('freelancer_id', freelancerId);
-    }
+    return supabaseWithRetry(() => {
+        if (isSaved) {
+            return supabase
+                .from('favorites')
+                .delete()
+                .eq('user_id', userId)
+                .eq('freelancer_id', freelancerId);
+        }
 
-    return supabase.from('favorites').insert({ user_id: userId, freelancer_id: freelancerId });
+        return supabase.from('favorites').insert({ user_id: userId, freelancer_id: freelancerId });
+    }, { throwOnError: false });
 }
 
 // --- REVIEWS ---
 
 export async function getReviewsByUser(userId: string) {
-    return supabase
-        .from('reviews')
-        .select('*')
-        .eq('reviewee_id', userId)
-        .order('created_at', { ascending: false });
+    return supabaseWithRetry(() =>
+        supabase
+            .from('reviews')
+            .select('*')
+            .eq('reviewee_id', userId)
+            .order('created_at', { ascending: false }),
+        { throwOnError: false }
+    );
 }
 
 export async function getFreelancerReviewStats(userId: string) {
-    const { data, error } = await supabase
-        .from('reviews')
-        .select('rating, trust_weight')
-        .eq('reviewee_id', userId)
-        .eq('is_public', true);
-    
-    if (error || !data || data.length === 0) {
+    try {
+        const { data, error } = await supabaseWithRetry(() =>
+            supabase
+                .from('reviews')
+                .select('rating, trust_weight')
+                .eq('reviewee_id', userId)
+                .eq('is_public', true),
+            { throwOnError: false }
+        );
+        
+        if (error || !data || data.length === 0) {
+            return { averageRating: 0, reviewCount: 0 };
+        }
+        
+        const totalWeight = data.reduce((sum, review) => sum + Number(review.trust_weight ?? 1), 0);
+        const weightedTotal = data.reduce((sum, review) => sum + (Number(review.rating) * Number(review.trust_weight ?? 1)), 0);
+        const averageRating = totalWeight > 0 ? weightedTotal / totalWeight : 0;
+        
+        return {
+            averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+            reviewCount: data.length
+        };
+    } catch (err) {
         return { averageRating: 0, reviewCount: 0 };
     }
-    
-    const totalWeight = data.reduce((sum, review) => sum + Number(review.trust_weight ?? 1), 0);
-    const weightedTotal = data.reduce((sum, review) => sum + (Number(review.rating) * Number(review.trust_weight ?? 1)), 0);
-    const averageRating = totalWeight > 0 ? weightedTotal / totalWeight : 0;
-    
-    return {
-        averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
-        reviewCount: data.length
-    };
 }
 
 export async function getClientStats(clientId: string) {
-    const { data, error } = await supabase.rpc('get_client_stats_v2', { p_client_id: clientId });
-    
-    if (error) {
+    try {
+        const { data, error } = await supabaseWithRetry(() =>
+            supabase.rpc('get_client_stats_v2', { p_client_id: clientId }),
+            { throwOnError: false }
+        );
+        
+        if (error) {
+            return { totalJobs: 0, totalSpent: 0, rating: 0 };
+        }
+        
+        const stats = (data as Record<string, unknown> | null)?.[0] as Record<string, unknown> || {};
+        return {
+            totalJobs: stats.job_count || 0,
+            totalSpent: Number(stats.total_spent) || 0,
+            rating: Number(stats.avg_rating) || 0,
+        };
+    } catch (err) {
         return { totalJobs: 0, totalSpent: 0, rating: 0 };
     }
-    
-    const stats = (data as Record<string, unknown> | null)?.[0] as Record<string, unknown> || {};
-    return {
-        totalJobs: stats.job_count || 0,
-        totalSpent: Number(stats.total_spent) || 0,
-        rating: Number(stats.avg_rating) || 0,
-    };
 }
+

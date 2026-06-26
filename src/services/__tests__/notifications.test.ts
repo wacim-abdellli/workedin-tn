@@ -30,7 +30,7 @@ describe("notifications service", () => {
         vi.mocked(supabase.from).mockImplementation(mockFn as any);
 
         const result = await getNotifications("user-1");
-        expect(result).toEqual([{ id: "notif-1" }]);
+        expect(result).toEqual({ data: [{ id: "notif-1" }], error: null });
         expect(supabase.from).toHaveBeenCalledWith("notifications");
         expect(mockEq).toHaveBeenCalledWith('user_id', 'user-1');
         expect(mockNeq).toHaveBeenCalledWith('type', 'message');
@@ -50,8 +50,8 @@ describe("notifications service", () => {
         });
         vi.mocked(supabase.from).mockImplementation(mockFn as any);
 
-        const count = await getUnreadCount("user-1");
-        expect(count).toBe(5);
+        const result = await getUnreadCount("user-1");
+        expect(result).toEqual({ data: 5, error: null });
         expect(supabase.from).toHaveBeenCalledWith("notifications");
         expect(mockUserEq).toHaveBeenCalledWith('user_id', 'user-1');
         expect(mockNeq).toHaveBeenCalledWith('type', 'message');

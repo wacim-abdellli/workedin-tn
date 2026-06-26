@@ -2,6 +2,7 @@
  * Jobs Service — All job-related Supabase queries
  */
 import { supabase, supabaseAnon } from '@/lib/supabase';
+import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { logger } from '@/lib/logger';
 import type { Skill } from '@/types';
 
@@ -46,110 +47,80 @@ const BUDGET_RANGES = [
 export async function getJobs(filters: JobFilters = {}, page = 1, pageSize = 10) {
     const from = (page - 1) * pageSize;
 
-    // Wrap in a timeout — if Supabase hangs (e.g. stale token refresh), fail fast
-    const fetchPromise = async () => {
-        let query = supabaseAnon
-            .from('jobs')
-            .select('*', { count: 'exact' })
-            .eq('status', filters.status || 'open')
-            .eq('visibility', 'public');
+    let query = supabaseAnon
+        .from('jobs')
+        .select('*', { count: 'exact' })
+        .eq('status', filters.status || 'open')
+        .eq('visibility', 'public');
 
-        if (filters.search) {
-            // Strip out characters that could break PostgREST .or() parsing (like commas and quotes)
-            const safeSearch = filters.search.replace(/[,"_%]/g, ' ').trim();
-            if (safeSearch) {
-                query = query.or(`title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`);
-            }
+    if (filters.search) {
+        const safeSearch = filters.search.replace(/[,"_%]/g, ' ').trim();
+        if (safeSearch) {
+            query = query.or(`title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`);
         }
-        if (filters.categories && filters.categories.length > 0) query = query.in('category', filters.categories);
-        if (filters.jobType) query = query.eq('job_type', filters.jobType);
-        if (filters.experienceLevels && filters.experienceLevels.length > 0) query = query.in('experience_level', filters.experienceLevels);
+    }
+    if (filters.categories && filters.categories.length > 0) query = query.in('category', filters.categories);
+    if (filters.jobType) query = query.eq('job_type', filters.jobType);
+    if (filters.experienceLevels && filters.experienceLevels.length > 0) query = query.in('experience_level', filters.experienceLevels);
 
-        if (filters.budgetRange) {
-            const range = BUDGET_RANGES.find(r => r.value === filters.budgetRange);
-            if (range) {
-                query = query.gte('budget_min', range.min).lte('budget_min', range.max);
-            }
+    if (filters.budgetRange) {
+        const range = BUDGET_RANGES.find(r => r.value === filters.budgetRange);
+        if (range) {
+            query = query.gte('budget_min', range.min).lte('budget_min', range.max);
         }
+    }
 
-        if (filters.postedWithin && filters.postedWithin !== 'any') {
-            const now = new Date();
-            let since: Date;
-            switch (filters.postedWithin) {
-                case '24h': since = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
-                case '3d': since = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); break;
-                case '1w': since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
-                case '1m': since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
-                default: since = new Date(0);
-            }
-            query = query.gte('posted_at', since.toISOString());
+    if (filters.postedWithin && filters.postedWithin !== 'any') {
+        const now = new Date();
+        let since: Date;
+        switch (filters.postedWithin) {
+            case '24h': since = new Date(now.getTime() - 24 * 60 * 60 * 1000); break;
+            case '3d': since = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); break;
+            case '1w': since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+            case '1m': since = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+            default: since = new Date(0);
         }
+        query = query.gte('posted_at', since.toISOString());
+    }
 
-        switch (filters.sortBy) {
-            case 'budget_high': query = query.order('budget_max', { ascending: false }); break;
-            case 'budget_low': query = query.order('budget_min', { ascending: true }); break;
-            case 'proposals_high': query = query.order('proposals_count', { ascending: false }); break;
-            case 'proposals_low': query = query.order('proposals_count', { ascending: true }); break;
-            default: query = query.order('posted_at', { ascending: false });
-        }
+    switch (filters.sortBy) {
+        case 'budget_high': query = query.order('budget_max', { ascending: false }); break;
+        case 'budget_low': query = query.order('budget_min', { ascending: true }); break;
+        case 'proposals_high': query = query.order('proposals_count', { ascending: false }); break;
+        case 'proposals_low': query = query.order('proposals_count', { ascending: true }); break;
+        default: query = query.order('posted_at', { ascending: false });
+    }
 
-        query = query.range(from, from + pageSize - 1);
-
-        const { data, error, count } = await query;
-
-        if (error) {
-            logger.error('[getJobs] error:', error);
-            return { data: [], count: 0 };
-        }
-
-        return { data: data ?? [], count: count ?? 0 };
-    };
-
-    // 8 second timeout — if token refresh hangs, fail fast and show empty
-    const timeout = new Promise<{ data: never[]; count: number }>((_, reject) =>
-        setTimeout(() => reject(new Error('getJobs timed out after 8s')), 8000)
-    );
+    query = query.range(from, from + pageSize - 1);
 
     try {
-        return await Promise.race([fetchPromise(), timeout]);
+        const result = await supabaseWithRetry(() => query, { throwOnError: false, timeoutMs: 8000 });
+        if (result.error) {
+            logger.error('[getJobs] error:', result.error);
+            return { data: [], count: 0, error: result.error };
+        }
+        return { data: result.data ?? [], count: result.count ?? 0, error: null };
     } catch (err) {
         logger.error('[getJobs] fatal:', err);
-        return { data: [], count: 0 };
+        return { data: [], count: 0, error: err };
     }
 }
 
 /**
  * OPTIMIZED: Get category counts with minimal database load
- * 
- * BEFORE: Made 8 separate queries (one per category)
- *   - Promise.all(categories.map(cat => query for cat))
- *   - Result: 8 individual database round-trips = 400-800ms delay
- * 
- * AFTER: Parallel batch queries using Supabase's count with head:true
- *   - Still parallel but uses head:true flag to skip data transfer
- *   - Result: Reduced payload size, still parallel but faster per-query
- * 
- * BEST: Use database view (if implemented)
- *   - CREATE VIEW category_job_counts AS SELECT category, COUNT(*) as count FROM jobs GROUP BY category
- *   - Then: SELECT * FROM category_job_counts
- *   - Result: Single query, no grouping overhead
- * 
- * Performance improvement: 200-400ms faster with optimizations
- * Database impact: Same query count but lighter payload (head:true)
  */
 export async function getCategoryCounts(categories: string[]) {
     try {
         const counts: Record<string, number> = {};
 
-        // Initialize all categories to 0
         categories.forEach(cat => {
             counts[cat] = 0;
         });
 
-        // Use database view for O(1) round trips
-        const { data, error } = await supabaseAnon
-            .from('category_job_counts')
-            .select('*');
+        const { data, error } = await supabaseWithRetry(
+            () => supabaseAnon.from('category_job_counts').select('*'),
+            { throwOnError: false }
+        );
 
         if (!error && data) {
             data.forEach((row: { category: string; job_count: number | string }) => {
@@ -162,7 +133,6 @@ export async function getCategoryCounts(categories: string[]) {
         return counts;
     } catch (err) {
         logger.error('[getCategoryCounts] error:', err);
-        // Return zeros for all categories on error
         const counts: Record<string, number> = {};
         categories.forEach(cat => {
             counts[cat] = 0;
@@ -172,38 +142,33 @@ export async function getCategoryCounts(categories: string[]) {
 }
 
 export async function getJobById(jobId: string) {
-    const fetchPromise = () => supabaseAnon
-        .from('jobs')
-        .select('*, client:public_profiles!jobs_client_id_fkey(id, full_name, avatar_url, location, created_at)')
-        .eq('id', jobId)
-        .single();
-    
-    const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('getJobById timed out after 8s')), 8000)
-    );
-
     try {
-        return await Promise.race([fetchPromise(), timeout]);
+        const result = await supabaseWithRetry(
+            () => supabaseAnon
+                .from('jobs')
+                .select('*, client:public_profiles!jobs_client_id_fkey(id, full_name, avatar_url, location, created_at)')
+                .eq('id', jobId)
+                .single(),
+            { throwOnError: false, timeoutMs: 8000 }
+        );
+        return { data: result.data ?? null, error: result.error ?? null };
     } catch (err) {
         logger.error('[getJobById] fatal:', err);
         return { data: null, error: err };
     }
 }
 
-
 export async function getJobsByClient(clientId: string) {
-    const fetchPromise = () => supabase
-        .from('jobs')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false });
-
-    const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('getJobsByClient timed out after 8s')), 8000)
-    );
-
     try {
-        return await Promise.race([fetchPromise(), timeout]);
+        const result = await supabaseWithRetry(
+            () => supabase
+                .from('jobs')
+                .select('*')
+                .eq('client_id', clientId)
+                .order('created_at', { ascending: false }),
+            { throwOnError: false, timeoutMs: 8000 }
+        );
+        return { data: result.data ?? [], error: result.error ?? null };
     } catch (err) {
         logger.error('[getJobsByClient] fatal:', err);
         return { data: [], error: err };
@@ -211,20 +176,18 @@ export async function getJobsByClient(clientId: string) {
 }
 
 export async function getSimilarJobs(jobId: string, category: string, limit = 3) {
-    const fetchPromise = () => supabase
-        .from('jobs')
-        .select('*')
-        .eq('category', category)
-        .eq('status', 'open')
-        .neq('id', jobId)
-        .limit(limit);
-
-    const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('getSimilarJobs timed out after 8s')), 8000)
-    );
-
     try {
-        return await Promise.race([fetchPromise(), timeout]);
+        const result = await supabaseWithRetry(
+            () => supabase
+                .from('jobs')
+                .select('*')
+                .eq('category', category)
+                .eq('status', 'open')
+                .neq('id', jobId)
+                .limit(limit),
+            { throwOnError: false, timeoutMs: 8000 }
+        );
+        return { data: result.data ?? [], error: result.error ?? null };
     } catch (err) {
         logger.error('[getSimilarJobs] fatal:', err);
         return { data: [], error: err };
@@ -234,15 +197,23 @@ export async function getSimilarJobs(jobId: string, category: string, limit = 3)
 // --- WRITE ---
 
 export async function createJob(data: CreateJobInput) {
-    return supabase.from('jobs').insert({ ...data, status: 'open' }).select('id').single();
+    return supabaseWithRetry(
+        () => supabase.from('jobs').insert({ ...data, status: 'open' }).select('id').single(),
+        { throwOnError: false }
+    );
 }
 
 export async function updateJob(jobId: string, data: Partial<CreateJobInput>) {
-    return supabase.from('jobs').update(data).eq('id', jobId);
+    return supabaseWithRetry(
+        () => supabase.from('jobs').update(data).eq('id', jobId),
+        { throwOnError: false }
+    );
 }
 
 export async function incrementJobViews(jobId: string) {
-    return supabase.rpc('increment_job_views', {
-        p_job_id: jobId,
-    });
+    return supabaseWithRetry(
+        () => supabase.rpc('increment_job_views', { p_job_id: jobId }),
+        { throwOnError: false }
+    );
 }
+

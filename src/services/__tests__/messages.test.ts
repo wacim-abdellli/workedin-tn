@@ -37,6 +37,7 @@ vi.mock('@/lib/supabase', () => {
                 state.orderCalls.push({ table, column, options });
                 return builder;
             }),
+            range: vi.fn(() => builder),
             insert: vi.fn((value: unknown) => {
                 state.insertCalls.push({ table, value });
                 return builder;
@@ -79,10 +80,10 @@ vi.mock('@/lib/supabase', () => {
                 }),
             },
             rpc: vi.fn(async (fnName) => {
+                if (state.tableResults.rpc !== undefined) return state.tableResults.rpc;
                 if (fnName === 'delete_message_atomic') {
                     return { data: { conversation_id: 'conversation-1' }, error: null };
                 }
-                if (state.tableResults.rpc) return state.tableResults.rpc;
                 return { data: null, error: null };
             }),
             removeChannel: vi.fn(async () => undefined),
@@ -556,5 +557,126 @@ describe('messages service coverage', () => {
         });
         expect(result.data).toBeNull();
         expect(result.error).toBeInstanceOf(Error);
+    });
+
+    it('sendMessage returns error when conversation query fails or returns null', async () => {
+        state.tableResults.conversations = { data: null, error: new Error('Conversation query database error') };
+        const result = await sendMessage({
+            conversationId: 'conversation-1',
+            senderId: 'sender-1',
+            receiverId: 'receiver-1',
+            content: 'Hello',
+        });
+        expect(result.data).toBeNull();
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toBe('Conversation query database error');
+    });
+
+    it('sendMessage returns error when sender is not a participant in the conversation', async () => {
+        state.tableResults.conversations = {
+            data: { participant_1: 'user-2', participant_2: 'user-3' },
+            error: null,
+        };
+        const result = await sendMessage({
+            conversationId: 'conversation-1',
+            senderId: 'user-1',
+            receiverId: 'user-2',
+            content: 'Hello',
+        });
+        expect(result.data).toBeNull();
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toContain('Permission Denied');
+    });
+
+    it('deleteMessage returns descriptive error when atomic function is missing from the database', async () => {
+        state.tableResults.authUserId = 'sender-1';
+        state.tableResults.messages = {
+            data: { id: 'message-1', sender_id: 'sender-1', receiver_id: 'receiver-1' },
+            error: null,
+        };
+        state.tableResults.rpc = {
+            data: null,
+            error: new Error('Could not find the function public.delete_message_atomic in the schema cache'),
+        };
+
+        const result = await deleteMessage('message-1');
+        expect(result.data).toBeNull();
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toContain('Run the latest messages SQL migration first');
+    });
+
+    it('deleteMessage returns normalized error for generic database delete failure', async () => {
+        state.tableResults.authUserId = 'sender-1';
+        state.tableResults.messages = {
+            data: { id: 'message-1', sender_id: 'sender-1', receiver_id: 'receiver-1' },
+            error: null,
+        };
+        state.tableResults.rpc = {
+            data: null,
+            error: new Error('Some database connection timeout error'),
+        };
+
+        const result = await deleteMessage('message-1');
+        expect(result.data).toBeNull();
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toBe('Some database connection timeout error');
+    });
+
+    it('getMessages returns list of messages in reverse order on success', async () => {
+        state.tableResults.messages = {
+            data: [
+                { id: 'msg-2', content: 'Second message' },
+                { id: 'msg-1', content: 'First message' },
+            ],
+            error: null,
+        };
+
+        const result = await getMessages('conversation-1');
+        expect(result.error).toBeNull();
+        // Since we reverse the array of data on success, the order should be msg-1 then msg-2
+        expect(result.data).toEqual([
+            { id: 'msg-1', content: 'First message' },
+            { id: 'msg-2', content: 'Second message' },
+        ]);
+    });
+
+    it('getMessages returns error when database query fails', async () => {
+        state.tableResults.messages = {
+            data: null,
+            error: new Error('Database select messages failed'),
+        };
+
+        const result = await getMessages('conversation-1');
+        expect(result.data).toBeNull();
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toBe('Database select messages failed');
+    });
+
+    it('uploadMessageAttachment returns error when file validation fails', async () => {
+        const file = new File([new Uint8Array([0x00, 0x00])], 'unsafe.pdf', { type: 'application/pdf' });
+        Object.defineProperty(file, 'arrayBuffer', {
+            configurable: true,
+            value: vi.fn(async () => new Uint8Array([0x00, 0x00]).buffer),
+        });
+
+        const result = await uploadMessageAttachment(file, 'conversation-1');
+        expect(result.url).toBeNull();
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toContain('File content does not match its declared type');
+    });
+
+    it('uploadMessageAttachment returns error when uploadFile throws an error', async () => {
+        state.uploadFile.mockRejectedValue(new Error('S3 bucket permissions denied'));
+
+        const file = new File([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])], 'safe.pdf', { type: 'application/pdf' });
+        Object.defineProperty(file, 'arrayBuffer', {
+            configurable: true,
+            value: vi.fn(async () => new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d]).buffer),
+        });
+
+        const result = await uploadMessageAttachment(file, 'conversation-1');
+        expect(result.url).toBeNull();
+        expect(result.error).toBeInstanceOf(Error);
+        expect((result.error as Error).message).toBe('S3 bucket permissions denied');
     });
 });

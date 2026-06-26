@@ -5,6 +5,7 @@ const queryState = vi.hoisted(() => {
         fromCalls: [] as string[],
         selectCalls: [] as Array<{ columns: string; options?: unknown }>,
         eqCalls: [] as Array<{ column: string; value: unknown }>,
+        neqCalls: [] as Array<{ column: string; value: unknown }>,
         inCalls: [] as Array<{ column: string; values: unknown[] }>,
         orCalls: [] as string[],
         gteCalls: [] as Array<{ column: string; value: unknown }>,
@@ -12,6 +13,8 @@ const queryState = vi.hoisted(() => {
         orderCalls: [] as Array<{ column: string; options?: unknown }>,
         rangeCalls: [] as Array<{ from: number; to: number }>,
         insertCalls: [] as unknown[],
+        updateCalls: [] as Array<{ value: unknown }>,
+        limitCalls: [] as number[],
         rpcCalls: [] as Array<{ fn: string; params: unknown }>,
         singleCalls: 0,
         tableResults: {} as Record<string, unknown>,
@@ -24,6 +27,7 @@ const queryState = vi.hoisted(() => {
         state.fromCalls = [];
         state.selectCalls = [];
         state.eqCalls = [];
+        state.neqCalls = [];
         state.inCalls = [];
         state.orCalls = [];
         state.gteCalls = [];
@@ -31,6 +35,8 @@ const queryState = vi.hoisted(() => {
         state.orderCalls = [];
         state.rangeCalls = [];
         state.insertCalls = [];
+        state.updateCalls = [];
+        state.limitCalls = [];
         state.rpcCalls = [];
         state.singleCalls = 0;
         state.tableResults = {
@@ -86,6 +92,10 @@ vi.mock('@/lib/supabase', () => {
                 queryState.state.eqCalls.push({ column, value });
                 return builder;
             }),
+            neq: vi.fn((column: string, value: unknown) => {
+                queryState.state.neqCalls.push({ column, value });
+                return builder;
+            }),
             in: vi.fn((column: string, values: unknown[]) => {
                 queryState.state.inCalls.push({ column, values });
                 return builder;
@@ -112,6 +122,14 @@ vi.mock('@/lib/supabase', () => {
             }),
             insert: vi.fn((value: unknown) => {
                 queryState.state.insertCalls.push(value);
+                return builder;
+            }),
+            update: vi.fn((value: unknown) => {
+                queryState.state.updateCalls.push({ value });
+                return builder;
+            }),
+            limit: vi.fn((value: number) => {
+                queryState.state.limitCalls.push(value);
                 return builder;
             }),
             single: vi.fn(async () => {
@@ -147,7 +165,16 @@ vi.mock('@/lib/supabase', () => {
     };
 });
 
-import { createJob, getJobById, getJobs } from '@/services/jobs';
+import {
+    createJob,
+    getJobById,
+    getJobs,
+    getCategoryCounts,
+    getJobsByClient,
+    getSimilarJobs,
+    updateJob,
+    incrementJobViews
+} from '@/services/jobs';
 import { createProposal, getProposalsByJob } from '@/services/proposals';
 
 describe('jobs service targeted coverage', () => {
@@ -175,6 +202,7 @@ describe('jobs service targeted coverage', () => {
         expect(result).toEqual({
             data: [{ id: 'job-22', title: 'React build' }],
             count: 42,
+            error: null,
         });
         expect(queryState.state.fromCalls).toContain('jobs');
         expect(queryState.state.orCalls).toContain('title.ilike.%react%,description.ilike.%react%');
@@ -206,7 +234,6 @@ describe('jobs service targeted coverage', () => {
         expect(result).toEqual({
             data: { id: 'job-99', client_id: 'client-1' },
             error: null,
-            count: 1,
         });
         expect(queryState.state.selectCalls[0]?.columns).toContain('client:public_profiles!jobs_client_id_fkey');
         expect(queryState.state.eqCalls).toContainEqual({ column: 'id', value: 'job-99' });
@@ -233,6 +260,173 @@ describe('jobs service targeted coverage', () => {
         }));
         expect(queryState.state.selectCalls[queryState.state.selectCalls.length - 1]).toEqual({ columns: 'id', options: undefined });
         expect(queryState.state.singleCalls).toBe(1);
+    });
+
+    it('getJobs filters by empty criteria and default page bounds', async () => {
+        await getJobs();
+        expect(queryState.state.eqCalls).toContainEqual({ column: 'status', value: 'open' });
+        expect(queryState.state.rangeCalls).toContainEqual({ from: 0, to: 9 });
+    });
+
+    it('getJobs handles special character sanitization in search filter', async () => {
+        await getJobs({ search: 'react%builder_' });
+        expect(queryState.state.orCalls).toContain('title.ilike.%react builder%,description.ilike.%react builder%');
+    });
+
+    it('getJobs handles postedWithin filters (3d, 1w, 1m, any)', async () => {
+        await getJobs({ postedWithin: '3d' });
+        await getJobs({ postedWithin: '1w' });
+        await getJobs({ postedWithin: '1m' });
+        await getJobs({ postedWithin: 'any' });
+        expect(queryState.state.gteCalls.length).toBeGreaterThan(0);
+    });
+
+    it('getJobs handles sorting configurations (budget_low, proposals_high, proposals_low)', async () => {
+        await getJobs({ sortBy: 'budget_low' });
+        await getJobs({ sortBy: 'proposals_high' });
+        await getJobs({ sortBy: 'proposals_low' });
+        expect(queryState.state.orderCalls).toContainEqual({ column: 'budget_min', options: { ascending: true } });
+        expect(queryState.state.orderCalls).toContainEqual({ column: 'proposals_count', options: { ascending: false } });
+        expect(queryState.state.orderCalls).toContainEqual({ column: 'proposals_count', options: { ascending: true } });
+    });
+
+    it('getJobs budgetRange handling when range is not found', async () => {
+        await getJobs({ budgetRange: 'invalid-range' });
+        const budgetGte = queryState.state.gteCalls.find(c => c.column === 'budget_min');
+        expect(budgetGte).toBeUndefined();
+    });
+
+    it('getJobs returns error payload on query rejection', async () => {
+        const customError = new Error('Database connection failed');
+        queryState.state.builderResult = {
+            data: null,
+            error: customError,
+            count: 0,
+        };
+        const result = await getJobs();
+        expect(result).toEqual({ data: [], count: 0, error: customError });
+    });
+
+    it('getCategoryCounts updates list of categories', async () => {
+        queryState.state.builderResult = {
+            data: [
+                { category: 'development', job_count: 5 },
+                { category: 'design', job_count: '10' }
+            ],
+            error: null,
+            count: 2
+        };
+        const counts = await getCategoryCounts(['development', 'design', 'marketing']);
+        expect(counts).toEqual({
+            development: 5,
+            design: 10,
+            marketing: 0
+        });
+    });
+
+    it('getCategoryCounts fallback to zeros on fetch error', async () => {
+        queryState.state.builderResult = {
+            data: null,
+            error: new Error('View not found'),
+            count: 0
+        };
+        const counts = await getCategoryCounts(['development', 'design']);
+        expect(counts).toEqual({
+            development: 0,
+            design: 0
+        });
+    });
+
+    it('getJobsByClient fetches jobs for specific client', async () => {
+        queryState.state.builderResult = {
+            data: [{ id: 'job-1' }],
+            error: null,
+            count: 1
+        };
+        const result = await getJobsByClient('client-1');
+        expect(result).toEqual({ data: [{ id: 'job-1' }], error: null });
+        expect(queryState.state.eqCalls).toContainEqual({ column: 'client_id', value: 'client-1' });
+    });
+
+    it('getSimilarJobs fetches similar open jobs excluding current', async () => {
+        queryState.state.builderResult = {
+            data: [{ id: 'job-2' }],
+            error: null,
+            count: 1
+        };
+        const result = await getSimilarJobs('job-1', 'design', 5);
+        expect(result).toEqual({ data: [{ id: 'job-2' }], error: null });
+        expect(queryState.state.eqCalls).toContainEqual({ column: 'category', value: 'design' });
+        expect(queryState.state.neqCalls).toContainEqual({ column: 'id', value: 'job-1' });
+    });
+
+    it('updateJob and incrementJobViews trigger correct calls', async () => {
+        const updateResult = { data: null, error: null } as any;
+        queryState.state.builderResult = updateResult;
+        
+        await updateJob('job-1', { title: 'Updated title' });
+        expect(queryState.state.fromCalls).toContain('jobs');
+        expect(queryState.state.eqCalls).toContainEqual({ column: 'id', value: 'job-1' });
+        
+        await incrementJobViews('job-1');
+        expect(queryState.state.rpcCalls).toContainEqual({
+            fn: 'increment_job_views',
+            params: { p_job_id: 'job-1' }
+        });
+    });
+
+    it('getJobById returns error on query failure', async () => {
+        const customError = new Error('Row not found');
+        queryState.state.builderResult = {
+            data: null,
+            error: customError,
+            count: 0
+        };
+        const result = await getJobById('job-1');
+        expect(result).toEqual({ data: null, error: customError });
+    });
+
+    it('getJobs handles default switch branch in postedWithin and throw catch path', async () => {
+        await getJobs({ postedWithin: 'invalid-interval' as any });
+        
+        // Force getJobs to throw by mocking builderResult to throw
+        const customError = new Error('Simulation of throw inside query execution');
+        vi.spyOn(queryState.state, 'builderResult', 'get').mockImplementationOnce(() => {
+            throw customError;
+        });
+        const result = await getJobs();
+        expect(result.error).toBe(customError);
+        vi.restoreAllMocks();
+    });
+
+    it('getJobById handles throw catch path', async () => {
+        const customError = new Error('Fatal error in getJobById');
+        vi.spyOn(queryState.state, 'builderResult', 'get').mockImplementationOnce(() => {
+            throw customError;
+        });
+        const result = await getJobById('job-1');
+        expect(result.error).toBe(customError);
+        vi.restoreAllMocks();
+    });
+
+    it('getJobsByClient handles throw catch path', async () => {
+        const customError = new Error('Fatal error in getJobsByClient');
+        vi.spyOn(queryState.state, 'builderResult', 'get').mockImplementationOnce(() => {
+            throw customError;
+        });
+        const result = await getJobsByClient('client-1');
+        expect(result.error).toBe(customError);
+        vi.restoreAllMocks();
+    });
+
+    it('getSimilarJobs handles throw catch path', async () => {
+        const customError = new Error('Fatal error in getSimilarJobs');
+        vi.spyOn(queryState.state, 'builderResult', 'get').mockImplementationOnce(() => {
+            throw customError;
+        });
+        const result = await getSimilarJobs('job-1', 'development');
+        expect(result.error).toBe(customError);
+        vi.restoreAllMocks();
     });
 });
 
@@ -330,6 +524,53 @@ describe('proposals service targeted coverage', () => {
             delivery_time_days: 2,
             status: 'pending',
         }));
+    });
+
+    it('createProposal handles defensive confirmation path (missing proposal ID in RPC payload)', async () => {
+        queryState.state.rpcResult = {
+            data: { success: true },
+            error: null,
+        };
+        queryState.state.tableResults.proposals = {
+            data: { id: 'confirmed-proposal-id' },
+            error: null,
+            count: 1,
+        };
+        
+        const result = await createProposal({
+            job_id: 'job-1',
+            freelancer_id: 'free-1',
+            cover_letter: 'Hello world',
+            bid_amount: 100,
+            delivery_time_days: 3,
+        });
+        
+        expect(result).toEqual({ data: 'confirmed-proposal-id', error: null });
+        expect(queryState.state.eqCalls).toContainEqual({ column: 'job_id', value: 'job-1' });
+        expect(queryState.state.eqCalls).toContainEqual({ column: 'freelancer_id', value: 'free-1' });
+    });
+
+    it('createProposal returns error when proposal ID is completely missing and unconfirmed', async () => {
+        queryState.state.rpcResult = {
+            data: { success: true },
+            error: null,
+        };
+        queryState.state.tableResults.proposals = {
+            data: null,
+            error: null,
+            count: 0,
+        };
+        
+        const result = await createProposal({
+            job_id: 'job-1',
+            freelancer_id: 'free-1',
+            cover_letter: 'Hello world',
+            bid_amount: 100,
+            delivery_time_days: 3,
+        });
+        
+        expect(result.data).toBeNull();
+        expect(result.error?.message).toContain('Proposal submission could not be confirmed');
     });
 });
 

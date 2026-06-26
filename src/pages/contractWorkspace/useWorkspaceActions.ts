@@ -15,53 +15,17 @@ type ContractMilestoneRow = {
     [key: string]: unknown;
 };
 
-type UseWorkspaceActionsParams = {
-    user: { id: string } | null;
-    profile: { full_name?: string | null } | null;
-    resolvedContractId: string;
-    contract: ContractRow | null;
-    deliverNote: string;
-    reviewFiles: File[];
-    selectedMilestoneId: string;
-    uploadedAssetsRef: React.MutableRefObject<ContractMilestoneRow[]>;
-    setUploadedAssets: React.Dispatch<React.SetStateAction<ContractMilestoneRow[]>>;
-    setUploadProgress: React.Dispatch<React.SetStateAction<{ current: number; total: number; currentBytes: number; totalBytes: number }>>;
-    setUploadingFileName: React.Dispatch<React.SetStateAction<string | null>>;
-    setIsUploading: React.Dispatch<React.SetStateAction<boolean>>;
-    setDeliverOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    setDeliverNote: React.Dispatch<React.SetStateAction<string>>;
-    setReviewFiles: React.Dispatch<React.SetStateAction<File[]>>;
-    setSavedLinks: React.Dispatch<React.SetStateAction<SharedAttachment[]>>;
-    setSavedFileStages: React.Dispatch<React.SetStateAction<Record<number, 'review' | 'final'>>>;
-    setSelectedMilestoneId: React.Dispatch<React.SetStateAction<string>>;
-    setChangesOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    setDisputeOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    setCancelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    setConfirmReleaseOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    setHoldClearanceOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    setIsHoldingClearance: React.Dispatch<React.SetStateAction<boolean>>;
-    showToast: (msg: string, type?: string) => void;
-    loadWorkspace: () => Promise<void>;
-    deliverWork: (note: string, reviewAssets: SharedAttachment[], finalAssets: SharedAttachment[], links: SharedAttachment[]) => Promise<void>;
-    deliverMilestoneWork: (milestoneId: string, note: string, reviewAssets: SharedAttachment[], finalAssets: SharedAttachment[], links: SharedAttachment[]) => Promise<void>;
-    acceptWork: () => Promise<void>;
-    acceptMilestoneWork: (milestoneId: string) => Promise<void>;
-    requestChanges: (note: string) => Promise<void>;
-    openDispute: (reason: string) => Promise<void>;
-    cancelContract: (reason: string) => Promise<void>;
-    holdClearancePayment: (reason: string) => Promise<void>;
-    holdMilestoneClearance: (milestoneId: string, reason: string) => Promise<void>;
-    isDelivering: boolean;
-    isAccepting: boolean;
-    isDisputing: boolean;
-    isCancelling: boolean;
-    uploadTusFile: (file: File, bucket: string, path: string) => Promise<void>;
-    isUploadPausedRef: React.MutableRefObject<boolean>;
-    isTusUploading: boolean;
-};
-
 export function handleDeliver(
-    params: Pick<UseWorkspaceActionsParams, 'setDeliverNote' | 'setReviewFiles' | 'uploadedAssetsRef' | 'setUploadedAssets' | 'setUploadProgress' | 'setSelectedMilestoneId' | 'setDeliverOpen'> & { deliverTextareaRef: React.RefObject<HTMLTextAreaElement | null> },
+    params: {
+        setDeliverNote: React.Dispatch<React.SetStateAction<string>>;
+        setReviewFiles: React.Dispatch<React.SetStateAction<File[]>>;
+        uploadedAssetsRef: React.MutableRefObject<ContractMilestoneRow[]>;
+        setUploadedAssets: React.Dispatch<React.SetStateAction<ContractMilestoneRow[]>>;
+        setUploadProgress: React.Dispatch<React.SetStateAction<{ current: number; total: number; currentBytes: number; totalBytes: number }>>;
+        setSelectedMilestoneId: React.Dispatch<React.SetStateAction<string>>;
+        setDeliverOpen: React.Dispatch<React.SetStateAction<boolean>>;
+        deliverTextareaRef: React.RefObject<HTMLTextAreaElement | null>;
+    },
 ) {
     const { setDeliverNote, setReviewFiles, uploadedAssetsRef, setUploadedAssets, setUploadProgress, setSelectedMilestoneId, setDeliverOpen, deliverTextareaRef } = params;
     setDeliverNote('');
