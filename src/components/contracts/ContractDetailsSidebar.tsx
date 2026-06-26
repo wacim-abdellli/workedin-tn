@@ -1,5 +1,4 @@
 import {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -23,14 +22,15 @@ import {
   Timer,
   Globe,
 } from "lucide-react";
-import { CountdownTimer } from '../ui';
 import MilestoneTimeline from './MilestoneTimeline';
-import { ns, fmtDate, fmtTime, fmtSize, fmtAmount, roleTheme, labelClass, type RoleTheme } from './contractUtils';
+import { ns, fmtDate, fmtSize, fmtAmount, roleTheme, type RoleTheme } from './contractUtils';
 import { useCountdown } from './useCountdown';
-import { CompactEmpty, PartyAvatar } from './sidebarPrimitives';
-import type { ContractSidebarData, ContractSharedFile, ContractMilestone, ContractActivityEvent, WorkspaceModel } from './types';
+import { PartyAvatar } from './sidebarPrimitives';
+import type { ContractSidebarData, ContractSharedFile, ContractActivityEvent, WorkspaceModel } from './types';
 import { CompletedSummary, ContractPulse, ReviewCountdown, EscrowLifecycleStepper, NextMoveCard } from './ControlSections';
 import { DeliveryFileHeroCard, DeliveryLinkHeroCard, EscrowVaultVisualizer, FilesTab } from './FileCardsSection';
+import { ActivityTab } from './ActivitySection';
+import { MilestonesTab } from './MilestonesSection';
 
 interface ContractDetailsSidebarProps {
     contract: ContractSidebarData | null;
@@ -956,279 +956,11 @@ export default function ContractDetailsSidebar({
 
 
 
-function MilestonesTab({ 
-    model, 
-    _rt, 
-    userRole,
-    onAcceptMilestone,
-    onHoldMilestoneClearance,
-}: { 
-    model: WorkspaceModel; 
-    rt: RoleTheme; 
-    userRole: 'client' | 'freelancer';
-    onAcceptMilestone?: (milestoneId: string) => Promise<void>;
-    onHoldMilestoneClearance?: (milestoneId: string) => void;
-}) {
-    const { tx } = useTranslation();
-    // Escrow lifecycle phases
-    const escrowPhases = [
-        {
-            key: 'funded',
-            label: tx('pages.messages.contractDetails.escrowFundedPhase'),
-            sub: tx('pages.messages.contractDetails.escrowFundedSub'),
-            done: model.isEscrowFunded || ['active', 'delivery_submitted', 'revision_requested', 'completed'].includes(model.st),
-        },
-        {
-            key: 'active',
-            label: tx('pages.messages.contractDetails.workInProgressPhase'),
-            sub: tx('pages.messages.contractDetails.workInProgressSub'),
-            done: ['active', 'delivery_submitted', 'revision_requested', 'completed'].includes(model.st),
-        },
-        {
-            key: 'submitted',
-            label: tx('pages.messages.contractDetails.deliverySubmittedPhase'),
-            sub: tx('pages.messages.contractDetails.deliverySubmittedSub'),
-            done: ['delivery_submitted', 'revision_requested', 'completed'].includes(model.st) || model.st === 'revision_requested',
-        },
-        {
-            key: 'approved',
-            label: tx('pages.messages.contractDetails.clientApprovedPhase'),
-            sub: tx('pages.messages.contractDetails.clientApprovedSub'),
-            done: model.st === 'completed',
-        },
-        {
-            key: 'released',
-            label: tx('pages.messages.contractDetails.paymentReleasedPhase'),
-            sub: tx('pages.messages.contractDetails.paymentReleasedSub'),
-            done: model.st === 'completed',
-        },
-    ];
-
-    const activeIndex = escrowPhases.filter(p => p.done).length - 1;
-
-    return (
-        <section className="border border-zinc-800 bg-zinc-900/30 rounded-xl p-5 flex flex-col gap-4">
-            <div className="border-b border-zinc-805/50 pb-3">
-                <p className={labelClass}>{tx('pages.messages.contractDetails.milestones')}</p>
-                <h3 className="text-[15px] font-bold text-white mt-0.5">{tx('pages.messages.contractDetails.escrowLifecycle')}</h3>
-            </div>
-
-            {/* Vertical timeline */}
-            <div className="relative flex flex-col gap-6 pl-8 mt-2">
-                {/* Vertical connection track line */}
-                <div className="absolute left-2.5 top-2.5 bottom-2.5 w-0.5 bg-zinc-800" />
-                
-                {/* Colored track representing progress */}
-                {activeIndex >= 0 && (
-                    <div 
-                        className="absolute left-2.5 top-2.5 w-0.5 bg-emerald-600 transition-all duration-500"
-                        style={{ height: `${(activeIndex / (escrowPhases.length - 1)) * 100}%`, maxHeight: 'calc(100% - 20px)' }}
-                    />
-                )}
-
-                {escrowPhases.map((phase, idx) => {
-                    const done = phase.done;
-                    const isCurrent = idx === activeIndex + 1; // next upcoming step
-                    return (
-                        <div key={phase.key} className="relative flex items-start gap-4">
-                            {/* Dot node */}
-                            <div className={`absolute -start-[30px] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 ${
-                                done
-                                    ? "bg-emerald-600 border-transparent text-white"
-                                    : isCurrent
-                                    ? "border-emerald-600 bg-[#0d0d11]"
-                                    : "border-zinc-700 bg-[#0d0d11]"
-                            } transition-all duration-300`}>
-                                {done && <CheckCircle className="h-3 w-3 text-white" />}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-2">
-                                    <p className={`text-[13px] font-bold ${done ? 'text-zinc-100' : isCurrent ? 'text-emerald-500' : 'text-zinc-500'}`}>
-                                        {phase.label}
-                                    </p>
-                                    {done && (
-                                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500">
-                                            {tx('pages.messages.contractDetails.completed')}
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="text-[11px] text-zinc-400 mt-0.5">{phase.sub}</p>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Custom Milestones list */}
-            {model.milestones.length > 0 ? (
-                <div className="border-t border-zinc-805/50 pt-4 mt-2">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-3">
-                        {tx('pages.messages.contractDetails.contractMilestones', { done: model.completedMilestones, total: model.milestones.length })}
-                    </p>
-                    <div className="relative flex flex-col gap-4 pl-6">
-                        <div className="absolute left-1.5 top-1.5 bottom-1.5 w-px bg-zinc-800" />
-                        {model.milestones.map((milestone, index) => {
-                            const done = ['completed', 'approved', 'paid'].includes(ns(milestone.status));
-                            const title = milestone.title || milestone.description || tx('pages.messages.contractDetails.milestoneDefaultTitle', { index: index + 1 });
-                            return (
-                                <div key={milestone.id || index} className="relative flex items-start gap-3">
-                                    <div className={`absolute -left-[24px] top-1.5 flex h-2 w-2 rounded-full border ${
-                                        done
-                                            ? "bg-emerald-600 border-transparent"
-                                            : "border-zinc-750 bg-[#0d0d11]"
-                                    }`} />
-                                    <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
-                                        <div>
-                                            <p className={`text-[13px] font-bold ${done ? 'text-zinc-500 line-through' : 'text-white'}`}>
-                                                {title}
-                                            </p>
-                                            <p className="text-[11px] text-zinc-400 mt-0.5">
-                                                {milestone.due_date ? `${tx('pages.messages.contractDetails.due')} ${fmtDate(milestone.due_date)}` : tx('pages.messages.contractDetails.noDueDate')}
-                                            </p>
-                                        </div>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <span className="text-[12px] font-semibold text-zinc-350">
-                                                {fmtAmount(milestone.amount)}
-                                            </span>
-                                            
-                                            {/* Milestone Status / Action buttons */}
-                                            {ns(milestone.status) === 'submitted' && userRole === 'client' && onAcceptMilestone ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => onAcceptMilestone(milestone.id!)}
-                                                    className="rounded-full bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 text-[10px] font-bold transition-all shadow active:scale-95 cursor-pointer border-none"
-                                                >
-                                                    {tx('pages.messages.contractDetails.approve')}
-                                                </button>
-                                            ) : milestone.escrow_pending_clearance_until && new Date(milestone.escrow_pending_clearance_until).getTime() > Date.now() && !milestone.escrow_hold_disputed ? (
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className="border border-amber-500/20 bg-amber-500/5 text-amber-300 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider leading-none flex items-center gap-1">
-                                                        {tx('pages.messages.contractDetails.holdPayout')} (<CountdownTimer targetDate={milestone.escrow_pending_clearance_until} className="text-amber-300 font-bold" /> {tx('common.time.left')})
-                                                    </span>
-
-                                                    {userRole === 'client' && onHoldMilestoneClearance && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => onHoldMilestoneClearance(milestone.id!)}
-                                                            className="rounded-full bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-[10px] font-bold transition-all shadow active:scale-95 cursor-pointer border-none"
-                                                        >
-                                                            {tx('pages.messages.contractDetails.holdPayout')}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ) : milestone.escrow_hold_disputed ? (
-                                                <span className="border border-red-500/20 bg-red-500/10 text-red-400 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider">
-                                                    {tx('pages.messages.contractDetails.frozen')}
-                                                </span>
-                                            ) : (
-                                                <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                                                    done ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400' : 'border-zinc-750 bg-zinc-850 text-zinc-400'
-                                                }`}>
-                                                    {done ? tx('pages.messages.contractDetails.paid') : milestone.status ? milestone.status : tx('pages.messages.contractDetails.pending')}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            ) : (
-                <div className="border-t border-zinc-805/50 pt-4 mt-2">
-                    <CompactEmpty icon={<GitPullRequest className="h-3.5 w-3.5" />} title={tx('pages.messages.contractDetails.noCustomMilestones')} text={tx('pages.messages.contractDetails.noCustomMilestonesDesc')} />
-                </div>
-            )}
-        </section>
-    );
-}
-
-
-
-function ActivityTab({ events, model, contract, rt }: { events: ContractActivityEvent[]; model: WorkspaceModel; contract: ContractSidebarData; rt: RoleTheme }) {
-    const { tx } = useTranslation();
-    const fallbackEvents = useMemo<ContractActivityEvent[]>(() => {
-        const items: ContractActivityEvent[] = [];
-        if (contract.deliverySubmittedAt) items.push({ id: 'delivery-date', text: tx('pages.messages.contractDetails.eventWorkDelivered'), timestamp: contract.deliverySubmittedAt, actorRole: 'freelancer', kind: 'delivery' });
-        if (model.st === 'completed') items.push({ id: 'completed-state', text: tx('pages.messages.contractDetails.eventWorkAccepted'), timestamp: contract.reviewDueAt || contract.deliverySubmittedAt, actorRole: 'system', kind: 'payment', system: true });
-        if (model.showReviewConfirmation) items.push({ id: 'review-state', text: tx('pages.messages.contractDetails.reviewStarsPlaceholder'), timestamp: null, actorRole: 'client', kind: 'review' });
-        return items;
-    }, [contract.deliverySubmittedAt, contract.reviewDueAt, model.showReviewConfirmation, model.st, tx]);
-    const list = events.length > 0 ? events : fallbackEvents;
-
-    return (
-        <section className="border border-zinc-800 bg-zinc-900/30 rounded-xl p-5 flex flex-col gap-4">
-            <div className="border-b border-zinc-850/50 pb-3">
-                <p className={labelClass}>{tx('pages.messages.contractDetails.activityLog')}</p>
-                <h3 className="text-[15px] font-bold text-white mt-0.5">{tx('pages.messages.contractDetails.contractEventHistory')}</h3>
-            </div>
-            {list.length > 0 ? (
-                <div className="relative flex flex-col gap-6 pl-8 mt-2">
-                    {/* Vertical connector line */}
-                    <div className="absolute left-2.5 top-2.5 bottom-2.5 w-0.5 bg-zinc-800" />
-                    {list.map(event => (
-                        <ActivityRow key={event.id} event={event} rt={rt} />
-                    ))}
-                </div>
-            ) : (
-                <CompactEmpty icon={<Clock className="h-3.5 w-3.5" />} title={tx('pages.messages.contractDetails.noActivityYet')} text={tx('pages.messages.contractDetails.noActivityYetDesc')} />
-            )}
-        </section>
-    );
-}
 
 
 
 
 
-function ActivityRow({ event, rt: _rt }: { event: ContractActivityEvent; rt: RoleTheme }) {
-    const { tx } = useTranslation();
-    const isSystem = event.system || event.actorRole === 'system' || event.kind === 'payment' || event.kind === 'system';
-    
-    const dotColor = isSystem 
-        ? 'border-zinc-700 bg-zinc-800' 
-        : event.actorRole === 'client' 
-        ? 'border-emerald-600 bg-emerald-600/10' 
-        : 'border-emerald-600 bg-emerald-600/10';
-
-    return (
-        <div className="relative flex flex-col gap-1">
-            <div className={`absolute -start-[30px] top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 ${dotColor} bg-[#0d0d11]`} />
-
-            {isSystem ? (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pl-2">
-                    <p className="text-[12px] font-medium text-zinc-400 leading-relaxed">{event.text}</p>
-                    {event.timestamp && (
-                        <span className="text-[10px] text-zinc-500 font-mono shrink-0">
-                            {fmtTime(event.timestamp)}
-                        </span>
-                    )}
-                </div>
-            ) : (
-                <div className="flex flex-col gap-1 pl-2">
-                    <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <PartyAvatar party={{ full_name: event.actorName || undefined, avatar_url: event.actorAvatarUrl }} size="sm" />
-                          <div className="min-w-0">
-                              <p className="text-[13px] font-semibold text-zinc-100 truncate">
-                                  {event.actorName || (event.actorRole === 'client' ? tx('pages.messages.contractDetails.clientFallback') : tx('pages.messages.contractDetails.freelancerFallback'))}
-                              </p>
-                          </div>
-                        </div>
-                        {event.timestamp && (
-                            <span className="text-[10px] text-zinc-500 font-mono shrink-0 pt-0.5">
-                                {fmtTime(event.timestamp)}
-                            </span>
-                        )}
-                    </div>
-                    <div className="text-[12px] text-zinc-300 leading-normal pl-8 mt-0.5">
-                        {event.text}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
 
 function _TimelineMilestone({ milestone: _milestone, index: _index, rt: _rt }: { milestone: ContractMilestone; index: number; rt: RoleTheme }) {
     return null;
