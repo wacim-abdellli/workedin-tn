@@ -8,25 +8,21 @@ import {
 import { useTranslation } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 import {
-    AlertCircle,
+  AlertCircle,
   ArrowLeft,
   Check,
   CheckCircle,
   ChevronRight,
   Clock,
-  FileArchive,
   FileCheck2,
-  FileText,
   FolderOpen,
   GitPullRequest,
-  Image,
   Lock,
   MessageSquare,
   PackageCheck,
   ShieldAlert,
   Shield,
   Star,
-  User,
   Wallet,
   Timer,
   LayoutGrid,
@@ -41,96 +37,11 @@ import {
 } from "lucide-react";
 import { CountdownTimer } from '../ui';
 import MilestoneTimeline from './MilestoneTimeline';
-
-function useCountdown(targetIso: string | null | undefined) {
-    const calc = useCallback(() => {
-        if (!targetIso) return null;
-        const diff = new Date(targetIso).getTime() - Date.now();
-        if (diff <= 0) return { days: 0, hours: 0, minutes: 0, expired: true };
-        const totalMin = Math.floor(diff / 60000);
-        return { days: Math.floor(totalMin / 1440), hours: Math.floor((totalMin % 1440) / 60), minutes: totalMin % 60, expired: false };
-    }, [targetIso]);
-    const [tick, setTick] = useState(calc);
-    useEffect(() => {
-        if (!targetIso) return;
-        const id = setInterval(() => setTick(calc()), 60000);
-        return () => clearInterval(id);
-    }, [targetIso, calc]);
-    return tick;
-}
-
-interface ContractMilestone {
-    id?: string | null;
-    title?: string | null;
-    description?: string | null;
-    amount?: number | null;
-    status?: string | null;
-    due_date?: string | null;
-}
-
-interface ContractSharedFile {
-    id: string;
-    name: string;
-    url: string;
-    type?: string | null;
-    size?: number | string | null;
-    uploadedAt?: string | null;
-    senderName?: string;
-    storageBucket?: string | null;
-    storagePath?: string | null;
-}
-
-interface ContractDeliveryAsset {
-    id: string;
-    name: string;
-    storagePath: string;
-    storageBucket?: string | null;
-    mimeType?: string | null;
-    sizeBytes?: number | null;
-    assetKind: 'review_asset' | 'final_asset';
-    accessState: 'preview_available' | 'locked' | 'released';
-}
-
-interface DeliveryLink {
-    id: string;
-    link_kind: 'review_link' | 'final_link';
-    url: string;
-    label: string;
-    category: 'github' | 'figma' | 'drive' | 'loom' | 'vercel' | 'other';
-    credentials?: string;
-    created_at: string;
-}
-
-interface ContractSidebarData {
-    amount: number | null;
-    revisionRequestsCount?: number | null;
-    maxRevisionRounds?: number | null;
-    fundedAt?: string | null;
-    escrowFunded?: boolean;
-    deliverySubmittedAt?: string | null;
-    reviewDueAt?: string | null;
-    reviewFiles?: ContractDeliveryAsset[];
-    finalFiles?: ContractDeliveryAsset[];
-    deliveryLinks?: DeliveryLink[];
-    lockedFinalFilesCount?: number;
-    job?: { title?: string | null; deadline?: string | null };
-    lastRevisionNote?: string | null;
-    milestones?: ContractMilestone[];
-    sharedFiles?: ContractSharedFile[];
-    freelancer?: { full_name?: string; avatar_url?: string | null };
-    client?: { full_name?: string; avatar_url?: string | null };
-}
-
-export interface ContractActivityEvent {
-    id: string;
-    text: string;
-    timestamp?: string | null;
-    actorName?: string | null;
-    actorRole?: 'client' | 'freelancer' | 'system' | null;
-    actorAvatarUrl?: string | null;
-    kind?: 'message' | 'delivery' | 'payment' | 'review' | 'revision' | 'dispute' | 'system';
-    system?: boolean;
-}
+import { ns, fmtDate, fmtTime, fmtSize, fmtAmount, roleTheme, getLoomEmbedUrl, focusRing, labelClass, monoClass, type RoleTheme } from './contractUtils';
+import { useCountdown } from './useCountdown';
+import { GhostButton, DangerButton, FileIcon, CompactEmpty, PartyAvatar } from './sidebarPrimitives';
+import type { ContractSidebarData, ContractSharedFile, ContractDeliveryAsset, DeliveryLink, ContractMilestone, ContractActivityEvent, FileFilter, WorkspaceModel } from './types';
+import { CompletedSummary, ContractPulse, ReviewCountdown, EscrowLifecycleStepper, NextMoveCard } from './ControlSections';
 
 interface ContractDetailsSidebarProps {
     contract: ContractSidebarData | null;
@@ -156,106 +67,6 @@ interface ContractDetailsSidebarProps {
     onAcceptMilestone?: (milestoneId: string) => Promise<void>;
     onHoldMilestoneClearance?: (milestoneId: string) => void;
 }
-
-type _WorkspaceTab = 'overview' | 'files' | 'milestones' | 'activity';
-type FileFilter = 'all' | 'delivery' | 'shared';
-
-interface WorkspaceModel {
-    st: string;
-    status: { label: string; tone: string; accent: string; icon: ReactNode };
-    milestones: ContractMilestone[];
-    reviewFiles: ContractDeliveryAsset[];
-    finalFiles: ContractDeliveryAsset[];
-    reviewLinks: DeliveryLink[];
-    finalLinks: DeliveryLink[];
-    sharedFiles: ContractSharedFile[];
-    lockedFinalFilesCount: number;
-    completedMilestones: number;
-    progressPct: number;
-    revLeft: number;
-    revMax: number;
-    revUsed: number;
-    isEscrowFunded: boolean;
-    showFreelancerDeliver: boolean;
-    showClientReview: boolean;
-    showReviewConfirmation: boolean;
-    showLeaveReview: boolean;
-    canDispute: boolean;
-    nextMove: { icon: ReactNode; title: string; body: string; primaryLabel: string | null; tone: string };
-    otherParty?: { full_name?: string; avatar_url?: string | null } | null;
-    allFileCount: number;
-    lastRevisionNote: string | null;
-    reviewDueAt: string | null;
-    amount: number | null;
-    fundedAt: string | null;
-    deliverySubmittedAt: string | null;
-}
-
-const ns = (s: string | null | undefined) => String(s || '').trim().toLowerCase();
-
-const fmtDate = (v: string | null | undefined, fallback?: string) => {
-    const fb = fallback ?? 'No due date';
-    if (!v) return fb;
-    const d = new Date(v);
-    return Number.isNaN(d.getTime()) ? fb : d.toLocaleDateString();
-};
-
-const fmtTime = (v: string | null | undefined) => {
-    if (!v) return '';
-    const d = new Date(v);
-    return Number.isNaN(d.getTime()) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
-
-const fmtSize = (size: number | string | null | undefined) => {
-    const b = typeof size === 'string' ? Number(size) : (size ?? 0);
-    if (!Number.isFinite(b) || b <= 0) return null;
-    if (b < 1024) return `${b} B`;
-    if (b < 1048576) return `${(b / 1024).toFixed(1)} KB`;
-    return `${(b / 1048576).toFixed(1)} MB`;
-};
-
-const fmtAmount = (amount: number | null | undefined) => {
-    const n = Number(amount ?? 0);
-    return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number.isFinite(n) ? n : 0)} TND`;
-};
-
-const _surface = 'border border-white/[0.06] bg-white/[0.018] rounded-[10px] relative overflow-hidden';
-const _surfaceHover = 'transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.025]';
-const labelClass = 'text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500';
-const _bodyClass = 'text-[13px] font-normal leading-[1.45] text-zinc-300';
-const monoClass = 'font-mono text-[11px] text-zinc-500';
-const focusRing = 'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:ring-offset-[#09090b]';
-
-// Role-aware theme — amber = client (paying), violet = freelancer (delivering)
-const roleTheme = (role: 'client' | 'freelancer', roleLabel?: string) => role === 'client'
-    ? {
-        accent: '#E8A020',        // warm amber
-        accentBg: 'bg-[#E8A020]',
-        accentText: 'text-[#E8A020]',
-        accentBorder: 'border-[#E8A020]',
-        accentFill: 'bg-[#3D2A00]/60',
-        roleLabel: roleLabel || 'Client',
-        roleBadge: 'border-[#E8A020]/20 bg-[#E8A020]/10 text-[#E8A020]',
-        headerStripe: 'from-[#E8A020]/12 to-transparent',
-        primaryBtn: 'bg-zinc-100 hover:bg-white text-[#0A0A0B]',
-        focusRingColor: 'focus-visible:ring-[#E8A020]',
-        tabAccent: 'bg-[#E8A020]',
-        tabActiveBg: 'bg-[#E8A020]/15',
-    }
-    : {
-        accent: '#9B8FF0',        // soft violet
-        accentBg: 'bg-[#9B8FF0]',
-        accentText: 'text-[#9B8FF0]',
-        accentBorder: 'border-[#9B8FF0]',
-        accentFill: 'bg-[#2D2660]/60',
-        roleLabel: roleLabel || 'Freelancer',
-        roleBadge: 'border-[#9B8FF0]/20 bg-[#9B8FF0]/10 text-[#9B8FF0]',
-        headerStripe: 'from-[#9B8FF0]/10 to-transparent',
-        primaryBtn: 'bg-zinc-100 hover:bg-white text-[#0A0A0B]',
-        focusRingColor: 'focus-visible:ring-[#9B8FF0]',
-        tabAccent: 'bg-[#9B8FF0]',
-        tabActiveBg: 'bg-[#9B8FF0]/15',
-    };
 
 export default function ContractDetailsSidebar({
     contract,
@@ -1146,295 +957,7 @@ export default function ContractDetailsSidebar({
     );
 }
 
-type RoleTheme = ReturnType<typeof roleTheme>;
 
-type ActionProps = {
-    model: WorkspaceModel;
-    rt: RoleTheme;
-    isActionLoading?: boolean;
-    onDeliver: () => void;
-    onRequestChanges: () => void;
-    onAcceptAndPay: () => void;
-    onDispute: () => void;
-    onCancel?: () => void;
-    onFundEscrow?: () => void;
-    onReview: () => void;
-};
-
-function CompletedSummary({ model, rt: _rt, onReview }: { model: WorkspaceModel; rt: RoleTheme; onReview: () => void }) {
-    const { tx } = useTranslation();
-    return (
-        <section className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">
-            <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
-                    <CheckCircle className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                    <p className={labelClass}>{tx('pages.messages.contractDetails.contractStatus')}</p>
-                    <h3 className="mt-1 text-[15px] font-bold text-white">
-                        {tx('pages.messages.contractDetails.amountReleased', { amount: fmtAmount(model.amount) })}
-                    </h3>
-                    <div className="mt-1.5 flex flex-col gap-1 text-[12px] text-zinc-400">
-                        {model.fundedAt && <p>{tx('pages.messages.contractDetails.escrowFunded')} {fmtDate(model.fundedAt)}</p>}
-                        {model.deliverySubmittedAt && <p>{tx('pages.messages.contractDetails.deliverySubmitted')} {fmtDate(model.deliverySubmittedAt)}</p>}
-                    </div>
-                </div>
-                <span className="rounded-full border border-zinc-750 bg-zinc-850 px-2.5 py-0.5 text-[10px] font-mono text-zinc-350">
-                    {tx('pages.messages.contractDetails.revUsed', { used: model.revUsed, max: model.revMax })}
-                </span>
-            </div>
-            {model.showLeaveReview ? (
-                <div className="mt-3 flex justify-end">
-                    <button type="button" onClick={onReview} className="text-[12px] font-semibold text-zinc-400 hover:text-white underline transition-colors">
-                        {tx('pages.messages.contractDetails.leaveReviewLink')}
-                    </button>
-                </div>
-            ) : null}
-        </section>
-    );
-}
-
-function ContractPulse({ model, rt: _rt, userRole, onGoToMessages, _isSidebar = false }: { model: WorkspaceModel; rt: RoleTheme; userRole: 'client' | 'freelancer'; onGoToMessages?: () => void; _isSidebar?: boolean }) {
-    const { tx } = useTranslation();
-    if (!model.otherParty) return null;
-    return (
-        <section className="flex flex-col gap-3">
-            <div className="border border-zinc-800 bg-zinc-900/30 rounded-xl p-4 flex flex-col gap-3.5">
-                <div className="flex items-center gap-3">
-                    <PartyAvatar party={model.otherParty} size="md" />
-                    <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                            {userRole === 'client' ? tx('auth.accountPanel.freelancerLabel') : tx('auth.accountPanel.clientLabel')}
-                        </p>
-                        <h4 className="mt-0.5 truncate text-[14px] font-semibold text-zinc-100">
-                            {model.otherParty.full_name || tx('pages.messages.contractDetails.counterparty')}
-                        </h4>
-                    </div>
-                </div>
-                {onGoToMessages && (
-                    <button
-                        type="button"
-                        onClick={onGoToMessages}
-                        className={`inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-zinc-700 bg-transparent py-2 text-[12px] font-medium text-zinc-350 transition-all hover:bg-zinc-800 hover:text-white ${focusRing}`}
-                    >
-                        <MessageSquare className="h-3.5 w-3.5" />
-                        {tx('pages.messages.contractDetails.sendMessage')}
-                    </button>
-                )}
-            </div>
-        </section>
-    );
-}
-
-function ReviewCountdown({ targetIso }: { targetIso: string }) {
-    const { tx } = useTranslation();
-    const tick = useCountdown(targetIso);
-    if (!tick || tick.expired) return (
-        <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-red-950/20 bg-red-950/5 px-2.5 py-1">
-            <Timer className="h-3.5 w-3.5 text-red-400" />
-            <span className="text-[12px] font-medium text-red-400">{tx('pages.messages.contractDetails.reviewPeriodExpired')}</span>
-        </div>
-    );
-    return (
-        <div className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-amber-950/20 bg-amber-950/5 px-2.5 py-1">
-            <Timer className="h-3.5 w-3.5 text-amber-500" />
-            <span className="text-[12px] font-medium text-amber-500">
-                {tx('pages.messages.contractDetails.reviewDue', { days: tick.days, hours: tick.hours, minutes: tick.minutes })}
-            </span>
-        </div>
-    );
-}
-
-function EscrowLifecycleStepper({ model, paymentStatus }: { model: WorkspaceModel; paymentStatus: string }) {
-    const { tx } = useTranslation();
-    const isFunded = model.isEscrowFunded;
-    const isSubmitted = model.st === 'delivery_submitted' || model.st === 'revision_requested' || model.st === 'completed' || model.st === 'disputed';
-    const isReleased = paymentStatus === 'released';
-
-    // Step status: 'completed' | 'active' | 'pending'
-    const step1Status = 'completed';
-    const step2Status = isFunded ? 'completed' : 'active';
-    const step3Status = isSubmitted ? 'completed' : (isFunded ? 'active' : 'pending');
-    const step4Status = isReleased ? 'completed' : (isSubmitted ? 'active' : 'pending');
-
-    const getStepClasses = (status: 'completed' | 'active' | 'pending') => {
-        if (status === 'completed') return {
-            bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
-            text: 'text-zinc-300 font-semibold',
-            line: 'bg-emerald-500/40',
-            icon: <Check className="w-3.5 h-3.5" />
-        };
-        if (status === 'active') return {
-            bg: 'bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse',
-            text: 'text-white font-bold',
-            line: 'bg-zinc-800',
-            icon: <Clock className="w-3.5 h-3.5" />
-        };
-        return {
-            bg: 'bg-zinc-900 border-zinc-800 text-zinc-500',
-            text: 'text-zinc-500',
-            line: 'bg-zinc-850',
-            icon: <Lock className="w-3 h-3" />
-        };
-    };
-
-    const s1 = getStepClasses(step1Status);
-    const s2 = getStepClasses(step2Status);
-    const s3 = getStepClasses(step3Status);
-    const s4 = getStepClasses(step4Status);
-
-    return (
-        <section className="border border-zinc-805 bg-zinc-900/30 rounded-xl p-5 flex flex-col gap-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{tx('pages.messages.contractDetails.escrowProtection')}</h3>
-            
-            <div className="flex flex-col gap-4 relative pl-7">
-                {/* Connecting Line */}
-                <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-zinc-800">
-                    <div className="absolute top-0 bottom-0 w-full bg-emerald-500/40 transition-all duration-300" style={{
-                        height: isReleased ? '100%' : (isSubmitted ? '66%' : (isFunded ? '33%' : '0%'))
-                    }} />
-                </div>
-
-                {/* Step 1 */}
-                <div className="flex items-center gap-3 relative">
-                    <div className={`absolute -left-7 w-6 h-6 rounded-full border flex items-center justify-center ${s1.bg}`}>
-                        {s1.icon}
-                    </div>
-                    <span className={`text-[12px] ${s1.text}`}>{tx('pages.messages.contractDetails.stepHired')}</span>
-                </div>
-
-                {/* Step 2 */}
-                <div className="flex items-center gap-3 relative">
-                    <div className={`absolute -left-7 w-6 h-6 rounded-full border flex items-center justify-center ${s2.bg}`}>
-                        {s2.icon}
-                    </div>
-                    <span className={`text-[12px] ${s2.text}`}>{tx('pages.messages.contractDetails.stepFunded')}</span>
-                </div>
-
-                {/* Step 3 */}
-                <div className="flex items-center gap-3 relative">
-                    <div className={`absolute -left-7 w-6 h-6 rounded-full border flex items-center justify-center ${s3.bg}`}>
-                        {s3.icon}
-                    </div>
-                    <span className={`text-[12px] ${s3.text}`}>{tx('pages.messages.contractDetails.stepDelivered')}</span>
-                </div>
-
-                {/* Step 4 */}
-                <div className="flex items-center gap-3 relative">
-                    <div className={`absolute -left-7 w-6 h-6 rounded-full border flex items-center justify-center ${s4.bg}`}>
-                        {s4.icon}
-                    </div>
-                    <span className={`text-[12px] ${s4.text}`}>
-                        {isReleased ? tx('pages.messages.contractDetails.stepPaymentCleared') : tx('pages.messages.contractDetails.stepPaymentApproved')}
-                    </span>
-                </div>
-            </div>
-        </section>
-    );
-}
-
-function NextMoveCard({ model, rt: _rt, userRole: _userRole, isActionLoading, onDeliver, onAcceptAndPay, onRequestChanges, onDispute, onCancel, onFundEscrow, onReview }: ActionProps & { userRole: 'client' | 'freelancer' }) {
-    const { tx } = useTranslation();
-    const isPendingEscrow = model.st === 'pending_payment' && !model.isEscrowFunded && model.nextMove.primaryLabel === tx('pages.messages.contractDetails.fundEscrowLabel');
-    const action = isPendingEscrow ? undefined
-        : model.showFreelancerDeliver || (model.st === 'pending_payment' && model.isEscrowFunded && model.nextMove.primaryLabel) ? onDeliver
-        : (model.showClientReview && model.reviewFiles.length === 0 && model.reviewLinks.length === 0) ? onAcceptAndPay
-        : model.showLeaveReview ? onReview
-        : null;
-
-    const showSecondaryActions = model.showClientReview && model.reviewFiles.length === 0 && model.reviewLinks.length === 0;
-
-    return (
-        <section className="border border-zinc-800 bg-zinc-900/30 rounded-xl flex flex-col gap-0 overflow-hidden relative">
-            <div className="flex flex-col gap-3 p-5">
-                <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-                        {tx('pages.messages.contractDetails.workspaceControl')}
-                    </span>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400">
-                        <span className="[&>svg]:h-5 [&>svg]:w-5">{model.nextMove.icon}</span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                        <h3 className="text-[16px] font-semibold leading-snug text-zinc-100">{model.nextMove.title}</h3>
-                        <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-400">{model.nextMove.body}</p>
-                    </div>
-                </div>
-
-                {model.st === 'revision_requested' && model.lastRevisionNote && (
-                    <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3.5 pl-4 relative overflow-hidden">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
-                        <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-amber-500">{tx('pages.messages.contractDetails.revisionFeedback')}</p>
-                        <p className="text-[13px] text-zinc-300 whitespace-pre-wrap leading-relaxed">{model.lastRevisionNote}</p>
-                    </div>
-                )}
-
-                {model.showClientReview && model.reviewDueAt && (
-                    <div className="mt-2">
-                        <ReviewCountdown targetIso={model.reviewDueAt} />
-                    </div>
-                )}
-
-                {model.st === 'pending_payment' && model.isEscrowFunded && (
-                    <div className="mt-2 flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5">
-                        <CheckCircle className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                        <span className="text-[12px] font-medium text-emerald-500">{tx('pages.messages.contractDetails.escrowSecured')}</span>
-                    </div>
-                )}
-
-                {isPendingEscrow && (
-                    <div className="mt-2 flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/5 px-3 py-1.5">
-                        <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                        <span className="text-[12px] font-medium text-amber-500">{tx('pages.messages.contractDetails.escrowUnfunded')}</span>
-                    </div>
-                )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 border-t border-zinc-800 bg-zinc-950/20 px-5 py-3.5">
-                {action && model.nextMove.primaryLabel ? (
-                    <button type="button" onClick={action} disabled={Boolean(isActionLoading)}
-                        className={`rounded-full px-5 py-2 text-[12px] font-semibold transition-all duration-150 disabled:opacity-60 shadow-md bg-emerald-600 hover:bg-emerald-500 text-white ${focusRing}`}>
-                        {isActionLoading ? tx('pages.messages.contractDetails.processing') : model.nextMove.primaryLabel}
-                    </button>
-                ) : isPendingEscrow ? (
-                    <button type="button" onClick={() => onFundEscrow?.()}
-                        className={`rounded-full px-5 py-2 text-[12px] font-semibold transition-all duration-150 shadow-md bg-emerald-600 hover:bg-emerald-500 text-white ${focusRing}`}>
-                        {tx('pages.messages.contractDetails.fundEscrowNow')}
-                    </button>
-                ) : null}
-
-                {showSecondaryActions && (
-                    <GhostButton
-                        onClick={onRequestChanges}
-                        disabled={isActionLoading || model.revLeft <= 0}
-                        icon={<GitPullRequest className="h-3.5 w-3.5" />}
-                        label={model.revLeft <= 0 ? tx('pages.messages.contractDetails.limitReached') : tx('pages.messages.contractDetails.requestRevisionLeft', { count: model.revLeft })}
-                    />
-                )}
-
-                {model.canDispute && (
-                    <DangerButton onClick={onDispute} disabled={Boolean(isActionLoading)} icon={<ShieldAlert className="h-3.5 w-3.5" />} label={tx('pages.messages.contractDetails.dispute')} />
-                )}
-
-                {(model.st === 'pending_payment' || model.st === 'active') && onCancel && (
-                    <GhostButton
-                        onClick={onCancel}
-                        disabled={Boolean(isActionLoading)}
-                        icon={<AlertCircle className="h-3.5 w-3.5" />}
-                        label={tx('common.cancel')}
-                    />
-                )}
-
-                <button type="button" onClick={() => document.getElementById('workspace-activity-log')?.scrollIntoView({ behavior: 'smooth' })}
-                    className={`ml-auto rounded-full px-3 py-1.5 text-[12px] font-medium text-zinc-400 transition-colors hover:text-zinc-200 ${focusRing}`}>
-                    {tx('pages.messages.contractDetails.historyLink')}
-                </button>
-            </div>
-        </section>
-    );
-}
 
 
 
@@ -1938,57 +1461,6 @@ function _InfoChip({ icon, label, hideOnMobile, className }: { icon: ReactNode; 
     return <span className={`items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.01] px-2.5 py-1 font-mono text-[11px] text-zinc-400 ${hideOnMobile ? 'hidden sm:inline-flex' : 'inline-flex'} ${className ?? ''}`}>{icon}{label}</span>;
 }
 
-function FileIcon({ name, mimeType }: { name?: string | null; mimeType?: string | null }) {
-    const value = `${name || ''} ${mimeType || ''}`.toLowerCase();
-    const isImage = value.includes('image') || /\.(png|jpe?g|gif|webp|svg)$/i.test(value);
-    const isArchive = value.includes('zip') || value.includes('archive') || /\.(zip|rar|7z|tar|gz)$/i.test(value);
-    const isPdf = value.includes('pdf') || /\.pdf$/i.test(value);
-    
-    const Icon = isImage ? Image : isArchive ? FileArchive : isPdf ? FileCheck2 : FileText;
-    const bg = isImage ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-        : isArchive ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
-        : isPdf ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-        : 'bg-sky-500/10 text-sky-400 border-sky-500/20';
-        
-    return (
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${bg}`}>
-            <Icon className="h-4 w-4" />
-        </div>
-    );
-}
-
-function CompactEmpty({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
-    return (
-        <div className="flex items-center gap-3 rounded-lg border border-dashed border-white/[0.08] bg-white/[0.01] px-4 py-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-zinc-500">{icon}</div>
-            <div>
-                <p className="text-[13px] font-semibold text-zinc-300">{title}</p>
-                <p className="mt-0.5 text-[11px] text-zinc-500">{text}</p>
-            </div>
-        </div>
-    );
-}
-
-function PartyAvatar({ party, size = 'md' }: { party?: { full_name?: string; avatar_url?: string | null } | null; size?: 'sm' | 'md' | 'lg' }) {
-    const { tx } = useTranslation();
-    const dim = size === 'lg' ? 'h-9 w-9' : size === 'sm' ? 'h-6 w-6' : 'h-8 w-8';
-    return (
-        <div className={`relative flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-md border border-white/[0.06] bg-white/[0.02] text-zinc-400`}>
-            {party?.avatar_url ? <img src={party.avatar_url} alt={party.full_name || tx('pages.messages.userFallback')} className="h-full w-full object-cover" /> : <User className={size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'} />}
-        </div>
-    );
-}
-
-
-
-function GhostButton({ onClick, disabled, icon, label }: { onClick?: () => void; disabled?: boolean; icon: ReactNode; label: string }) {
-    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-transparent px-4 py-1.5 text-[12px] font-semibold text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white disabled:opacity-35 ${focusRing}`}>{icon}{label}</button>;
-}
-
-function DangerButton({ onClick, disabled, icon, label }: { onClick?: () => void; disabled?: boolean; icon: ReactNode; label: string }) {
-    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex items-center gap-1.5 rounded-full border border-red-905/30 bg-red-950/20 px-4 py-1.5 text-[12px] font-medium text-red-400 transition-colors hover:bg-red-950/40 disabled:opacity-50 ${focusRing}`}>{icon}{label}</button>;
-}
-
 // ─── Direct Image Preview Component ──────────────────────────────────────────
 function ImagePreview({ storageBucket, storagePath }: { storageBucket: string; storagePath: string }) {
     const { tx } = useTranslation();
@@ -2116,12 +1588,6 @@ function DeliveryFileHeroCard({ file, onPreviewFile }: { file: ContractDeliveryA
         </div>
     );
 }
-
-// Helper to extract Loom ID
-const getLoomEmbedUrl = (url: string) => {
-    const match = url.match(/(?:loom\.com\/share\/|loom\.com\/embed\/)([a-zA-Z0-9]+)/);
-    return match ? `https://www.loom.com/embed/${match[1]}` : null;
-};
 
 // ─── Prominent Delivery Link Card Component ───────────────────────────────────
 function DeliveryLinkHeroCard({ 

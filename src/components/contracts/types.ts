@@ -1,3 +1,5 @@
+import { type ReactNode } from 'react';
+
 export interface ContractMilestone {
     id?: string | null;
     title?: string | null;
@@ -6,7 +8,7 @@ export interface ContractMilestone {
     status?: string | null;
     due_date?: string | null;
     escrow_pending_clearance_until?: string | null;
-    escrow_hold_disputed?: boolean | null;
+    escrow_hold_disputed?: boolean;
 }
 
 export interface ContractSharedFile {
@@ -54,15 +56,15 @@ export interface ContractSidebarData {
     finalFiles?: ContractDeliveryAsset[];
     deliveryLinks?: DeliveryLink[];
     lockedFinalFilesCount?: number;
+    escrowPendingClearanceUntil?: string | null;
+    escrowHoldDisputed?: boolean;
+    paymentStatus?: string;
     job?: { title?: string | null; deadline?: string | null };
     lastRevisionNote?: string | null;
     milestones?: ContractMilestone[];
     sharedFiles?: ContractSharedFile[];
     freelancer?: { full_name?: string; avatar_url?: string | null };
     client?: { full_name?: string; avatar_url?: string | null };
-    escrowPendingClearanceUntil?: string | null;
-    paymentStatus?: string | null;
-    escrowHoldDisputed?: boolean | null;
 }
 
 export interface ContractActivityEvent {
@@ -80,46 +82,31 @@ export type FileFilter = 'all' | 'delivery' | 'shared';
 
 export interface WorkspaceModel {
     st: string;
-    status: { label: string; tone: string; accent: string; icon: any };
-    isEscrowFunded: boolean;
+    status: { label: string; tone: string; accent: string; icon: ReactNode };
+    milestones: ContractMilestone[];
     reviewFiles: ContractDeliveryAsset[];
     finalFiles: ContractDeliveryAsset[];
     reviewLinks: DeliveryLink[];
     finalLinks: DeliveryLink[];
     sharedFiles: ContractSharedFile[];
-    showFreelancerDeliver: boolean;
-    milestones: ContractMilestone[];
+    lockedFinalFilesCount: number;
     completedMilestones: number;
-    showReviewConfirmation: boolean;
-    totalAmount: number;
-    otherParty?: { full_name?: string; avatar_url?: string | null } | null;
-    showLeaveReview: boolean;
-    showClientReview: boolean;
-    revUsed: number;
-    revMax: number;
+    progressPct: number;
     revLeft: number;
+    revMax: number;
+    revUsed: number;
+    isEscrowFunded: boolean;
+    showFreelancerDeliver: boolean;
+    showClientReview: boolean;
+    showReviewConfirmation: boolean;
+    showLeaveReview: boolean;
     canDispute: boolean;
-    nextMove: { icon: any; title: string; body: string; primaryLabel: string | null; accentColor: string; iconColor: string };
+    nextMove: { icon: ReactNode; title: string; body: string; primaryLabel: string | null; tone: string };
+    otherParty?: { full_name?: string; avatar_url?: string | null } | null;
+    allFileCount: number;
+    lastRevisionNote: string | null;
+    reviewDueAt: string | null;
+    amount: number | null;
     fundedAt: string | null;
     deliverySubmittedAt: string | null;
-    reviewDueAt: string | null;
-    lastRevisionNote: string | null;
-    amount: number | null;
-}
-
-export interface RoleTheme {
-    bg: string;
-    accent: string;
-    text: string;
-    accentBg: string;
-    accentText: string;
-    accentBorder: string;
-    accentFill: string;
-    roleLabel: string;
-    roleBadge: string;
-    headerStripe: string;
-    primaryBtn: string;
-    focusRingColor: string;
-    tabAccent: string;
-    tabActiveBg: string;
 }
