@@ -7,30 +7,28 @@ import {
 import { useTranslation } from '@/i18n';
 import {
   AlertCircle,
-  ArrowLeft,
-  Check,
   CheckCircle,
   Clock,
   FileCheck2,
   GitPullRequest,
-  MessageSquare,
+  Lock,
   PackageCheck,
   ShieldAlert,
-  Shield,
   Star,
   Wallet,
   Timer,
-  Globe,
 } from "lucide-react";
 import MilestoneTimeline from './MilestoneTimeline';
-import { ns, fmtDate, fmtSize, fmtAmount, roleTheme, type RoleTheme } from './contractUtils';
-import { useCountdown } from './useCountdown';
-import { PartyAvatar } from './sidebarPrimitives';
+import { ns, fmtDate, fmtSize, fmtAmount, roleTheme } from './contractUtils';
 import type { ContractSidebarData, ContractSharedFile, ContractActivityEvent, WorkspaceModel } from './types';
 import { CompletedSummary, ContractPulse, ReviewCountdown, EscrowLifecycleStepper, NextMoveCard } from './ControlSections';
 import { DeliveryFileHeroCard, DeliveryLinkHeroCard, EscrowVaultVisualizer, FilesTab } from './FileCardsSection';
 import { ActivityTab } from './ActivitySection';
 import { MilestonesTab } from './MilestonesSection';
+import ContractSidebarHeader from './ContractSidebarHeader';
+import ContractClearanceBanner from './ContractClearanceBanner';
+import FilePreviewModal from './FilePreviewModal';
+import SandboxModal from './SandboxModal';
 
 interface ContractDetailsSidebarProps {
     contract: ContractSidebarData | null;
@@ -312,7 +310,6 @@ export default function ContractDetailsSidebar({
     const isClearanceDisputed = Boolean(contract.escrowHoldDisputed);
 
     const rt = roleTheme(userRole, userRole === 'client' ? tx('pages.messages.contractDetails.clientFallback') : tx('pages.messages.contractDetails.freelancerFallback'));
-    const _otherPartyRt = roleTheme(userRole === 'client' ? 'freelancer' : 'client', userRole === 'client' ? tx('pages.messages.contractDetails.freelancerFallback') : tx('pages.messages.contractDetails.clientFallback'));
 
     return (
         <div className="flex w-full flex-col bg-[#070709] text-[var(--color-text-primary)]">
@@ -348,130 +345,28 @@ export default function ContractDetailsSidebar({
             {/* Role-colored top stripe */}
             <div className="hidden" />
 
-            {/* ── Premium Unified Compact Header ── */}
-            <header className="sticky top-0 z-30 flex flex-col border-b border-white/[0.06] bg-[#070709]/95 backdrop-blur-md">
-                {/* Main Compact Row */}
-                <div className={`flex flex-col gap-3 py-3 ${isSidebar ? 'px-4' : 'px-6'}`}>
-                    {/* Row 1: Avatar, Title, and Amount */}
-                    <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-3 min-w-0">
-                            <PartyAvatar party={model.otherParty} size="md" />
-                            <div className="flex min-w-0 flex-col">
-                                <h2 className="line-clamp-2 text-[14px] font-semibold leading-snug text-zinc-100">
-                                    {contract.job?.title || tx('pages.messages.contractDetails.untitledContract')}
-                                </h2>
-                                <div className="mt-1 flex items-center gap-1.5 text-[11px] text-zinc-500">
-                                    <span className="font-semibold uppercase tracking-wider text-zinc-400">
-                                        {userRole === 'client' ? tx('auth.accountPanel.freelancerLabel') : tx('auth.accountPanel.clientLabel')}
-                                    </span>
-                                    <span>•</span>
-                                    <span className="truncate">{model.otherParty?.full_name || tx('pages.messages.contractDetails.counterparty')}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {/* Amount & Escrow block */}
-                        <div className="flex shrink-0 flex-col items-end pl-2">
-                            <span className="text-[15px] font-semibold leading-tight text-zinc-100">
-                                {fmtAmount(contract.amount)}
-                            </span>
-                            <div className="mt-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 leading-none">
-                                <Shield className="h-3 w-3 text-emerald-400" />
-                                <span>{model.isEscrowFunded ? tx('pages.messages.contractDetails.inEscrow') : tx('pages.messages.contractDetails.pendingEscrow')}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Row 2: Status alerts and navigation */}
-                    <div className="mt-0.5 flex items-center justify-between border-t border-white/[0.04] pt-2">
-                        <div className="flex items-center gap-2">
-                            <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase leading-none ${model.status.tone}`}>
-                                {model.status.icon}{model.status.label}
-                            </span>
-                            {contract.job?.deadline && (
-                                <span className="text-[11px] text-zinc-500">
-                                    {tx('pages.messages.contractDetails.due')} {fmtDate(contract.job.deadline)}
-                                </span>
-                            )}
-                        </div>
-                        
-                        {/* Navigation Actions */}
-                        {(onGoBack || onGoToMessages || onOpenWorkspace) && (
-                            <div className="flex items-center gap-1.5 shrink-0">
-                                {onOpenWorkspace && (
-                                    <button
-                                        type="button"
-                                        onClick={onOpenWorkspace}
-                                        aria-label={tx('pages.messages.contractDetails.openContractPage')}
-                                        className="flex h-7 items-center gap-1 rounded-full px-2.5 text-[11px] font-bold border border-zinc-700 bg-zinc-900/30 text-zinc-350 transition-all hover:bg-zinc-800 hover:text-white cursor-pointer"
-                                    >
-                                        {tx('pages.messages.contractDetails.workspaceLink')}
-                                    </button>
-                                )}
-                                {onGoBack && (
-                                    <button type="button" onClick={onGoBack} className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900/30 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors border border-zinc-750">
-                                        <ArrowLeft className="h-3.5 w-3.5" />
-                                    </button>
-                                )}
-                                {onGoToMessages && (
-                                    <button type="button" onClick={onGoToMessages} className="flex h-7 items-center gap-1.5 rounded-full px-3 bg-zinc-900/30 text-[11px] font-semibold text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors border border-zinc-750">
-                                        <MessageSquare className="h-3 w-3" />
-                                        {tx('pages.messages.contractDetails.goToMessages')}
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </header>
+            <ContractSidebarHeader
+              contract={contract}
+              otherParty={model.otherParty}
+              userRole={userRole}
+              isEscrowFunded={model.isEscrowFunded}
+              status={model.status}
+              onGoBack={onGoBack}
+              onGoToMessages={onGoToMessages}
+              onOpenWorkspace={onOpenWorkspace}
+              isSidebar={isSidebar}
+            />
 
             {/* Main Unified Dashboard Grid Layout */}
             <main className={`flex-grow ${isSidebar ? 'p-3' : 'px-4 py-8 sm:px-8 sm:py-10'}`}>
                 <div className="mx-auto w-full max-w-[1800px]">
-                    {isClearanceActive && (
-                        <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-500/[0.03] p-5 shadow-[0_0_20px_rgba(245,158,11,0.05)] backdrop-blur-md">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
-                                        <Timer className="h-5 w-5 animate-pulse" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-[13px] font-bold text-zinc-100">{tx('pages.messages.contractDetails.safetyHoldTitle')}</h4>
-                                        <p className="text-[11px] text-zinc-400 mt-0.5 leading-relaxed animate-in fade-in duration-300">
-                                            {tx('pages.messages.contractDetails.safetyHoldBody')}{' '}
-                                            <CountdownTimer targetDate={contract.escrowPendingClearanceUntil!} className="text-amber-400 font-bold" />
-                                        </p>
-
-                                    </div>
-                                </div>
-                                {userRole === 'client' && onHoldClearance && (
-                                    <button
-                                        type="button"
-                                        onClick={onHoldClearance}
-                                        className="shrink-0 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 px-4 py-2 text-[11px] font-bold shadow-md transition-all active:scale-95 cursor-pointer"
-                                    >
-                                        {tx('pages.messages.contractDetails.holdPaymentReport')}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {isClearanceDisputed && (
-                        <div className="mb-6 rounded-xl border border-red-500/25 bg-red-500/[0.03] p-5 shadow-[0_0_20px_rgba(239,68,68,0.05)] backdrop-blur-md">
-                            <div className="flex items-start gap-3">
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
-                                    <ShieldAlert className="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <h4 className="text-[13px] font-bold text-zinc-100">{tx('pages.messages.contractDetails.clearanceSuspendedTitle')}</h4>
-                                    <p className="text-[11px] text-zinc-400 mt-0.5 leading-relaxed">
-                                        {tx('pages.messages.contractDetails.clearanceSuspendedBody')}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    <ContractClearanceBanner
+                      isActive={isClearanceActive}
+                      isDisputed={isClearanceDisputed}
+                      escrowPendingClearanceUntil={contract.escrowPendingClearanceUntil}
+                      userRole={userRole}
+                      onHoldClearance={onHoldClearance}
+                    />
 
                     {isSidebar ? (
                         /* Collapsible Message Sidebar Mode Layout (100% single vertical stack) */
@@ -768,180 +663,20 @@ export default function ContractDetailsSidebar({
                 </div>
             </main>
 
-            {/* File Preview Overlay Modal */}
-            {previewFile ? (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={tx('pages.messages.contractDetails.filePreviewAria')}>
-                    <div className="w-full max-w-lg rounded-[14px] bg-[#111214] border border-white/[0.08] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                                <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-zinc-500">{tx('pages.messages.contractDetails.filePreview')}</p>
-                                <h2 className="mt-1 truncate text-[18px] font-medium tracking-[-0.01em] text-white">{previewFile.name}</h2>
-                                <p className="font-mono text-[13px] text-zinc-400">
-                                    {[previewFile.senderName || tx('pages.messages.contractDetails.clientFallback'), previewFile.uploadedAt ? new Date(previewFile.uploadedAt).toLocaleDateString() : tx('pages.messages.contractDetails.unknownDate'), fmtSize(previewFile.size)].filter(Boolean).join(' · ')}
-                                </p>
-                            </div>
-                            <button type="button" ref={previewCloseRef} onClick={() => setPreviewFile(null)} className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] font-medium text-zinc-400 transition-colors hover:border-white/[0.12] hover:text-white">{tx('pages.messages.contractDetails.close')}</button>
-                        </div>
-                        <div className="mt-4 rounded-[10px] border border-white/[0.07] bg-[#0c0c0e] px-4 py-[14px]">
-                            <p className="text-[14px] leading-[1.6] text-zinc-400">
-                                {tx('pages.messages.contractDetails.previewOverlayDesc')}
-                            </p>
-                        </div>
-                        <div className="mt-4 flex justify-end gap-2">
-                            <button type="button" onClick={() => setPreviewFile(null)} className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[14px] font-medium text-zinc-400 transition-colors hover:border-white/[0.12] hover:text-white">{tx('pages.messages.contractDetails.cancel')}</button>
-                            <button type="button" onClick={() => {
-                                if (onOpenSharedFile) {
-                                    onOpenSharedFile(previewFile);
-                                } else {
-                                    if (previewFile.url) window.open(previewFile.url, '_blank', 'noopener');
-                                }
-                                setPreviewFile(null);
-                            }} className="rounded-lg bg-emerald-500 hover:bg-emerald-400 px-3 py-2 text-[14px] font-medium text-[#0A0A0B] transition-colors">{tx('pages.messages.contractDetails.openFile')}</button>
-                        </div>
-                    </div>
-                </div>
-            ) : null}
+            <FilePreviewModal
+              file={previewFile}
+              onClose={() => setPreviewFile(null)}
+              onOpenFile={onOpenSharedFile}
+              closeRef={previewCloseRef}
+            />
 
-            {/* Viewport Simulator Sandbox Modal */}
-            {sandboxUrl ? (
-                <div 
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-                    role="dialog"
-                    aria-modal="true"
-                    onClick={() => setSandboxUrl(null)}
-                >
-                    <div 
-                        className="flex flex-col rounded-2xl border border-white/[0.08] bg-[#0c0c0e] shadow-[0_32px_80px_rgba(0,0,0,0.8)] overflow-hidden w-full max-w-5xl h-[85vh] transition-all"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {/* Sandbox Header */}
-                        <div className="flex items-center justify-between border-b border-white/[0.06] bg-black/40 px-4 py-3">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <Globe className="h-5 w-5 text-violet-400 shrink-0" />
-                                <div className="min-w-0">
-                                    <h3 className="text-xs font-semibold text-zinc-100 truncate">{sandboxLabel}</h3>
-                                    <p className="text-[10px] text-zinc-550 font-mono truncate">{sandboxUrl}</p>
-                                </div>
-                            </div>
-
-                            {/* Viewport Toggles */}
-                            <div className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-[#070709] p-1">
-                                <button
-                                    type="button"
-                                    onClick={() => setSandboxViewport('desktop')}
-                                    className={`rounded px-2.5 py-1 text-[10px] font-semibold transition-all ${sandboxViewport === 'desktop' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
-                                >
-                                    {tx('pages.messages.contractDetails.desktop')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setSandboxViewport('tablet')}
-                                    className={`rounded px-2.5 py-1 text-[10px] font-semibold transition-all ${sandboxViewport === 'tablet' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
-                                >
-                                    {tx('pages.messages.contractDetails.tablet')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setSandboxViewport('mobile')}
-                                    className={`rounded px-2.5 py-1 text-[10px] font-semibold transition-all ${sandboxViewport === 'mobile' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
-                                >
-                                    {tx('pages.messages.contractDetails.mobile')}
-                                </button>
-                            </div>
-
-                            {/* Close button */}
-                            <button
-                                type="button"
-                                onClick={() => setSandboxUrl(null)}
-                                className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1 text-[11px] font-semibold text-zinc-305 hover:bg-white/[0.06] hover:text-white transition-all"
-                            >
-                                {tx('pages.messages.contractDetails.close')}
-                            </button>
-                        </div>
-
-                        {/* Sandbox Body / Simulator */}
-                        <div className="flex-1 bg-zinc-950/40 p-6 flex items-center justify-center overflow-auto">
-                            {sandboxViewport === 'desktop' ? (
-                                <div className="w-full h-full flex flex-col border border-white/[0.08] bg-[#0c0c0e] rounded-xl overflow-hidden shadow-2xl transition-all duration-300">
-                                    {/* Desktop Browser Chrome */}
-                                    <div className="h-9 shrink-0 bg-zinc-900/90 border-b border-white/[0.05] px-4 flex items-center gap-3 select-none">
-                                        <div className="flex items-center gap-1.5 shrink-0">
-                                            <span className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]" />
-                                            <span className="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]" />
-                                            <span className="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]" />
-                                        </div>
-                                        <div className="flex items-center gap-1 text-zinc-550 shrink-0 text-[10px]">
-                                            <span className="p-1 rounded hover:bg-white/5 cursor-pointer">←</span>
-                                            <span className="p-1 rounded hover:bg-white/5 cursor-pointer">→</span>
-                                            <span className="p-1 rounded hover:bg-white/5 cursor-pointer">⟳</span>
-                                        </div>
-                                        <div className="flex-grow max-w-xl mx-auto h-6 bg-zinc-950/60 rounded border border-white/[0.05] flex items-center px-3 gap-2 text-[10px] text-zinc-400 font-mono truncate select-all">
-                                            <Globe className="h-3 w-3 text-zinc-500 shrink-0" />
-                                            {sandboxUrl}
-                                        </div>
-                                    </div>
-                                    <iframe 
-                                        src={sandboxUrl}
-                                        title={tx('pages.messages.contractDetails.stagingSandboxPreview')}
-                                        className="w-full flex-grow border-none bg-white"
-                                    />
-                                </div>
-                            ) : sandboxViewport === 'tablet' ? (
-                                <div className="w-[768px] h-full max-h-[720px] flex flex-col border-[12px] border-zinc-800 bg-zinc-900 rounded-[28px] overflow-hidden shadow-2xl relative transition-all duration-305 shrink-0">
-                                    {/* Tablet Status Bar */}
-                                    <div className="h-6 shrink-0 bg-zinc-900 px-6 flex items-center justify-between text-[9px] font-bold text-zinc-400 select-none">
-                                        <span>9:41 AM</span>
-                                        <div className="flex items-center gap-1.5">
-                                            <span>📶</span>
-                                            <span>🛜</span>
-                                            <span>100% 🔋</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <iframe 
-                                        src={sandboxUrl}
-                                        title={tx('pages.messages.contractDetails.stagingSandboxPreview')}
-                                        className="w-full flex-grow border-none bg-white"
-                                    />
-                                    
-                                    {/* Tablet Home Bar */}
-                                    <div className="h-3 shrink-0 bg-zinc-900 flex items-center justify-center">
-                                        <div className="w-32 h-1 bg-zinc-700 rounded-full" />
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="w-[375px] h-full max-h-[660px] flex flex-col border-[12px] border-zinc-800 bg-zinc-900 rounded-[44px] overflow-hidden shadow-2xl relative transition-all duration-305 shrink-0">
-                                    {/* Dynamic Island / Notch */}
-                                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-6 bg-black rounded-full z-20 flex items-center justify-end px-3">
-                                        <span className="w-1.5 h-1.5 bg-zinc-900 rounded-full border border-zinc-800/40" />
-                                    </div>
-                                    
-                                    {/* Mobile Status Bar */}
-                                    <div className="h-9 shrink-0 bg-zinc-900 px-6 flex items-end pb-1.5 justify-between text-[9px] font-bold text-zinc-400 select-none">
-                                        <span>9:41</span>
-                                        <div className="flex items-center gap-1">
-                                            <span>📶</span>
-                                            <span>5G</span>
-                                            <span>🔋</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <iframe 
-                                        src={sandboxUrl}
-                                        title={tx('pages.messages.contractDetails.stagingSandboxPreview')}
-                                        className="w-full flex-grow border-none bg-white"
-                                    />
-                                    
-                                    {/* Home Indicator */}
-                                    <div className="h-4 shrink-0 bg-zinc-900 flex items-center justify-center pb-1">
-                                        <div className="w-28 h-1 bg-zinc-700 rounded-full" />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            ) : null}
+            <SandboxModal
+              url={sandboxUrl}
+              label={sandboxLabel}
+              viewport={sandboxViewport}
+              onClose={() => setSandboxUrl(null)}
+              onViewportChange={setSandboxViewport}
+            />
         </div>
     );
 }
@@ -962,13 +697,7 @@ export default function ContractDetailsSidebar({
 
 
 
-function _TimelineMilestone({ milestone: _milestone, index: _index, rt: _rt }: { milestone: ContractMilestone; index: number; rt: RoleTheme }) {
-    return null;
-}
 
-function _InfoChip({ icon, label, hideOnMobile, className }: { icon: ReactNode; label: string; hideOnMobile?: boolean; className?: string }) {
-    return <span className={`items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.01] px-2.5 py-1 font-mono text-[11px] text-zinc-400 ${hideOnMobile ? 'hidden sm:inline-flex' : 'inline-flex'} ${className ?? ''}`}>{icon}{label}</span>;
-}
 
 
 
