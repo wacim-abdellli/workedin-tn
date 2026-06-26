@@ -1,10 +1,10 @@
 # WorkedIn.tn — Session Progress Tracker
 
-> Last updated: 2026-06-26 | Commit: `coverage-milestone-30`
+> Last updated: 2026-06-27 | Commit: `4ed260a`
 
 ---
 
-## CURRENT STATE RATING: 8.7/10 — Production-Viable
+## CURRENT STATE RATING: 8.9/10 — Production-Viable
 
 | Dimension | Rating | Notes |
 |---|---|---|
@@ -13,7 +13,7 @@
 | **TypeScript** | 9.5/10 | Strict mode, zero `any` types. Types split into domains. |
 | **Consistency** | 9.5/10 | All 9 services now utilize `supabaseWithRetry` for timeouts/retries and standardized returns. |
 | **i18n** | 9.0/10 | Full 3-language system, RTL, pluralization. SkipLinks localized. |
-| **Testing** | 8.5/10 | 1,348 tests, 114 files. Coverage at 29.31% — targeted routing, redirect, context, and status components. |
+| **Testing** | 8.8/10 | 1,393 tests, 117 files. Coverage at 30.06% — crossed the 30% milestone target. |
 | **Build** | 9.5/10 | Clean build, clean typecheck. |
 | **Maintainability** | 9.0/10 | Modularized Messages, useContractState, and clean auth helpers. |
 | **UI/Components** | 9.0/10 | 37 primitives, design tokens, Framer Motion. |
@@ -24,46 +24,44 @@
 ## SESSION HISTORY (This Session)
 
 ### Commits & Scope Progress
-- **Auth & Routing Test Coverage Bump**:
-  - Expanded [AuthContext.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/contexts/__tests__/AuthContext.test.tsx) coverage (now 70.37% statement coverage) by testing email verification checking, local storage restoration, session storage caching, `TOKEN_REFRESHED` cleanup, unconfirmed email logic, update retries on schema column mismatches, and `setUserType` RPC triggers.
-  - Expanded [workspace-routing.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/routing/__tests__/workspace-routing.test.tsx) coverage by testing `AdminRoute` (loading, unauthenticated redirect, suspended/archived gates, access denial/granted screens) and `OnboardingRoute` loading states.
-  - Created a new test suite [redirects.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/navigation/__tests__/redirects.test.tsx) covering redirect components `DashboardRedirect.tsx` (fully covering logic including settings fallback on failures), `MyJobsRedirect.tsx`, and `SavedRedirect.tsx` to 100% statement coverage.
-  - Expanded [AccountStatusGate.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/routing/__tests__/AccountStatusGate.test.tsx) to achieve 100% statement coverage (testing layout rendering, name/email fallbacks, validation failure, modal cancellation/overlay, RLS/database error handling).
-- **Test Alignment**: Verified all 1,348 tests pass successfully.
+- **Phase 2 Coverage Milestone Complete**:
+  - Created a new test suite [WithdrawalForm.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/payments/__tests__/WithdrawalForm.test.tsx) to test [WithdrawalForm.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/payments/WithdrawalForm.tsx), achieving **100% statement and line coverage**.
+  - Created [WalletCard.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/payments/__tests__/WalletCard.test.tsx) and reached **100% statement and line coverage** for [WalletCard.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/payments/WalletCard.tsx).
+  - Created [FundEscrow.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/payments/__tests__/FundEscrow.test.tsx) and reached **100% statement and line coverage** for [FundEscrow.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/payments/FundEscrow.tsx).
+  - Expanded routing guard tests in [workspace-routing.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/routing/__tests__/workspace-routing.test.tsx) to achieve **100% statement coverage** for [ProtectedGate.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/routing/ProtectedGate.tsx), [AdminRoute.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/routing/AdminRoute.tsx), and [OnboardingRoute.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/routing/OnboardingRoute.tsx).
+  - Expanded [messages.test.ts](file:///c:/Users/pc/Desktop/workedin_tn/src/services/__tests__/messages.test.ts) to achieve **100% line coverage** for message service [operations.ts](file:///c:/Users/pc/Desktop/workedin_tn/src/services/messages/operations.ts).
+- **Test Alignment**: Verified all 1,393 tests pass successfully.
 - **Type Safety**: Verified static type-checking passes cleanly via `npx tsc --noEmit` with zero errors.
 
 ### Test Growth
 - **Start:** 64 files, 401 tests, 21.20% statements
 - **Before this session:** 111 files, 1261 tests, 27.55% statements
-- **Current:** 114 files, 1348 tests, 29.31% statements
-- **Delta (Overall):** +50 files, +947 tests, +8.11pp coverage
+- **Current:** 117 files, 1393 tests, 30.06% statements
+- **Delta (Overall):** +53 files, +992 tests, +8.86pp coverage
 
 ---
 
 ## RECOMMENDED NEXT STEPS (Priority Order)
 
 ### DONE This Session
-- [x] Expand `AuthContext.tsx` statement coverage to 70.37% (testing email verification logic, workspace restoration, caching, retry loops, RPC triggers).
-- [x] Expand workspace routing test coverage (testing `AdminRoute` gates, onboarding loaders).
-- [x] Create [redirects.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/components/navigation/__tests__/redirects.test.tsx) (covering `DashboardRedirect`, `MyJobsRedirect`, `SavedRedirect` to 100% statement coverage).
-- [x] Expand `AccountStatusGate` coverage to 100% statement coverage (testing layout rendering, name/email fallbacks, validation failure, modal cancellation/overlay, RLS/database error handling).
+- [x] Target `src/services/messages/operations.ts` for 100% line coverage.
+- [x] Target Wallet/Escrow Components (`FundEscrow.tsx`, `WalletCard.tsx`, `WithdrawalForm.tsx` to 100% statement coverage).
+- [x] Expand `ProtectedGate.tsx`, `AdminRoute.tsx`, and `OnboardingRoute.tsx` statement coverage to 100%.
+- [x] Verify and Track (TypeScript check and global coverage crossed 30.0% to 30.06%).
 
-### Short-term (next session — to cross the 30.0% milestone)
-1. **Target `src/services/messages/operations.ts`**:
-   - Currently at **79.66%** coverage (21 uncovered statements).
-   - Add targeted test cases to cover remaining lines `69`, `73`, and `152-160` (about 12 statements).
-2. **Target Wallet/Escrow Components**:
-   - Create a new test folder `src/components/payments/__tests__/` and add suites for:
-     - `FundEscrow.tsx` (~110 statements, currently 3.84% covered)
-     - `WalletCard.tsx` (~65 statements, currently 0% covered)
-   - Mock standard dependencies (`useToast`, `useTranslation`, `useAuth`, `supabaseWithRetry`, `supabase`).
-3. **Verify and Track**:
-   - Confirm type-checking via `npx tsc --noEmit`.
-   - Run `npm run test:coverage` to confirm overall statement coverage exceeds **30.0%** (approx. 158 statements remaining).
+### Recommended Next Milestone: Cross 32.0% Statement Coverage
+1. **Target `src/services/proposals.ts`**:
+   - Currently at **80.0%** statement coverage.
+   - Expand `proposals.test.ts` to test edge cases in RPC submissions, duplicate key detections, and fallback proposal creation.
+2. **Target `src/services/messages/conversations.ts`**:
+   - Currently at **57.79%** statement coverage.
+   - Add unit tests for conversation creations, message reads, and partner profile lookups.
+3. **Target Job Matches Logic / Detail Logic**:
+   - Add tests for logic functions inside `JobDetail.tsx` or `JobMatches.tsx` to cover rendering and state management edge cases.
 
 ---
 
 ## BUILD STATUS
 - `tsc --noEmit`: PASS (zero errors)
-- `vitest run`: PASS (114/114 files, 1348/1348 tests)
-- Coverage: 29.31% stmts
+- `vitest run`: PASS (117/117 files, 1393/1393 tests)
+- Coverage: 30.06% stmts
