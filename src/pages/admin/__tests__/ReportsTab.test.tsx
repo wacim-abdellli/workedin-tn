@@ -371,6 +371,35 @@ describe('ReportsTab', () => {
         expect(screen.getAllByText('Reason').length).toBeGreaterThanOrEqual(1);
         expect(screen.getAllByText('Date').length).toBeGreaterThanOrEqual(1);
     });
+
+    it('calls mutate with reviewed from mobile card button', () => {
+        mockUseQuery.mockReturnValue({ data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        const reviewButtons = screen.getAllByText('Review');
+        if (reviewButtons.length > 1) fireEvent.click(reviewButtons[1]);
+        else fireEvent.click(reviewButtons[0]);
+        expect(mockMutate).toHaveBeenCalledWith({ id: 'r1', status: 'reviewed' });
+    });
+
+    it('calls mutate with dismissed from mobile card button', () => {
+        mockUseQuery.mockReturnValue({ data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        const dismissButtons = screen.getAllByText('Dismiss');
+        if (dismissButtons.length > 1) fireEvent.click(dismissButtons[1]);
+        else fireEvent.click(dismissButtons[0]);
+        expect(mockMutate).toHaveBeenCalledWith({ id: 'r1', status: 'dismissed' });
+    });
+
+    it('calls mutate with reopen from mobile card button', () => {
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport, status: 'reviewed' }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        const reopenButtons = screen.getAllByText('Reopen');
+        if (reopenButtons.length > 1) fireEvent.click(reopenButtons[1]);
+        else fireEvent.click(reopenButtons[0]);
+        expect(mockMutate).toHaveBeenCalledWith({ id: 'r1', status: 'pending' });
+    });
 });
 
 // ─── ReportsTab stays at 90% — remaining lines 30,92-93,312-334
