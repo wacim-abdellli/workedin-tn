@@ -175,4 +175,85 @@ describe('OverviewTab', () => {
         expect(screen.getByText(/Total users/)).toBeInTheDocument();
         expect(screen.getByText('No pending requests')).toBeInTheDocument();
     });
+
+    it('shows today activity section with signups and contracts', () => {
+        mockUseQuery.mockReturnValue({
+            data: {
+                totalUsers: 0, activeJobs: 0, activeContracts: 0, totalRevenue: 0,
+                todaySignups: 12, todayContracts: 7, pendingVerifications: 0,
+                recentVerificationRequests: [], riskyContracts: [], overdueReviews: [], disputesMissingEvidence: [],
+            },
+            isLoading: false,
+        });
+        render(<OverviewTab />);
+        expect(screen.getByText("Today's Activity")).toBeInTheDocument();
+        expect(screen.getByText('12')).toBeInTheDocument();
+        expect(screen.getByText('7')).toBeInTheDocument();
+        expect(screen.getByText('New signups')).toBeInTheDocument();
+        expect(screen.getByText('New contracts')).toBeInTheDocument();
+    });
+
+    it('shows risk flags in risky contracts', () => {
+        mockUseQuery.mockReturnValue({
+            data: {
+                totalUsers: 0, activeJobs: 0, activeContracts: 0, totalRevenue: 0,
+                todaySignups: 0, todayContracts: 0, pendingVerifications: 0,
+                recentVerificationRequests: [],
+                riskyContracts: [{ id: 'c1', risk_level: 'medium', risk_flags: ['large_amount'], created_at: '2024-01-01', title: 'Medium project' }],
+                overdueReviews: [], disputesMissingEvidence: [],
+            },
+            isLoading: false,
+        });
+        render(<OverviewTab />);
+        expect(screen.getByText('medium')).toBeInTheDocument();
+        expect(screen.getByText('large_amount')).toBeInTheDocument();
+    });
+
+    it('shows multiple verification requests in list', () => {
+        mockUseQuery.mockReturnValue({
+            data: {
+                totalUsers: 0, activeJobs: 0, activeContracts: 0, totalRevenue: 0,
+                todaySignups: 0, todayContracts: 0, pendingVerifications: 2,
+                recentVerificationRequests: [
+                    { id: 'v1', submitted_at: '2024-06-01T12:00:00Z', profile: { full_name: 'User One', email: 'u1@test.com' } },
+                    { id: 'v2', submitted_at: '2024-06-02T12:00:00Z', profile: { full_name: 'User Two', email: 'u2@test.com' } },
+                ],
+                riskyContracts: [], overdueReviews: [], disputesMissingEvidence: [],
+            },
+            isLoading: false,
+        });
+        render(<OverviewTab />);
+        expect(screen.getByText('User One')).toBeInTheDocument();
+        expect(screen.getByText('User Two')).toBeInTheDocument();
+        expect(screen.getByText('u1@test.com')).toBeInTheDocument();
+        expect(screen.getByText('u2@test.com')).toBeInTheDocument();
+    });
+
+    it('shows reports placeholder section', () => {
+        mockUseQuery.mockReturnValue({
+            data: {
+                totalUsers: 0, activeJobs: 0, activeContracts: 0, totalRevenue: 0,
+                todaySignups: 0, todayContracts: 0, pendingVerifications: 0,
+                recentVerificationRequests: [], riskyContracts: [], overdueReviews: [], disputesMissingEvidence: [],
+            },
+            isLoading: false,
+        });
+        render(<OverviewTab />);
+        expect(screen.getByText(/No reports for now/)).toBeInTheDocument();
+    });
+
+    it('shows overdue review with formatted date', () => {
+        mockUseQuery.mockReturnValue({
+            data: {
+                totalUsers: 0, activeJobs: 0, activeContracts: 0, totalRevenue: 0,
+                todaySignups: 0, todayContracts: 0, pendingVerifications: 0,
+                recentVerificationRequests: [], riskyContracts: [],
+                overdueReviews: [{ id: 'r1', review_due_at: '2024-05-01T00:00:00Z', title: 'Design work' }],
+                disputesMissingEvidence: [],
+            },
+            isLoading: false,
+        });
+        render(<OverviewTab />);
+        expect(screen.getByText(/Review due/)).toBeInTheDocument();
+    });
 });

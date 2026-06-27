@@ -1,6 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 
+const mockMutate = vi.fn();
+const mockShowToast = vi.fn();
 const mockUseQuery = vi.hoisted(() => vi.fn());
 const mockUseMutation = vi.hoisted(() => vi.fn());
 const mockUseQueryClient = vi.hoisted(() => vi.fn());
@@ -33,7 +35,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 }));
 
 vi.mock('@/components/ui/Toast', () => ({
-    useToast: () => ({ showToast: vi.fn() }),
+    useToast: () => ({ showToast: mockShowToast }),
 }));
 
 vi.mock('@/components/ui/Button', () => ({
@@ -75,18 +77,42 @@ vi.mock('../AdminSelect', () => ({
     ),
 }));
 
+const mockInChain = vi.fn();
+
 vi.mock('@/lib/supabase', () => ({
-    supabase: { from: vi.fn(() => ({ select: vi.fn().mockReturnThis(), in: vi.fn().mockResolvedValue({ data: [] }) })) },
+    supabase: {
+        from: vi.fn(() => ({
+            select: vi.fn().mockReturnThis(),
+            in: mockInChain,
+        })),
+        channel: vi.fn(() => ({ on: vi.fn(() => ({ subscribe: vi.fn() })) })),
+        removeChannel: vi.fn(),
+    },
 }));
 
 import ReportsTab from '../ReportsTab';
+
+const baseReport = {
+    id: 'r1',
+    reported_type: 'job' as const,
+    reported_id: 'j1',
+    reason: 'Spam content',
+    status: 'pending' as const,
+    created_at: '2024-06-01',
+    reporter: { full_name: 'Reporter A', email: 'r@test.com' },
+};
 
 describe('ReportsTab', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockUseQueryClient.mockReturnValue({ invalidateQueries: mockInvalidateQueries });
-        mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false });
+        mockMutate.mockReset();
+        mockShowToast.mockReset();
+        mockUseMutation.mockReturnValue({ mutate: mockMutate, isPending: false });
+        mockInChain.mockResolvedValue({ data: [] });
     });
+
+    // ─── Loading / Error / Empty ───────────────────────────────────────
 
     it('shows loading skeleton while fetching', () => {
         mockUseQuery.mockReturnValue({ data: [], isLoading: true, isError: false, refetch: vi.fn() });
@@ -106,39 +132,216 @@ describe('ReportsTab', () => {
         expect(screen.getByText('No reports found')).toBeInTheDocument();
     });
 
-    it('renders report content', () => {
-        const mockReports = [
-            { id: 'r1', reported_type: 'job', reported_id: 'j1', reason: 'Spam content', status: 'pending', created_at: '2024-06-01', reporter: { full_name: 'Reporter A', email: 'r@test.com' } },
-        ];
-        mockUseQuery.mockReturnValue({ data: mockReports, isLoading: false, isError: false, refetch: vi.fn() });
+    // ─── Report count badge ───────────────────────────────────────────
+
+    it('shows report count badge when reports exist', () => {
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
         render(<ReportsTab />);
-        const reporters = screen.getAllByText(/Reporter A/);
-        expect(reporters.length).toBeGreaterThanOrEqual(1);
-        const reasons = screen.getAllByText(/Spam content/);
-        expect(reasons.length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText('1')).toBeInTheDocument();
+    });
+
+    // ─── Resolved targets via useEffect ───────────────────────────────
+
+    it('resolves target for user type', async () => {
+        mockInChain.mockResolvedValue({ data: [{ id: 'u1', full_name: 'Target User', email: 'target@test.com' }] });
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport, reported_type: 'user', reported_id: 'u1' }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        await waitFor(() => {
+            expect(screen.getAllByText('Target User').length).toBeGreaterThanOrEqual(1);
+        });
+        await waitFor(() => {
+            expect(screen.getAllByText('target@test.com').length).toBeGreaterThanOrEqual(1);
+        });
+    });
+
+    it('resolves target for job type', async () => {
+        mockInChain.mockResolvedValue({ data: [{ id: 'j1', title: 'Job Title Here' }] });
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        await waitFor(() => {
+            expect(screen.getAllByText('Job Title Here').length).toBeGreaterThanOrEqual(1);
+        });
+    });
+
+    it('resolves target for proposal type', async () => {
+        mockInChain.mockResolvedValue({
+            data: [{ id: 'p1', cover_letter: 'Proposal text', job: { title: 'Design Job' }, freelancer: { full_name: 'Freelancer X' } }],
+        });
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport, reported_type: 'proposal', reported_id: 'p1' }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        await waitFor(() => {
+            expect(screen.getAllByText('Proposal by Freelancer X').length).toBeGreaterThanOrEqual(1);
+            expect(screen.getAllByText('For job: Design Job').length).toBeGreaterThanOrEqual(1);
+        });
+    });
+
+    it('handles fetchTargets error gracefully', async () => {
+        mockInChain.mockRejectedValue(new Error('Network error'));
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport, reported_type: 'user', reported_id: 'u1' }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        await waitFor(() => {
+            expect(screen.getAllByText('Loading details...').length).toBeGreaterThanOrEqual(1);
+        });
+    });
+
+    // ─── Rendering report content ─────────────────────────────────────
+
+    it('renders report with reporter info and reason', () => {
+        mockUseQuery.mockReturnValue({ data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        expect(screen.getAllByText(/Reporter A/).length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText(/Spam content/).length).toBeGreaterThanOrEqual(1);
         expect(screen.getByText(/Flagged Content/)).toBeInTheDocument();
     });
 
-    it('shows action buttons for pending reports', () => {
-        mockUseQuery.mockReturnValue({
-            data: [{ id: 'r1', reported_type: 'job', reported_id: 'j1', reason: 'Spam', status: 'pending', created_at: '2024-06-01', reporter: { full_name: 'R', email: 'r@t.com' } }],
-            isLoading: false, isError: false, refetch: vi.fn(),
-        });
+    it('renders type badge', () => {
+        mockUseQuery.mockReturnValue({ data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn() });
         render(<ReportsTab />);
-        const reviews = screen.getAllByText('Review');
-        expect(reviews.length).toBeGreaterThanOrEqual(1);
-        const dismisses = screen.getAllByText('Dismiss');
-        expect(dismisses.length).toBeGreaterThanOrEqual(1);
+        const badges = screen.getAllByText('job');
+        expect(badges.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('shows reopen for non-pending reports', () => {
+    // ─── Action buttons ───────────────────────────────────────────────
+
+    it('shows Review and Dismiss for pending reports', () => {
+        mockUseQuery.mockReturnValue({ data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        expect(screen.getAllByText('Review').length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText('Dismiss').length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('shows Reopen for reviewed reports', () => {
         mockUseQuery.mockReturnValue({
-            data: [{ id: 'r1', reported_type: 'job', reported_id: 'j1', reason: 'Spam', status: 'reviewed', created_at: '2024-06-01', reporter: { full_name: 'R', email: 'r@t.com' } }],
-            isLoading: false, isError: false, refetch: vi.fn(),
+            data: [{ ...baseReport, status: 'reviewed' }], isLoading: false, isError: false, refetch: vi.fn(),
         });
         render(<ReportsTab />);
-        const reopens = screen.getAllByText('Reopen');
-        expect(reopens.length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText('Reopen').length).toBeGreaterThanOrEqual(1);
         expect(screen.queryByText('Review')).not.toBeInTheDocument();
+    });
+
+    it('calls mutate with reviewed on Review click', () => {
+        mockUseQuery.mockReturnValue({ data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        fireEvent.click(screen.getAllByText('Review')[0]);
+        expect(mockMutate).toHaveBeenCalledWith({ id: 'r1', status: 'reviewed' });
+    });
+
+    it('calls mutate with dismissed on Dismiss click', () => {
+        mockUseQuery.mockReturnValue({ data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        fireEvent.click(screen.getAllByText('Dismiss')[0]);
+        expect(mockMutate).toHaveBeenCalledWith({ id: 'r1', status: 'dismissed' });
+    });
+
+    it('calls mutate with pending on Reopen click', () => {
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport, status: 'reviewed' }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        fireEvent.click(screen.getAllByText('Reopen')[0]);
+        expect(mockMutate).toHaveBeenCalledWith({ id: 'r1', status: 'pending' });
+    });
+
+    it('disables buttons when mutation is pending', () => {
+        mockUseMutation.mockReturnValue({ mutate: mockMutate, isPending: true });
+        mockUseQuery.mockReturnValue({ data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        expect(screen.getAllByRole('button', { disabled: true }).length).toBeGreaterThanOrEqual(1);
+    });
+
+    // ─── Mutation lifecycle (success / error) ─────────────────────────
+
+    it('shows success toast on mutation success', () => {
+        mockUseMutation.mockImplementation(({ onSuccess }: { onSuccess: () => void }) => {
+            onSuccess();
+            return { mutate: mockMutate, isPending: false };
+        });
+        mockUseQuery.mockReturnValue({ data: [], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        expect(mockShowToast).toHaveBeenCalledWith('Report status updated', 'success');
+    });
+
+    it('invalidates queries on mutation success', () => {
+        mockUseMutation.mockImplementation(({ onSuccess }: { onSuccess: () => void }) => {
+            onSuccess();
+            return { mutate: mockMutate, isPending: false };
+        });
+        mockUseQuery.mockReturnValue({ data: [], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['admin-reports'] });
+    });
+
+    it('shows error toast on mutation error', () => {
+        mockUseMutation.mockImplementation(({ onError }: { onError: (err: Error) => void }) => {
+            onError(new Error('Update failed'));
+            return { mutate: mockMutate, isPending: false };
+        });
+        mockUseQuery.mockReturnValue({ data: [], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        expect(mockShowToast).toHaveBeenCalledWith('Update failed', 'error');
+    });
+
+    // ─── Status badges ────────────────────────────────────────────────
+
+    it('renders all status badges with correct labels', () => {
+        mockUseQuery.mockReturnValue({
+            data: [
+                { ...baseReport, id: 'r1', status: 'pending', reason: 'S1' },
+                { ...baseReport, id: 'r2', status: 'reviewed', reason: 'S2' },
+                { ...baseReport, id: 'r3', status: 'dismissed', reason: 'S3' },
+            ], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        expect(screen.getAllByText('Pending').length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText('Reviewed').length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText('Dismissed').length).toBeGreaterThanOrEqual(1);
+    });
+
+    // ─── Date formatting ──────────────────────────────────────────────
+
+    it('renders date in en-US locale', () => {
+        mockUseQuery.mockReturnValue({ data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        const dates = screen.getAllByText(/6\/1\/2024/);
+        expect(dates.length).toBeGreaterThanOrEqual(1);
+    });
+
+    // ─── Edge cases ───────────────────────────────────────────────────
+
+    it('renders em-dash for missing reporter', () => {
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport, reporter: null }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        const dashes = screen.getAllByText('—');
+        expect(dashes.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('renders empty reporter email gracefully', () => {
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport, reporter: { full_name: 'Reporter B', email: '' } }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        expect(screen.getAllByText('Reporter B').length).toBeGreaterThanOrEqual(1);
+    });
+
+    // ─── Refresh button ───────────────────────────────────────────────
+
+    it('triggers refetch on Refresh click', () => {
+        const refetch = vi.fn();
+        mockUseQuery.mockReturnValue({ data: [], isLoading: false, isError: false, refetch });
+        render(<ReportsTab />);
+        fireEvent.click(screen.getByText('Refresh'));
+        expect(refetch).toHaveBeenCalled();
     });
 });
