@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, PropsWithChildren, ReactNode } from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -159,6 +159,10 @@ describe('Wallet', () => {
         mocks.initiatePayment.mockRejectedValue(new Error('Gateway down'));
         mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => defaultQueryHandler(queryKey));
         useWorkspaceStore.setState({ activeWorkspace: 'client' });
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     // ─── Loading state ────────────────────────────────────────────────
@@ -369,6 +373,70 @@ describe('Wallet', () => {
         });
     });
 
+    it('redirects to payment link on successful deposit initiation', async () => {
+        mocks.initiatePayment.mockResolvedValueOnce({ link: 'https://pay.example.com/checkout' });
+        const originalLocation = window.location.href;
+        delete (window as any).location;
+        window.location = { ...window.location, href: originalLocation };
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Deposit Funds' }));
+        fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '125' } });
+        const depositButtons = screen.getAllByRole('button', { name: 'Deposit Funds' });
+        fireEvent.click(depositButtons[depositButtons.length - 1]);
+        await waitFor(() => {
+            expect(window.location.href).toBe('https://pay.example.com/checkout');
+        });
+        window.location.href = originalLocation;
+    });
+
+    it('shows error when initiatePayment returns no link', async () => {
+        mocks.initiatePayment.mockResolvedValueOnce({});
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Deposit Funds' }));
+        fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '125' } });
+        const depositButtons = screen.getAllByRole('button', { name: 'Deposit Funds' });
+        fireEvent.click(depositButtons[depositButtons.length - 1]);
+        await waitFor(() => {
+            expect(screen.getByText('Payment link was not generated')).toBeInTheDocument();
+        });
+    });
+
+    it('shows deposit button disabled during loading', async () => {
+        mocks.initiatePayment.mockImplementationOnce(() => new Promise(() => {}));
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Deposit Funds' }));
+        fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '125' } });
+        const depositButtons = screen.getAllByRole('button', { name: 'Deposit Funds' });
+        fireEvent.click(depositButtons[depositButtons.length - 1]);
+        await waitFor(() => {
+            expect(screen.getByText('Processing…')).toBeInTheDocument();
+        });
+    });
+
+    it('fills deposit amount via preset button', () => {
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Deposit Funds' }));
+        fireEvent.click(screen.getByText('250'));
+        const input = screen.getByRole('spinbutton') as HTMLInputElement;
+        expect(input.value).toBe('250');
+    });
+
     // ─── Recent transactions on overview ──────────────────────────────
 
     it('shows recent transactions on overview', () => {
@@ -421,6 +489,60 @@ describe('Wallet', () => {
         expect(screen.getByText(/Request Withdrawal/)).toBeInTheDocument();
     });
 
+    it('navigates to transactions tab via quick links Transactions section button', () => {
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('Full payment history'));
+        expect(screen.getByText(/Transaction History/)).toBeInTheDocument();
+    });
+
+    it('navigates to deposit tab via quick links Deposit Funds button', () => {
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('Top up your wallet'));
+        expect(screen.getAllByText(/Deposit Funds/).length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('navigates to withdraw tab via freelancer quick link', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('Move earnings to bank'));
+        expect(screen.getAllByText(/Request Withdrawal/).length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('calls onSuccess after withdrawal submission completes', async () => {
+        vi.useFakeTimers();
+        try {
+            useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+            mocks.rpc.mockResolvedValueOnce({ error: null });
+            render(
+                <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                    <Wallet />
+                </MemoryRouter>
+            );
+            fireEvent.click(screen.getByText('50 TND'));
+            fireEvent.change(screen.getByPlaceholderText(/e\.g\. BNA/), { target: { value: 'My Bank' } });
+            fireEvent.change(screen.getByPlaceholderText(/Full name/), { target: { value: 'John Doe' } });
+            fireEvent.change(screen.getByLabelText('IBAN'), { target: { value: 'TN591234567890123456789012' } });
+            const submitButtons = screen.getAllByText(/Request Withdrawal/);
+            fireEvent.click(submitButtons[submitButtons.length - 1]);
+            await act(async () => { vi.advanceTimersByTime(2500); });
+            expect(screen.getByText('Overview')).toBeInTheDocument();
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     // ─── Locked funds with data ──────────────────────────────────────
 
     it('renders locked funds section with locked contracts', () => {
@@ -450,6 +572,63 @@ describe('Wallet', () => {
         );
         expect(screen.getByText('Website Design')).toBeInTheDocument();
         expect(screen.getByText(/Freelancer X/)).toBeInTheDocument();
+    });
+
+    it('shows countdown timer with clearance hold contract', () => {
+        const futureDate = new Date(Date.now() + 86400000).toISOString();
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'wallet-contracts') {
+                return {
+                    data: [{
+                        id: 'c1',
+                        title: 'Website Design',
+                        status: 'active',
+                        payment_status: 'in_escrow',
+                        amount: '1500',
+                        escrow_pending_clearance_until: futureDate,
+                        review_due_at: null,
+                        client: { full_name: 'Client A' },
+                        freelancer: { full_name: 'Freelancer X' },
+                    }],
+                };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText('Clearing Hold')).toBeInTheDocument();
+        expect(screen.getByText(/h \d+m/)).toBeInTheDocument();
+    });
+
+    it('shows frozen disputed badge for disputed contracts', () => {
+        const futureDate = new Date(Date.now() + 86400000).toISOString();
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'wallet-contracts') {
+                return {
+                    data: [{
+                        id: 'c1',
+                        title: 'Disputed Contract',
+                        status: 'disputed',
+                        payment_status: 'in_escrow',
+                        amount: '500',
+                        escrow_pending_clearance_until: null,
+                        review_due_at: null,
+                        client: { full_name: 'Client A' },
+                        freelancer: { full_name: 'Freelancer X' },
+                    }],
+                };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText(/Frozen/)).toBeInTheDocument();
     });
 
     // ─── WithdrawPanel ───────────────────────────────────────────────
