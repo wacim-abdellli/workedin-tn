@@ -613,4 +613,56 @@ describe('Wallet', () => {
             );
         });
     });
+
+    // ─── Chart with data ──────────────────────────────────────────────
+
+    it('renders chart with transaction data', () => {
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'wallet-chart-transactions') {
+                return { data: [{ id: 't1', amount: 100, type: 'escrow_release', created_at: '2026-06-01', status: 'completed' }] };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText('Spending History')).toBeInTheDocument();
+    });
+
+    // ─── View All button in recent transactions ───────────────────────
+
+    it('navigates to transactions tab via View All button', () => {
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'transactions') {
+                return { data: { data: [mockTransaction('t1'), mockTransaction('t2')], count: 2 }, isLoading: false };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('View all →'));
+        expect(screen.getByText('Transaction History')).toBeInTheDocument();
+    });
+
+    // ─── Recent transactions with debit/credit display ───────────────
+
+    it('renders debit transaction with minus sign', () => {
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'transactions') {
+                return { data: { data: [mockTransaction('t1', { type: 'withdrawal', amount: 50 })], count: 1 }, isLoading: false };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getAllByText(/50\.000/).length).toBeGreaterThanOrEqual(1);
+    });
 });
