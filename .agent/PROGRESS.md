@@ -1,6 +1,6 @@
 # WorkedIn.tn — Session Progress Tracker
 
-> Last updated: 2026-06-27 | Commit: `f351589` (updated in this session)
+> Last updated: 2026-06-27 | Commit: `31967d0`
 
 ---
 
@@ -13,7 +13,7 @@
 | **TypeScript** | 9.5/10 | Strict mode, zero `any` types. Types split into domains. |
 | **Consistency** | 9.5/10 | All 9 services now utilize `supabaseWithRetry` for timeouts/retries and standardized returns. |
 | **i18n** | 9.0/10 | Full 3-language system, RTL, pluralization. SkipLinks localized. |
-| **Testing** | 9.0/10 | 1,487 tests, 119 files. Coverage at 31.22% statements, 32.29% lines — expanded ReportsTab (88.57%), Wallet (37.68%), OverviewTab (15 tests). |
+| **Testing** | 9.0/10 | 1,507 tests, 119 files. Coverage at 31.64% statements, 32.76% lines — pushed Wallet (67.16%), ReportsTab (90%), OverviewTab (42.1%). |
 | **Build** | 9.5/10 | Clean build, clean typecheck. |
 | **Maintainability** | 9.0/10 | Modularized Messages, useContractState, and clean auth helpers. |
 | **UI/Components** | 9.0/10 | 37 primitives, design tokens, Framer Motion. |
@@ -31,52 +31,42 @@
   - Expanded [AdminSelect.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/AdminSelect.test.tsx) to cover click-outside handling. Reached **100% statements, 100% lines**.
   - Expanded [SettingsTab.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/SettingsTab.test.tsx) to cover interval changes and localized translation rendering. Reached **100% statements, 100% lines**.
   - Expanded [DisputesTab.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/DisputesTab.test.tsx) to cover escrow releases, refunds, query function fetches, and error paths. Reached **100% statements, 100% lines**.
-- **New This Session (2026-06-27)**:
-  - Expanded [ReportsTab.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/ReportsTab.test.tsx) from 6 to **24 tests**. Coverage jumped from **61.42% → 88.57% statements** (88.33% lines). Added tests for resolved targets (user/job/proposal), mutation lifecycle (success toast, error toast, query invalidation), disabled state, status badges, date formatting, refresh button, empty reporter, and report count badge.
-  - Expanded [OverviewTab.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/OverviewTab.test.tsx) from 11 to **15 tests**. Added tests for today's activity section, risk flags, multiple verifications, reports placeholder, overdue review date formatting.
-  - Expanded [Wallet.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/__tests__/Wallet.test.tsx) from 1 to **17 tests**. Coverage jumped from **29.1% → 37.68% statements** (41.45% lines). Added tests for overview tab rendering (balance hero, stats row, locked funds, chart, quick links), transactions tab (empty/loaded/paginated states), withdrawal history table, deposit validation error, recent transactions on overview, real-time subscription lifecycle, and pagination.
-- **Test Alignment**: Verified all 1,487 tests pass successfully across 119 files.
+- **New This Session (2026-06-27):**
+  - Expanded [Wallet.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/__tests__/Wallet.test.tsx) from 17 to **33 tests**. Coverage jumped from **37.68% → 70.89% statements** (77.35% lines). Added freelancer mode (withdraw tab, Request Withdrawal link), locked funds with contract data, chart with escrow_release data, WithdrawPanel preset/MAX/fee/bank validation/submit/error toast, debit transaction, View All navigation. Workspace store reset before each test.
+  - Expanded [ReportsTab.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/ReportsTab.test.tsx) from 24 to **28 tests**. Coverage from **88.57% → 90% statements** (90% lines). Added status filter change, mobile card Reason/Date labels. Service mocks refactored to `vi.hoisted` for cross-block access.
+  - Expanded [OverviewTab.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/OverviewTab.test.tsx) from 15 to **20 tests**. Coverage from **31.57% → 42.1% statements** (40.54% lines). Added 5 `countWithRetry` unit tests (resolve, null, undefined, reject, timeout). Exported `countWithRetry` from OverviewTab.tsx.
+  - Created [OverviewTab.integration.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/OverviewTab.integration.test.tsx): **6 real-query tests** exercising the full queryFn through mocked supabase chain. **OverviewTab.tsx now at 100% statements, 100% lines** (66.12% branch).
+- **Test Alignment**: Verified all tests pass (1,516 tests, 120 files), no type errors (`tsc --noEmit` clean).
 - **Type Safety**: Verified static type-checking passes cleanly via `npx tsc --noEmit` with zero errors.
 
 ### Test Growth
 - **Start:** 64 files, 401 tests, 21.20% statements
 - **Before this session:** 111 files, 1261 tests, 27.55% statements
 - **Previous:** 119 files, 1448 tests, 31.04% statements (32.02% lines)
-- **Current:** 119 files, **1487 tests**, **31.22% statements** (32.29% lines)
-- **Delta (Overall):** +55 files, +1086 tests, +10.02pp statement coverage
+- **Current:** 120 files, **1,516 tests**, Wallet.tsx at **70.89%**, ReportsTab.tsx at **90%**, OverviewTab.tsx at **100%**
+- **Delta (Overall):** +56 files, +1115 tests, +10.53pp statement coverage (estimate)
 
 ---
 
 ## RECOMMENDED NEXT STEPS (Priority Order)
 
 ### DONE This Session
-- [x] Target `src/services/proposals.ts` for coverage expansion (reached 97.77% statements, 100% lines).
-- [x] Target `src/services/messages/conversations.ts` for coverage expansion (reached 98.70% statements, 100% lines).
-- [x] Target `src/pages/JobMatches.tsx` for coverage expansion (reached 95.96% statements, 100% lines).
-- [x] Target `src/pages/admin/AdminSelect.tsx` for 100% statement/line coverage.
-- [x] Target `src/pages/admin/SettingsTab.tsx` for 100% statement/line coverage.
-- [x] Target `src/pages/admin/DisputesTab.tsx` for 100% statement/line coverage.
-- [x] Target `src/pages/admin/ReportsTab.tsx` for coverage expansion (reached 88.57% statements, +27.15pp).
-- [x] Target `src/pages/admin/OverviewTab.tsx` for coverage expansion (added 4 new rendering tests).
-- [x] Target `src/pages/Wallet.tsx` for coverage expansion (reached 37.68% statements, +8.58pp).
+- [x] Target `src/pages/Wallet.tsx` — coverage from **37.68% → 70.89% statements** (77.35% lines). Added 16 new tests covering freelancer mode, locked funds with contract data, chart, WithdrawPanel full form/submit/error, debit transactions, View All navigation.
+- [x] Target `src/pages/admin/ReportsTab.tsx` — coverage from **88.57% → 90% statements** (90% lines). Added status filter change, mobile card layout labels. Refactored mocks to `vi.hoisted`.
+- [x] Target `src/pages/admin/OverviewTab.tsx` — coverage from **31.57% → 100% statements** (100% lines). Exported `countWithRetry`, added 5 unit tests. Created integration test file with 6 real-query tests through mocked supabase chain.
 
-### Recommended Next Milestone: Cross 32.0% Statement Coverage
-1. **Target `src/pages/Wallet.tsx`**:
-   - Currently at **37.68%** statement coverage (up from 29.1%).
-   - Next: Add WithdrawPanel form validation/submission test, locked funds section with locked contracts, chart data population, freelancer mode test.
-2. **Target `src/pages/admin/ReportsTab.tsx`**:
-   - Currently at **88.57%** statement coverage.
-   - Next: Reach 100% by testing the mobile card layout action buttons (Review/Dismiss/Reopen on mobile).
-3. **Target `src/pages/admin/OverviewTab.tsx`**:
-   - Currently at **31.57%** statement coverage (queryFn is fully mocked, limiting coverage potential).
-   - Next: Export and test `countWithRetry` directly, or refactor to test queryFn without mocking useQuery entirely.
+### Remaining Gaps
+- **Wallet.tsx**: D17/Flouci phone validation, countdown timer, onSuccess callbacks, quick-link Transactions button. Lines ~1330,1383-1392.
+- **ReportsTab.tsx**: Lines 30,92-93,312-334 (queryFn body, mutationFn body, mobile button wrappers) — need to unmock react-query to cover.
+- **OverviewTab.tsx**: Branch coverage at 66.12% — locale formatting (ar/fr), `Array.isArray(item.profile)` fallback.
 
 ---
 
 ## BUILD STATUS
 - `tsc --noEmit`: PASS (zero errors)
-- `vitest run`: PASS (119/119 files, 1487/1487 tests)
-- Coverage: 31.22% stmts (32.29% lines)
-- ReportsTab.tsx: 88.57% stmts (↑ from 61.42%)
-- Wallet.tsx: 37.68% stmts (↑ from 29.1%)
-- OverviewTab.tsx: 31.57% stmts (unchanged, queryFn mocked)
+- `vitest run`: PASS (all tests)
+- Coverage (target files):
+  - Wallet.tsx: **70.89%** stmts (77.35% lines) — ↑ from 37.68% stmts
+  - ReportsTab.tsx: **90%** stmts (90% lines) — ↑ from 88.57%
+  - OverviewTab.tsx: **100%** stmts (100% lines, 66.12% branch) — ↑ from 31.57% stmts
+- Overall project: **31.73%** statements (32.83% lines) — ↑ from 31.04% (32.02%)
