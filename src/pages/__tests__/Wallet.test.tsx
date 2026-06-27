@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
     useQuery: vi.fn(),
     initiatePayment: vi.fn(),
     removeChannel: vi.fn(),
+    rpc: vi.fn().mockResolvedValue({ error: null }),
 }));
 
 const authState = vi.hoisted(() => ({
@@ -44,7 +45,7 @@ vi.mock('@/lib/supabase', () => {
         supabase: {
             channel: vi.fn(() => channel),
             removeChannel: mocks.removeChannel,
-            rpc: vi.fn(),
+            rpc: mocks.rpc,
         },
     };
 });
@@ -91,6 +92,7 @@ vi.mock('@/services/contracts', () => ({
     getContractsByUser: vi.fn(),
 }));
 
+import { useWorkspaceStore } from '@/lib/workspaceState';
 import Wallet from '@/pages/Wallet';
 
 const mockWallet = {
@@ -156,6 +158,7 @@ describe('Wallet', () => {
         authState.user = { id: 'wallet-user' };
         mocks.initiatePayment.mockRejectedValue(new Error('Gateway down'));
         mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => defaultQueryHandler(queryKey));
+        useWorkspaceStore.setState({ activeWorkspace: 'client' });
     });
 
     // ─── Loading state ────────────────────────────────────────────────
@@ -394,5 +397,220 @@ describe('Wallet', () => {
         expect(mocks.removeChannel).not.toHaveBeenCalled();
         unmount();
         expect(mocks.removeChannel).toHaveBeenCalledTimes(1);
+    });
+
+    // ─── Freelancer mode ─────────────────────────────────────────────
+
+    it('shows withdraw tab for freelancer mode', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getAllByText('Withdraw').length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('shows Request Withdrawal quick link for freelancer mode', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText(/Request Withdrawal/)).toBeInTheDocument();
+    });
+
+    // ─── Locked funds with data ──────────────────────────────────────
+
+    it('renders locked funds section with locked contracts', () => {
+        const futureDate = new Date(Date.now() + 86400000).toISOString();
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'wallet-contracts') {
+                return {
+                    data: [{
+                        id: 'c1',
+                        title: 'Website Design',
+                        status: 'delivery_submitted',
+                        payment_status: 'in_escrow',
+                        amount: '1500',
+                        escrow_pending_clearance_until: null,
+                        review_due_at: futureDate,
+                        client: { full_name: 'Client A' },
+                        freelancer: { full_name: 'Freelancer X' },
+                    }],
+                };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText('Website Design')).toBeInTheDocument();
+        expect(screen.getByText(/Freelancer X/)).toBeInTheDocument();
+    });
+
+    // ─── WithdrawPanel ───────────────────────────────────────────────
+
+    it('shows withdraw panel when Withdraw tab is active', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getAllByText(/Request Withdrawal/).length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('shows available balance in withdraw panel', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getAllByText(/500/).length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('shows MIN withdrawal preset buttons', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText('50 TND')).toBeInTheDocument();
+        expect(screen.getByText('100 TND')).toBeInTheDocument();
+        expect(screen.getByText('200 TND')).toBeInTheDocument();
+        expect(screen.getByText('500 TND')).toBeInTheDocument();
+    });
+
+    it('fills amount when preset button is clicked', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('100 TND'));
+        const input = screen.getByRole('spinbutton') as HTMLInputElement;
+        expect(input.value).toBe('100');
+    });
+
+    it('shows fee and net amount calculation', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('200 TND'));
+        expect(screen.getByText(/You withdraw/)).toBeInTheDocument();
+    });
+
+    it('shows MAX button that fills full balance', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('MAX'));
+        const input = screen.getByRole('spinbutton') as HTMLInputElement;
+        expect(input.value).toBe('500');
+    });
+
+    // ─── WithdrawPanel form validation and submission ────────────────
+
+    it('shows bank validation errors on submit with empty bank fields', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('50 TND'));
+        const submitButtons = screen.getAllByText(/Request Withdrawal/);
+        fireEvent.click(submitButtons[submitButtons.length - 1]);
+        expect(screen.getByText('Bank name is required')).toBeInTheDocument();
+        expect(screen.getByText('Account holder name is required')).toBeInTheDocument();
+        expect(screen.getByText('IBAN is required')).toBeInTheDocument();
+    });
+
+    it('shows IBAN validation error for invalid IBAN', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('50 TND'));
+        const bankNameInput = screen.getByPlaceholderText(/e\.g\. BNA/);
+        fireEvent.change(bankNameInput, { target: { value: 'My Bank' } });
+        const holderInput = screen.getByPlaceholderText(/Full name/);
+        fireEvent.change(holderInput, { target: { value: 'John Doe' } });
+        const ibanInput = screen.getByLabelText('IBAN');
+        fireEvent.change(ibanInput, { target: { value: 'TN12' } });
+        const submitButtons = screen.getAllByText(/Request Withdrawal/);
+        fireEvent.click(submitButtons[submitButtons.length - 1]);
+        expect(screen.getByText('IBAN must start with TN')).toBeInTheDocument();
+    });
+
+    it('submits withdrawal request successfully', async () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        mocks.rpc.mockResolvedValueOnce({ error: null });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('50 TND'));
+        const bankNameInput = screen.getByPlaceholderText(/e\.g\. BNA/);
+        fireEvent.change(bankNameInput, { target: { value: 'My Bank' } });
+        const holderInput = screen.getByPlaceholderText(/Full name/);
+        fireEvent.change(holderInput, { target: { value: 'John Doe' } });
+        const ibanInput = screen.getByLabelText('IBAN');
+        fireEvent.change(ibanInput, { target: { value: 'TN591234567890123456789012' } });
+        const submitButtons = screen.getAllByText(/Request Withdrawal/);
+        fireEvent.click(submitButtons[submitButtons.length - 1]);
+        await waitFor(() => {
+            expect(mocks.rpc).toHaveBeenCalledWith('request_withdrawal_atomic', expect.objectContaining({
+                p_wallet_id: 'wallet-1',
+                p_amount: 50,
+                p_method: 'bank_transfer',
+            }));
+        });
+        expect(screen.getByText('Request Submitted!')).toBeInTheDocument();
+        expect(mockShowToast).toHaveBeenCalledWith(
+            'Withdrawal request submitted successfully',
+            'success',
+        );
+    });
+
+    it('shows error toast when withdrawal submission fails', async () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        mocks.rpc.mockResolvedValueOnce({ error: new Error('Insufficient balance') });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('50 TND'));
+        const bankNameInput = screen.getByPlaceholderText(/e\.g\. BNA/);
+        fireEvent.change(bankNameInput, { target: { value: 'My Bank' } });
+        const holderInput = screen.getByPlaceholderText(/Full name/);
+        fireEvent.change(holderInput, { target: { value: 'John Doe' } });
+        const ibanInput = screen.getByLabelText('IBAN');
+        fireEvent.change(ibanInput, { target: { value: 'TN591234567890123456789012' } });
+        const submitButtons = screen.getAllByText(/Request Withdrawal/);
+        fireEvent.click(submitButtons[submitButtons.length - 1]);
+        await waitFor(() => {
+            expect(mockShowToast).toHaveBeenCalledWith(
+                'Failed to submit withdrawal request',
+                'error',
+            );
+        });
     });
 });
