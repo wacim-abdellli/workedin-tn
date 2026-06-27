@@ -344,4 +344,29 @@ describe('ReportsTab', () => {
         fireEvent.click(screen.getByText('Refresh'));
         expect(refetch).toHaveBeenCalled();
     });
+
+    // ─── Status filter ────────────────────────────────────────────────
+
+    it('changes filter when status filter select changes', () => {
+        mockUseQuery.mockReturnValue({ data: [], isLoading: false, isError: false, refetch: vi.fn() });
+        render(<ReportsTab />);
+        fireEvent.change(screen.getByTestId('status-filter'), { target: { value: 'reviewed' } });
+        expect(mockUseQuery).toHaveBeenLastCalledWith({
+            queryKey: ['admin-reports', 'reviewed'],
+            queryFn: expect.any(Function),
+            staleTime: 30000,
+            refetchOnWindowFocus: false,
+        });
+    });
+
+    // ─── Mobile card layout ───────────────────────────────────────────
+
+    it('renders Reason and Date labels in mobile card layout', () => {
+        mockUseQuery.mockReturnValue({
+            data: [{ ...baseReport }], isLoading: false, isError: false, refetch: vi.fn(),
+        });
+        render(<ReportsTab />);
+        expect(screen.getAllByText('Reason').length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText('Date').length).toBeGreaterThanOrEqual(1);
+    });
 });
