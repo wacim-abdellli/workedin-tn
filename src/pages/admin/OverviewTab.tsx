@@ -5,7 +5,7 @@ import { supabaseWithRetry } from '@/lib/supabaseWithRetry';
 import { useTranslation } from '@/i18n';
 import { adminPanelClass } from './adminTheme';
 
-async function countWithRetry(queryFn: () => PromiseLike<{ count: number | null; error: unknown }>) {
+export async function countWithRetry(queryFn: () => PromiseLike<{ count: number | null; error: unknown }>) {
     const { count } = await Promise.race([
         queryFn(),
         new Promise<{ count: number | null; error: unknown }>((_, reject) =>

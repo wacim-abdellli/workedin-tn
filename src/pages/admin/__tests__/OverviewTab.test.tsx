@@ -33,7 +33,7 @@ vi.mock('../adminTheme', () => ({
     adminPillClass: (tone: string) => `pill-${tone}`,
 }));
 
-import OverviewTab from '../OverviewTab';
+import OverviewTab, { countWithRetry } from '../OverviewTab';
 
 describe('OverviewTab', () => {
     beforeEach(() => {
@@ -241,6 +241,31 @@ describe('OverviewTab', () => {
         render(<OverviewTab />);
         expect(screen.getByText(/No reports for now/)).toBeInTheDocument();
     });
+
+    // ─── countWithRetry ──────────────────────────────────────────────
+
+    it('countWithRetry resolves to count from queryFn', async () => {
+        const result = await countWithRetry(() => Promise.resolve({ count: 42, error: null }));
+        expect(result).toBe(42);
+    });
+
+    it('countWithRetry returns 0 when count is null', async () => {
+        const result = await countWithRetry(() => Promise.resolve({ count: null, error: null }));
+        expect(result).toBe(0);
+    });
+
+    it('countWithRetry returns 0 when count is undefined', async () => {
+        const result = await countWithRetry(() => Promise.resolve({ count: undefined, error: null }));
+        expect(result).toBe(0);
+    });
+
+    it('countWithRetry rejects on queryFn error', async () => {
+        await expect(countWithRetry(() => Promise.reject(new Error('DB error')))).rejects.toThrow('DB error');
+    });
+
+    it('countWithRetry rejects on timeout', async () => {
+        await expect(countWithRetry(() => new Promise(() => {}))).rejects.toThrow('Query timeout');
+    }, 20000);
 
     it('shows overdue review with formatted date', () => {
         mockUseQuery.mockReturnValue({
