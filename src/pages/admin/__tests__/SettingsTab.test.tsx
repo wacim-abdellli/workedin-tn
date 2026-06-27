@@ -1,9 +1,13 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
+
+let mockLanguage = 'en';
 
 vi.mock('@/i18n', () => ({
     useTranslation: () => ({
-        language: 'en',
+        get language() {
+            return mockLanguage;
+        },
         t: {},
         tx: (_k: string, _p?: Record<string, string>, fallback?: string) => fallback ?? _k,
         dir: 'ltr',
@@ -13,8 +17,18 @@ vi.mock('@/i18n', () => ({
 import SettingsTab from '../SettingsTab';
 
 describe('SettingsTab', () => {
+    let store: Record<string, string> = {};
+
     beforeEach(() => {
-        localStorage.clear();
+        store = {};
+        vi.spyOn(localStorage, 'getItem').mockImplementation((key) => store[key] || null);
+        vi.spyOn(localStorage, 'setItem').mockImplementation((key, val) => {
+            store[key] = String(val);
+        });
+        vi.spyOn(localStorage, 'clear').mockImplementation(() => {
+            store = {};
+        });
+        mockLanguage = 'en';
     });
 
     it('renders with default values', () => {
@@ -38,5 +52,24 @@ describe('SettingsTab', () => {
         expect(checkbox).toBeChecked();
         fireEvent.click(checkbox);
         expect(checkbox).not.toBeChecked();
+    });
+
+    it('allows changing refresh interval via AdminSelect', async () => {
+        render(<SettingsTab />);
+        fireEvent.click(screen.getByRole('button'));
+        fireEvent.click(screen.getByText('20 seconds'));
+        await waitFor(() => {
+            expect(localStorage.getItem('admin_refresh_interval')).toBe('20');
+        });
+    });
+
+    it('supports French and Arabic translation rendering', () => {
+        mockLanguage = 'fr';
+        const { rerender } = render(<SettingsTab />);
+        expect(screen.getByText('Parametres du tableau admin')).toBeInTheDocument();
+
+        mockLanguage = 'ar';
+        rerender(<SettingsTab />);
+        expect(screen.getByText('إعدادات لوحة الإدارة')).toBeInTheDocument();
     });
 });

@@ -1,4 +1,4 @@
-﻿import { logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -215,6 +215,9 @@ function JobMatches() {
 
     // Play voice intro
     const playVoice = (freelancerId: string) => {
+        const match = matches.find(m => m.id === freelancerId);
+        const voiceUrl = match?.freelancer.voice_intro_url;
+
         if (playingVoice === freelancerId) {
             audioRef.current?.pause();
             setPlayingVoice(null);
@@ -222,7 +225,9 @@ function JobMatches() {
             if (audioRef.current) {
                 audioRef.current.pause();
             }
-            // In a real app we would play the audio here
+            if (voiceUrl && typeof window !== 'undefined' && typeof window.Audio !== 'undefined') {
+                audioRef.current = new window.Audio(voiceUrl);
+            }
             setPlayingVoice(freelancerId);
             setTimeout(() => setPlayingVoice(null), 3000);
         }

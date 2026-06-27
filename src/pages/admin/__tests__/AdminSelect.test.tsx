@@ -47,4 +47,12 @@ describe('AdminSelect', () => {
         const pendingOption = optionsRendered.find(b => b.textContent === 'Pending');
         expect(pendingOption?.className).toContain('purple');
     });
+
+    it('closes dropdown when clicking outside', () => {
+        render(<AdminSelect value="all" onChange={vi.fn()} options={options} />);
+        fireEvent.click(screen.getByRole('button'));
+        expect(screen.getByText('Pending')).toBeInTheDocument();
+        fireEvent.mouseDown(document.body);
+        expect(screen.queryByText('Pending')).not.toBeInTheDocument();
+    });
 });
