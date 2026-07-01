@@ -36,17 +36,19 @@
   - **Target `src/pages/JobPost.tsx`** — Push complete. Coverage from **0% → 67% statements** (68% lines). Created 37 tests covering: 4-step wizard navigation, title templates, description snippets, skill search/add/remove, file attachments (drag-drop/browse/remove), category/subcategory selection with reset, quality score indicator, autosave status, draft restore modal (load/discard/restore), Ctrl+S keyboard shortcut, repost prefill from location state, draft dismissed recently, form validation errors, and all step component rendering (StepBudget/StepVisibility/StepReview).
   - **Target `src/lib/jobCategories.ts`** — Push complete. Coverage from **0% → 100% statements** (100% lines, 100% branch). Created 14 tests covering: `getLocalizedLabel` (Arabic/French/English/fallback), `getJobCategories` (all 3 languages), `getCategoryName` (valid/undefined/unknown), `getSubcategoryName` (valid/missing params/unknown).
   - **Target `src/services/profiles.ts`** — Push complete. Coverage from **0% → 100% statements** (94% lines). Created 33 tests covering: all profile queries, freelancer search with filters, profile updates, avatar upload, favorites CRUD, saved jobs/freelancers, reviews, review stats (weighted average, trust_weight defaults, zeros on error/empty/throw), client stats via RPC. Fixed builder-thenability Proxy pattern for all service tests.
-  - **Test Alignment**: Verified all **1,631 tests pass** (125 files), zero type errors via `tsc --noEmit`.
+  - **Target `src/pages/Wallet.tsx`** — Coverage from **76% → 79% statements** (85% lines). Added 7 tests covering: Active Escrow badge, CountdownTimer >24h, freelancer chart earning, client chart spending, Previous pagination, withdrawal non-Error catch, deposit non-Error catch.
+  - **Test Alignment**: Verified all **1,638 tests pass** (125 files), zero type errors via `tsc --noEmit`.
 
 ### Test Growth
 - **Start of session:** 120 files, 1,516 tests, 31.73% statements (32.83% lines)
-- **Current:** 125 files, **1,631 tests**, profiles.ts at **100%**, JobPost.tsx at **67%**, jobCategories.ts at **100%**
-- **Delta (This update):** +115 tests, +2.42pp statement coverage, +2.50pp line coverage
+- **Current:** 125 files, **1,638 tests**, Wallet at **79%**, profiles.ts at **100%**, JobPost.tsx at **67%**, jobCategories.ts at **100%**
+- **Delta (This update):** +122 tests, +2.5pp statement coverage
 
 ### Key Commits This Session
 - `fedf7c2` — Previous state (Wallet 71%, ReportsTab 90%, OverviewTab 100%, OOM blockers)
 - `1586fe4` — JobPost.tsx 0%→67% stmts (37 tests), jobCategories.ts 0%→100% (14 tests), +82 tests
-- Current — profiles.ts 0%→100% stmts (33 tests), builder-thenable Proxy fix, +1,631 total
+- `f719613` — profiles.ts 0%→100% stmts (33 tests), builder-thenable Proxy fix
+- Current — Wallet.tsx 76%→79% stmts (7 tests), +1,638 total
 
 ---
 
@@ -56,6 +58,7 @@
 - [x] **Target `src/pages/JobPost.tsx`** — Coverage from **0% → 67% statements** (68% lines). 37 tests: wizard nav, title templates, description snippets, skills, file upload, categories, quality score, draft restore, keyboard shortcuts, repost prefill.
 - [x] **Target `src/lib/jobCategories.ts`** — Coverage from **0% → 100% statements**. 14 tests covering all exported functions and all 3 languages.
 - [x] **Target `src/services/profiles.ts`** — Coverage from **0% → 100% statements** (94% lines). 33 tests: profile queries, freelancer search, favorites CRUD, review stats, client stats.
+- [x] **Target `src/pages/Wallet.tsx`** — Coverage from **76% → 79% statements** (85% lines). 7 tests: Active Escrow, >24h countdown, earning/spending charts, Previous pagination, non-Error catch paths.
 
 ### 🔴 REMAINING GAPS (100% prioritized)
 
@@ -79,7 +82,7 @@
   - profiles.ts: **100%** stmts (94% lines) — ↑ from 0%
   - JobPost.tsx: **67%** stmts (68% lines) — ↑ from 0%
   - jobCategories.ts: **100%** stmts (100% lines) — ↑ from 0%
-  - Wallet.tsx: **71%** stmts (82% lines)
+  - Wallet.tsx: **79%** stmts (85% lines) — ↑ from 71%
   - ReportsTab.tsx: **90%** stmts (90% lines)
   - OverviewTab.tsx: **100%** stmts (100% lines, 66.12% branch)
   - JobMatches.tsx: **96%** stmts (100% lines)
@@ -106,4 +109,4 @@
 ---
 
 ## LAST ACTION TAKEN
-**Current session** — Created `profiles.test.ts` (33 tests) covering all profile queries, freelancer search with filters, profile updates, favorites CRUD, saved jobs/freelancers, review stats (weighted average, trust_weight defaults), and client stats via RPC. Achieved **100% statements (94% lines)** on profiles.ts. Used Proxy-based thenable builder pattern to fix `await` on supabase query chains. Overall: **34.15% statements** (35.33% lines), 1,631 tests, 125 files.
+**Current session** — Added 7 tests to `Wallet.test.tsx` covering Active Escrow badge, CountdownTimer >24h, freelancer chart earning, client chart spending, Previous pagination, and non-Error catch paths for withdrawal/deposit. Wallet.tsx coverage from **76%→79% statements** (85% lines). Overall: **~34.5% statements**, **1,638 tests**, 125 files.

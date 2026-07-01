@@ -844,4 +844,155 @@ describe('Wallet', () => {
         );
         expect(screen.getAllByText(/50\.000/).length).toBeGreaterThanOrEqual(1);
     });
+
+    // ─── Active Escrow badge for locked contracts ───────────────
+
+    it('shows Active Escrow badge for simple locked contract without clearance/review/dispute', () => {
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'wallet-contracts') {
+                return {
+                    data: [{
+                        id: 'c1', title: 'Simple Locked Contract',
+                        status: 'active', payment_status: 'in_escrow', amount: '500',
+                        escrow_pending_clearance_until: null, review_due_at: null,
+                        client: { full_name: 'Client A' },
+                        freelancer: { full_name: 'Freelancer X' },
+                    }],
+                };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText('Simple Locked Contract')).toBeInTheDocument();
+        expect(screen.getByText('Active Escrow')).toBeInTheDocument();
+    });
+
+    // ─── CountdownTimer >24h path ───────────────────────────────
+
+    it('shows days countdown for lock time more than 24h away', () => {
+        const farFuture = new Date(Date.now() + 172800000).toISOString();
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'wallet-contracts') {
+                return {
+                    data: [{
+                        id: 'c1', title: 'Long Hold',
+                        status: 'active', payment_status: 'in_escrow', amount: '1000',
+                        escrow_pending_clearance_until: farFuture, review_due_at: null,
+                        client: { full_name: 'Client A' },
+                        freelancer: { full_name: 'Freelancer X' },
+                    }],
+                };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText(/Long Hold/)).toBeInTheDocument();
+        expect(screen.getByText(/\d+d \d+h/)).toBeInTheDocument();
+    });
+
+    // ─── Freelancer chart earning data ──────────────────────────
+
+    it('renders earning chart for freelancer mode', () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'wallet-chart-transactions') {
+                return { data: [{ id: 't1', amount: 200, type: 'escrow_release', created_at: new Date().toISOString(), status: 'completed' }] };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText('Earnings Growth')).toBeInTheDocument();
+    });
+
+    // ─── Client chart spending data ─────────────────────────────
+
+    it('renders spending chart for client mode', () => {
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'wallet-chart-transactions') {
+                return { data: [{ id: 't1', amount: 150, type: 'escrow_fund', created_at: new Date().toISOString(), status: 'completed' }] };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText('Spending History')).toBeInTheDocument();
+    });
+
+    // ─── Pagination Previous button ─────────────────────────────
+
+    it('navigates to previous page when Previous is clicked', () => {
+        const lotsOfTx = Array.from({ length: 15 }, (_, i) => mockTransaction(`t${i}`));
+        mocks.useQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+            if (queryKey[0] === 'transactions') {
+                const p = queryKey[2] as number || 1;
+                const start = (p - 1) * 10;
+                return { data: { data: lotsOfTx.slice(start, start + 10), count: 15 }, isLoading: false };
+            }
+            return defaultQueryHandler(queryKey);
+        });
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=transactions']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        expect(screen.getByText(/Page 1 of 2/)).toBeInTheDocument();
+        fireEvent.click(screen.getByText(/Next/));
+        expect(screen.getByText(/Page 2 of 2/)).toBeInTheDocument();
+        fireEvent.click(screen.getByText(/Previous/));
+        expect(screen.getByText(/Page 1 of 2/)).toBeInTheDocument();
+    });
+
+    // ─── WithdrawPanel: non-Error thrown in catch ───────────────
+
+    it('handles withdrawal submission with non-Error throw', async () => {
+        useWorkspaceStore.setState({ activeWorkspace: 'freelancer' });
+        mocks.rpc.mockRejectedValueOnce('Some string error');
+        render(
+            <MemoryRouter initialEntries={['/wallet?tab=withdraw']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('50 TND'));
+        fireEvent.change(screen.getByPlaceholderText(/e\.g\. BNA/), { target: { value: 'My Bank' } });
+        fireEvent.change(screen.getByPlaceholderText(/Full name/), { target: { value: 'John Doe' } });
+        fireEvent.change(screen.getByLabelText('IBAN'), { target: { value: 'TN591234567890123456789012' } });
+        const submitButtons = screen.getAllByText(/Request Withdrawal/);
+        fireEvent.click(submitButtons[submitButtons.length - 1]);
+        await waitFor(() => {
+            expect(mockShowToast).toHaveBeenCalledWith('Failed to submit withdrawal request', 'error');
+        });
+    });
+
+    // ─── DepositPanel: non-Error thrown in catch ────────────────
+
+    it('shows generic error when deposit throws a non-Error', async () => {
+        mocks.initiatePayment.mockRejectedValueOnce('string error');
+        render(
+            <MemoryRouter initialEntries={['/wallet']}>
+                <Wallet />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Deposit Funds' }));
+        fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '125' } });
+        const depositButtons = screen.getAllByRole('button', { name: 'Deposit Funds' });
+        fireEvent.click(depositButtons[depositButtons.length - 1]);
+        await waitFor(() => {
+            expect(screen.getByText(/An error occurred/)).toBeInTheDocument();
+        });
+    });
 });
