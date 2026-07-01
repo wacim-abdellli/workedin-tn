@@ -1,6 +1,6 @@
 # WorkedIn.tn — Session Progress Tracker
 
-> Last updated: 2026-07-01 | Commit: `fedf7c2`
+> Last updated: 2026-07-01 | Commit: `1586fe4`
 
 ---
 
@@ -13,7 +13,7 @@
 | **TypeScript** | 9.5/10 | Strict mode, zero `any` types. Types split into domains. |
 | **Consistency** | 9.5/10 | All 9 services now utilize `supabaseWithRetry` for timeouts/retries and standardized returns. |
 | **i18n** | 9.0/10 | Full 3-language system, RTL, pluralization. SkipLinks localized. |
-| **Testing** | 9.0/10 | 1,598 tests, 124 files. Coverage at **34.13% statements, 35.30% lines** — pushed JobPost (67%), jobCategories (100%), Wallet (71%), ReportsTab (90%), OverviewTab (100%), JobMatches (96%), etc. |
+| **Testing** | 9.1/10 | 1,631 tests, 125 files. Coverage at **34.15% statements, 35.33% lines** — profiles.ts at 100%, JobPost (67%), jobCategories (100%), Wallet (71%), ReportsTab (90%), OverviewTab (100%), JobMatches (96%), etc. |
 | **Build** | 9.5/10 | Clean build, clean typecheck. |
 | **Maintainability** | 9.0/10 | Modularized Messages, useContractState, and clean auth helpers. |
 | **UI/Components** | 9.0/10 | 37 primitives, design tokens, Framer Motion. |
@@ -35,16 +35,18 @@
 - **New This Session (2026-07-01):**
   - **Target `src/pages/JobPost.tsx`** — Push complete. Coverage from **0% → 67% statements** (68% lines). Created 37 tests covering: 4-step wizard navigation, title templates, description snippets, skill search/add/remove, file attachments (drag-drop/browse/remove), category/subcategory selection with reset, quality score indicator, autosave status, draft restore modal (load/discard/restore), Ctrl+S keyboard shortcut, repost prefill from location state, draft dismissed recently, form validation errors, and all step component rendering (StepBudget/StepVisibility/StepReview).
   - **Target `src/lib/jobCategories.ts`** — Push complete. Coverage from **0% → 100% statements** (100% lines, 100% branch). Created 14 tests covering: `getLocalizedLabel` (Arabic/French/English/fallback), `getJobCategories` (all 3 languages), `getCategoryName` (valid/undefined/unknown), `getSubcategoryName` (valid/missing params/unknown).
-  - **Test Alignment**: Verified all **1,598 tests pass** (124 files), zero type errors via `tsc --noEmit`.
+  - **Target `src/services/profiles.ts`** — Push complete. Coverage from **0% → 100% statements** (94% lines). Created 33 tests covering: all profile queries, freelancer search with filters, profile updates, avatar upload, favorites CRUD, saved jobs/freelancers, reviews, review stats (weighted average, trust_weight defaults, zeros on error/empty/throw), client stats via RPC. Fixed builder-thenability Proxy pattern for all service tests.
+  - **Test Alignment**: Verified all **1,631 tests pass** (125 files), zero type errors via `tsc --noEmit`.
 
 ### Test Growth
 - **Start of session:** 120 files, 1,516 tests, 31.73% statements (32.83% lines)
-- **Current:** 124 files, **1,598 tests**, JobPost.tsx at **67%**, jobCategories.ts at **100%**
-- **Delta (This update):** +82 tests, +2.40pp statement coverage, +2.47pp line coverage
+- **Current:** 125 files, **1,631 tests**, profiles.ts at **100%**, JobPost.tsx at **67%**, jobCategories.ts at **100%**
+- **Delta (This update):** +115 tests, +2.42pp statement coverage, +2.50pp line coverage
 
 ### Key Commits This Session
 - `fedf7c2` — Previous state (Wallet 71%, ReportsTab 90%, OverviewTab 100%, OOM blockers)
-- Current — JobPost.tsx 0%→67% stmts (37 new tests), jobCategories.ts 0%→100% (14 tests), +82 tests total
+- `1586fe4` — JobPost.tsx 0%→67% stmts (37 tests), jobCategories.ts 0%→100% (14 tests), +82 tests
+- Current — profiles.ts 0%→100% stmts (33 tests), builder-thenable Proxy fix, +1,631 total
 
 ---
 
@@ -53,6 +55,7 @@
 ### ✅ DONE This Session
 - [x] **Target `src/pages/JobPost.tsx`** — Coverage from **0% → 67% statements** (68% lines). 37 tests: wizard nav, title templates, description snippets, skills, file upload, categories, quality score, draft restore, keyboard shortcuts, repost prefill.
 - [x] **Target `src/lib/jobCategories.ts`** — Coverage from **0% → 100% statements**. 14 tests covering all exported functions and all 3 languages.
+- [x] **Target `src/services/profiles.ts`** — Coverage from **0% → 100% statements** (94% lines). 33 tests: profile queries, freelancer search, favorites CRUD, review stats, client stats.
 
 ### 🔴 REMAINING GAPS (100% prioritized)
 
@@ -61,7 +64,6 @@
 - `src/pages/messages/useContractLifecycle.ts` (1,665 lines) — 0% covered, same OOM issue
 - `src/pages/messages/useConversations.ts` (890 lines) — 0% covered, OOM potential
 - `src/pages/Messages.tsx` (1,122 lines) — 43% covered, can push higher
-- `src/services/profiles.ts` (106 lines) — 0% covered
 
 #### Medium Priority (Incomplete coverage)
 - **Wallet.tsx** (remaining branches): D17/Flouci phone validation, locale-driven i18n edge cases, timer cleanup on unmount, locale fallback on missing nested translations
@@ -72,15 +74,16 @@
 
 ## BUILD STATUS
 - `tsc --noEmit`: PASS (zero errors)
-- `vitest run`: PASS (all 1,598 tests, 124 files)
+- `vitest run`: PASS (all 1,631 tests, 125 files)
 - **Coverage (target files):**
+  - profiles.ts: **100%** stmts (94% lines) — ↑ from 0%
   - JobPost.tsx: **67%** stmts (68% lines) — ↑ from 0%
   - jobCategories.ts: **100%** stmts (100% lines) — ↑ from 0%
   - Wallet.tsx: **71%** stmts (82% lines)
   - ReportsTab.tsx: **90%** stmts (90% lines)
   - OverviewTab.tsx: **100%** stmts (100% lines, 66.12% branch)
   - JobMatches.tsx: **96%** stmts (100% lines)
-- **Overall project:** **34.13%** statements (35.30% lines) — ↑ from 31.73% (32.83%)
+- **Overall project:** **34.15%** statements (35.33% lines) — ↑ from 31.73% (32.83%)
 
 ---
 
@@ -103,4 +106,4 @@
 ---
 
 ## LAST ACTION TAKEN
-**Current session** — Created `JobPost.test.tsx` (37 tests) covering 4-step wizard, title templates, description snippets, skills, file upload, categories, quality score, draft restore, keyboard shortcuts, repost prefill. Created `jobCategories.test.ts` (14 tests) covering all utility functions. Achieved **67% statements** on JobPost.tsx, **100%** on jobCategories.ts. Overall: **34.13% statements** (35.30% lines), 1,598 tests, 124 files.
+**Current session** — Created `profiles.test.ts` (33 tests) covering all profile queries, freelancer search with filters, profile updates, favorites CRUD, saved jobs/freelancers, review stats (weighted average, trust_weight defaults), and client stats via RPC. Achieved **100% statements (94% lines)** on profiles.ts. Used Proxy-based thenable builder pattern to fix `await` on supabase query chains. Overall: **34.15% statements** (35.33% lines), 1,631 tests, 125 files.

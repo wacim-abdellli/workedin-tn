@@ -38,7 +38,6 @@ export default defineConfig({
         testTimeout: 10000,
         hookTimeout: 10000,
         reporters: ['verbose'],
-        // Vitest 4+ uses top-level pool config
         pool: 'threads',
     },
     resolve: {

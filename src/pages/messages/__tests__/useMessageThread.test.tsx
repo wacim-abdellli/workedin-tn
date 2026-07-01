@@ -34,9 +34,6 @@ vi.mock('../../../lib/contractChatSafety', () => ({
 
 import { useMessageThread } from '../useMessageThread';
 
-function makeConv(overrides: any = {}): any {
-    return { id: 'conv-1', otherUser: { id: 'user-2', full_name: 'Bob', avatar_url: null }, contract_id: null, unread_count: 0, last_message_text: null, last_message_at: null, ...overrides };
-}
 function makeMsg(overrides: any = {}): any {
     return { id: 'msg-1', conversation_id: 'conv-1', sender_id: 'user-1', receiver_id: 'user-2', content: 'Hello', attachments: [], is_read: false, created_at: new Date().toISOString(), contract_id: null, proposal_id: null, status: undefined, sender: { id: 'user-1', full_name: 'Me', avatar_url: null }, ...overrides };
 }
