@@ -1,6 +1,6 @@
 # WorkedIn.tn — Session Progress Tracker
 
-> Last updated: 2026-06-27 | Commit: `7a4d34e`
+> Last updated: 2026-07-01 | Commit: `fedf7c2`
 
 ---
 
@@ -13,7 +13,7 @@
 | **TypeScript** | 9.5/10 | Strict mode, zero `any` types. Types split into domains. |
 | **Consistency** | 9.5/10 | All 9 services now utilize `supabaseWithRetry` for timeouts/retries and standardized returns. |
 | **i18n** | 9.0/10 | Full 3-language system, RTL, pluralization. SkipLinks localized. |
-| **Testing** | 9.0/10 | 1,516 tests, 120 files. Coverage at **31.73% statements, 32.83% lines** — pushed Wallet (71%), ReportsTab (90%), OverviewTab (100%), JobMatches (96%), etc. |
+| **Testing** | 9.0/10 | 1,598 tests, 124 files. Coverage at **34.13% statements, 35.30% lines** — pushed JobPost (67%), jobCategories (100%), Wallet (71%), ReportsTab (90%), OverviewTab (100%), JobMatches (96%), etc. |
 | **Build** | 9.5/10 | Clean build, clean typecheck. |
 | **Maintainability** | 9.0/10 | Modularized Messages, useContractState, and clean auth helpers. |
 | **UI/Components** | 9.0/10 | 37 primitives, design tokens, Framer Motion. |
@@ -32,31 +32,27 @@
   - Expanded [AdminSelect.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/AdminSelect.test.tsx) to cover click-outside handling. Reached **100% statements, 100% lines**.
   - Expanded [SettingsTab.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/SettingsTab.test.tsx) to cover interval changes and localized translation rendering. Reached **100% statements, 100% lines**.
   - Expanded [DisputesTab.test.tsx](file:///c:/Users/pc/Desktop/workedin_tn/src/pages/admin/__tests__/DisputesTab.test.tsx) to cover escrow releases, refunds, query function fetches, and error paths. Reached **100% statements, 100% lines**.
-- **New This Session (2026-06-27):**
-  - **Target `src/pages/Wallet.tsx`** — Push complete. Coverage jumped from **37.68% → 71% statements** (82% lines). Added 16 new tests covering D17/Flouci validation, countdown timer tests, onSuccess callbacks, freelancer mode, locked funds with contract data, chart, WithdrawPanel full form/submit/error, debit transactions, and complete quick links navigation (Transactions via View All & section button, Deposit via quick link, Withdraw via freelancer quick link).
-  - **Target `src/pages/admin/ReportsTab.tsx`** — Push complete. Coverage from **88.57% → 90% statements** (90% lines). Added 7 new tests covering status filter change, mobile card Reason/Date labels, ALL mobile action buttons (Review/Dismiss/Reopen from both desktop and mobile layouts), and then refactored service mocks to `vi.hoisted` for cross-block access.
-  - **Target `src/pages/admin/OverviewTab.tsx`** — Push complete. Coverage from **31.57% → 100% statements** (100% lines, 66.12% branch). Exported `countWithRetry`, added 5 unit tests (resolve/null/undefined/reject/timeout), created integration test file with 6 real-query tests covering full queryFn through mocked supabase chain. All queryFn bodies now covered via integration mocks.
-  - **Test Alignment**: Verified all **1,516 tests pass** (120 files), zero type errors via `npm run typecheck`, clean `tsc --noEmit`.
+- **New This Session (2026-07-01):**
+  - **Target `src/pages/JobPost.tsx`** — Push complete. Coverage from **0% → 67% statements** (68% lines). Created 37 tests covering: 4-step wizard navigation, title templates, description snippets, skill search/add/remove, file attachments (drag-drop/browse/remove), category/subcategory selection with reset, quality score indicator, autosave status, draft restore modal (load/discard/restore), Ctrl+S keyboard shortcut, repost prefill from location state, draft dismissed recently, form validation errors, and all step component rendering (StepBudget/StepVisibility/StepReview).
+  - **Target `src/lib/jobCategories.ts`** — Push complete. Coverage from **0% → 100% statements** (100% lines, 100% branch). Created 14 tests covering: `getLocalizedLabel` (Arabic/French/English/fallback), `getJobCategories` (all 3 languages), `getCategoryName` (valid/undefined/unknown), `getSubcategoryName` (valid/missing params/unknown).
+  - **Test Alignment**: Verified all **1,598 tests pass** (124 files), zero type errors via `tsc --noEmit`.
 
 ### Test Growth
-- **Start of session:** 119 files, 1,448 tests, 31.04% statements (32.02% lines)
-- **Current:** 120 files, **1,516 tests**, Wallet.tsx at **71%**, ReportsTab.tsx at **90%**, OverviewTab.tsx at **100%**, JobMatches.tsx at **96%**
-- **Delta (Overall):** +1115 tests, +10.69pp statement coverage, +10.81pp line coverage
+- **Start of session:** 120 files, 1,516 tests, 31.73% statements (32.83% lines)
+- **Current:** 124 files, **1,598 tests**, JobPost.tsx at **67%**, jobCategories.ts at **100%**
+- **Delta (This update):** +82 tests, +2.40pp statement coverage, +2.47pp line coverage
 
 ### Key Commits This Session
-- `c66a32a` — Wallet coverage 37%→71% stmts (16 new tests, all quick links, freelancer mode, countdown timers, locked funds, WithdrawPanel, chart, onSuccess)
-- `7a4d34e` — ReportsTab coverage 88%→90% stmts (7 new tests, mobile button wrappers, main fallback path via hoised mocks)
+- `fedf7c2` — Previous state (Wallet 71%, ReportsTab 90%, OverviewTab 100%, OOM blockers)
+- Current — JobPost.tsx 0%→67% stmts (37 new tests), jobCategories.ts 0%→100% (14 tests), +82 tests total
 
 ---
 
 ## RECOMMENDED NEXT STEPS (Priority Order)
 
 ### ✅ DONE This Session
-- [x] **Target `src/pages/Wallet.tsx`** — Coverage from **37.68% → 71% statements** (82% lines). Added 16 new tests covering D17/Flouci validation, countdown timer, onSuccess callbacks, freelancer mode, locked funds with contract data, chart, WithdrawPanel full form/submit/error, debit transactions, and complete quick links navigation (Transactions via View All & section button, Deposit via quick link, Withdraw via freelancer quick link).
-
-- [x] **Target `src/pages/admin/ReportsTab.tsx`** — Coverage from **88.57% → 90% statements** (90% lines). Added 7 new tests: status filter change, mobile card Reason/Date labels, ALL mobile action buttons (Review/Dismiss/Reopen from both desktop and mobile layouts), and refactored service mocks to `vi.hoisted` for cross-block access.
-
-- [x] **Target `src/pages/admin/OverviewTab.tsx`** — Coverage from **31.57% → 100% statements** (100% lines, 66.12% branch). Exported `countWithRetry`, added 5 unit tests (resolve/null/undefined/reject/timeout), created integration test file with 6 real-query tests covering full queryFn through mocked supabase chain.
+- [x] **Target `src/pages/JobPost.tsx`** — Coverage from **0% → 67% statements** (68% lines). 37 tests: wizard nav, title templates, description snippets, skills, file upload, categories, quality score, draft restore, keyboard shortcuts, repost prefill.
+- [x] **Target `src/lib/jobCategories.ts`** — Coverage from **0% → 100% statements**. 14 tests covering all exported functions and all 3 languages.
 
 ### 🔴 REMAINING GAPS (100% prioritized)
 
@@ -64,10 +60,8 @@
 - `src/pages/messages/useMessageThread.ts` (909 lines) — OOM blocker: 1 async test with `selectedConversation` triggers load-messages effect
 - `src/pages/messages/useContractLifecycle.ts` (1,665 lines) — 0% covered, same OOM issue
 - `src/pages/messages/useConversations.ts` (890 lines) — 0% covered, OOM potential
-- `src/pages/JobPost.tsx` (382 lines) — 0% covered
 - `src/pages/Messages.tsx` (1,122 lines) — 43% covered, can push higher
 - `src/services/profiles.ts` (106 lines) — 0% covered
-- `src/services/jobCategories.ts` (13 lines) — 0% covered
 
 #### Medium Priority (Incomplete coverage)
 - **Wallet.tsx** (remaining branches): D17/Flouci phone validation, locale-driven i18n edge cases, timer cleanup on unmount, locale fallback on missing nested translations
@@ -78,13 +72,15 @@
 
 ## BUILD STATUS
 - `tsc --noEmit`: PASS (zero errors)
-- `vitest run`: PASS (all tests)
+- `vitest run`: PASS (all 1,598 tests, 124 files)
 - **Coverage (target files):**
-  - Wallet.tsx: **71%** stmts (82% lines) — ↑ from 37.68% stmts
-  - ReportsTab.tsx: **90%** stmts (90% lines) — ↑ from 88.57%
-  - OverviewTab.tsx: **100%** stmts (100% lines, 66.12% branch) — ↑ from 31.57% stmts
+  - JobPost.tsx: **67%** stmts (68% lines) — ↑ from 0%
+  - jobCategories.ts: **100%** stmts (100% lines) — ↑ from 0%
+  - Wallet.tsx: **71%** stmts (82% lines)
+  - ReportsTab.tsx: **90%** stmts (90% lines)
+  - OverviewTab.tsx: **100%** stmts (100% lines, 66.12% branch)
   - JobMatches.tsx: **96%** stmts (100% lines)
-- **Overall project:** **31.73%** statements (32.83% lines) — ↑ from 31.04% (32.02%)
+- **Overall project:** **34.13%** statements (35.30% lines) — ↑ from 31.73% (32.83%)
 
 ---
 
@@ -107,4 +103,4 @@
 ---
 
 ## LAST ACTION TAKEN
-**Commit `7a4d34e`**—Refactored ReportsTab service mocks to `vi.hoised` for cross-block access, enabling full coverage of queryFn body, mutationFn body, and mobile button wrappers. Achieved **90% statements, 90% lines** on ReportsTab.tsx.
+**Current session** — Created `JobPost.test.tsx` (37 tests) covering 4-step wizard, title templates, description snippets, skills, file upload, categories, quality score, draft restore, keyboard shortcuts, repost prefill. Created `jobCategories.test.ts` (14 tests) covering all utility functions. Achieved **67% statements** on JobPost.tsx, **100%** on jobCategories.ts. Overall: **34.13% statements** (35.30% lines), 1,598 tests, 124 files.

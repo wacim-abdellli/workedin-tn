@@ -47,9 +47,8 @@ Systematically raise test coverage across the codebase. Each session picks a fil
 |-----------|------|-----------|
 | 1,122 | `pages/Messages.tsx` | 43% |
 | 755 | `pages/messages/useContractLifecycle.ts` | 0% |
-| 457 | `pages/messages/useMessageThread.ts` | 0% |
-| 446 | `pages/messages/useConversations.ts` | 0% |
-| 382 | `pages/JobPost.tsx` | 0% |
+| 457 | `pages/messages/useMessageThread.ts` | 18% |
+| 446 | `pages/messages/useConversations.ts` | 42% |
 | ~30 | `pages/Wallet.tsx` | 71% |
 | ~10 | `pages/admin/ReportsTab.tsx` | 90% |
 
